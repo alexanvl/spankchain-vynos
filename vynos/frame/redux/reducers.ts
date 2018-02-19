@@ -11,7 +11,6 @@ export default function reducers(workerProxy: WorkerProxy): Reducer<FrameState> 
   const state = initialState(workerProxy)
 
   const tempReducer = reducerWithInitialState(state.temp)
-    // .case(actions.didAcceptTerms, actions.didAcceptTermsHandler)
     .case(actions.didReceiveMnemonic, actions.didReceiveMnemonicHandler)
     .case(actions.setWorkerProxy, actions.setWorkerProxyHandler)
 
