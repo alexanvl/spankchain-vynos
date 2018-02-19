@@ -1,0 +1,38 @@
+.card {
+  border-radius: 8px;
+  box-shadow: -1px 4px 8px 2px rgba(0, 0, 0, .5);
+  display: flex;
+  flex-flow: column nowrap;
+  padding: 1.2rem;
+  box-sizing: border-box;
+}
+
+.top {
+  display: flex;
+  flex-flow: column nowrap;
+  flex: 1 0 40%;
+}
+
+.cardTitle {
+  font-weight: 600;
+}
+
+.companyName {
+  padding: 4px 0;
+}
+
+.bottom {
+  flex: 1 0 60%;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: flex-end;
+}
+
+.name {
+  flex: 1 1 auto;
+}
+
+.currency {
+  font-size: 3rem;
+  font-weight: 600;
+}

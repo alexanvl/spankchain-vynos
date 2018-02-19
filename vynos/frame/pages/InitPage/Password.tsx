@@ -1,14 +1,18 @@
 import * as React from 'react'
-import {ChangeEvent, FormEvent} from 'react'
+import {ChangeEvent, MouseEvent} from 'react'
 import {Dispatch} from 'redux'
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import {connect} from 'react-redux'
 import * as actions from "../../redux/actions";
-import {Button, Container, Divider, Form, Header, GridRow} from 'semantic-ui-react'
+// import {Button, Container, Divider, Form, Header, GridRow} from 'semantic-ui-react'
 import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../../constants';
 import RestorePage from "../RestorePage";
 import Logo from "../../components/Logo";
+import Button from "../../components/Button/index"
+import TextBox from "../../components/TextBox/index"
+import Input from "../../components/Input/index"
+import WalletCard from "../../components/WalletCard/index"
 
 const style = require('../../styles/ynos.css')
 
@@ -63,8 +67,8 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     return !(passwordError || passwordConfirmationError)
   }
 
-  handleSubmit (e: FormEvent<HTMLFormElement>) {
-    e.preventDefault()
+  handleSubmit (e: MouseEvent<HTMLFormElement>) {
+    console.log(this.isValid(), this.state.password)
     if (this.isValid() && this.state.password) {
       return this.props.genKeyring(this.props.workerProxy, this.state.password)
     }
@@ -136,27 +140,49 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     if (this.state.displayRestore)
       return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
 
-    return <Container textAlign="center" className={`${style.flexContainer} ${style.clearBorder}`}>
-      <Logo />
-      <Divider hidden />
-      <Header as='h1' className={style.encryptionHeader}>Encrypt your new wallet</Header>
-      <Form onSubmit={this.handleSubmit} className={style.encryptionForm}>
-        <div className='equal width fields' style={{flexDirection: 'column', textAlign: 'left'}}>
-          <Form.Field className={style.clearIndent}>
-            {this.renderPasswordInput()}
-            {this.renderPasswordHint()}
-          </Form.Field>
-          <Form.Field className={style.clearIndent}>
-            {this.renderPasswordConfirmationInput()}
-            {this.renderPasswordConfirmationHint()}
-          </Form.Field>
+    return (
+      <div className={style.fullContainer}>
+        <div className={style.header}>
+          <div className={style.progressDots}>O O O O O O O</div>
+          <div className={style.hamburger} />
         </div>
-        <Divider hidden />
-        <Button type='submit' content="Create wallet" primary className={style.buttonNav} />
-        <br />
-        <a onClick={this.doDisplayRestorePage.bind(this)}>Restore wallet</a>
-      </Form>
-    </Container>
+        <div className={style.content}>
+          <WalletCard
+            width={225}
+            cardTitle="SpankCard"
+            companyName="SpankChain"
+            name="spanktoshi"
+            className={style.funnelWalletCard}
+          />
+          <div className={style.funnelTitle}>Create Wallet</div>
+          <TextBox className={style.passwordTextBox}>
+            Your SpankWallet allows you to tip without any delay and to save you crypto fees by bundling payments.
+          </TextBox>
+          <Input
+            placeholder="New Password"
+            type="password"
+            onChange={this.handleChangePassword}
+          />
+          <Input
+            placeholder="Confirm Password"
+            type="password"
+            onChange={this.handleChangePasswordConfirmation}
+          />
+          <div>
+            <Button
+              type="secondary"
+              content="Restore SpankWallet"
+              isInverse
+            />
+            <Button
+              content="Next"
+              onClick={this.handleSubmit}
+              isInverse
+            />
+          </div>
+        </div>
+      </div>
+    )
   }
 }
 
