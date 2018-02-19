@@ -6,11 +6,16 @@ import Mnemonic from './Mnemonic'
 
 export interface InitPageProps {
   mnemonic: string|null
+  showInitialDeposit: boolean
 }
 
 const InitPage: React.SFC<InitPageProps> = (props) => {
   if (props.mnemonic) {
-    return <Mnemonic mnemonic={props.mnemonic} />
+    return <Mnemonic />
+  }
+
+  if (props.showInitialDeposit) {
+    return <div>Make Deposit man</div>
   }
 
   return <Password />
@@ -18,7 +23,8 @@ const InitPage: React.SFC<InitPageProps> = (props) => {
 
 function mapStateToProps(state: FrameState): InitPageProps {
   return {
-    mnemonic: state.temp.initPage.mnemonic
+    mnemonic: state.temp.initPage.mnemonic,
+    showInitialDeposit: state.temp.initPage.showInitialDeposit,
   }
 }
 

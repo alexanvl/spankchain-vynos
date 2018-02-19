@@ -1,7 +1,9 @@
 import * as React from "react";
 import {connect} from "react-redux";
 import {FormEvent} from "react";
+import {Dispatch} from 'redux'
 import {FrameState} from "../../redux/FrameState";
+import * as actions from "../../redux/actions"
 import WorkerProxy from "../../WorkerProxy";
 import { Container, Button, Form, Header, Divider } from 'semantic-ui-react'
 import Logo from '../../components/Logo'
@@ -9,16 +11,20 @@ const style = require('../../styles/ynos.css')
 
 export interface MnemonicStateProps {
   workerProxy: WorkerProxy
+  mnemonic: string|null
 }
 
-export interface MnemonicProps extends MnemonicStateProps {
-  mnemonic: string
+export interface MnemonicDispatchProps {
+  didStoreMnemonic: () => void
 }
 
-export class Mnemonic extends React.Component<MnemonicProps, {}> {
+export type MnemonicPageProps = MnemonicStateProps & MnemonicDispatchProps
+
+export class Mnemonic extends React.Component<MnemonicPageProps, {}> {
   handleSubmit (ev: FormEvent<HTMLFormElement>) {
     ev.preventDefault()
     this.props.workerProxy.didStoreMnemonic()
+    this.props.didStoreMnemonic()
   }
 
   render () {
@@ -62,8 +68,15 @@ export class Mnemonic extends React.Component<MnemonicProps, {}> {
 
 function mapStateToProps (state: FrameState): MnemonicStateProps {
   return {
+    mnemonic: state.temp.initPage.mnemonic,
     workerProxy: state.temp.workerProxy
   }
 }
 
-export default connect<MnemonicStateProps, undefined, any>(mapStateToProps)(Mnemonic)
+function mapDispatchToProps(dispatch: Dispatch<FrameState>): MnemonicDispatchProps {
+  return {
+    didStoreMnemonic: () => dispatch(actions.didStoreMnemonic(''))
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Mnemonic)

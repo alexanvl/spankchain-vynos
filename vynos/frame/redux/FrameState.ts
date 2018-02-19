@@ -4,6 +4,7 @@ import {RouterState} from 'react-router-redux'
 
 export interface InitPageState {
   mnemonic: string|null
+  showInitialDeposit: boolean
 }
 
 export interface TempState {
@@ -21,7 +22,8 @@ export function initialState(workerProxy: WorkerProxy): FrameState {
   return {
     temp: {
       initPage: {
-        mnemonic: null
+        mnemonic: null,
+        showInitialDeposit: false,
       },
       workerProxy: workerProxy
     },
