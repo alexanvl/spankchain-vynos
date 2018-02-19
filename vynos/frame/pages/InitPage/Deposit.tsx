@@ -17,13 +17,24 @@ export interface DepositProps {
   web3?: Web3
 }
 
-export class Deposit extends React.Component<DepositProps> {
+export interface DepositStates {
+  address: string
+}
+
+export class Deposit extends React.Component<DepositProps, DepositStates> {
+  constructor(props: DepositProps) {
+    super(props)
+    this.state = {
+      address: '',
+    }
+  }
+
   componentDidMount() {
     const { web3 } = this.props
     if (web3) {
       web3.eth.getAccounts((err: any, accounts: any) => {
         let address = accounts[0]
-        console.log({address, accounts})
+        this.setState({ address })
       })
     }
   }
@@ -37,7 +48,7 @@ export class Deposit extends React.Component<DepositProps> {
         </div>
         <div className={style.content}>
           <WalletCard
-            width={225}
+            width={275}
             cardTitle="SpankCard"
             companyName="SpankChain"
             name="spanktoshi"
@@ -47,7 +58,14 @@ export class Deposit extends React.Component<DepositProps> {
           <div className={style.seedPhraseText}>
             This is your SpankWallet address. You can copy it and send crypto from places like Coinbase.
           </div>
-          <div>
+          <div className={style.ctaInput}>
+            <div className={style.ctaInputValue}>{this.state.address}</div>
+            <div className={style.ctaInputText}>Copy</div>
+          </div>
+          <div className={style.mnemonicWarning}>
+            Only send Ether (ETH) to this address.
+          </div>
+          <div className={style.mnemonicFooter}>
             <Button
               type="secondary"
               content="Back"
