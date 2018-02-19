@@ -1,4 +1,4 @@
-import {Duplex, Readable, Transform, Writable} from "readable-stream";
+import {Duplex, Readable, Transform, Writable} from 'readable-stream'
 
 export class Substream extends Transform {
   superstream: Multiplex
@@ -10,7 +10,7 @@ export class Substream extends Transform {
 
   _transform(chunk: any, encoding: any, next: (err?: any) => void): void {
     this.superstream.push({
-      name: name,
+      name,
       data: chunk,
     })
     return next()
@@ -18,9 +18,10 @@ export class Substream extends Transform {
 }
 
 export default class Multiplex extends Transform {
+  emitErrors: boolean
+
   private streams: Map<string, Duplex>
   private ignored: Set<string>
-  emitErrors: boolean
 
   constructor(emitErrors: boolean = false) {
     super()
@@ -44,12 +45,12 @@ export default class Multiplex extends Transform {
 
   createStream(name: string): Duplex {
     let substream = new Substream(this)
-    this.on("end", () => {
-      substream.emit("end")
+    this.on('end', () => {
+      substream.emit('end')
     })
     if (this.emitErrors) {
-      this.on("error", () => {
-        substream.emit("error")
+      this.on('error', () => {
+        substream.emit('error')
       })
     }
     this.streams.set(name, substream)

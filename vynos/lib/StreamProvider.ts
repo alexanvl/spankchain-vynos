@@ -1,24 +1,24 @@
-import {Duplex} from "readable-stream";
-import Payload, {ResponsePayload} from "./Payload";
+import {Duplex} from 'readable-stream'
+import Payload, {ResponsePayload} from './Payload'
 import Promise = require('bluebird')
-import Web3 = require("web3");
+import Web3 = require('web3')
 
 export default class StreamProvider extends Duplex implements Web3.Provider {
-  _callbacks: Map<string, Function>
+  _callbacks: Map<string, (val: any) => void>
   name: string
   strict: boolean
 
   constructor(name?: string, strict?: boolean) {
     super({objectMode: true})
     this._callbacks = new Map()
-    this.name = `StreamProvider at ${name}` || "StreamProvider"
+    this.name = `StreamProvider at ${name}` || 'StreamProvider'
     this.strict = strict || false
   }
 
-  sendAsync<A extends Payload, B extends ResponsePayload>(payload: A, callback: Function) {
+  sendAsync<A extends Payload, B extends ResponsePayload>(payload: A, callback: (err: any, result: any) => void) {
     this.ask<A, B>(payload).then((result: B) => {
       if (result.error) {
-        callback(result.error)
+        callback(result.error, null)
       } else {
         callback(null, result)
       }
@@ -44,7 +44,7 @@ export default class StreamProvider extends Duplex implements Web3.Provider {
 
       if (timeout > 0) {
         setTimeout(() => {
-          if (!resolved) reject(new Error("Timeout"))
+          if (!resolved) reject(new Error('Timeout'))
         }, timeout)
       }
     })
@@ -60,7 +60,7 @@ export default class StreamProvider extends Duplex implements Web3.Provider {
     // Do Nothing
   }
 
-  _write<A extends ResponsePayload>(payload: A, encoding: string, next: Function) {
+  _write<A extends ResponsePayload>(payload: A, encoding: string, next: () => void) {
     let id = payload.id
     let isResult = !!payload.result || !!payload.error
     if (isResult) {

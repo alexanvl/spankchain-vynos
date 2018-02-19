@@ -1,10 +1,10 @@
 import Promise = require('bluebird')
-import TransactionStorage from "../lib/storage/TransactionMetaStorage";
-import { WorkerState } from "./WorkerState";
-import { Store } from "redux";
+import TransactionStorage from '../lib/storage/TransactionMetaStorage'
+import { WorkerState } from './WorkerState'
+import { Store } from 'redux'
 import * as actions from './actions'
 import Transaction from '../lib/TransactionMeta'
-import TransactionState from "../lib/TransactionState";
+import TransactionState from '../lib/TransactionState'
 
 export default class TransactionService {
   storage: TransactionStorage
@@ -17,7 +17,7 @@ export default class TransactionService {
 
   addTransaction(transaction: Transaction): Promise<void> {
     return this.storage.add(transaction).then(() => {
-      this.store.dispatch(actions.setLastUpdateDb(Date.now()));
+      this.store.dispatch(actions.setLastUpdateDb(Date.now()))
     })
   }
 
@@ -28,7 +28,7 @@ export default class TransactionService {
   }
 
   checkPendingTrasactions() {
-    this.storage.pending().then((transactions)=>{
+    this.storage.pending().then((transactions) => {
       if (transactions.length) {
         this.store.dispatch(actions.setTransactionPending(true))
       } else {
@@ -43,7 +43,7 @@ export default class TransactionService {
     return new Promise((resolve, reject) => {
       this.store.subscribe(() => { // FIX ME perfomance problem
         if (resolved) {
-          return 
+          return
         }
         this.storage.byId(transaction.id).then(found => {
           if (!found) {
@@ -52,7 +52,7 @@ export default class TransactionService {
           if (found.state !== TransactionState.APPROVED && found.state !== TransactionState.REJECTED ) {
             return
           }
-          if (this.store.getState().runtime.isTransactionPending){
+          if (this.store.getState().runtime.isTransactionPending) {
             resolved = true
           }
           this.checkPendingTrasactions()

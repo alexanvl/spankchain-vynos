@@ -1,7 +1,7 @@
 import Promise = require('bluebird')
 import Datastore = require('nedb')
-import SettingStorage from "./storage/SettingStorage";
-import { default as globalEvents } from "./GlobalEvents";
+import SettingStorage from './storage/SettingStorage'
+import { default as globalEvents } from './GlobalEvents'
 import { CHANGE_NETWORK } from './constants'
 
 const settingStorage = new SettingStorage()
@@ -10,7 +10,7 @@ export default class Storage {
   datastore: Datastore
   name: string
 
-  constructor (name: string) {
+  constructor(name: string) {
     this.name = name
     this.load().catch(console.error)
     globalEvents.on(CHANGE_NETWORK, () => {
@@ -18,7 +18,7 @@ export default class Storage {
     })
   }
 
-  load (): Promise<void> {
+  load(): Promise<void> {
     return new Promise(resolve => {
       settingStorage.getNetwork().then((network: any) => {
         this.datastore = new Datastore({ filename: this.name + '_' + network.name, autoload: true })
@@ -29,7 +29,7 @@ export default class Storage {
     })
   }
 
-  ready (): Promise<Datastore> {
+  ready(): Promise<Datastore> {
     return new Promise(resolve => {
       if (this.datastore) {
         resolve(this.datastore)

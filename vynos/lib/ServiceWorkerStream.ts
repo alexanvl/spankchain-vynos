@@ -20,7 +20,7 @@ export default class ServiceWorkerStream extends Duplex {
     this.source.addEventListener('message', this.onMessage.bind(this), false)
   }
 
-  onMessage (event: MessageEvent) {
+  onMessage(event: MessageEvent) {
     let message = event.data
     if (typeof message === 'object' && message.target === this.sourceName && message.data) {
       try {
@@ -35,17 +35,17 @@ export default class ServiceWorkerStream extends Duplex {
     // Do Nothing
   }
 
-  _write(data: any, encoding: any, next: Function) {
+  _write(data: any, encoding: any, next: () => void) {
     let message = {
       target: this.targetName,
-      data: data
-    };
+      data,
+    }
     this.source.clients.matchAll({includeUncontrolled: true}).then(clients => {
       clients.forEach(client => {
         client.postMessage(message)
       })
     })
-    next();
+    next()
   }
 
 }

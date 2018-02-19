@@ -7,12 +7,12 @@ import { BROWSER_NOT_SUPPORTED_TEXT } from '../frame/constants'
 
 // DOM and Window is ready.
 export function isReady(callback: () => void) {
-  var state = document.readyState
+  let state = document.readyState
   if (state === 'complete' || state === 'interactive') {
     return setTimeout(callback, 0)
   }
 
-  document.addEventListener('DOMContentLoaded', function onLoad () {
+  document.addEventListener('DOMContentLoaded', function onLoad() {
     callback()
   })
 }
@@ -23,19 +23,19 @@ export default class Namespace {
   client?: Promise<VynosClient>
   frame: Frame
 
-  constructor (scriptElement: HTMLScriptElement, window: Window) {
+  constructor(scriptElement: HTMLScriptElement, window: Window) {
     this.scriptAddress = scriptElement.src
     this.window = window
   }
 
   // Initialize frame container for the Wallet.
   // Optional to use.
-  init (frameElement?: HTMLIFrameElement, frame?: Frame): Promise<Vynos> {
+  init(frameElement?: HTMLIFrameElement, frame?: Frame): Promise<Vynos> {
     this.client = new Promise(resolve => {
       isReady(() => {
         this.frame = frame ? frame : new Frame(this.scriptAddress, frameElement)
         this.frame.attach(this.window.document)
-        let stream = new FrameStream("vynos").toFrame(this.frame.element);
+        let stream = new FrameStream('vynos').toFrame(this.frame.element)
         let client = new VynosClient(stream)
         client.onSharedStateUpdate(state => {
           if (state.isTransactionPending) {
@@ -48,30 +48,30 @@ export default class Namespace {
     return this.client
   }
 
-  display (): void {
+  display(): void {
     this.ready().then(() => {
       this.frame.display()
     })
   }
 
-  setContainerStyle (style: CSSStyleDeclaration): void {
+  setContainerStyle(style: CSSStyleDeclaration): void {
     this.frame.setContainerStyle(style)
   }
 
-  hide (): void {
+  hide(): void {
     this.ready().then(() => {
       this.frame.hide()
     })
   }
 
-  ready (): Promise<Vynos> {
-    if ("serviceWorker" in navigator) {
+  ready(): Promise<Vynos> {
+    if ('serviceWorker' in navigator) {
       if (this.client) {
         return this.client
       } else {
         return this.init()
       }
-    }else{
+    } else {
       return Promise.reject(new Error(BROWSER_NOT_SUPPORTED_TEXT))
     }
   }

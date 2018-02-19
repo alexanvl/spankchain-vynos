@@ -1,6 +1,6 @@
-import {Duplex} from "readable-stream";
+import {Duplex} from 'readable-stream'
 
-export type PostStreamOptions = {
+export interface PostStreamOptions {
   name: string,
   target: string,
   targetWindow?: Window,
@@ -8,27 +8,27 @@ export type PostStreamOptions = {
 }
 
 export default class WorkerStream extends Duplex {
-  name: string;
-  target: string;
-  targetWindow: Window;
-  origin: string;
+  name: string
+  target: string
+  targetWindow: Window
+  origin: string
 
-  constructor (options: PostStreamOptions) {
-    super({ objectMode: true });
+  constructor(options: PostStreamOptions) {
+    super({ objectMode: true })
 
-    this.name = options.name;
-    this.target = options.target;
-    this.targetWindow = options.targetWindow || window;
-    this.origin = (options.targetWindow ? '*' : window.location.origin);
+    this.name = options.name
+    this.target = options.target
+    this.targetWindow = options.targetWindow || window
+    this.origin = (options.targetWindow ? '*' : window.location.origin)
 
     window.addEventListener('message', this.onMessage.bind(this), false)
   }
 
-  onMessage (event: MessageEvent) {
-    let message = event.data;
+  onMessage(event: MessageEvent) {
+    let message = event.data
 
-    let sameOrigin = this.origin === '*' || event.origin === this.origin;
-    let sameWindow = event.source === this.targetWindow;
+    let sameOrigin = this.origin === '*' || event.origin === this.origin
+    let sameWindow = event.source === this.targetWindow
 
     if (sameOrigin && sameWindow && typeof message === 'object') {
       if (message.target === this.name && message.data) {
@@ -41,16 +41,16 @@ export default class WorkerStream extends Duplex {
     }
   }
 
-  _read () {
+  _read() {
     // Do Nothing
   }
 
-  _write (data: any, encoding: string, next: () => void) {
+  _write(data: any, encoding: string, next: () => void) {
     let message = {
       target: this.target,
-      data: data
-    };
-    this.targetWindow.postMessage(message, this.origin);
+      data,
+    }
+    this.targetWindow.postMessage(message, this.origin)
     next()
   }
 }

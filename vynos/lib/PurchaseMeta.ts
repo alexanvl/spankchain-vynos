@@ -18,12 +18,12 @@ function openGraph(attribute: string, document: HTMLDocument): string {
 }
 
 function appleTouchIcon(document: HTMLDocument): string|undefined {
-  let links = [].slice.call(document.querySelectorAll('link')) as Array<HTMLLinkElement>
+  let links = [].slice.call(document.querySelectorAll('link')) as HTMLLinkElement[]
   let icons = links.filter(link => /apple-touch-icon/.test(link.rel))
   if (icons.length) {
     let maxSize = icons.reduce((acc, link) => {
-      let size = parseInt(link.getAttribute('sizes') as string) || 0
-      if (size > parseInt(acc.getAttribute('sizes') as string)) {
+      let size = parseInt(link.getAttribute('sizes') as string, 10) || 0
+      if (size > parseInt(acc.getAttribute('sizes') as string, 10)) {
         return link
       } else {
         return acc
@@ -34,7 +34,7 @@ function appleTouchIcon(document: HTMLDocument): string|undefined {
 }
 
 function icon(document: HTMLDocument): string|undefined {
-  let links = [].slice.call(document.querySelectorAll('link')) as Array<HTMLLinkElement>
+  let links = [].slice.call(document.querySelectorAll('link')) as HTMLLinkElement[]
   let found = links.find(link => {
     return /icon/.test(link.rel) &&
       (!link.type || link.type !== 'image/x-icon') &&
@@ -47,7 +47,7 @@ function icon(document: HTMLDocument): string|undefined {
 }
 
 function openGraphIcon(document: HTMLDocument): string|undefined {
-  let ogLinks = [].slice.call(document.querySelectorAll("meta[property='og:image']")) as Array<HTMLMetaElement>
+  let ogLinks = [].slice.call(document.querySelectorAll("meta[property='og:image']")) as HTMLMetaElement[]
   if (ogLinks.length) {
     let found = ogLinks.find(link => {
       return /logo|icon/.test(link.content)
@@ -60,7 +60,7 @@ function openGraphIcon(document: HTMLDocument): string|undefined {
   }
 }
 
-export function purchaseMetaFromDocument (document: HTMLDocument): PurchaseMeta {
+export function purchaseMetaFromDocument(document: HTMLDocument): PurchaseMeta {
   return {
     title: openGraph('title', document),
     description: openGraph('description', document),
@@ -68,6 +68,6 @@ export function purchaseMetaFromDocument (document: HTMLDocument): PurchaseMeta 
     url: document.location.href,
     origin: document.location.origin,
     icon: openGraphIcon(document),
-    siteIcon: appleTouchIcon(document) || icon(document)
+    siteIcon: appleTouchIcon(document) || icon(document),
   }
 }

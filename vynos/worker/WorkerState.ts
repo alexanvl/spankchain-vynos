@@ -1,4 +1,4 @@
-import Wallet from "ethereumjs-wallet";
+import Wallet from 'ethereumjs-wallet'
 
 export interface RuntimeState {
   wallet?: Wallet
@@ -30,18 +30,18 @@ export const INITIAL_SHARED_STATE: SharedState = {
   isLocked: true,
   isTransactionPending: 0,
   rememberPath: '/',
-  lastUpdateDb: 0
+  lastUpdateDb: 0,
 }
 
 export const INITIAL_STATE: WorkerState = {
   persistent: {
     didInit: false,
-    rememberPath: '/'
+    rememberPath: '/',
   },
   runtime: {
     isTransactionPending: 0,
-    lastUpdateDb: 0
-  }
+    lastUpdateDb: 0,
+  },
 }
 
 export function buildSharedState(state: WorkerState): SharedState {
@@ -50,6 +50,6 @@ export function buildSharedState(state: WorkerState): SharedState {
     isLocked: !state.runtime.wallet,
     isTransactionPending: state.runtime.isTransactionPending,
     rememberPath: state.persistent.rememberPath,
-    lastUpdateDb: state.runtime.lastUpdateDb
+    lastUpdateDb: state.runtime.lastUpdateDb,
   }
 }

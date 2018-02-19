@@ -20,7 +20,7 @@ function install(client: ServiceWorkerClient, registration: ServiceWorkerRegistr
     })
   }
 
-  let serviceWorker = (registration.active || registration.installing)!;
+  let serviceWorker = (registration.active || registration.installing)!
 
   serviceWorker.onstatechange = () => {
     if (serviceWorker.state === 'redundant') {
@@ -34,11 +34,11 @@ function install(client: ServiceWorkerClient, registration: ServiceWorkerRegistr
 }
 
 export function register(client: ServiceWorkerClient) {
-  if ("serviceWorker" in navigator) {
+  if ('serviceWorker' in navigator) {
     const workerSrc = 'worker.js'
-    const src = window.location.href.match(/dev=true/) ? workerSrc.replace('.js', '.dev.js') : workerSrc;
+    const src = window.location.href.match(/dev=true/) ? workerSrc.replace('.js', '.dev.js') : workerSrc
     const scriptUrl = window.location.href.replace('frame.html', src)
-    navigator.serviceWorker.register(scriptUrl, {scope: "./"}).then(registration => {
+    navigator.serviceWorker.register(scriptUrl, {scope: './'}).then(registration => {
       install(client, registration)
     }).catch(error => {
       console.error(error)
