@@ -3,7 +3,6 @@ import WorkerProxy from '../WorkerProxy'
 import {RouterState} from 'react-router-redux'
 
 export interface InitPageState {
-  didAcceptTerms: boolean
   mnemonic: string|null
 }
 
@@ -22,7 +21,6 @@ export function initialState(workerProxy: WorkerProxy): FrameState {
   return {
     temp: {
       initPage: {
-        didAcceptTerms: false,
         mnemonic: null
       },
       workerProxy: workerProxy

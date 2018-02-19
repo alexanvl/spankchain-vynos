@@ -80,7 +80,7 @@ export class Terms extends React.Component<TermsSubpageProps, TermsState> {
 function mapDispatchToProps(dispatch: Dispatch<FrameState>): TermsSubpageDispatchProps {
   return {
     didAcceptTerms: () => {
-      dispatch(actions.didAcceptTerms(true))
+      // dispatch(actions.didAcceptTerms(true))
     }
   }
 }

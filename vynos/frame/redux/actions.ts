@@ -24,10 +24,10 @@ export function setPendingHandler(state: SharedState, isTransactionPending: bool
   return { ...state, isTransactionPending: pendingDate}
 }
 
-export const didAcceptTerms: ActionCreator<boolean> = actionCreator<boolean>("temp/didAcceptTerms");
-export function didAcceptTermsHandler(state: TempState, accepted: boolean): TempState {
-  return { ...state, initPage: { ...state.initPage, didAcceptTerms: accepted }}
-}
+// export const didAcceptTerms: ActionCreator<boolean> = actionCreator<boolean>("temp/didAcceptTerms");
+// export function didAcceptTermsHandler(state: TempState, accepted: boolean): TempState {
+//   return { ...state, initPage: { ...state.initPage, didAcceptTerms: accepted }}
+// }
 
 export const didReceiveMnemonic: ActionCreator<string> = actionCreator<string>("temp/didReceiveMnemonic");
 export function didReceiveMnemonicHandler(state: TempState, mnemonic: string): TempState {
