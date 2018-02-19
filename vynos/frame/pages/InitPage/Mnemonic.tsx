@@ -41,7 +41,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, {}> {
         </div>
         <div className={style.content}>
           <WalletCard
-            width={225}
+            width={275}
             cardTitle="SpankCard"
             companyName="SpankChain"
             name="spanktoshi"
@@ -54,11 +54,12 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, {}> {
           <div className={style.seedWords}>
             {mnemonic.split(' ').map((seed, i) => (
               <div className={style.seedWord}>
-                {`${i} ${seed}`}
+                <span className={style.seedWordIndex}>{i + 1}</span>
+                {seed}
               </div>
             ))}
           </div>
-          <div>
+          <div className={style.mnemonicFooter}>
             <Button
               type="secondary"
               content="Back"

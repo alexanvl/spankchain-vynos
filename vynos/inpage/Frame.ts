@@ -24,8 +24,8 @@ export default class Frame {
       this.element = document.createElement('iframe')
       this.element.id = 'ynos_frame'
       this.element.style.borderWidth = '0px'
-      this.element.height = FRAME_HEIGHT + 'px'
-      this.element.width = FRAME_WIDTH + 'px'
+      this.element.height = '100%'
+      this.element.width = '100%'
       this.element.style.boxShadow = 'rgba(0, 0, 0, 0.1) 7px 10px 60px 10px'
 
       this.closeButton = document.createElement('div')
@@ -87,7 +87,18 @@ export default class Frame {
     if (containerStyle.bottom) this.containerElement.style.bottom = containerStyle.bottom
   }
 
-  display() {
+  displayFull() {
+    this.containerElement.style.right = '0px'
+    this.containerElement.style.width = '100vw'
+    this.containerElement.style.height = '100vh'
+    this.containerElement.style.marginTop = '0px'
+    this.element.style.opacity = '1'
+  }
+
+  display () {
+    this.containerElement.style.right = '110px'
+    this.containerElement.style.height = (FRAME_HEIGHT + CLOSE_HEIGHT).toString() + 'px'
+    this.containerElement.style.width = FRAME_WIDTH + 'px'
     this.containerElement.style.marginTop = '0px'
     this.element.style.opacity = '1'
   }

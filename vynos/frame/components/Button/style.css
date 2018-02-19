@@ -1,12 +1,12 @@
 .btn {
   transition: 200ms ease-in-out;
-  padding: .5rem 1rem;
+  padding: .6rem 1rem;
   border-radius: 2rem;
-  border: 2px solid transparent;
+  border: 1px solid transparent;
   min-width: 8rem;
   cursor: pointer;
   outline: none;
-  font-size: .8rem;
+  font-size: 1rem;
 }
 
 .btn[disabled] {
@@ -16,16 +16,16 @@
 
 .primary,
 .primary[disabled]:hover {
-  background-color: rgb(255, 3, 128);
+  background-color: rgb(255, 59, 129);
   color: #fff;
 }
 
 .primary:hover {
-  background-color: rgba(255, 3, 128, .85);
+  background-color: rgba(255, 59, 129, .85);
 }
 
 .primary:active {
-  background-color: rgb(255, 3, 128);
+  background-color: rgb(255, 59, 129);
 }
 
 .secondary,
@@ -48,7 +48,7 @@
 }
 
 .primary.inverse {
-  color: rgb(255, 3, 128);
+  color: rgb(255, 59, 129);
   background-color: #fff;
 }
 
@@ -62,11 +62,12 @@
 
 .secondary.inverse {
   color: rgb(255, 255, 255);
-  border-color: rgba(255, 255, 255);
+  border-color: rgb(255, 255, 255) !important;
 }
 
 .secondary.inverse:hover {
   color: rgba(255, 255, 255, .8);
+  background-color: rgba(255, 255, 255, .05);
 }
 
 .secondary.inverse:active {

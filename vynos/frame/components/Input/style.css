@@ -5,12 +5,13 @@
 
 .input {
   border: none;
-  border-bottom: 2px solid #fff !important;
+  border-bottom: 1px solid #fff !important;
   background-color: transparent;
   color: #fff;
   padding: .7rem 0;
   outline: none;
-  font-size: .8rem;
+  font-size: .9rem;
+  font-family: monospace;
 }
 
 .input.error {
@@ -26,7 +27,7 @@
 }
 
 .input::placeholder {
-  color: rgba(255, 255, 255, .4);
+  color: rgba(255, 255, 255, .7);
 }
 
 .input[disabled] {

@@ -110,7 +110,7 @@ function webpackConfig (entry, devSupplement) {
           ]
         },
         {
-          test: /\.(eot|woff|woff2|svg|ttf|png)([\?]?.*)$/,
+          test: /\.(eot|woff|woff2|svg|ttf|png|otf)([\?]?.*)$/,
           loader: 'file-loader'
         }
       ]

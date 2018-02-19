@@ -148,27 +148,29 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
         </div>
         <div className={style.content}>
           <WalletCard
-            width={225}
+            width={275}
             cardTitle="SpankCard"
             companyName="SpankChain"
             name="spanktoshi"
             className={style.funnelWalletCard}
           />
-          <div className={style.funnelTitle}>Create Wallet</div>
+          <div className={style.funnelTitle}>Create SpankCard</div>
           <TextBox className={style.passwordTextBox}>
             Your SpankWallet allows you to tip without any delay and to save you crypto fees by bundling payments.
           </TextBox>
           <Input
             placeholder="New Password"
             type="password"
+            className={style.passwordInput}
             onChange={this.handleChangePassword}
           />
           <Input
             placeholder="Confirm Password"
             type="password"
+            className={style.passwordInput}
             onChange={this.handleChangePasswordConfirmation}
           />
-          <div>
+          <div className={style.funnelFooter}>
             <Button
               type="secondary"
               content="Restore SpankWallet"

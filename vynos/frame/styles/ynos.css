@@ -586,7 +586,7 @@ Channels page
   height: 100%;
   display: flex;
   flex-flow: column nowrap;
-  background-color: rgb(255, 3, 128);
+  background-color: #ff3b81;
 }
 
 .header {
@@ -629,12 +629,13 @@ Channels page
 }
 
 .passwordTextBox {
-  width: 350px;
+  width: 405px;
+  margin-bottom: 3.6rem;
 }
 
 .seedPhraseText {
   color: #fff;
-  width: 370px;
+  width: 425px;
   text-align: center;
 }
 
@@ -642,15 +643,58 @@ Channels page
   display: flex;
   flex-flow: row wrap;
   width: 600px;
+  margin: 2rem 0;
 }
 
 .seedWord {
-  border: 2px solid white;
+  position: relative;
+  border: 1px solid white;
   border-radius: 24px;
-  padding: .5rem 2rem;
+  padding: .5rem 1rem;
   flex: 1 0 20%;
   margin: .5rem;
   font-size: 1rem;
   text-align: center;
   color: #fff;
+  font-family: monospace;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.seedWordIndex {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 12px;
+  font-size: .8rem;
+  display: flex;
+  flex-flow: row;
+  align-items: center;
+}
+
+.passwordInput {
+  width: 350px;
+}
+
+.funnelFooter {
+  width: 380px;
+  display: flex;
+  flex-flow: row nowrap;
+  margin-top: 3.2rem;
+}
+
+.funnelFooter button {
+  flex: 1 1 50%;
+  margin: 12px;
+}
+
+.mnemonicFooter {
+  width: 300px;
+  display: flex;
+  flex-flow: row nowrap;
+}
+
+.mnemonicFooter button {
+  margin: .5rem;
+  flex: 1 1 50%;
 }

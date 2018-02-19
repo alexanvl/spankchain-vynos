@@ -3,6 +3,7 @@ import {connect} from "react-redux";
 import {FrameState} from "../../redux/FrameState";
 import Password from './Password'
 import Mnemonic from './Mnemonic'
+import Deposit from './Deposit'
 
 export interface InitPageProps {
   mnemonic: string|null
@@ -15,7 +16,7 @@ const InitPage: React.SFC<InitPageProps> = (props) => {
   }
 
   if (props.showInitialDeposit) {
-    return <div>Make Deposit man</div>
+    return <Deposit />
   }
 
   return <Password />

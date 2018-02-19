@@ -15,10 +15,10 @@ const Input: React.SFC<any> = function(props) {
   } = props
 
   return (
-    <div className={s.wrapper}>
+    <div className={classnames(s.wrapper, className)}>
       <input
         type={type}
-        className={classnames(s.input, className, {
+        className={classnames(s.input, {
           [s.error]: errorMessage,
         })}
         placeholder={placeholder}

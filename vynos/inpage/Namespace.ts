@@ -48,10 +48,16 @@ export default class Namespace {
     return this.client
   }
 
-  display(): void {
-    this.ready().then(() => {
-      this.frame.display()
-    })
+  display (): void {
+    this.ready()
+      .then(client => client.getSharedState())
+      .then(({ result: { didInit } }) => {
+        if (!didInit) {
+          this.frame.displayFull()
+        } else {
+          this.frame.display()
+        }
+      })
   }
 
   setContainerStyle(style: CSSStyleDeclaration): void {
