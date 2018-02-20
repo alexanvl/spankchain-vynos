@@ -57,6 +57,7 @@
     "webpack-package-loaders-plugin": "^3.0.0"
   },
   "dependencies": {
+    "@types/classnames": "^2.2.3",
     "bip39": "^2.3.1",
     "bluebird": "^3.5.0",
     "browser-passworder": "^2.0.3",
