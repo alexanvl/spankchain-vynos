@@ -1,11 +1,14 @@
-import * as React from "react";
+import * as React from "react"
 import Web3 = require('web3')
-import {connect} from "react-redux";
+import {connect} from "react-redux"
 import {Dispatch} from 'redux'
-import {MouseEvent} from "react";
-import {FrameState} from "../../redux/FrameState";
-import WorkerProxy from "../../WorkerProxy";
-import * as actions from "../../redux/actions";
+import {MouseEvent} from "react"
+import * as classnames from 'classnames'
+import * as copy from 'copy-to-clipboard'
+import * as qr from 'qr-image'
+import {FrameState} from "../../redux/FrameState"
+import WorkerProxy from "../../WorkerProxy"
+import * as actions from "../../redux/actions"
 import Button from "../../components/Button/index"
 import TextBox from "../../components/TextBox/index"
 import Input from "../../components/Input/index"
@@ -13,12 +16,18 @@ import WalletCard from "../../components/WalletCard/index"
 import CTAInput from "../../components/CTAInput/index"
 const style = require('../../styles/ynos.css')
 
-export interface DepositProps {
+export interface DepositStateProps {
   web3?: Web3
 }
 
 export interface DepositStates {
   address: string
+}
+
+export type DepositProps = DepositStateProps & DepositDispatchProps
+
+export interface DepositDispatchProps {
+  didAcknowledgeDeposit: () => void
 }
 
 export class Deposit extends React.Component<DepositProps, DepositStates> {
@@ -37,6 +46,12 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
         this.setState({ address })
       })
     }
+  }
+
+  renderQR () {
+    let pngBuffer = qr.imageSync(this.state.address, {type: 'png', margin: 1}) as Buffer
+    let dataURI = 'data:image/png;base64,' + pngBuffer.toString('base64')
+    return <img className={classnames('react-qr', style.qrCode)} src={dataURI} />
   }
 
   render () {
@@ -62,7 +77,7 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
             className={style.ctaInput}
             value={this.state.address}
             ctaContent={() => (
-              <div className={style.ctaContentWrapper}>
+              <div className={style.ctaContentWrapper} onClick={() => copy(this.state.address)}>
                 <div className={style.ctaIcon} />
                 <span className={style.ctaText}>Copy</span>
               </div>
@@ -80,18 +95,41 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
             <Button
               content="Next"
               isInverse
+              onClick={this.props.didAcknowledgeDeposit}
             />
           </div>
         </div>
+        {this.renderQR()}
       </div>
     )
   }
 }
 
-function mapStateToProps(state: FrameState): DepositProps {
+function mapStateToProps(state: FrameState): DepositStateProps {
   return {
     web3: state.temp.workerProxy.web3,
   }
 }
 
-export default connect(mapStateToProps)(Deposit)
+function mapDispatchToProps(dispatch: Dispatch<FrameState>): DepositDispatchProps {
+  return {
+    didAcknowledgeDeposit: () => {
+      dispatch(actions.didAcknowledgeDeposit(''))
+      const url = window.location != window.parent.location
+        ? document.referrer
+        : document.location.href;
+
+      function get_domain_from_url(url: string) {
+        const a = document.createElement('a')
+        a.setAttribute('href', url);
+        return (a as any).origin;
+      }
+
+      window.parent.postMessage({
+        type: 'vynos/parent/hideFull'
+      }, get_domain_from_url(url))
+    }
+  }
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Deposit)

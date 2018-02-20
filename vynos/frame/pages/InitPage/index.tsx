@@ -11,13 +11,12 @@ export interface InitPageProps {
 }
 
 const InitPage: React.SFC<InitPageProps> = (props) => {
-  if (props.mnemonic) {
-    return <Deposit />
-    // return <Mnemonic />
-  }
-
   if (props.showInitialDeposit) {
     return <Deposit />
+  }
+
+  if (props.mnemonic) {
+    return <Mnemonic />
   }
 
   return <Password />

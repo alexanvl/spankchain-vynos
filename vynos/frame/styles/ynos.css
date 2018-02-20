@@ -747,3 +747,15 @@ Channels page
 .ctaInput {
   margin: 3rem 0 1.2rem;
 }
+
+.qrCode {
+  width: 10rem;
+  height: 10rem;
+  box-shadow: 0px 8px 24px 4px rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+  padding: .5rem;
+  background-color: #fff;
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+}

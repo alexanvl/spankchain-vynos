@@ -31,12 +31,33 @@ export default class Namespace {
   // Initialize frame container for the Wallet.
   // Optional to use.
   init(frameElement?: HTMLIFrameElement, frame?: Frame): Promise<Vynos> {
+    if (this.client) {
+      return this.client
+    }
+
     this.client = new Promise(resolve => {
       isReady(() => {
         this.frame = frame ? frame : new Frame(this.scriptAddress, frameElement)
         this.frame.attach(this.window.document)
         let stream = new FrameStream('vynos').toFrame(this.frame.element)
         let client = new VynosClient(stream)
+
+        window.onmessage = (e: any) => {
+          const { data } = e
+
+          if (!data || !data.type) {
+            return
+          }
+
+          switch (data.type) {
+            case 'vynos/parent/hideFull':
+              this.frame.hideFull()
+              return
+            default:
+              return
+          }
+        }
+
         client.onSharedStateUpdate(state => {
           if (state.isTransactionPending) {
             this.display()

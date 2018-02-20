@@ -31,7 +31,12 @@ export function didReceiveMnemonicHandler(state: TempState, mnemonic: string): T
 
 export const didStoreMnemonic: ActionCreator<string> = actionCreator<string>("temp/didStoreMnemonic");
 export function didStoreMnemonicHandler(state: TempState, mnemonic: string): TempState {
-  return { ...state, initPage: { ...state.initPage, mnemonic: null, showInitialDeposit: true }}
+  return { ...state, initPage: { ...state.initPage, showInitialDeposit: true }}
+}
+
+export const didAcknowledgeDeposit: ActionCreator<string> = actionCreator<string>("temp/didAcknowledgeDeposit");
+export function didAcknowledgeDepositHandler(state: TempState, mnemonic: string): TempState {
+  return { ...state, initPage: { ...state.initPage, mnemonic: null, showInitialDeposit: false }}
 }
 
 export const setWorkerProxy: ActionCreator<WorkerProxy> = actionCreator<WorkerProxy>("temp/setWorkerProxy")
