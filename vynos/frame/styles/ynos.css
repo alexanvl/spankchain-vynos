@@ -718,6 +718,25 @@ Channels page
   font-size: .8rem;
 }
 
+.ctaContentWrapper {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+.ctaIcon {
+  background-image: url(./images/copy.svg);
+  height: 1rem;
+  width: 1rem;
+  background-repeat: no-repeat;
+  background-size: 90%;
+  background-position: center 2px;
+  margin: 0 4px;
+}
+
+.ctaText {
+  font-size: .9rem;
+}
 
 .mnemonicWarning {
   color: #fff;
@@ -726,26 +745,5 @@ Channels page
 }
 
 .ctaInput {
-  display: flex;
-  flex-flow: row nowrap;
-  border: 1px solid #fff;
-  border-radius: 2rem;
-  align-items: center;
-  color: #fff;
   margin: 3rem 0 1.2rem;
-}
-
-.ctaInputValue {
-  padding: .5rem 0 .5rem 1rem;
-  font-weight: bold;
-  font-family: CartographMonoCF;
-}
-
-.ctaInputText {
-  padding: .5rem 4rem;
-  background: #fff;
-  color: #ff3b81;
-  border-radius: 2rem;
-  margin-left: 1rem;
-  cursor: pointer;
 }

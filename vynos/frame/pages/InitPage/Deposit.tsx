@@ -10,7 +10,7 @@ import Button from "../../components/Button/index"
 import TextBox from "../../components/TextBox/index"
 import Input from "../../components/Input/index"
 import WalletCard from "../../components/WalletCard/index"
-import Logo from '../../components/Logo'
+import CTAInput from "../../components/CTAInput/index"
 const style = require('../../styles/ynos.css')
 
 export interface DepositProps {
@@ -58,10 +58,16 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
           <div className={style.seedPhraseText}>
             This is your SpankWallet address. You can copy it and send crypto from places like Coinbase.
           </div>
-          <div className={style.ctaInput}>
-            <div className={style.ctaInputValue}>{this.state.address}</div>
-            <div className={style.ctaInputText}>Copy</div>
-          </div>
+          <CTAInput
+            className={style.ctaInput}
+            value={this.state.address}
+            ctaContent={() => (
+              <div className={style.ctaContentWrapper}>
+                <div className={style.ctaIcon} />
+                <span className={style.ctaText}>Copy</span>
+              </div>
+            )}
+          />
           <div className={style.mnemonicWarning}>
             Only send Ether (ETH) to this address.
           </div>

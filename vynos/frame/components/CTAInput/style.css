@@ -1,0 +1,26 @@
+.ctaInput {
+  display: flex;
+  flex-flow: row nowrap;
+  border: 1px solid #fff;
+  border-radius: 2rem;
+  align-items: center;
+  color: #fff;
+  padding-left: 1rem;
+}
+
+.ctaInputValue {
+  padding: .5rem 0 .5rem 1rem;
+  font-weight: bold;
+  font-family: CartographMonoCF;
+}
+
+.ctaInputText {
+  padding: .5rem 4rem;
+  background: #fff;
+  color: #ff3b81;
+  border-radius: 2rem;
+  margin-left: 1rem;
+  cursor: pointer;
+  font-size: .8rem;
+  font-weight: 600;
+}
