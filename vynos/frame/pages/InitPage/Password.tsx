@@ -5,7 +5,6 @@ import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import {connect} from 'react-redux'
 import * as actions from "../../redux/actions";
-// import {Button, Container, Divider, Form, Header, GridRow} from 'semantic-ui-react'
 import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../../constants';
 import RestorePage from "../RestorePage";
 import Logo from "../../components/Logo";
@@ -68,7 +67,6 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
   }
 
   handleSubmit (e: MouseEvent<HTMLFormElement>) {
-    console.log(this.isValid(), this.state.password)
     if (this.isValid() && this.state.password) {
       return this.props.genKeyring(this.props.workerProxy, this.state.password)
     }

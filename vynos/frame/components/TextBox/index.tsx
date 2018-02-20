@@ -1,4 +1,4 @@
-import * as React from 'react' // eslint-disable-line no-unused-vars
+import * as React from 'react'
 import * as classnames from 'classnames'
 
 const s = require('./style.css')

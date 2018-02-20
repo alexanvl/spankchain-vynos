@@ -9,6 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "skipLibCheck": true,
     "jsx": "react",
     "target": "es5",
     "module": "commonjs",

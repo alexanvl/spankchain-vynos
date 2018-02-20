@@ -5,7 +5,6 @@ import {MouseEvent} from "react";
 import {FrameState} from "../../redux/FrameState";
 import WorkerProxy from "../../WorkerProxy";
 import * as actions from "../../redux/actions";
-// import { Container, Button, Form, Header, Divider } from 'semantic-ui-react'
 import Button from "../../components/Button/index"
 import TextBox from "../../components/TextBox/index"
 import Input from "../../components/Input/index"
