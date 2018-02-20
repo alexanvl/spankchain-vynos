@@ -117,17 +117,17 @@ function mapDispatchToProps(dispatch: Dispatch<FrameState>): DepositDispatchProp
       dispatch(actions.didAcknowledgeDeposit(''))
       const url = window.location != window.parent.location
         ? document.referrer
-        : document.location.href;
-
-      function get_domain_from_url(url: string) {
-        const a = document.createElement('a')
-        a.setAttribute('href', url);
-        return (a as any).origin;
-      }
+        : document.location.href
 
       window.parent.postMessage({
         type: 'vynos/parent/hideFull'
-      }, get_domain_from_url(url))
+      }, getDomain(url))
+
+      function getDomain(url: string) {
+        const a = document.createElement('a')
+        a.setAttribute('href', url)
+        return (a as any).origin
+      }
     }
   }
 }
