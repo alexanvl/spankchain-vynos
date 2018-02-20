@@ -65,9 +65,15 @@ export default class Namespace {
   }
 
   hide(): void {
-    this.ready().then(() => {
-      this.frame.hide()
-    })
+    this.ready()
+      .then(client => client.getSharedState())
+      .then(({ result: { didInit } }) => {
+        if (!didInit) {
+          this.frame.hideFull()
+        } else {
+          this.frame.hide()
+        }
+      })
   }
 
   ready(): Promise<Vynos> {

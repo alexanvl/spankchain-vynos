@@ -596,7 +596,7 @@ Channels page
 
 .progressDots {
   flex: 1 0 auto;
-  color: white;
+  color: #fff;
 }
 
 .hamburger {
@@ -619,8 +619,8 @@ Channels page
 
 .funnelTitle {
   margin-bottom: 2rem;
-  font-size: 2rem;
-  color: white;
+  font-size: 1.8rem;
+  color: #fff;
   font-weight: 600;
 }
 
@@ -630,13 +630,14 @@ Channels page
 
 .passwordTextBox {
   width: 405px;
-  margin-bottom: 3.6rem;
+  margin-bottom: 2rem;
 }
 
 .seedPhraseText {
   color: #fff;
   width: 425px;
   text-align: center;
+  font-size: 1rem;
 }
 
 .seedWords {
@@ -648,15 +649,15 @@ Channels page
 
 .seedWord {
   position: relative;
-  border: 1px solid white;
+  border: 1px solid #fff;
   border-radius: 24px;
-  padding: .5rem 1rem;
+  padding: .3rem 1rem;
   flex: 1 0 20%;
   margin: .5rem;
   font-size: 1rem;
   text-align: center;
   color: #fff;
-  font-family: monospace;
+  font-family: CartographMonoCF;
   font-weight: bold;
   text-transform: uppercase;
 }
@@ -680,7 +681,7 @@ Channels page
   width: 380px;
   display: flex;
   flex-flow: row nowrap;
-  margin-top: 3.2rem;
+  margin-top: 2rem;
 }
 
 .funnelFooter button {
@@ -699,31 +700,50 @@ Channels page
   flex: 1 1 50%;
 }
 
+.ackMnemonics {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  text-align: center;
+  margin: 0 auto 2rem;
+}
+
+.ackCheckbox {
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+.ackText {
+  color: #fff;
+  font-size: .8rem;
+}
+
+
 .mnemonicWarning {
-  color: white;
-  margin: 1.2rem 0 3rem;
-  font-size: 1rem;
+  color: #fff;
+  margin: 0 0 3rem;
+  font-size: .8rem;
 }
 
 .ctaInput {
   display: flex;
   flex-flow: row nowrap;
-  border: 1px solid white;
+  border: 1px solid #fff;
   border-radius: 2rem;
   align-items: center;
-  color: white;
+  color: #fff;
   margin: 3rem 0 1.2rem;
 }
 
 .ctaInputValue {
   padding: .5rem 0 .5rem 1rem;
   font-weight: bold;
-  font-family: monospace;
+  font-family: CartographMonoCF;
 }
 
 .ctaInputText {
   padding: .5rem 4rem;
-  background: white;
+  background: #fff;
   color: #ff3b81;
   border-radius: 2rem;
   margin-left: 1rem;

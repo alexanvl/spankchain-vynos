@@ -7,6 +7,7 @@ import WorkerProxy from "../../WorkerProxy";
 import * as actions from "../../redux/actions";
 import Button from "../../components/Button/index"
 import TextBox from "../../components/TextBox/index"
+import Checkbox from "../../components/Checkbox/index"
 import Input from "../../components/Input/index"
 import WalletCard from "../../components/WalletCard/index"
 import Logo from '../../components/Logo'
@@ -21,12 +22,24 @@ export interface MnemonicDispatchProps {
   saveMnemonic: (workerProxy: WorkerProxy) => void
 }
 
+export interface MnemonicStates {
+  acknowledged: boolean
+}
+
 
 export type MnemonicSubpageProps = MnemonicStateProps & MnemonicDispatchProps
 
-export class Mnemonic extends React.Component<MnemonicSubpageProps, {}> {
+export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStates> {
+  constructor(props: MnemonicSubpageProps) {
+    super(props)
+    this.state = {
+      acknowledged: false
+    }
+  }
   handleSubmit () {
-    this.props.saveMnemonic(this.props.workerProxy)
+    if (this.state.acknowledged) {
+      this.props.saveMnemonic(this.props.workerProxy)
+    }
   }
 
   render () {
@@ -58,6 +71,13 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, {}> {
               </div>
             ))}
           </div>
+          <div className={style.ackMnemonics}>
+            <Checkbox
+              className={style.ackCheckbox}
+              onChange={(e: any) => this.setState({ acknowledged: e.target.checked })}
+            />
+            <div className={style.ackText}>I've copied the backup words somewhere safe and secret.</div>
+          </div>
           <div className={style.mnemonicFooter}>
             <Button
               type="secondary"
@@ -68,6 +88,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, {}> {
               content="Next"
               onClick={this.handleSubmit.bind(this)}
               isInverse
+              disabled={!this.state.acknowledged}
             />
           </div>
         </div>

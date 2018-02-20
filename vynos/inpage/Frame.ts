@@ -88,6 +88,8 @@ export default class Frame {
   }
 
   displayFull() {
+    this.containerElement.style.transition = 'none'
+    this.element.style.transition = 'none'
     this.containerElement.style.right = '0px'
     this.containerElement.style.width = '100vw'
     this.containerElement.style.height = '100vh'
@@ -96,6 +98,8 @@ export default class Frame {
   }
 
   display () {
+    this.containerElement.style.transition = 'margin-top 0.7s'
+    this.element.style.transition = 'opacity 1s'
     this.containerElement.style.right = '110px'
     this.containerElement.style.height = (FRAME_HEIGHT + CLOSE_HEIGHT).toString() + 'px'
     this.containerElement.style.width = FRAME_WIDTH + 'px'
@@ -103,7 +107,16 @@ export default class Frame {
     this.element.style.opacity = '1'
   }
 
+  hideFull() {
+    this.containerElement.style.transition = 'none'
+    this.element.style.transition = 'none'
+    this.containerElement.style.marginTop = '0px'
+    this.element.style.opacity = '0'
+  }
+
   hide() {
+    this.containerElement.style.transition = 'margin-top 0.7s'
+    this.element.style.transition = 'opacity 1s'
     this.containerElement.style.marginTop = '-500px'
     this.element.style.opacity = '0'
   }

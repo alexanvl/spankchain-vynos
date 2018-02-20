@@ -32,12 +32,13 @@ const WalletCard: React.SFC<any> = function(props) {
         height: height + 'px',
       }}
     >
-      <div className={s.top} style={{ backgroundColor, color }}>
+      <div className={s.top} style={{ color }}>
         <div
           className={s.cardTitle}
           style={{
             fontSize: titleSize + 'px',
             lineHeight: titleSize + 'px',
+            color,
           }}
         >
           {cardTitle}
@@ -48,6 +49,7 @@ const WalletCard: React.SFC<any> = function(props) {
             style={{
               fontSize: companyNameSize + 'px',
               lineHeight: companyNameSize + 'px',
+              color,
             }}
           >
             by {companyName}
@@ -60,6 +62,7 @@ const WalletCard: React.SFC<any> = function(props) {
           style={{
             fontSize: companyNameSize + 'px',
             lineHeight: companyNameSize + 'px',
+            color,
           }}
         >
           {name}
@@ -69,6 +72,7 @@ const WalletCard: React.SFC<any> = function(props) {
           style={{
             fontSize: currencySize + 'px',
             lineHeight: currencySize + 'px',
+            color,
           }}>
           {currency}
         </div>
