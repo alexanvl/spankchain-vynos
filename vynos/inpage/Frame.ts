@@ -28,7 +28,7 @@ export default class Frame {
       this.coverElement.style.position = 'fixed'
       this.coverElement.style.width = '100vw'
       this.coverElement.style.height = '100vh'
-      this.coverElement.style.backgroundColor = 'rgba(0, 0, 0, .5)'
+      this.coverElement.style.backgroundColor = 'rgba(0, 0, 0, .7)'
       this.coverElement.style.top = '0'
       this.coverElement.style.left = '0'
       this.coverElement.style.zIndex = '100'
@@ -150,7 +150,7 @@ export default class Frame {
     this.setWalletCard()
     this.element.style.opacity = '1'
     this.containerElement.style.marginTop = '0px'
-    this.containerElement.appendChild(this.coverElement)
+    ctx.coverElement.style.display = 'block'
     setTimeout(() => {
       ctx.coverElement.style.opacity = '1'
     }, 16)
@@ -164,8 +164,8 @@ export default class Frame {
     this.coverElement.style.opacity = '0'
 
     setTimeout(() => {
-      ctx.containerElement.removeChild(this.coverElement)
-    }, 500)
+      ctx.coverElement.style.display = 'none'
+    }, 250)
   }
 
   hide() {
@@ -176,7 +176,7 @@ export default class Frame {
     this.coverElement.style.opacity = '0'
 
     setTimeout(() => {
-      ctx.containerElement.removeChild(this.coverElement)
-    }, 500)
+      ctx.coverElement.style.display = 'none'
+    }, 250)
   }
 }
