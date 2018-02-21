@@ -2,29 +2,62 @@ import * as React from 'react'
 import WalletMenu, {nameByPath} from './WalletMenu'
 import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
+import Web3 = require('web3')
+import WorkerProxy from '../../WorkerProxy'
 // import DashboardSubpage from "./DashboardSubpage";
 // import Channels from "../../components/Account/Channels/index"
 // import Network from "../../components/Account/Network/index"
 // import Preferences from "../../components/Account/Preferences/index"
 // import TransactionStorage from "../../../lib/storage/TransactionMetaStorage"
-import Button from "../../components/Button/index"
+import Button from '../../components/Button/index'
+import CTAInput from '../../components/CTAInput/index'
+import * as qr from 'qr-image'
+import * as copy from 'copy-to-clipboard'
 
 const s = require('./styles.css')
 
 export interface WalletPageStateProps {
-  path: string
   name: string
+  path: string
+  web3: Web3
+  workerProxy: WorkerProxy
 }
 
 export interface WalletPageState {
+  address: string
+  balance: string
   sendShown: boolean
 }
 
 export class WalletPage extends React.Component<WalletPageStateProps, WalletPageState> {
+  updateBalanceTimer: any;
 
   constructor (props: any) {
     super(props);
-    this.state = {sendShown: false};
+    this.state = {
+      address: '',
+      balance: '0',
+      sendShown: false,
+    };
+  }
+
+  componentDidMount () {
+    if (this.props.web3) {
+      let web3 = this.props.web3
+      web3.eth.getAccounts((err, accounts) => {
+        let address = accounts[0]
+        this.updateBalanceTimer = setInterval(() => {
+          web3.eth.getBalance(address, (err, balance) => {
+            this.setState({
+              balance: web3.fromWei(balance, 'ether').toString()
+            })
+          })
+        }, 500)
+        this.setState({
+          address: address
+        })
+      })
+    }
   }
 
   // renderSubpage () {
@@ -49,27 +82,67 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   //   })
   // }
 
+  renderQR () {
+    let pngBuffer = qr.imageSync(this.state.address, {type: 'png', margin: 1}) as Buffer
+    let dataURI = 'data:image/png;base64,' + pngBuffer.toString('base64')
+
+    return (
+      <img className={s.walletQR} src={dataURI} />
+    )
+  }
+
+  renderWalletFundsDescription() {
+    return Number(this.state.balance) === 0 && (
+      <div className={s.walletDescriptionWrapper}>
+        <div className={s.walletDescriptionHeader}>Not enough funds in your Wallet</div>
+        <div className={s.walletDescription}>If you want to tip them titties you have to send Ether to your SpankWallet. See how to do this on Coinbase</div>
+        <div className={s.walletAddressWrapper}>
+          <CTAInput
+            className={s.ctaInput}
+            value={this.state.address}
+            ctaContent={() => (
+              <div className={s.ctaContentWrapper} onClick={() => copy(this.state.address)}>
+                <div className={s.ctaIcon} />
+                <span className={s.ctaText}>Copy</span>
+              </div>
+            )}
+          />
+        </div>
+        <div className={s.walletQRWrapper}>
+          <div className={s.walletQRHeader}>Only send Ether (ETH) to this address.</div>
+          {this.renderQR()}
+        </div>
+      </div>
+    )
+  }
+
   render () {
     return (
-      <div className={s.walletCard}>
-        <div className={s.walletFunds}>
-          <div className={s.walletFundsHeader}>Wallet Funds</div>
-          <div className={s.walletBalance}>$0</div>
+      <div className={s.walletWrapper}>
+        <div className={s.walletCard}>
+          <div className={s.walletFunds}>
+            <div className={s.walletFundsHeader}>Wallet Funds</div>
+            <div className={s.walletBalance}>${this.state.balance}</div>
+          </div>
+          <div className={s.walletActions}>
+            <Button type="secondary" content="Copy Address" isMini />
+            <Button type="secondary" content="Receive Ether" isMini />
+            <Button type="secondary" content="Send Ether" isMini />
+          </div>
         </div>
-        <div className={s.walletActions}>
-          <Button type="secondary" content="Copy Address" isMini />
-          <Button type="secondary" content="Receive Ether" isMini />
-          <Button type="secondary" content="Send Ether" isMini />
-        </div>
+        {this.renderWalletFundsDescription()}
       </div>
     )
   }
 }
 
 function mapStateToProps(state: FrameState): WalletPageStateProps {
+  let workerProxy = state.temp.workerProxy!
   return {
+    name: nameByPath(state.shared.rememberPath),
     path: state.shared.rememberPath,
-    name: nameByPath(state.shared.rememberPath)
+    web3: workerProxy.getWeb3(),
+    workerProxy: workerProxy,
   }
 }
 

@@ -51,3 +51,39 @@
   font-size: .8rem;
   padding: .35rem;
 }
+
+.walletDescriptionWrapper {
+  background-color: #f0f0f0;
+  padding: 2rem 4rem;
+}
+
+.walletDescriptionHeader {
+  font-size: 1rem;
+  margin-bottom: 1.1rem;
+  font-weight: 600;
+  line-height: 1.17;
+  letter-spacing: 0.2px;
+  color: #797979;
+}
+
+.walletDescription {
+  font-size: 0.8rem;
+  color: #797979;
+  line-height: normal;
+}
+
+.walletQRHeader {
+  display: block;
+  font-size: 0.7rem;
+  color: #797979;
+  line-height: normal;
+}
+
+.walletQR {
+  display: flex;
+  margin-left: auto;
+}
+
+.walletAddressWrapper {
+  margin: 1.1rem 0;
+}
