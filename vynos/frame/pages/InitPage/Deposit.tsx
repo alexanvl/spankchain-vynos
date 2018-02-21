@@ -119,6 +119,9 @@ function mapDispatchToProps(dispatch: Dispatch<FrameState>): DepositDispatchProp
       postMessage(window, {
         type: 'vynos/parent/hideFull',
       })
+      postMessage(window, {
+        type: 'vynos/parent/signupComplete',
+      })
     }
   }
 }
