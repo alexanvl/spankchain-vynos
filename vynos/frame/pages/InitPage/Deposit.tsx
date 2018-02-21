@@ -6,6 +6,7 @@ import {MouseEvent} from "react"
 import * as classnames from 'classnames'
 import * as copy from 'copy-to-clipboard'
 import * as qr from 'qr-image'
+import postMessage from "../../lib/postMessage"
 import {FrameState} from "../../redux/FrameState"
 import WorkerProxy from "../../WorkerProxy"
 import * as actions from "../../redux/actions"
@@ -115,19 +116,9 @@ function mapDispatchToProps(dispatch: Dispatch<FrameState>): DepositDispatchProp
   return {
     didAcknowledgeDeposit: () => {
       dispatch(actions.didAcknowledgeDeposit(''))
-      const url = window.location !== window.parent.location
-        ? document.referrer
-        : document.location.href
-
-      window.parent.postMessage({
-        type: 'vynos/parent/hideFull'
-      }, getDomain(url))
-
-      function getDomain(url: string) {
-        const a = document.createElement('a')
-        a.setAttribute('href', url)
-        return (a as any).origin
-      }
+      postMessage(window, {
+        type: 'vynos/parent/hideFull',
+      })
     }
   }
 }

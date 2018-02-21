@@ -1,3 +1,5 @@
+import postMessage from '../frame/lib/postMessage'
+
 const FRAME_HEIGHT = 440
 const FRAME_WIDTH = 480
 const CLOSE_HEIGHT = 0
@@ -35,19 +37,9 @@ export default class Frame {
       this.coverElement.style.transition = 'opacity 500ms'
 
       this.coverElement.addEventListener('click', () => {
-        const url = window.location !== window.parent.location
-          ? document.referrer
-          : document.location.href
-
-        window.parent.postMessage({
+        postMessage(window, {
           type: 'vynos/parent/hide',
-        }, getDomain(url))
-
-        function getDomain(url: string) {
-          const a = document.createElement('a')
-          a.setAttribute('href', url)
-          return (a as any).origin
-        }
+        })
       })
 
       let style = '#vynos_frame_img_close_button{width: 40px;bottom: 3px;position: absolute;left: 50%;margin-left: -20px;opacity:0;transition: opacity 1s}' +
