@@ -81,7 +81,7 @@ export default class Frame {
     this.containerElement.style.right = '0'
     this.containerElement.style.left = '0'
     this.containerElement.style.width = FRAME_WIDTH + 'px'
-    this.containerElement.style.height = ''
+    this.containerElement.style.height = '488px'
     this.containerElement.style.zIndex = '9999999'
     this.containerElement.style.marginRight = 'auto'
     this.containerElement.style.marginLeft = 'auto'
