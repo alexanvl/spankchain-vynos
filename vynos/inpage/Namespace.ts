@@ -70,6 +70,10 @@ export default class Namespace {
               this.isOpen = false
               this.frame.hideFull()
               return
+            case 'vynos/parent/hide':
+              this.isOpen = false
+              this.frame.hide()
+              return
             default:
               return
           }

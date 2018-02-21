@@ -8,7 +8,7 @@ const imgUpArrow = require('../frame/styles/images/up-arrow.svg')
 export default class Frame {
   element: HTMLIFrameElement
   containerElement: HTMLDivElement
-  closeButton: HTMLDivElement
+  coverElement: HTMLDivElement
   style: HTMLStyleElement
   vynosScriptAddress: string
   notifications: HTMLDivElement
@@ -21,8 +21,35 @@ export default class Frame {
       this.element = frameElement
     } else {
       this.containerElement = document.createElement('div')
+      this.coverElement = document.createElement('div')
       this.element = document.createElement('iframe')
       this.element.id = 'ynos_frame'
+
+      this.coverElement.style.position = 'fixed'
+      this.coverElement.style.width = '100vw'
+      this.coverElement.style.height = '100vh'
+      this.coverElement.style.backgroundColor = 'rgba(0, 0, 0, .5)'
+      this.coverElement.style.top = '0'
+      this.coverElement.style.left = '0'
+      this.coverElement.style.zIndex = '100'
+      this.coverElement.style.transition = 'opacity 500ms'
+
+
+      this.coverElement.addEventListener('click', () => {
+        const url = window.location != window.parent.location
+          ? document.referrer
+          : document.location.href
+
+        window.parent.postMessage({
+          type: 'vynos/parent/hide'
+        }, getDomain(url))
+
+        function getDomain(url: string) {
+          const a = document.createElement('a')
+          a.setAttribute('href', url)
+          return (a as any).origin
+        }
+      })
 
       let style = '#vynos_frame_img_close_button{width: 40px;bottom: 3px;position: absolute;left: 50%;margin-left: -20px;opacity:0;transition: opacity 1s}' +
         '#vynos_frame_close_button:hover > #vynos_frame_img_close_button{opacity: 1}'
@@ -33,6 +60,7 @@ export default class Frame {
       this.notifications.id = 'vynos_notifications'
       this.notifications.style.marginTop = '25px'
 
+      this.containerElement.appendChild(this.coverElement)
       this.containerElement.appendChild(this.element)
       this.containerElement.appendChild(this.style)
       this.containerElement.appendChild(this.notifications)
@@ -55,6 +83,8 @@ export default class Frame {
     this.element.style.borderBottomRightRadius = '10px'
     this.element.style.boxShadow = '0 8px 8px 0 rgba(0, 0, 0, 0.16)'
     this.element.style.transition = 'opacity 1s'
+    this.element.style.position = 'relative'
+    this.element.style.zIndex = '200'
     // Set container styles
     this.containerElement.style.position = 'fixed'
     this.containerElement.style.top = '0px'
@@ -78,6 +108,8 @@ export default class Frame {
     this.element.style.boxShadow = 'none'
     this.element.style.transition = 'none'
     this.element.style.opacity = '1'
+    this.element.style.position = 'relative'
+    this.element.style.zIndex = '200'
     // Set container styles
     this.containerElement.style.position = 'fixed'
     this.containerElement.style.top = '0px'
@@ -114,20 +146,37 @@ export default class Frame {
   }
 
   display() {
+    const ctx = this
     this.setWalletCard()
     this.element.style.opacity = '1'
     this.containerElement.style.marginTop = '0px'
+    this.containerElement.appendChild(this.coverElement)
+    setTimeout(() => {
+      ctx.coverElement.style.opacity = '1'
+    }, 16)
   }
 
   hideFull() {
+    const ctx = this
     this.setFullPage()
     this.containerElement.style.marginTop = '-100vh'
     this.element.style.opacity = '0'
+    this.coverElement.style.opacity = '0'
+
+    setTimeout(() => {
+      ctx.containerElement.removeChild(this.coverElement)
+    }, 500)
   }
 
   hide() {
+    const ctx = this
     this.setWalletCard()
     this.containerElement.style.marginTop = '-500px'
     this.element.style.opacity = '0'
+    this.coverElement.style.opacity = '0'
+
+    setTimeout(() => {
+      ctx.containerElement.removeChild(this.coverElement)
+    }, 500)
   }
 }
