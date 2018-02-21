@@ -33,7 +33,7 @@ export default class Namespace {
   }
 
   on(event: string, callback: (...args: any[]) => void) {
-    return this.eventBus.on(event, callback);
+    return this.eventBus.on(event, callback)
   }
 
   isWalletOpen(): Promise<void> {

@@ -34,14 +34,13 @@ export default class Frame {
       this.coverElement.style.zIndex = '100'
       this.coverElement.style.transition = 'opacity 500ms'
 
-
       this.coverElement.addEventListener('click', () => {
-        const url = window.location != window.parent.location
+        const url = window.location !== window.parent.location
           ? document.referrer
           : document.location.href
 
         window.parent.postMessage({
-          type: 'vynos/parent/hide'
+          type: 'vynos/parent/hide',
         }, getDomain(url))
 
         function getDomain(url: string) {
@@ -64,7 +63,6 @@ export default class Frame {
       this.containerElement.appendChild(this.element)
       this.containerElement.appendChild(this.style)
       this.containerElement.appendChild(this.notifications)
-
 
       this.setWalletCard()
       this.hide()

@@ -115,7 +115,7 @@ function mapDispatchToProps(dispatch: Dispatch<FrameState>): DepositDispatchProp
   return {
     didAcknowledgeDeposit: () => {
       dispatch(actions.didAcknowledgeDeposit(''))
-      const url = window.location != window.parent.location
+      const url = window.location !== window.parent.location
         ? document.referrer
         : document.location.href
 
