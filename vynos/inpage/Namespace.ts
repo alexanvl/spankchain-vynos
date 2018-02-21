@@ -37,9 +37,11 @@ export default class Namespace {
   }
 
   isWalletOpen(): Promise<void> {
-    return this.isOpen
-      ? Promise.resolve()
-      : Promise.reject(new Error('Wallet is not opened.'))
+    return new Promise((resolve, reject) => {
+      this.isOpen
+        ? resolve()
+        : reject(new Error('Wallet is not opened.'))
+    })
   }
   // Initialize frame container for the Wallet.
   // Optional to use.
@@ -65,6 +67,7 @@ export default class Namespace {
 
           switch (data.type) {
             case 'vynos/parent/hideFull':
+              this.isOpen = false
               this.frame.hideFull()
               return
             default:
