@@ -1,0 +1,53 @@
+.walletCard {
+  display: flex;
+  flex-flow: row nowrap;
+  padding: 2rem 4rem;
+  height: 100%;
+}
+
+.walletFunds {
+  border-radius: 5.5px;
+  background-color: #f8f8f8;
+  flex: 1 0 50%;
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-flow: column nowrap;
+  margin-right: 1rem;
+}
+
+.walletFundsHeader {
+  font-family: gt-haptik;
+  font-size: 1rem;
+  font-weight: bold;
+  font-style: normal;
+  letter-spacing: 0.1px;
+}
+
+.walletBalance {
+  border-radius: 1rem;
+  border: solid 0.7px #b5b5b5;
+  width: 70%;
+  font-family: CartographMonoCF;
+  font-size: 1.2rem;
+  font-weight: 600;
+  text-align: center;
+  color: #797979;
+}
+
+.walletActions {
+  display: flex;
+  flex-flow: column nowrap;
+  flex: 1 0 50%;
+  justify-content: center;
+  margin-left: 1rem;
+}
+
+.walletActions button {
+  font-family: gt-haptik;
+  margin: .2rem 0;
+  flex: 0 0 auto;
+  font-weight: bold;
+  font-size: .8rem;
+  padding: .35rem;
+}

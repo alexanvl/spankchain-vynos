@@ -20,6 +20,14 @@
 }
 
 @font-face {
+  font-family: gt-haptik;
+  src: url("./fonts/GT-Haptik-Bold.otf") format("opentype");
+  font-weight: bold;
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
   font-family: CartographMonoCF;
   src: url("./fonts/CartographMonoCF-Regular.otf") format("opentype");
   font-weight: normal;
