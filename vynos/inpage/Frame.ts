@@ -110,7 +110,7 @@ export default class Frame {
   hideFull() {
     this.containerElement.style.transition = 'none'
     this.element.style.transition = 'none'
-    this.containerElement.style.marginTop = '0px'
+    this.containerElement.style.marginTop = '-200vh'
     this.element.style.opacity = '0'
   }
 

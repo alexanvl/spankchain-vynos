@@ -1,5 +1,6 @@
 import VynosClient from './VynosClient'
 import Promise = require('bluebird')
+import * as EventEmitter from 'events'
 import Frame from './Frame'
 import FrameStream from '../lib/FrameStream'
 import Vynos from '../lib/Vynos'
@@ -22,12 +23,24 @@ export default class Namespace {
   window: Window
   client?: Promise<VynosClient>
   frame: Frame
+  eventBus: EventEmitter
+  isOpen: boolean
 
   constructor(scriptElement: HTMLScriptElement, window: Window) {
     this.scriptAddress = scriptElement.src
     this.window = window
+    this.eventBus = new EventEmitter()
   }
 
+  on(event: string, callback: (...args: any[]) => void) {
+    return this.eventBus.on(event, callback);
+  }
+
+  isWalletOpen(): Promise<void> {
+    return this.isOpen
+      ? Promise.resolve()
+      : Promise.reject(new Error('Wallet is not opened.'))
+  }
   // Initialize frame container for the Wallet.
   // Optional to use.
   init(frameElement?: HTMLIFrameElement, frame?: Frame): Promise<Vynos> {
@@ -37,6 +50,7 @@ export default class Namespace {
 
     this.client = new Promise(resolve => {
       isReady(() => {
+        this.isOpen = false
         this.frame = frame ? frame : new Frame(this.scriptAddress, frameElement)
         this.frame.attach(this.window.document)
         let stream = new FrameStream('vynos').toFrame(this.frame.element)
@@ -58,7 +72,10 @@ export default class Namespace {
           }
         }
 
+        client.getSharedState().then(state => this.eventBus.emit('update', state.result))
+
         client.onSharedStateUpdate(state => {
+          this.eventBus.emit('update', state)
           if (state.isTransactionPending) {
             this.display()
           }
@@ -73,6 +90,7 @@ export default class Namespace {
     this.ready()
       .then(client => client.getSharedState())
       .then(({ result: { didInit } }) => {
+        this.isOpen = true
         if (!didInit) {
           this.frame.displayFull()
         } else {
@@ -89,6 +107,7 @@ export default class Namespace {
     this.ready()
       .then(client => client.getSharedState())
       .then(({ result: { didInit } }) => {
+        this.isOpen = false
         if (!didInit) {
           this.frame.hideFull()
         } else {
