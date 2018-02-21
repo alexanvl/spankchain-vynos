@@ -97,7 +97,7 @@ export default class Frame {
     this.element.style.opacity = '1'
   }
 
-  display () {
+  display() {
     this.containerElement.style.transition = 'margin-top 0.7s'
     this.element.style.transition = 'opacity 1s'
     this.containerElement.style.right = '110px'

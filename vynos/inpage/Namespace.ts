@@ -69,7 +69,7 @@ export default class Namespace {
     return this.client
   }
 
-  display (): void {
+  display(): void {
     this.ready()
       .then(client => client.getSharedState())
       .then(({ result: { didInit } }) => {

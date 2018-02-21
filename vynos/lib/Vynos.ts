@@ -3,8 +3,8 @@ import Promise = require('bluebird')
 import YnosPayInChannelResponse from './VynosPayInChannelResponse'
 import Web3 = require('web3')
 import VynosBuyResponse from './VynosBuyResponse'
-import { GetSharedStateResponse } from './rpc/yns';
-import PurchaseMeta from "./PurchaseMeta";
+import { GetSharedStateResponse } from './rpc/yns'
+import PurchaseMeta from './PurchaseMeta'
 
 export default interface Vynos {
   provider: Web3.Provider

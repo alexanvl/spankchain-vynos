@@ -6,9 +6,9 @@ import {
   ListChannelsResponse,
   OpenChannelRequest,
   OpenChannelResponse, PayInChannelRequest, PayInChannelResponse,
-  GetSharedStateRequest, GetSharedStateResponse
-} from '../lib/rpc/yns';
-import {JSONRPC, randomId} from "../lib/Payload";
+  GetSharedStateRequest, GetSharedStateResponse,
+} from '../lib/rpc/yns'
+import {JSONRPC, randomId} from '../lib/Payload'
 import Promise = require('bluebird')
 import {PaymentChannel, PaymentChannelJSON} from 'machinomy/lib/channel'
 import VynosPayInChannelResponse from '../lib/VynosPayInChannelResponse'
@@ -124,7 +124,7 @@ export default class VynosClient implements Vynos {
       id: randomId(),
       method: GetSharedStateRequest.method,
       jsonrpc: JSONRPC,
-      params: []
+      params: [],
     }
 
     return this.provider.ask(request)
