@@ -4,11 +4,20 @@ import * as classnames from 'classnames'
 const s = require('./style.css')
 
 const CTAInput: React.SFC<any> = function(props) {
-  const { className, checked, onChange, value, ctaContent } = props
+  const {
+    className,
+    checked,
+    onChange,
+    value,
+    ctaContent,
+    isInverse,
+  } = props
 
   return (
-    <div className={classnames(className, s.ctaInput)}>
-      {value}      
+    <div className={classnames(className, s.ctaInput, {
+      [s.inverse]: isInverse,
+    })}>
+      {value}
       <div className={s.ctaInputText}>
         {ctaContent()}
       </div>
@@ -20,6 +29,7 @@ CTAInput.defaultProps = {
   className: '',
   checked: null,
   onChange() {},
+  isInverse: false,
 }
 
 export default CTAInput

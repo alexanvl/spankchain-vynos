@@ -98,6 +98,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         <div className={s.walletDescription}>If you want to tip them titties you have to send Ether to your SpankWallet. See how to do this on Coinbase</div>
         <div className={s.walletAddressWrapper}>
           <CTAInput
+            isInverse
             className={s.ctaInput}
             value={this.state.address}
             ctaContent={() => (
