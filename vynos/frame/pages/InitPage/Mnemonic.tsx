@@ -65,7 +65,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
           </div>
           <div className={style.seedWords}>
             {mnemonic.split(' ').map((seed, i) => (
-              <div className={style.seedWord}>
+              <div className={style.seedWord} key={seed}>
                 <span className={style.seedWordIndex}>{i + 1}</span>
                 {seed}
               </div>
@@ -94,22 +94,6 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
         </div>
       </div>
     )
-  }
-
-  handleSaveToFile () {
-    let mnemonic = this.props.mnemonic
-    let blob = new Blob([mnemonic], {type: 'text/plain'})
-    let filename = 'secretSeedPhrase.txt'
-    if (window.navigator.msSaveOrOpenBlob) {
-      window.navigator.msSaveBlob(blob, filename);
-    } else {
-      var elem = window.document.createElement('a');
-      elem.href = window.URL.createObjectURL(blob);
-      elem.download = filename;
-      document.body.appendChild(elem);
-      elem.click();
-      document.body.removeChild(elem);
-    }
   }
 }
 

@@ -31,6 +31,7 @@ function webpackConfig (entry, devSupplement) {
           "NODE_ENV": JSON.stringify(process.env.NODE_ENV || 'development') // This has effect on the react lib size
         }
       }),
+      new webpack.IgnorePlugin(/^(pg|mongodb)$/), // ignore pg and mongo since we're using nedb
       new PackageLoadersPlugin()
     ],
     resolve: {
@@ -40,9 +41,15 @@ function webpackConfig (entry, devSupplement) {
       rules: [
         {
           test: /\.tsx?$/,
+          exclude: [/node_modules/],
           loaders: process.env.NODE_ENV === 'production' ? ["ts-loader"] : ["react-hot-loader/webpack", "ts-loader"]
         },
-        { enforce: "pre", test: /\.js$/, loader: "source-map-loader" },
+        {
+          enforce: "pre",
+          test: /\.js$/,
+          exclude: [/node_modules/],
+          loader: "source-map-loader"
+        },
         {
           test: /\.s?css$/i,
           exclude: [/node_modules/],

@@ -1,7 +1,6 @@
 import actionCreatorFactory, {ActionCreator} from 'typescript-fsa'
 import {WorkerState} from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
-import Transaction from '../lib/TransactionMeta'
 
 const actionCreator = actionCreatorFactory('worker')
 
@@ -66,5 +65,28 @@ export function setLastUpdateDbHandler(state: WorkerState, timestamp: number): W
   return {
     ...state,
     runtime: {...state.runtime, lastUpdateDb: timestamp},
+  }
+}
+
+export interface SetBrandingParam {
+  hubUrl: string
+  cardName: string
+  cardImageUrl: string
+}
+
+export const setHubBranding = actionCreator<SetBrandingParam>('persistent/setHubBranding')
+export function setHubBrandingHandler(state: WorkerState, branding: SetBrandingParam): WorkerState {
+  return {
+    ...state,
+    persistent: {
+      ...state.persistent,
+      branding: {
+        ...state.persistent.branding,
+        [branding.hubUrl]: {
+          cardName: branding.cardName,
+          cardImageUrl: branding.cardImageUrl
+        }
+      }
+    }
   }
 }

@@ -1,10 +1,42 @@
-import {JSONRPC, RequestPayload, ResponsePayload} from "../Payload"
-import {SharedState} from "../../worker/WorkerState";
-import {PaymentChannelJSON} from "machinomy/lib/channel";
-import Payment from "machinomy/lib/Payment";
-import VynosBuyResponse from "../VynosBuyResponse";
-import { ChannelMeta } from '../storage/ChannelMetaStorage'
-import PurchaseMeta from "../PurchaseMeta";
+import {JSONRPC, RequestPayload, ResponsePayload} from '../Payload'
+import {SharedState} from '../../worker/WorkerState'
+import VynosBuyResponse from '../VynosBuyResponse'
+import PurchaseMeta from '../PurchaseMeta'
+import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
+
+export class InitializeRequest implements RequestPayload {
+  id: number
+  jsonrpc: typeof JSONRPC
+  method: typeof InitializeRequest.method
+  params: [string, string]
+
+  static method: string = 'yns_initialize'
+
+  static match (payload: RequestPayload): payload is InitializeRequest {
+    return payload.method === InitializeRequest.method
+  }
+}
+
+export interface InitializeResponse extends ResponsePayload {
+  result: boolean
+}
+
+export class AuthenticateRequest implements RequestPayload {
+  id: number
+  jsonrpc: typeof JSONRPC
+  method: typeof AuthenticateRequest.method
+  params: [string]
+
+  static method: string = 'yns_authenticate'
+
+  static match (payload: RequestPayload): payload is AuthenticateRequest {
+    return payload.method === AuthenticateRequest.method
+  }
+}
+
+export interface AuthenticateResponse extends ResponsePayload {
+  result: { success: boolean, token?: string }
+}
 
 export class InitAccountRequest implements RequestPayload {
   id: number;
@@ -145,23 +177,6 @@ export interface LockWalletResponse extends ResponsePayload {
   result: null
 }
 
-export class OpenChannelRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof OpenChannelRequest.method;
-  params: [string, string];
-
-  static method = "yns_openChannel"
-
-  static match(payload: RequestPayload): payload is OpenChannelRequest {
-    return payload.method === OpenChannelRequest.method
-  }
-}
-
-export interface OpenChannelResponse extends ResponsePayload {
-  result: [PaymentChannelJSON] //
-}
-
 export class CloseChannelRequest implements RequestPayload {
   id: number;
   jsonrpc: typeof JSONRPC;
@@ -177,23 +192,6 @@ export class CloseChannelRequest implements RequestPayload {
 
 export interface CloseChannelResponse extends ResponsePayload {
   result: [string] //
-}
-
-export class PayInChannelRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof PayInChannelRequest.method;
-  params: [PaymentChannelJSON, number, boolean];
-
-  static method = "yns_payInChannel"
-
-  static match(payload: RequestPayload): payload is PayInChannelRequest {
-    return payload.method === PayInChannelRequest.method
-  }
-}
-
-export interface PayInChannelResponse extends ResponsePayload {
-  result: [PaymentChannelJSON, Payment]
 }
 
 export class BuyRequest implements RequestPayload {
@@ -240,7 +238,7 @@ export class ListChannelsRequest implements RequestPayload {
 }
 
 export interface ListChannelsResponse extends ResponsePayload {
-  result: Array<PaymentChannelJSON>
+  result: Array<SerializedPaymentChannel>
 }
 
 export class ChangeNetworkRequest implements RequestPayload {

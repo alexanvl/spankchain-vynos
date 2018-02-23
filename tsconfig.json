@@ -27,7 +27,7 @@
   },
   "include": [
     "vynos",
-    "node_modules/*/index.d.ts",
+    "node_modules/**/index.d.ts",
     "node_modules/web3-typescript-typings/index.d.ts",
     "node_modules/@machinomy/types-truffle-contract/index.d.ts"
   ],

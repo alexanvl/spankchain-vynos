@@ -1,19 +1,30 @@
-import BackgroundController from "./BackgroundController";
-import { JSONRPC, RequestPayload } from "../../lib/Payload";
-import { EndFunction } from "../../lib/StreamServer";
+import BackgroundController from './BackgroundController'
+import {JSONRPC, RequestPayload} from '../../lib/Payload'
+import {EndFunction} from '../../lib/StreamServer'
 import {
-  DidStoreMnemonicRequest, DidStoreMnemonicResponse,
-  GenKeyringRequest, GenKeyringResponse, GetSharedStateRequest, GetSharedStateResponse, InitAccountRequest,
+  ChangeNetworkRequest,
+  ChangeNetworkResponse,
+  DidStoreMnemonicRequest,
+  DidStoreMnemonicResponse,
+  GenKeyringRequest,
+  GenKeyringResponse,
+  GetPrivateKeyHexRequest,
+  GetPrivateKeyHexResponse,
+  GetSharedStateRequest,
+  GetSharedStateResponse,
+  InitAccountRequest,
   InitAccountResponse,
   LockWalletRequest,
-  LockWalletResponse, RestoreWalletRequest, RememberPageRequest,
+  LockWalletResponse,
+  RememberPageRequest,
+  RememberPageResponse,
+  RestoreWalletRequest,
+  TransactonResolved,
   UnlockWalletRequest,
-  UnlockWalletResponse, RememberPageResponse, TransactonResolved, ChangeNetworkRequest, ChangeNetworkResponse,
-  GetPrivateKeyHexRequest, GetPrivateKeyHexResponse
-} from "../../lib/rpc/yns";
-import { Writable } from "readable-stream";
-import { SharedStateBroadcast, SharedStateBroadcastType } from "../../lib/rpc/SharedStateBroadcast";
-import NetworkController from "./NetworkController";
+  UnlockWalletResponse
+} from '../../lib/rpc/yns'
+import {Writable} from 'readable-stream'
+import {SharedStateBroadcast, SharedStateBroadcastType} from '../../lib/rpc/SharedStateBroadcast'
 
 export default class BackgroundHandler {
   controller: BackgroundController
@@ -132,7 +143,7 @@ export default class BackgroundHandler {
     end(null)
   }
 
-changeNetwork (message: ChangeNetworkRequest, next: Function, end: EndFunction) {
+  changeNetwork (message: ChangeNetworkRequest, next: Function, end: EndFunction) {
     let response: ChangeNetworkResponse = {
       id: message.id,
       jsonrpc: message.jsonrpc,
@@ -144,7 +155,7 @@ changeNetwork (message: ChangeNetworkRequest, next: Function, end: EndFunction) 
     }).catch(end)
   }
 
-  getPrivateKeyHex(message: GetPrivateKeyHexRequest, next: Function, end: EndFunction) {
+  getPrivateKeyHex (message: GetPrivateKeyHexRequest, next: Function, end: EndFunction) {
     this.controller.getPrivateKey().then((buffer: Buffer) => {
       let response: GetPrivateKeyHexResponse = {
         id: message.id,

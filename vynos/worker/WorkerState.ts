@@ -18,6 +18,14 @@ export interface PersistentState {
   didInit: boolean,
   keyring?: string,
   rememberPath: string
+  branding: BrandingState
+}
+
+export interface BrandingState {
+  [hubUrl: string]: {
+    cardName: string,
+    cardImageUrl: string
+  }
 }
 
 export interface WorkerState {
@@ -37,6 +45,7 @@ export const INITIAL_STATE: WorkerState = {
   persistent: {
     didInit: false,
     rememberPath: '/',
+    branding: {}
   },
   runtime: {
     isTransactionPending: 0,

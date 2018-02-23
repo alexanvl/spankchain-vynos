@@ -1,7 +1,7 @@
 import * as React from 'react'
 import TransactionStorage from "../../../lib/storage/TransactionMetaStorage"
 import { Menu, Button, Container, Form, Divider } from 'semantic-ui-react'
-import WalletAccount from "../../components/WalletPage/WalletAccount"
+import WalletAccount from "./WalletAccount"
 import WorkerProxy from '../../WorkerProxy'
 import { connect, Dispatch } from 'react-redux'
 import { FrameState } from '../../redux/FrameState'

@@ -5,46 +5,49 @@ import * as html2canvas from 'html2canvas'
 
 let global = window as DevWindow & VynosWindow
 
-let isVynosPresent = global.vynos && global.vynos instanceof Namespace
+const isVynosPresent = global.Vynos && global.Vynos === Namespace
+
 if (!isVynosPresent) {
-  global.vynos = new Namespace(document.currentScript as HTMLScriptElement, window)
+  global.Vynos = Namespace
 }
 
-if (!document.querySelectorAll('meta[property="og:image"]').length) {
-  html2canvas(document.body, {
-    width: document.body.clientHeight,
-    height: document.body.clientHeight,
-    logging: false
-  }).then(canvas => {
-    let metaImageNode = document.createElement('meta')
-    metaImageNode.setAttribute('property', 'og:image')
-    metaImageNode.setAttribute('content', canvas.toDataURL())
-    document.body.appendChild(metaImageNode)
-  })
-}
+document.addEventListener('onload', () => {
+  if (!document.querySelectorAll('meta[property="og:image"]').length) {
+    html2canvas(document.body, {
+      width: document.body.clientHeight,
+      height: document.body.clientHeight,
+      logging: false
+    }).then(canvas => {
+      let metaImageNode = document.createElement('meta')
+      metaImageNode.setAttribute('property', 'og:image')
+      metaImageNode.setAttribute('content', canvas.toDataURL())
+      document.body.appendChild(metaImageNode)
+    })
+  }
 
-if (!("serviceWorker" in navigator)) {
-  let b = document.createElement('div');
-  b.innerHTML = BROWSER_NOT_SUPPORTED_TEXT +
-    "<img src='" + global.vynos.scriptAddress.replace(/vynos(.|.dev.)js/, require('./frame/styles/images/close-button.svg')) + "' " +
-    "style='position: fixed;right:20px;top: 13px;;width: 17px'>";
-  b.style.position = 'fixed';
-  b.style.width = '100%';
-  b.style.height = '45px';
-  b.style.backgroundColor = '#ff380e';
-  b.style.color = '#fff';
-  b.style.textAlign = 'center';
-  b.style.top = '0';
-  b.style.lineHeight = '45px';
-  b.style.fontSize = '18px';
-  b.style.cursor = 'pointer';
-  b.style.zIndex = '9999999';
-  b.addEventListener('click', () => {
-    b.remove();
-  });
-  document.getElementsByTagName('body')[0].appendChild(b);
-  throw Error(BROWSER_NOT_SUPPORTED_TEXT);
-}
+  if (!("serviceWorker" in navigator)) {
+    let b = document.createElement('div');
+    // b.innerHTML = BROWSER_NOT_SUPPORTED_TEXT +
+    //   "<img src='" + global.vynos.scriptAddress.replace(/vynos(.|.dev.)js/, require('./frame/styles/images/close-button.svg')) + "' " +
+    //   "style='position: fixed;right:20px;top: 13px;;width: 17px'>";
+    b.style.position = 'fixed';
+    b.style.width = '100%';
+    b.style.height = '45px';
+    b.style.backgroundColor = '#ff380e';
+    b.style.color = '#fff';
+    b.style.textAlign = 'center';
+    b.style.top = '0';
+    b.style.lineHeight = '45px';
+    b.style.fontSize = '18px';
+    b.style.cursor = 'pointer';
+    b.style.zIndex = '9999999';
+    b.addEventListener('click', () => {
+      b.remove();
+    });
+    document.getElementsByTagName('body')[0].appendChild(b);
+    throw Error(BROWSER_NOT_SUPPORTED_TEXT);
+  }
+})
 
 global.showVynosNotification = function(text: string, time?: number) {
   let vynos_notifications = document.getElementById('vynos_notifications');

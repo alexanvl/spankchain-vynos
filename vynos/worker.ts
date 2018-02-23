@@ -6,27 +6,26 @@ import BackgroundHandler from "./worker/controllers/BackgroundHandler";
 import NetworkController from "./worker/controllers/NetworkController";
 import MicropaymentsHandler from "./worker/controllers/MicropaymentsHandler";
 import MicropaymentsController from "./worker/controllers/MicropaymentsController";
-import _ = require('lodash')
-import { DevWindow } from "./window";
 import TransactionService from "./worker/TransactionService";
-import SettingStorage from "./lib/storage/SettingStorage";
+import HubController from './worker/controllers/HubController'
+import HubHandler from './worker/controllers/HubHandler'
+import ProviderOptions from './worker/controllers/ProviderOptions'
+
 asServiceWorker(self => {
-  if (self.registration.active) {
-    let scriptUrl = self.registration.active.scriptURL
-    let scriptQuery = scriptUrl.replace(/.*\?/, '')
-    let query = _.chain(scriptQuery).replace('?', '').split('&').map(_.ary(_.partial(_.split, _, '='), 1)).fromPairs().value()
-  }
-
   let backgroundController = new BackgroundController()
-
   let transactionService = new TransactionService(backgroundController.store)
   let networkController = new NetworkController(backgroundController, transactionService)
   let micropaymentsController = new MicropaymentsController(networkController, backgroundController, transactionService)
   let micropaymentsHandler = new MicropaymentsHandler(micropaymentsController)
 
+  const providerOpts = new ProviderOptions(backgroundController, transactionService, networkController.rpcUrl).approving()
+  const hubController = new HubController(backgroundController.store, providerOpts, backgroundController)
+  const hubHandler = new HubHandler(hubController)
+
   let background = new BackgroundHandler(backgroundController)
   let server = new StreamServer("Worker", true)
     .add(background.handler)
+    .add(hubHandler.handler)
     .add(micropaymentsHandler.handler)
     .add(networkController.handler)
 
