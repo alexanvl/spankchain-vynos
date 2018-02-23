@@ -11,11 +11,13 @@ const CTAInput: React.SFC<any> = function(props) {
     value,
     ctaContent,
     isInverse,
+    isConnected,
   } = props
 
   return (
     <div className={classnames(className, s.ctaInput, {
       [s.inverse]: isInverse,
+      [s.connected]: isConnected,
     })}>
       {value}
       <div className={s.ctaInputText}>

@@ -34,7 +34,6 @@
   font-family: CartographMonoCF;
   font-size: 0.7rem;
   padding-left: 1rem;
-
 }
 
 .ctaInput.inverse .ctaInputText {
@@ -49,6 +48,39 @@
   user-select: none;
 }
 
+.ctaInput.inverse .ctaInputText div {
+  display: flex;
+}
+
 .ctaInput.inverse .ctaInputText span {
   font-size: 0.7rem;
+}
+
+.ctaInput.connected {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #b5b5b5;
+  padding-left: 2rem;
+}
+
+.ctaInput.connected .ctaInputText {
+  transition: 200ms ease-in-out;
+  background: transparent;
+  color: #b5b5b5;
+  padding-left: 2rem;
+  padding-top: 0.3rem;
+  padding-bottom: 0.3rem;
+}
+
+.ctaInput.connected .ctaInputText:hover {
+  transition: 200ms ease-in-out;
+  background-color: #ff3b81;
+  color: #fff;
+  border-radius: 2rem;
+}
+
+.ctaInput.connected .ctaInputText span {
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
 }

@@ -11,6 +11,7 @@ import WorkerProxy from '../../WorkerProxy'
 // import TransactionStorage from "../../../lib/storage/TransactionMetaStorage"
 import Button from '../../components/Button/index'
 import CTAInput from '../../components/CTAInput/index'
+import WalletCard from '../../components/WalletCard/index'
 import * as qr from 'qr-image'
 import * as copy from 'copy-to-clipboard'
 
@@ -26,6 +27,7 @@ export interface WalletPageStateProps {
 export interface WalletPageState {
   address: string
   balance: string
+  spankBalance: string
   sendShown: boolean
 }
 
@@ -37,8 +39,11 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
     this.state = {
       address: '',
       balance: '0',
+      // TODO: backend integration to retrieve SpankCard balance
+      spankBalance: '23',
       sendShown: false,
     };
+    console.log('these are props: ', props);
   }
 
   componentDidMount () {
@@ -58,6 +63,71 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         })
       })
     }
+  }
+
+  renderWalletView() {
+    if (Number(this.state.spankBalance) > 0) {
+      return (
+        <div className={s.walletWrapper}>
+          <div className={s.walletSpankCardWrapper}>
+            <div className={s.walletRow}>
+              <div className={s.walletFundsHeader}>Wallet Funds</div>
+              <div className={s.walletRowBalanceWrapper}>
+                <CTAInput
+                  isInverse
+                  isConnected
+                  value={`$${this.state.spankBalance}`}
+                  ctaContent={() => (
+                    <div className={s.ctaContentWrapper} onClick={() => console.log('Filling')}>
+                      <div className={s.ctaDivider}/>
+                      <span className={s.ctaText}>Refill SpankCard</span>
+                    </div>
+                  )}
+                />
+              </div>
+              <div className={s.walletRowAction}>
+                <Button type="tertiary" content="More" />
+              </div>
+            </div>
+            <div className={s.walletSpankCardDetails}>
+              <div className={s.walletSpankCardView}>
+                <WalletCard
+                  width={275}
+                  cardTitle="SpankCard"
+                  companyName="SpankChain"
+                  name="spanktoshi"
+                  backgroundColor="#ff3b81"
+                  color="#fff"
+                  currencyValue={this.state.spankBalance}
+                  className={s.walletSpankCard}
+                />
+              </div>
+              <div className={s.walletSpankCardActions}>
+                <Button type="secondary" content="Withdraw into Wallet" isMini />
+                <Button type="secondary" content="Activity" isMini />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className={s.walletWrapper}>
+        <div className={s.walletCard}>
+          <div className={s.walletFunds}>
+            <div className={s.walletFundsHeader}>Wallet Funds</div>
+            <div className={s.walletBalance}>${this.state.balance}</div>
+          </div>
+          <div className={s.walletActions}>
+            <Button type="secondary" content="Copy Address" isMini />
+            <Button type="secondary" content="Receive Ether" isMini />
+            <Button type="secondary" content="Send Ether" isMini />
+          </div>
+        </div>
+        {this.renderWalletFundsDescription()}
+      </div>
+    );
   }
 
   // renderSubpage () {
@@ -118,26 +188,12 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 
   render () {
-    return (
-      <div className={s.walletWrapper}>
-        <div className={s.walletCard}>
-          <div className={s.walletFunds}>
-            <div className={s.walletFundsHeader}>Wallet Funds</div>
-            <div className={s.walletBalance}>${this.state.balance}</div>
-          </div>
-          <div className={s.walletActions}>
-            <Button type="secondary" content="Copy Address" isMini />
-            <Button type="secondary" content="Receive Ether" isMini />
-            <Button type="secondary" content="Send Ether" isMini />
-          </div>
-        </div>
-        {this.renderWalletFundsDescription()}
-      </div>
-    )
+    return this.renderWalletView()
   }
 }
 
 function mapStateToProps(state: FrameState): WalletPageStateProps {
+  console.log('state: ', state);
   let workerProxy = state.temp.workerProxy!
   return {
     name: nameByPath(state.shared.rememberPath),

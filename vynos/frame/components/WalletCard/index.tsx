@@ -14,6 +14,7 @@ const WalletCard: React.SFC<any> = function(props) {
     className,
     width,
     currency,
+    currencyValue,
   } = props
 
   const height = width * (18 / 30)
@@ -74,7 +75,7 @@ const WalletCard: React.SFC<any> = function(props) {
             lineHeight: currencySize + 'px',
             color,
           }}>
-          {currency}
+          {currency}{currencyValue}
         </div>
       </div>
     </div>
