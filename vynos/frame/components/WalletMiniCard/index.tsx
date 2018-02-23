@@ -14,6 +14,7 @@ const WalletEntryButton: React.SFC<any> = function(props) {
     noAccount,
     loading,
     inverse,
+    alwaysLarge,
   } = props
 
   return (
@@ -24,6 +25,7 @@ const WalletEntryButton: React.SFC<any> = function(props) {
         [s.noAccount]: noAccount,
         [s.loading]: loading,
         [s.inverse]: inverse,
+        [s.large]: alwaysLarge,
       })}
       onClick={onClick}
       style={style}
@@ -65,6 +67,7 @@ WalletEntryButton.propTypes = {
   noAccount: PropTypes.bool,
   loading: PropTypes.bool,
   inverse: PropTypes.bool,
+  alwaysLarge: PropTypes.bool,
   balance: PropTypes.number,
 }
 

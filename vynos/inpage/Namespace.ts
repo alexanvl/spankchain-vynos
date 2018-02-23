@@ -64,7 +64,7 @@ export default class Namespace {
           if (!data || !data.type) {
             return
           }
-
+          console.log(data.type)
           switch (data.type) {
             case 'vynos/parent/hideFull':
               this.isOpen = false
@@ -76,6 +76,9 @@ export default class Namespace {
             case 'vynos/parent/hide':
               this.isOpen = false
               this.frame.hide()
+              return
+            case 'vynos/parent/loginComplete':
+              this.frame.display()
               return
             default:
               return

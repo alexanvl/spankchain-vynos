@@ -3,7 +3,7 @@ import {connect} from 'react-redux'
 import {ChangeEvent, FormEvent} from 'react'
 import _ = require('lodash')
 import WorkerProxy from '../WorkerProxy';
-// import { Container, Form, Button, Divider } from 'semantic-ui-react'
+import postMessage from "../lib/postMessage"
 import Logo from '../components/Logo'
 import {FrameState} from "../redux/FrameState";
 import RestorePage from "./RestorePage";
@@ -56,6 +56,8 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
       .then((passwordError) => {
         if (passwordError) {
           this.setState({ passwordError })
+        } else {
+          this.closeView()
         }
       })
   }
@@ -84,6 +86,10 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     })
   }
 
+  componentWillMount() {
+    this.props.workerProxy.doLock.call(this.props.workerProxy)
+  }
+
   // render () {
   //   if (this.state.displayRestore)
   //     return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
@@ -103,6 +109,13 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
   //     </Form>
   //   </Container>
   // }
+
+  closeView() {
+    postMessage(window, {
+      type: 'vynos/parent/loginComplete',
+    })
+  }
+
   render() {
     if (this.state.displayRestore) {
       return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
@@ -110,9 +123,15 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
 
     return (
       <div className={style.fullContainer}>
-        <div className={style.header}>
+        <div className={style.loginHeader}>
+          <WalletMiniCard
+            className={style.loginWalletMiniCard}
+            onClick={this.closeView}
+            isLocked
+            inverse
+            alwaysLarge
+          />
           <div className={style.hamburger} />
-          <WalletMiniCard className={style.loginWalletMiniCard} isLocked inverse />
         </div>
         <div className={style.content}>
           <WalletCard

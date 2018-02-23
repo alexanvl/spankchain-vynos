@@ -611,8 +611,15 @@ Channels page
   padding: 1.5rem;
 }
 
+.loginHeader {
+  text-align: right;
+  display: block;
+}
+
 .loginWalletMiniCard {
   margin: 1rem;
+  background-color: #fff;
+  display: inline-flex !important;
 }
 
 .content {

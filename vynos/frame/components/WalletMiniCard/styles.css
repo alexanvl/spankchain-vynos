@@ -11,6 +11,12 @@
   transition: width 150ms ease-out, height 150ms ease-out, background-color 800ms ease-in-out, opacity 400ms ease-in-out;
 }
 
+.large,
+.large:hover {
+  width: 3.85rem;
+  height: 2.42rem;
+}
+
 .container:hover {
   width: 3.85rem;
   height: 2.42rem;
