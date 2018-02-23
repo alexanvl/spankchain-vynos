@@ -611,6 +611,10 @@ Channels page
   padding: 1.5rem;
 }
 
+.loginWalletMiniCard {
+  margin: 1rem;
+}
+
 .content {
   display: flex;
   flex-flow: column nowrap;

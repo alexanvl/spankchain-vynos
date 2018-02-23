@@ -3,10 +3,15 @@ import {connect} from 'react-redux'
 import {ChangeEvent, FormEvent} from 'react'
 import _ = require('lodash')
 import WorkerProxy from '../WorkerProxy';
-import { Container, Form, Button, Divider } from 'semantic-ui-react'
+// import { Container, Form, Button, Divider } from 'semantic-ui-react'
 import Logo from '../components/Logo'
 import {FrameState} from "../redux/FrameState";
 import RestorePage from "./RestorePage";
+import Button from "../components/Button/index"
+import TextBox from "../components/TextBox/index"
+import Input from "../components/Input/index"
+import WalletCard from "../components/WalletCard/index"
+import WalletMiniCard from "../components/WalletMiniCard/index"
 
 const style = require("../styles/ynos.css");
 
@@ -32,6 +37,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     };
     this.handleChangePassword = this.handleChangePassword.bind(this);
     this.handleSubmit = this.handleSubmit.bind(this);
+    this.doDisplayRestore = this.doDisplayRestore.bind(this);
   }
 
   handleChangePassword (event: ChangeEvent<HTMLInputElement>) {
@@ -43,34 +49,27 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
   }
 
   handleSubmit (ev: FormEvent<HTMLFormElement>) {
-    ev.preventDefault()
-    this.setState({
-      loading: true
-    });
+    this.setState({ loading: true });
     let password = _.toString(this.state.password);
-    this.props.workerProxy.doUnlock(password).then((errorReason) => {
-      if (errorReason) {
-        this.setState({
-          passwordError: errorReason
-        })
-      }
-    })
+    this.props.workerProxy
+      .doUnlock(password)
+      .then((passwordError) => {
+        if (passwordError) {
+          this.setState({ passwordError })
+        }
+      })
   }
 
   renderPasswordInput () {
     let className = this.state.passwordError ? style.inputError : ''
-    return <input type="password"
-                  placeholder="Password"
-                  className={className}
-                  onChange={this.handleChangePassword.bind(this)} />
-  }
-
-  renderPasswordHint () {
-    if (this.state.passwordError) {
-      return <span className={style.errorText}><i className={style.vynosInfo}/> {this.state.passwordError}</span>;
-    } else {
-      return <span className={style.passLenText}>&nbsp;</span>
-    }
+    return (
+      <input
+        type="password"
+        placeholder="Password"
+        className={className}
+        onChange={this.handleChangePassword.bind(this)}
+      />
+    )
   }
 
   doDisplayRestore () {
@@ -85,24 +84,70 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     })
   }
 
-  render () {
-    if (this.state.displayRestore)
-      return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
+  // render () {
+  //   if (this.state.displayRestore)
+  //     return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
 
-    return <Container textAlign="center" className={`${style.flexContainer} ${style.clearBorder}`}>
-      <Logo />
-      <Divider hidden />
-      <Form onSubmit={this.handleSubmit} className={style.authForm}>
-        <Form.Field className={style.authFormField} style={{textAlign: 'left'}}>
-          {this.renderPasswordInput()}
-          {this.renderPasswordHint()}
-        </Form.Field>
-        <Divider hidden />
-        <Button type='submit' content='Unlock' primary className={style.buttonNav} />
-        <br />
-        <a onClick={this.doDisplayRestore.bind(this)}>Restore wallet</a>
-      </Form>
-    </Container>
+  //   return <Container textAlign="center" className={`${style.flexContainer} ${style.clearBorder}`}>
+  //     <Logo />
+  //     <Divider hidden />
+  //     <Form onSubmit={this.handleSubmit} className={style.authForm}>
+  //       <Form.Field className={style.authFormField} style={{textAlign: 'left'}}>
+  //         {this.renderPasswordInput()}
+  //         {this.renderPasswordHint()}
+  //       </Form.Field>
+  //       <Divider hidden />
+  //       <Button type='submit' content='Unlock' primary className={style.buttonNav} />
+  //       <br />
+  //       <a onClick={this.doDisplayRestore.bind(this)}>Restore wallet</a>
+  //     </Form>
+  //   </Container>
+  // }
+  render() {
+    if (this.state.displayRestore) {
+      return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
+    }
+
+    return (
+      <div className={style.fullContainer}>
+        <div className={style.header}>
+          <div className={style.hamburger} />
+          <WalletMiniCard className={style.loginWalletMiniCard} isLocked inverse />
+        </div>
+        <div className={style.content}>
+          <WalletCard
+            width={275}
+            cardTitle="SpankCard"
+            companyName="SpankChain"
+            name="spanktoshi"
+            className={style.funnelWalletCard}
+          />
+          <div className={style.funnelTitle}>Login to SpankCard</div>
+          <TextBox className={style.passwordTextBox}>
+            We see you already have a SpankWallet, please login.
+          </TextBox>
+          <Input
+            placeholder="Password"
+            type="password"
+            className={style.passwordInput}
+            onChange={this.handleChangePassword}
+          />
+          <div className={style.funnelFooter}>
+            <Button
+              type="secondary"
+              content="Restore SpankWallet"
+              onClick={this.doDisplayRestore}
+              isInverse
+            />
+            <Button
+              content="Next"
+              onClick={this.handleSubmit}
+              isInverse
+            />
+          </div>
+        </div>
+      </div>
+    )
   }
 }
 

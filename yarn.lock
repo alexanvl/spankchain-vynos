@@ -131,6 +131,10 @@
   version "8.0.47"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-8.0.47.tgz#968e596f91acd59069054558a00708c445ca30c2"
 
+"@types/prop-types@^15.5.2":
+  version "15.5.2"
+  resolved "https://registry.yarnpkg.com/@types/prop-types/-/prop-types-15.5.2.tgz#3c6b8dceb2906cc87fe4358e809f9d20c8d59be1"
+
 "@types/qr-image@^3.2.0":
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/@types/qr-image/-/qr-image-3.2.0.tgz#d3d5e45735923a7229a076c7fc90bab9f0dc620b"

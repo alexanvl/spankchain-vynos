@@ -99,9 +99,9 @@ export default class Namespace {
   display(): void {
     this.ready()
       .then(client => client.getSharedState())
-      .then(({ result: { didInit } }) => {
+      .then(({ result: { didInit, isLocked } }) => {
         this.isOpen = true
-        if (!didInit) {
+        if (!didInit || isLocked) {
           this.frame.displayFull()
         } else {
           this.frame.display()
@@ -116,9 +116,9 @@ export default class Namespace {
   hide(): void {
     this.ready()
       .then(client => client.getSharedState())
-      .then(({ result: { didInit } }) => {
+      .then(({ result: { didInit, isLocked } }) => {
         this.isOpen = false
-        if (!didInit) {
+        if (!didInit || isLocked) {
           this.frame.hideFull()
         } else {
           this.frame.hide()
