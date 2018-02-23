@@ -43,7 +43,6 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       spankBalance: '23',
       sendShown: false,
     };
-    console.log('these are props: ', props);
   }
 
   componentDidMount () {
@@ -193,7 +192,6 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
 }
 
 function mapStateToProps(state: FrameState): WalletPageStateProps {
-  console.log('state: ', state);
   let workerProxy = state.temp.workerProxy!
   return {
     name: nameByPath(state.shared.rememberPath),
