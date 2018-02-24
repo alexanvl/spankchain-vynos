@@ -14,6 +14,7 @@ export interface Props {
 
 const SendReceivePage: React.SFC<Props> = (props) => {
   const { balance, onSendEtherClick, onReceiveEtherClick, address } = props;
+  const s = require("./styles.css");
 
   return (
     <div className={s.walletCard}>
