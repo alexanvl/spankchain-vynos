@@ -20,14 +20,18 @@ import SendEther from './SendEther'
 const s = require('./styles.css')
 
 // Wallet main page type
-const SEND_RECEIVE = 'send_receive';
-const SPANK_CARD = 'spank_card';
+const WALLET_MAIN_PAGE = {
+  SEND_RECEIVE: 'send_receive',
+  SPANK_CARD: 'spank_card',
+}
 
 // Wallet subpage types
-const ACTIVITY = 'activity';
-const NO_BALANCE = 'no_balance';
-const NONE = 'none';
-const SEND_ETHER = 'send_ether';
+const WALLET_SUB_PAGE = {
+  ACTIVITY: 'activity',
+  NO_BALANCE: 'no_balance',
+  NONE: 'none',
+  SEND_ETHER: 'send_ether',
+}
 
 export interface WalletPageStateProps {
   name: string
@@ -56,8 +60,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       // TODO: backend integration to retrieve SpankCard balance
       spankBalance: '23',
       sendShown: false,
-      currentWalletPage: SEND_RECEIVE,
-      currentWalletSubpage: NONE,
+      currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
+      currentWalletSubpage: WALLET_SUB_PAGE.NONE,
     };
   }
 
@@ -72,11 +76,11 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
             const currentBalance = web3.fromWei(balance, 'ether').toString()
 
             if (Number(balance) === 0) {
-              currentWalletPage = SEND_RECEIVE
-              currentWalletSubpage = NO_BALANCE
+              currentWalletPage = WALLET_MAIN_PAGE.SEND_RECEIVE
+              currentWalletSubpage = WALLET_SUB_PAGE.NO_BALANCE
             } else {
-              currentWalletPage = SPANK_CARD
-              currentWalletSubpage = NONE
+              currentWalletPage = WALLET_MAIN_PAGE.SPANK_CARD
+              currentWalletSubpage = WALLET_SUB_PAGE.NONE
             }
 
             this.setState({
@@ -119,20 +123,20 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
     const { balance, currentWalletPage, spankBalance, address } = this.state;
 
     switch (currentWalletPage) {
-      case SPANK_CARD:
+      case WALLET_MAIN_PAGE.SPANK_CARD:
         return (
           <SpankCardPage
             spankBalance={spankBalance}
-            onActivityClick={() => this.setState({ currentWalletSubpage: ACTIVITY })}
+            onActivityClick={() => this.setState({ currentWalletSubpage: WALLET_SUB_PAGE.ACTIVITY })}
           />
         )
-      case SEND_RECEIVE:
+      case WALLET_MAIN_PAGE.SEND_RECEIVE:
         return (
           <SendReceivePage
             balance={balance}
             address={address}
-            onSendEtherClick={() => this.setState({ currentWalletSubpage: SEND_ETHER })}
-            onReceiveEtherClick={() => this.setState({ currentWalletSubpage: NO_BALANCE })}
+            onSendEtherClick={() => this.setState({ currentWalletSubpage: WALLET_SUB_PAGE.SEND_ETHER })}
+            onReceiveEtherClick={() => this.setState({ currentWalletSubpage: WALLET_SUB_PAGE.NO_BALANCE })}
           />
         )
       default:
@@ -144,13 +148,13 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
     const { address, currentWalletSubpage } = this.state;
 
     switch (currentWalletSubpage) {
-      case ACTIVITY:
+      case WALLET_SUB_PAGE.ACTIVITY:
         return <ActivitySubpage />
-      case NO_BALANCE:
+      case WALLET_SUB_PAGE.NO_BALANCE:
         return <NoBalanceSubpage address={address} />
-      case SEND_ETHER:
+      case WALLET_SUB_PAGE.SEND_ETHER:
         return <SendEther />
-      case NONE:
+      case WALLET_SUB_PAGE.NONE:
       default:
         return null
     }
