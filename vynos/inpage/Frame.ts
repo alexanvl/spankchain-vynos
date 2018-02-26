@@ -26,6 +26,7 @@ export default class Frame {
       this.coverElement = document.createElement('div')
       this.element = document.createElement('iframe')
       this.element.id = 'ynos_frame'
+      this.element.setAttribute('allowTransparency', 'true')
 
       this.coverElement.style.position = 'fixed'
       this.coverElement.style.width = '100vw'
@@ -36,11 +37,11 @@ export default class Frame {
       this.coverElement.style.zIndex = '100'
       this.coverElement.style.transition = 'opacity 500ms'
 
-      this.coverElement.addEventListener('click', () => {
-        postMessage(window, {
-          type: 'vynos/parent/hide',
-        })
-      })
+      // this.coverElement.addEventListener('click', () => {
+      //   postMessage(window, {
+      //     type: 'vynos/parent/hide',
+      //   })
+      // })
 
       let style = '#vynos_frame_img_close_button{width: 40px;bottom: 3px;position: absolute;left: 50%;margin-left: -20px;opacity:0;transition: opacity 1s}' +
         '#vynos_frame_close_button:hover > #vynos_frame_img_close_button{opacity: 1}'
@@ -69,9 +70,6 @@ export default class Frame {
     this.element.style.borderWidth = '0px'
     this.element.height = '100%'
     this.element.width = '100%'
-    this.element.style.borderBottomLeftRadius = '10px'
-    this.element.style.borderBottomRightRadius = '10px'
-    this.element.style.boxShadow = '0 8px 8px 0 rgba(0, 0, 0, 0.16)'
     this.element.style.transition = 'opacity 1s'
     this.element.style.position = 'relative'
     this.element.style.zIndex = '200'
@@ -80,11 +78,9 @@ export default class Frame {
     this.containerElement.style.top = '0px'
     this.containerElement.style.right = '0'
     this.containerElement.style.left = '0'
-    this.containerElement.style.width = FRAME_WIDTH + 'px'
-    this.containerElement.style.height = '100%'
+    this.containerElement.style.width = '100vw'
+    this.containerElement.style.height = '100vh'
     this.containerElement.style.zIndex = '9999999'
-    this.containerElement.style.marginRight = 'auto'
-    this.containerElement.style.marginLeft = 'auto'
     this.containerElement.style.transition = 'margin-top 0.7s'
   }
 
@@ -93,9 +89,6 @@ export default class Frame {
     this.element.style.borderWidth = '0px'
     this.element.height = '100%'
     this.element.width = '100%'
-    this.element.style.borderBottomLeftRadius = '0'
-    this.element.style.borderBottomRightRadius = '0'
-    this.element.style.boxShadow = 'none'
     this.element.style.transition = 'none'
     this.element.style.opacity = '1'
     this.element.style.position = 'relative'
@@ -108,8 +101,6 @@ export default class Frame {
     this.containerElement.style.width = '100vw'
     this.containerElement.style.height = '100vh'
     this.containerElement.style.zIndex = '9999999'
-    this.containerElement.style.marginRight = 'auto'
-    this.containerElement.style.marginLeft = 'auto'
     this.containerElement.style.transition = 'none'
     this.containerElement.style.marginTop = '0px'
   }
@@ -161,7 +152,7 @@ export default class Frame {
   hide() {
     const ctx = this
     this.setWalletCard()
-    this.containerElement.style.marginTop = '-500px'
+    this.containerElement.style.marginTop = '-100vh'
     this.element.style.opacity = '0'
     this.coverElement.style.opacity = '0'
 

@@ -1,3 +1,14 @@
+.walletWrapper {
+  width: 480px;
+  position: relative;
+  z-index: 200;
+  background-color: #fff;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: rgba(0, 0, 0, 0.16) 0px 8px 8px 0px;
+  overflow: hidden;
+}
+
 .walletCard {
   display: flex;
   flex-flow: row nowrap;

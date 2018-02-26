@@ -5,6 +5,9 @@ import InitPage from './InitPage'
 import UnlockPage from "./UnlockPage";
 import WalletPage from './WalletPage';
 import ApprovePage from "../components/WalletPage/ApprovePage"
+import postMessage from '../lib/postMessage'
+
+const style = require('../styles/ynos.css')
 
 export function isUnlockPageExpected(state: FrameState): boolean {
   return !!(state.shared.didInit && state.temp.workerProxy && state.shared.isLocked)
@@ -19,14 +22,25 @@ export interface RootStateProps {
 export type RootContainerProps = RootStateProps
 
 export class RootContainer extends React.Component<RootContainerProps, any> {
-  render () {
+  closeWallet = () => {
+    postMessage(window, {
+      type: 'vynos/parent/hide',
+    })
+  }
+
+  render() {
     if (this.props.isTransactionPending) {
       return <ApprovePage />
     }
     if (this.props.isUnlockExpected) {
       return <UnlockPage />
     } else if (this.props.isWalletExpected) {
-      return <WalletPage/>
+      return (
+        <div>
+          <div className={style.cover} onClick={this.closeWallet} />
+          <WalletPage/>
+        </div>
+      )
     } else {
       return <InitPage />
     }
