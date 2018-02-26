@@ -15,6 +15,7 @@ import ActivitySubpage from './ActivitySubpage'
 import NoBalanceSubpage from './NoBalanceSubpage'
 import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './SpankCardPage'
+import SendEther from './SendEther'
 
 const s = require('./styles.css')
 
@@ -26,6 +27,7 @@ const SPANK_CARD = 'spank_card';
 const ACTIVITY = 'activity';
 const NO_BALANCE = 'no_balance';
 const NONE = 'none';
+const SEND_ETHER = 'send_ether';
 
 export interface WalletPageStateProps {
   name: string
@@ -79,8 +81,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
 
             this.setState({
               balance: currentBalance,
-              currentWalletPage,
-              currentWalletSubpage,
+              // currentWalletPage,
+              // currentWalletSubpage,
             })
           })
         }, 500)
@@ -125,7 +127,12 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
           />
         )
       case SEND_RECEIVE:
-        return <SendReceivePage balance={balance} />
+        return (
+          <SendReceivePage
+            balance={balance}
+            onSendEtherClick={() => this.setState({ currentWalletSubpage: SEND_ETHER })}
+          />
+        )
       default:
         return null
     }
@@ -139,6 +146,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         return <ActivitySubpage />
       case NO_BALANCE:
         return <NoBalanceSubpage address={address} />
+      case SEND_ETHER:
+        return <SendEther />
       case NONE:
       default:
         return null

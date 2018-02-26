@@ -3,8 +3,14 @@ import Button from '../../components/Button/index'
 
 const s = require("./styles.css");
 
-const SendReceivePage: React.SFC<any> = (props) => {
-  const { balance } = props;
+export interface Props {
+  onSendEtherClick: () => void
+  balance: string
+}
+
+
+const SendReceivePage: React.SFC<Props> = (props) => {
+  const { balance, onSendEtherClick } = props;
 
   return (
     <div className={s.walletCard}>
@@ -15,7 +21,12 @@ const SendReceivePage: React.SFC<any> = (props) => {
       <div className={s.walletActions}>
         <Button type="secondary" content="Copy Address" isMini />
         <Button type="secondary" content="Receive Ether" isMini />
-        <Button type="secondary" content="Send Ether" isMini />
+        <Button
+          type="secondary"
+          content="Send Ether"
+          onClick={onSendEtherClick}
+          isMini
+        />
       </div>
     </div>
   )

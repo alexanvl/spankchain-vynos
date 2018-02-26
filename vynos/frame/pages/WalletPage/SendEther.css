@@ -1,0 +1,87 @@
+.container {
+  background-color: #f0f0f0;
+}
+
+.header {
+  padding: 3rem;
+  font-family: gt-haptik;
+  font-size: 2rem;
+  font-weight: 600;
+  color: #797979;
+}
+
+.contentRow {
+  display: flex;
+  flex-flow: row nowrap;
+  margin: 0 2rem 2rem;
+}
+
+.inputWrapper {
+  display: flex;
+  flex-flow: column nowrap;
+  flex: 1 0 auto;
+}
+
+.inputLabel {
+  font-family: CartographMonoCF;
+  font-size: .8rem;
+  font-weight: 600;
+  font-style: normal;
+  font-stretch: normal;
+  color: #797979;
+  margin-left: 1rem;
+}
+
+.input input {
+  font-family: CartographMonoCF;
+  border: 2px solid #b5b5b5 !important;
+  border-radius: 4rem !important;
+  padding-left: 1rem !important;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #000 !important;
+}
+
+.input input::placeholder {
+  color: #fff;
+}
+
+.input input::-webkit-outer-spin-button,
+.input input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.inputResult {
+  display: flex;
+  flex-flow: row nowrap;
+  font-family: CartographMonoCF;
+  position: relative;
+  top: .35rem;
+  font-size: 1.4rem;
+  align-items: center;
+}
+
+.inputEqual {
+  margin: 0 1rem;
+}
+
+.inputTotal {
+  border: 1px solid #e4e4e4;
+  padding: 1rem;
+  border-radius: 4rem;
+  width: 6rem;
+  text-align: center;
+}
+
+.footer {
+  background-color: #fff;
+  padding: 3rem 2rem;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
+}
+
+.footer button {
+  width: 190px
+}
