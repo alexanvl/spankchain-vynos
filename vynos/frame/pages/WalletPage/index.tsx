@@ -57,7 +57,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       spankBalance: '23',
       sendShown: false,
       currentWalletPage: SEND_RECEIVE,
-      currentWalletSubpage: NO_BALANCE,
+      currentWalletSubpage: NONE,
     };
   }
 
@@ -116,7 +116,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   // }
 
   renderMainPage() {
-    const { balance, currentWalletPage, spankBalance } = this.state;
+    const { balance, currentWalletPage, spankBalance, address } = this.state;
 
     switch (currentWalletPage) {
       case SPANK_CARD:
@@ -130,7 +130,9 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         return (
           <SendReceivePage
             balance={balance}
+            address={address}
             onSendEtherClick={() => this.setState({ currentWalletSubpage: SEND_ETHER })}
+            onReceiveEtherClick={() => this.setState({ currentWalletSubpage: NO_BALANCE })}
           />
         )
       default:
