@@ -11,7 +11,8 @@ import {
   UnlockWalletResponse,
   TransactonResolved,
   ChangeNetworkRequest,
-  GetPrivateKeyHexRequest, GetPrivateKeyHexResponse,
+  GetPrivateKeyHexRequest, GetPrivateKeyHexResponse, SetAuthorizationRequestRequest,
+  RespondToAuthorizationRequestRequest, ToggleFrameRequest
 } from '../lib/rpc/yns'
 import {Action} from 'redux'
 import Web3 = require('web3')
@@ -139,6 +140,28 @@ export default class WorkerProxy extends EventEmitter {
     return this.provider.ask(request).then((response: GetPrivateKeyHexResponse) => {
       return response.result
     })
+  }
+
+  respondToAuthorizationRequest(res: boolean): Promise<void> {
+    const request: RespondToAuthorizationRequestRequest = {
+      id: randomId(),
+      jsonrpc: JSONRPC,
+      method: RespondToAuthorizationRequestRequest.method,
+      params: [res]
+    }
+
+    return this.provider.ask(request).then(() => {})
+  }
+
+  toggleFrame(status: boolean): Promise<void> {
+    const request: ToggleFrameRequest = {
+      id: randomId(),
+      jsonrpc: JSONRPC,
+      method: ToggleFrameRequest.method,
+      params: [status]
+    }
+
+    return this.provider.ask(request).then(() => {})
   }
 
   dispatch<A extends Action>(action: A) {

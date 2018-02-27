@@ -57,6 +57,11 @@ export default class BackgroundController {
     tryCall()
   }
 
+  async isLocked(): Promise<boolean> {
+    const state = await this.getSharedState()
+    return state.isLocked || !state.didInit
+  }
+
   resolveTransaction() {
     this.store.dispatch(actions.setLastUpdateDb(Date.now()))
   }

@@ -11,5 +11,10 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.rememberPage, actions.rememberPageHandler)
   .case(actions.setLastUpdateDb, actions.setLastUpdateDbHandler)
   .case(actions.setHubBranding, actions.setHubBrandingHandler)
+  .case(actions.setCurrentHubUrl, actions.setCurrentHubUrlHandler)
+  .case(actions.setCurrentAuthRealm, actions.setCurrentAuthRealmHandler)
+  .case(actions.setAuthorizationRequest, actions.setAuthorizationRequestHandler)
+  .case(actions.respondToAuthorizationRequest, actions.respondToAuthorizationRequestHandler)
+  .case(actions.toggleFrame, actions.toggleFrameHandler)
 
 export default reducers

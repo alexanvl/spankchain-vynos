@@ -274,3 +274,54 @@ export class GetPrivateKeyHexRequest implements RequestPayload {
 export interface GetPrivateKeyHexResponse extends ResponsePayload {
   result: string
 }
+
+export class SetAuthorizationRequestRequest implements RequestPayload {
+  id: number
+  jsonrpc: typeof JSONRPC
+  method: typeof SetAuthorizationRequestRequest.method
+  params: [string, string]
+
+  static method: string = 'yns_setAuthorizationRequest'
+
+  static match (payload: RequestPayload): payload is SetAuthorizationRequestRequest {
+    return payload.method === SetAuthorizationRequestRequest.method
+  }
+}
+
+export interface SetAuthorizationRequestResponse extends ResponsePayload {
+  result: null
+}
+
+export class RespondToAuthorizationRequestRequest implements RequestPayload {
+  id: number
+  jsonrpc: typeof JSONRPC
+  method: typeof RespondToAuthorizationRequestRequest.method
+  params: [boolean]
+
+  static method: string = 'yns_respondToAuthorizationRequest'
+
+  static match (payload: RequestPayload): payload is RespondToAuthorizationRequestRequest {
+    return payload.method === RespondToAuthorizationRequestRequest.method
+  }
+}
+
+export interface RespondToAuthorizationRequestResponse extends ResponsePayload {
+  result: null
+}
+
+export class ToggleFrameRequest implements RequestPayload {
+  id: number
+  jsonrpc: typeof JSONRPC
+  method: typeof ToggleFrameRequest.method
+  params: [boolean]
+
+  static method: string = 'yns_toggleFrame'
+
+  static match (payload: RequestPayload): payload is ToggleFrameRequest {
+    return payload.method === ToggleFrameRequest.method
+  }
+}
+
+export interface ToggleFrameResponse extends ResponsePayload {
+  result: null
+}

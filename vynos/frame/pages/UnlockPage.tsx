@@ -1,43 +1,47 @@
 import * as React from 'react'
-import {connect} from 'react-redux'
 import {ChangeEvent, FormEvent} from 'react'
+import {connect} from 'react-redux'
+import WorkerProxy from '../WorkerProxy'
+import postMessage from '../lib/postMessage'
+import {FrameState} from '../redux/FrameState'
+import RestorePage from './RestorePage'
+import Button from '../components/Button/index'
+import TextBox from '../components/TextBox/index'
+import Input from '../components/Input/index'
+import WalletCard from '../components/WalletCard/index'
+import WalletMiniCard from '../components/WalletMiniCard/index'
+import {RouteComponentProps, withRouter} from 'react-router'
 import _ = require('lodash')
-import WorkerProxy from '../WorkerProxy';
-import postMessage from "../lib/postMessage"
-import Logo from '../components/Logo'
-import {FrameState} from "../redux/FrameState";
-import RestorePage from "./RestorePage";
-import Button from "../components/Button/index"
-import TextBox from "../components/TextBox/index"
-import Input from "../components/Input/index"
-import WalletCard from "../components/WalletCard/index"
-import WalletMiniCard from "../components/WalletMiniCard/index"
 
-const style = require("../styles/ynos.css");
+const style = require('../styles/ynos.css')
 
-export interface UnlockPageProps {
+export interface StateProps {
   workerProxy: WorkerProxy
+}
+
+export interface UnlockPageProps extends RouteComponentProps<any>, StateProps {
+  next?: string
 }
 
 export type UnlockPageState = {
   password: string
-  passwordError: string|null
+  passwordError: string | null
   loading: boolean
   displayRestore: boolean
 };
 
 export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState> {
   constructor (props: UnlockPageProps) {
-    super(props);
+    super(props)
     this.state = {
       password: '',
       passwordError: null,
       loading: false,
       displayRestore: false
-    };
-    this.handleChangePassword = this.handleChangePassword.bind(this);
-    this.handleSubmit = this.handleSubmit.bind(this);
-    this.doDisplayRestore = this.doDisplayRestore.bind(this);
+    }
+    this.handleChangePassword = this.handleChangePassword.bind(this)
+    this.handleSubmit = this.handleSubmit.bind(this)
+    this.doDisplayRestore = this.doDisplayRestore.bind(this)
   }
 
   handleChangePassword (event: ChangeEvent<HTMLInputElement>) {
@@ -48,32 +52,29 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     })
   }
 
-  handleSubmit (ev: FormEvent<HTMLFormElement>) {
-    this.setState({ loading: true });
-    let password = _.toString(this.state.password);
-    this.props.workerProxy
-      .doUnlock(password)
-      .then((passwordError) => {
-        if (passwordError) {
-          this.setState({ passwordError })
-        } else {
-          postMessage(window, {
-            type: 'vynos/parent/loginComplete',
-          })
-        }
-      })
-  }
+  async handleSubmit (ev: FormEvent<HTMLFormElement>) {
+    this.setState({loading: true})
 
-  renderPasswordInput () {
-    let className = this.state.passwordError ? style.inputError : ''
-    return (
-      <input
-        type="password"
-        placeholder="Password"
-        className={className}
-        onChange={this.handleChangePassword.bind(this)}
-      />
-    )
+    const password = _.toString(this.state.password)
+
+    let passwordError = null
+
+    try {
+      await this.props.workerProxy.doUnlock(password)
+    } catch (err) {
+      passwordError = err
+    }
+
+    if (passwordError) {
+      this.setState({
+        passwordError
+      })
+      return
+    }
+
+    const next = this.props.next || '/wallet'
+
+    this.props.history.push(next)
   }
 
   doDisplayRestore () {
@@ -88,37 +89,11 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     })
   }
 
-  componentWillMount() {
-    this.props.workerProxy.doLock.call(this.props.workerProxy)
+  closeView () {
+    this.props.workerProxy.toggleFrame(false)
   }
 
-  // render () {
-  //   if (this.state.displayRestore)
-  //     return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
-
-  //   return <Container textAlign="center" className={`${style.flexContainer} ${style.clearBorder}`}>
-  //     <Logo />
-  //     <Divider hidden />
-  //     <Form onSubmit={this.handleSubmit} className={style.authForm}>
-  //       <Form.Field className={style.authFormField} style={{textAlign: 'left'}}>
-  //         {this.renderPasswordInput()}
-  //         {this.renderPasswordHint()}
-  //       </Form.Field>
-  //       <Divider hidden />
-  //       <Button type='submit' content='Unlock' primary className={style.buttonNav} />
-  //       <br />
-  //       <a onClick={this.doDisplayRestore.bind(this)}>Restore wallet</a>
-  //     </Form>
-  //   </Container>
-  // }
-
-  closeView() {
-    postMessage(window, {
-      type: 'vynos/parent/hideFull',
-    })
-  }
-
-  render() {
+  render () {
     if (this.state.displayRestore) {
       return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
     }
@@ -173,10 +148,10 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
   }
 }
 
-function mapStateToProps (state: FrameState): UnlockPageProps {
+function mapStateToProps (state: FrameState): StateProps {
   return {
     workerProxy: state.temp.workerProxy
   }
 }
 
-export default connect<UnlockPageProps, undefined, any>(mapStateToProps)(UnlockPage)
+export default withRouter(connect<StateProps, undefined, any>(mapStateToProps)(UnlockPage))

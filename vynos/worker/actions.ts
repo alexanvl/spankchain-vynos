@@ -52,6 +52,45 @@ export function setTransactionPendingHandler(state: WorkerState, pending: boolea
   }
 }
 
+export interface AuthorizationRequestParam {
+  hubUrl: string
+  authRealm: string
+}
+
+export const setAuthorizationRequest = actionCreator<AuthorizationRequestParam>('runtime/authorizationRequest')
+export function setAuthorizationRequestHandler(state: WorkerState, authorizationRequest: AuthorizationRequestParam): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      authorizationRequest
+    }
+  }
+}
+
+export const respondToAuthorizationRequest = actionCreator<boolean>('runtime/respondToAuthorizationRequest')
+export function respondToAuthorizationRequestHandler(state: WorkerState, response: boolean): WorkerState {
+  const newState = {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      authorizationRequest: null
+    }
+  }
+
+  if (response) {
+    newState.persistent = {
+      ...state.persistent,
+      authorizedHubs: {
+        ...state.persistent.authorizedHubs,
+        [state.runtime.authorizationRequest!.hubUrl]: true
+      }
+    }
+  }
+
+  return newState
+}
+
 export const rememberPage = actionCreator<string>('persistent/rememberPage')
 export function rememberPageHandler(state: WorkerState, path: string): WorkerState {
   return {
@@ -65,6 +104,28 @@ export function setLastUpdateDbHandler(state: WorkerState, timestamp: number): W
   return {
     ...state,
     runtime: {...state.runtime, lastUpdateDb: timestamp},
+  }
+}
+
+export const setCurrentHubUrl = actionCreator<string>('runtime/setCurrentHub')
+export function setCurrentHubUrlHandler(state: WorkerState, currentHubUrl: string): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      currentHubUrl
+    }
+  }
+}
+
+export const setCurrentAuthRealm = actionCreator<string>('runtim/setAuthRealm')
+export function setCurrentAuthRealmHandler(state: WorkerState, currentAuthRealm: string): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      currentAuthRealm
+    }
   }
 }
 
@@ -87,6 +148,17 @@ export function setHubBrandingHandler(state: WorkerState, branding: SetBrandingP
           cardImageUrl: branding.cardImageUrl
         }
       }
+    }
+  }
+}
+
+export const toggleFrame = actionCreator<boolean>('runtime/toggleFrame')
+export function toggleFrameHandler(state: WorkerState, isFrameDisplayed: boolean): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      isFrameDisplayed
     }
   }
 }

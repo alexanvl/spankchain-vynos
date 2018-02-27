@@ -1,7 +1,7 @@
 declare module "react-hot-loader" {
   import React from "react";
 
-  export class AppContainer extends React.Component<undefined, {}> {
+  export class AppContainer extends React.Component<{}, {}> {
 
   }
 }

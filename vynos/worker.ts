@@ -10,30 +10,40 @@ import TransactionService from "./worker/TransactionService";
 import HubController from './worker/controllers/HubController'
 import HubHandler from './worker/controllers/HubHandler'
 import ProviderOptions from './worker/controllers/ProviderOptions'
+import AuthController from './worker/controllers/AuthController'
+import FrameController from './worker/controllers/FrameController'
+import SharedStateView from './worker/SharedStateView'
 
 asServiceWorker(self => {
-  let backgroundController = new BackgroundController()
-  let transactionService = new TransactionService(backgroundController.store)
-  let networkController = new NetworkController(backgroundController, transactionService)
-  let micropaymentsController = new MicropaymentsController(networkController, backgroundController, transactionService)
-  let micropaymentsHandler = new MicropaymentsHandler(micropaymentsController)
-
-  const providerOpts = new ProviderOptions(backgroundController, transactionService, networkController.rpcUrl).approving()
-  const hubController = new HubController(backgroundController.store, providerOpts, backgroundController)
-  const hubHandler = new HubHandler(hubController)
-
-  let background = new BackgroundHandler(backgroundController)
-  let server = new StreamServer("Worker", true)
-    .add(background.handler)
-    .add(hubHandler.handler)
-    .add(micropaymentsHandler.handler)
-    .add(networkController.handler)
-
-  let stream = new ServiceWorkerStream({
+  const stream = new ServiceWorkerStream({
     sourceName: "worker",
     targetName: "frame",
     source: self
   });
+
+  const backgroundController = new BackgroundController()
+  const frameController = new FrameController(backgroundController.store)
+  const sharedStateView = new SharedStateView(backgroundController)
+  const transactionService = new TransactionService(backgroundController.store)
+  const networkController = new NetworkController(backgroundController, transactionService)
+  const micropaymentsController = new MicropaymentsController(networkController, backgroundController, transactionService)
+  const micropaymentsHandler = new MicropaymentsHandler(micropaymentsController)
+
+  const providerOpts = new ProviderOptions(backgroundController, transactionService, networkController.rpcUrl).approving()
+  const hubController = new HubController(backgroundController.store)
+  const hubHandler = new HubHandler(hubController)
+
+  const authController = new AuthController(backgroundController.store, sharedStateView, providerOpts, frameController)
+
+  const background = new BackgroundHandler(backgroundController)
+  const server = new StreamServer("Worker", true)
+    .add(background.handler)
+    .add(hubHandler.handler)
+    .add(micropaymentsHandler.handler)
+    .add(authController.handler)
+    .add(frameController.handler)
+    .add(networkController.handler)
+
   stream.pipe(server).pipe(stream)
   background.broadcastSharedState(stream)
 

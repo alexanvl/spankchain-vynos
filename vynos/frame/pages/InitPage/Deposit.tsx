@@ -117,9 +117,6 @@ function mapDispatchToProps(dispatch: Dispatch<FrameState>): DepositDispatchProp
     didAcknowledgeDeposit: () => {
       dispatch(actions.didAcknowledgeDeposit(''))
       postMessage(window, {
-        type: 'vynos/parent/hideFull',
-      })
-      postMessage(window, {
         type: 'vynos/parent/signupComplete',
       })
     }

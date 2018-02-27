@@ -81,19 +81,8 @@ export default class Namespace {
       }
       console.log(data.type)
       switch (data.type) {
-        case 'vynos/parent/hideFull':
-          this.isOpen = false
-          this.frame.hideFull()
-          return
         case 'vynos/parent/signupComplete':
           this.eventBus.emit('signupComplete')
-          return
-        case 'vynos/parent/hide':
-          this.isOpen = false
-          this.frame.hide()
-          return
-        case 'vynos/parent/loginComplete':
-          this.frame.display()
           return
         default:
           return
@@ -102,7 +91,7 @@ export default class Namespace {
 
     this.client.onSharedStateUpdate((nextState: SharedState) => {
       this.eventBus.emit('update', nextState)
-      this.emitSpecificEvents(nextState)
+      this.handleSpecificEvents(nextState)
 
       if (nextState.isTransactionPending) {
         this.display()
@@ -116,27 +105,9 @@ export default class Namespace {
 
   async setupAndLogin (): Promise<{ token: string }> {
     const client = await this.ready()
-    const state = (await client.getSharedState()).result
-
-    if (!state.didInit || state.isLocked) {
-      const eventName = state.didInit ? 'didUnlock' : 'didInit'
-
-      await this.frame.display()
-
-      await new Promise((resolve) => {
-        const onDidUnlock = () => {
-          this.off(eventName, onDidUnlock)
-          resolve()
-        }
-
-        this.on(eventName, onDidUnlock)
-      })
-    }
-
     const res = await client.authenticate()
     const token = res.result.token
     this.eventBus.emit('didAuthenticate', res.result.token)
-    this.hide()
 
     if (!token) {
       throw new Error('No token returned.')
@@ -185,7 +156,15 @@ export default class Namespace {
     }
   }
 
-  private emitSpecificEvents(newState: SharedState) {
+  private handleSpecificEvents(newState: SharedState) {
+    if (this.previousState.isFrameDisplayed !== newState.isFrameDisplayed) {
+      if (newState.isFrameDisplayed) {
+        this.display()
+      } else {
+        this.hide()
+      }
+    }
+
     if (this.previousState.isLocked !== newState.isLocked) {
       this.eventBus.emit(newState.isLocked ? 'didLock' : 'didUnlock')
     }

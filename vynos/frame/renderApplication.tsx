@@ -11,6 +11,8 @@ import RemoteStore from "./lib/RemoteStore";
 import createHashHistory from 'history/createHashHistory';
 import reducers from './redux/reducers'
 import {AppContainer} from "react-hot-loader";
+import RootContainer from './pages/RootContainer';
+import {BrowserRouter} from 'react-router-dom'
 
 const MOUNT_POINT_ID = 'mount-point'
 
@@ -24,11 +26,17 @@ async function renderToMountPoint(mountPoint: HTMLElement, workerProxy: WorkerPr
   remoteStore.wireToLocal(store)
 
   function reload () {
-    let RootContainer = require('./pages/RootContainer').default
-    let application = React.createElement(RootContainer, {})
-    let container = React.createElement(AppContainer, undefined, application)
-    let provider = React.createElement(Provider, { store: store }, container)
-    DOM.render(provider, mountPoint)
+    const el = (
+      <BrowserRouter>
+        <Provider store={store}>
+          <AppContainer>
+            <RootContainer />
+          </AppContainer>
+        </Provider>
+      </BrowserRouter>
+    )
+
+    DOM.render(el, mountPoint)
   }
 
   reload()

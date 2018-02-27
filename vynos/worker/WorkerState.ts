@@ -4,6 +4,15 @@ export interface RuntimeState {
   wallet?: Wallet
   isTransactionPending: number
   lastUpdateDb: number
+  currentHubUrl: string
+  currentAuthRealm: string
+  authorizationRequest: AuthorizationRequestState|null
+  isFrameDisplayed: boolean
+}
+
+export interface AuthorizationRequestState {
+  hubUrl: string
+  authRealm: string
 }
 
 export interface SharedState {
@@ -12,6 +21,11 @@ export interface SharedState {
   isTransactionPending: number
   rememberPath: string
   lastUpdateDb: number
+  currentHubUrl: string
+  currentAuthRealm: string
+  authorizedHubs: AuthorizedHubsState
+  authorizationRequest: AuthorizationRequestState|null
+  isFrameDisplayed: boolean
 }
 
 export interface PersistentState {
@@ -19,6 +33,7 @@ export interface PersistentState {
   keyring?: string,
   rememberPath: string
   branding: BrandingState
+  authorizedHubs: AuthorizedHubsState
 }
 
 export interface BrandingState {
@@ -26,6 +41,10 @@ export interface BrandingState {
     cardName: string,
     cardImageUrl: string
   }
+}
+
+export interface AuthorizedHubsState {
+  [hubUrl: string]: true
 }
 
 export interface WorkerState {
@@ -39,17 +58,27 @@ export const INITIAL_SHARED_STATE: SharedState = {
   isTransactionPending: 0,
   rememberPath: '/',
   lastUpdateDb: 0,
+  authorizedHubs: {},
+  authorizationRequest: null,
+  currentHubUrl: '',
+  currentAuthRealm: '',
+  isFrameDisplayed: false
 }
 
 export const INITIAL_STATE: WorkerState = {
   persistent: {
     didInit: false,
     rememberPath: '/',
-    branding: {}
+    branding: {},
+    authorizedHubs: {}
   },
   runtime: {
     isTransactionPending: 0,
     lastUpdateDb: 0,
+    currentHubUrl: '',
+    currentAuthRealm: '',
+    authorizationRequest: null,
+    isFrameDisplayed: false
   },
 }
 
@@ -60,5 +89,10 @@ export function buildSharedState(state: WorkerState): SharedState {
     isTransactionPending: state.runtime.isTransactionPending,
     rememberPath: state.persistent.rememberPath,
     lastUpdateDb: state.runtime.lastUpdateDb,
+    currentHubUrl: state.runtime.currentHubUrl,
+    currentAuthRealm: state.runtime.currentAuthRealm,
+    authorizationRequest: state.runtime.authorizationRequest,
+    authorizedHubs: state.persistent.authorizedHubs,
+    isFrameDisplayed: state.runtime.isFrameDisplayed
   }
 }
