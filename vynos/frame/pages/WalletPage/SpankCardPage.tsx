@@ -17,6 +17,7 @@ const SpankCardPage: React.SFC<any> = (props) => {
             isInverse
             isConnected
             value={`$${spankBalance}`}
+            ctaInputValueClass={s.spankCardCtaInputValue}
             ctaContent={() => (
               <div className={s.ctaContentWrapper} onClick={() => console.log('Filling')}>
                 <div className={s.ctaDivider}/>

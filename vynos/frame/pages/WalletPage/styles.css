@@ -27,16 +27,44 @@
   display: flex;
   align-items: center;
   flex-flow: row nowrap;
-  width: 100%;
   justify-content: space-evenly;
-  padding: 1rem;
+  padding: 1rem 2rem;
   background-color: #f8f8f8;
+}
+
+.walletRowBalanceWrapper {
+  flex: 1 0 auto;
+  padding: 0 1rem;
+}
+
+.walletRowAction {
+  flex: 0 0 auto;
+}
+
+.walletRowAction button {
+  padding: .4rem;
+  font-size: .8rem;
+  font-weight: 500;
+}
+
+.spankCardCtaInputValue {
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+.ctaText {
+  font-size: .8rem !important;
+}
+
+.walletSpankCard::before {
+  filter: invert(100%);
+  opacity: .15;
 }
 
 .walletSpankCardDetails {
   display: flex;
   flex-flow: row nowrap;
-  padding: 2.5rem;
+  padding: 2rem 3rem;
   justify-content: space-between;
 }
 
@@ -48,10 +76,17 @@
 .walletSpankCardActions {
   display: flex;
   flex-flow: column nowrap;
+  flex: 1 0 auto;
+  padding-left: 1rem;
 }
 
 .walletSpankCardActions button:first-child {
   margin-bottom: 0.5rem;
+}
+
+.walletSpankCardActions button {
+  font-size: .8rem;
+  font-weight: 500;
 }
 
 .walletFunds {
@@ -70,6 +105,7 @@
   font-weight: bold;
   font-style: normal;
   letter-spacing: 0.1px;
+  flex: 0 0 auto;
 }
 
 .walletBalance {
