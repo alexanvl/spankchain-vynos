@@ -3,7 +3,7 @@ import * as DOM from 'react-dom'
 import WorkerProxy from './WorkerProxy'
 import {Provider, Store} from 'react-redux'
 
-import 'semantic-ui-css/semantic.min.css';
+// import 'semantic-ui-css/semantic.min.css';
 import {routerMiddleware} from "react-router-redux";
 import {createLogger} from "redux-logger";
 import * as redux from "redux";

@@ -50,7 +50,11 @@ export class SendEther extends React.Component<SendEtherProps, any> {
           </div>
         </div>
         <div className={s.footer}>
-          <Button type="secondary" content="Adjust Gas Limit/Price" />
+          <Button
+            type="secondary"
+            className={s.adjustGasButton}
+            content="Adjust Gas Limit/Price"
+          />
           <Button content="Next" />
         </div>
       </div>

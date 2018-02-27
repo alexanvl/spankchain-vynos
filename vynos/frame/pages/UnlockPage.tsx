@@ -57,7 +57,9 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
         if (passwordError) {
           this.setState({ passwordError })
         } else {
-          this.closeView()
+          postMessage(window, {
+            type: 'vynos/parent/loginComplete',
+          })
         }
       })
   }
@@ -112,7 +114,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
 
   closeView() {
     postMessage(window, {
-      type: 'vynos/parent/loginComplete',
+      type: 'vynos/parent/hideFull',
     })
   }
 
@@ -131,7 +133,6 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
             inverse
             alwaysLarge
           />
-          <div className={style.hamburger} />
         </div>
         <div className={style.content}>
           <WalletCard
@@ -157,11 +158,13 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
               content="Restore SpankWallet"
               onClick={this.doDisplayRestore}
               isInverse
+              isMini
             />
             <Button
               content="Next"
               onClick={this.handleSubmit}
               isInverse
+              isMini
             />
           </div>
         </div>

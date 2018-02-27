@@ -3,10 +3,10 @@
 }
 
 .header {
-  padding: 3rem;
+  padding: 2rem 3rem;
   font-family: gt-haptik;
-  font-size: 2rem;
-  font-weight: 600;
+  font-size: 1.8rem;
+  font-weight: 500;
   color: #797979;
 }
 
@@ -25,11 +25,9 @@
 .inputLabel {
   font-family: CartographMonoCF;
   font-size: .8rem;
-  font-weight: 600;
-  font-style: normal;
-  font-stretch: normal;
+  font-weight: 500;
   color: #797979;
-  margin-left: 1rem;
+  margin: 0 0 1rem 1rem;
 }
 
 .input input {
@@ -37,8 +35,8 @@
   border: 2px solid #b5b5b5 !important;
   border-radius: 4rem !important;
   padding-left: 1rem !important;
-  font-size: 1.4rem;
-  font-weight: 600;
+  font-size: 1.2rem;
+  font-weight: 500;
   color: #000 !important;
 }
 
@@ -67,21 +65,40 @@
 }
 
 .inputTotal {
-  border: 1px solid #e4e4e4;
-  padding: 1rem;
+  border: 2px solid #e4e4e4;
+  padding: 10px;
   border-radius: 4rem;
   width: 6rem;
   text-align: center;
+  font-size: 1.2rem;
 }
 
 .footer {
   background-color: #fff;
-  padding: 3rem 2rem;
+  padding: 2rem;
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
 }
 
 .footer button {
-  width: 190px
+  flex: 0 0 47%;
+  font-size: 1rem;
+  font-weight: 500;
 }
+
+.adjustGasButton {
+  background-color: #797979;
+  color: white;
+}
+
+.adjustGasButton:hover {
+  color: white;
+  background-color: rgba(121, 121, 121, 0.9);
+}
+
+.adjustGasButton:active {
+  color: white;
+  background-color: #797979;
+}
+

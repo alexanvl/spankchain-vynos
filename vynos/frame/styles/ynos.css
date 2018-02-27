@@ -701,12 +701,14 @@ Channels page
   width: 380px;
   display: flex;
   flex-flow: row nowrap;
-  margin-top: 2rem;
+  margin-top: 1rem;
 }
 
 .funnelFooter button {
   flex: 1 1 50%;
   margin: 12px;
+  font-size: .8rem;
+  padding: .5rem;
 }
 
 .mnemonicFooter {

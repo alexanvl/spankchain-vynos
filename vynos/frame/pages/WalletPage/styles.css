@@ -1,5 +1,5 @@
 .walletWrapper {
-  width: 480px;
+  width: 36rem;
   position: relative;
   z-index: 200;
   background-color: #fff;
@@ -14,6 +14,7 @@
   flex-flow: row nowrap;
   padding: 2rem 4rem;
   height: 100%;
+  justify-content: space-between;
 }
 
 .walletSpankCardWrapper {
@@ -56,12 +57,11 @@
 .walletFunds {
   border-radius: 5.5px;
   background-color: #f8f8f8;
-  flex: 1 0 50%;
+  flex: 0 0 45%;
   align-items: center;
   justify-content: center;
   display: flex;
   flex-flow: column nowrap;
-  margin-right: 1rem;
 }
 
 .walletFundsHeader {
@@ -70,6 +70,7 @@
   font-weight: bold;
   font-style: normal;
   letter-spacing: 0.1px;
+  margin-bottom: .5rem;
 }
 
 .walletBalance {
@@ -81,6 +82,7 @@
   font-weight: 600;
   text-align: center;
   color: #797979;
+  padding: .3rem;
 }
 
 .walletRowBalance {
@@ -94,16 +96,15 @@
 .walletActions {
   display: flex;
   flex-flow: column nowrap;
-  flex: 1 0 50%;
+  flex: 0 0 45%;
   justify-content: center;
-  margin-left: 1rem;
 }
 
 .walletActions button {
   font-family: gt-haptik;
   margin: .2rem 0;
   flex: 0 0 auto;
-  font-weight: bold;
+  font-weight: 500;
   font-size: .8rem;
   padding: .35rem;
 }
