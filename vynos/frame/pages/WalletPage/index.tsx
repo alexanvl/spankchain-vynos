@@ -60,8 +60,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       // TODO: backend integration to retrieve SpankCard balance
       spankBalance: '23',
       sendShown: false,
-      currentWalletPage: SPANK_CARD,
-      currentWalletSubpage: ACTIVITY,
+      currentWalletPage: WALLET_MAIN_PAGE.SPANK_CARD,
+      currentWalletSubpage: WALLET_SUB_PAGE.ACTIVITY,
     };
   }
 

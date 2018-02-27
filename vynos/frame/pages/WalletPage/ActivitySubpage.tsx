@@ -7,12 +7,6 @@ const s = require("./styles.css");
 class ActivitySubpage extends React.Component<any, any> {
   constructor (props: any) {
     super(props)
-
-    this.displayDetails = this.displayDetails.bind(this)
-  }
-
-  displayDetails(index: Number) {
-
   }
 
   render() {
@@ -96,7 +90,7 @@ class ActivitySubpage extends React.Component<any, any> {
                 <div className={s.walletActivitySendAmount}>–2.04586785</div>
               </T.TableCell>
               <T.TableCell className={s.walletActivityAction}>
-                <div className={s.walletActivityMore}>...</div>
+                <div className={s.walletActivityLess}>x</div>
               </T.TableCell>
             </T.TableRow>
 

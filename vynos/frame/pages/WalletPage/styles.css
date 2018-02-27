@@ -328,17 +328,29 @@
   padding-right: 2.5rem;
 }
 
-.walletActivityMore {
-  color: #797979;
+.walletActivityMore,
+.walletActivityLess {
   border-radius: 3rem;
   border: 0.5px solid #cccccc;
-  letter-spacing: -6px;
   width: 27px;
-  line-height: 7px;
   height: 27px;
   text-align: center;
+}
+
+.walletActivityMore {
+  color: #797979;
   padding-right: 0.4rem;
   padding-top: 0.35rem;
+  line-height: 7px;
+  letter-spacing: -6px;
+}
+
+.walletActivityLess {
+  color: #797979;
+  width: 27px;
+  height: 27px;
+  font-weight: 600;
+  border: 0.5px solid #cccccc;
 }
 
 .walletActivityMore:hover {
