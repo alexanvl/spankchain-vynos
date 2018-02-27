@@ -38,6 +38,7 @@ const WALLET_SUB_PAGE = {
   // BUT there is wallet balance
   LOAD_UP_SPANK: 'load_up_spank',
   SEND_ETHER: 'send_ether',
+  GO_BACK_TO_SPANK_CARD: 'go_back_to_spank_card',
 }
 
 export interface WalletPageStateProps {
@@ -68,7 +69,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       spankBalance: '23',
       sendShown: false,
       currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
-      currentWalletSubpage: WALLET_SUB_PAGE.NONE,
+      currentWalletSubpage: WALLET_SUB_PAGE.GO_BACK_TO_SPANK_CARD,
     };
   }
 
@@ -181,6 +182,12 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         )
       case WALLET_SUB_PAGE.LOAD_UP_SPANK:
         return <LoadUpSpank />
+      case WALLET_SUB_PAGE.GO_BACK_TO_SPANK_CARD:
+        return (
+          <div className={s.goBackContainer}>
+            <Button className={s.goBackButton} content="Back to SpankCard" />
+          </div>
+        );
       case WALLET_SUB_PAGE.NONE:
       default:
         return null
