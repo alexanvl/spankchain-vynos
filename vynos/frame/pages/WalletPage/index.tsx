@@ -16,6 +16,7 @@ import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './SpankCardPage'
 import SendEther from './SendEther'
 import ReceiveEther from './ReceiveEther'
+import LoadUpSpank from './LoadUpSpank'
 
 const s = require('./styles.css')
 
@@ -31,6 +32,11 @@ const WALLET_SUB_PAGE = {
   NO_BALANCE: 'no_balance',
   RECEIVE_ETHER: 'receive_ether',
   NONE: 'none',
+  // LOAD_UP_SPANK logic
+  // IF user click tip
+  // AND there is no Spank balance
+  // BUT there is wallet balance
+  LOAD_UP_SPANK: 'load_up_spank',
   SEND_ETHER: 'send_ether',
 }
 
@@ -61,8 +67,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       // TODO: backend integration to retrieve SpankCard balance
       spankBalance: '23',
       sendShown: false,
-      currentWalletPage: WALLET_MAIN_PAGE.SPANK_CARD,
-      currentWalletSubpage: WALLET_SUB_PAGE.ACTIVITY,
+      currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
+      currentWalletSubpage: WALLET_SUB_PAGE.NONE,
     };
   }
 
@@ -173,6 +179,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
             address={address}
           />
         )
+      case WALLET_SUB_PAGE.LOAD_UP_SPANK:
+        return <LoadUpSpank />
       case WALLET_SUB_PAGE.NONE:
       default:
         return null
