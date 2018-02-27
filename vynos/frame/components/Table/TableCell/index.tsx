@@ -1,4 +1,4 @@
-import React from 'react'
+import * as React from 'react'
 import * as PropTypes from 'prop-types'
 
 export const TableCell: React.SFC<any> = function(props) {

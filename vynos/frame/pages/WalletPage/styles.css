@@ -156,3 +156,211 @@
 .ctaContentWrapper:hover .ctaDivider {
   visibility: hidden;
 }
+
+.walletActivityWrapper {
+  background: #f0f0f0;
+  padding: 2.5rem 0;
+}
+
+.walletActivityHeaderRow {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 1.3rem;
+  padding: 0 2.5rem;
+}
+
+.walletActivityHeader {
+  font-family: gt-haptik;
+  font-size: 1.6rem;
+  font-weight: 600;
+  color: #797979;
+}
+
+.walletAmountWrapper {
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+  flex-direction: row;
+}
+
+.walletAmount {
+  font-family: CartographMonoCF;
+  color: #797979;
+  font-weight: 600;
+  font-size: 1rem;
+  border-radius: 3rem;
+  border: 0.5px solid #cccccc;
+  padding: 0 0.5rem;
+}
+
+.walletEqual {
+  margin: 0 0.4rem;
+}
+
+.walletEqual, .walletConverted {
+  font-weight: 500;
+  color: #797979;
+}
+
+.walletConverted {
+  font-family: CartographMonoCF;
+  font-size: 1rem;
+}
+
+.walletActivityTable {
+  border-collapse: collapse;
+  border: none;
+  background: #f0f0f0;
+  width: 100%;
+}
+
+.walletActivityTable th,
+.walletActivityTable td,
+.walletActivityTable td div {
+  font-family: CartographMonoCF;
+}
+
+.walletActivityTableHeader {
+  border-bottom: 0.5px solid #e5e5e5;
+}
+
+.walletActivityHeaderCell {
+  font-size: 0.6rem;
+  color: #b5b5b5;
+  font-weight: 600;
+}
+
+.walletActivityEntry {
+  border-bottom: 1px solid #e5e5e5;
+}
+
+.walletActivityDate {
+  padding-left: 2.5rem;
+}
+
+.walletActivityTime {
+  padding: 0 2rem;
+}
+
+.walletActivityPrice {
+  padding: 1.5rem 0 1.5rem 3rem;
+  text-align: right;
+}
+
+.walletActivityMonth {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #b5b5b5;
+  text-align: center;
+}
+
+.walletActivityDay {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #797979;
+  text-align: center;
+  margin-top: -0.7rem;
+}
+
+.walletActivityStart,
+.walletActivityEnd,
+.walletActivityTimeSeparator {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #797979;
+}
+
+.walletActivityStart {
+  display: inline-block;
+}
+
+.walletActivityTimeSeparator {
+  display: inline-block;
+}
+
+.walletActivityEnd {
+  display: block;
+  margin-top: -0.7rem;
+}
+
+.walletActivityItem,
+.walletActivityDescription {
+  font-size: 0.7rem;
+  font-weight: 500;
+}
+
+.walletActivityItem {
+  color: #797979;
+}
+
+.walletActivityDescription {
+  color: #b5b5b5;
+  margin-top: -0.7rem;
+}
+
+.walletActivitySubtract,
+.walletActivitySubtractAmount,
+.walletActivitySendAmount {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #d0021b;
+  display: inline-block;
+}
+
+.walletActivitySubtractAmount {
+  border-radius: 1rem;
+  border: 0.5px solid #cccccc;
+  font-size: 0.9rem;
+  padding: 0rem 0.3rem;
+  margin-left: 0.3rem;
+}
+
+.walletActivityReceiveAmount {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2ae585;
+}
+
+.walletActivityAction {
+  padding-left: 2rem;
+  padding-right: 2.5rem;
+}
+
+.walletActivityMore {
+  color: #797979;
+  border-radius: 3rem;
+  border: 0.5px solid #cccccc;
+  letter-spacing: -6px;
+  width: 27px;
+  line-height: 7px;
+  height: 27px;
+  text-align: center;
+  padding-right: 0.4rem;
+  padding-top: 0.35rem;
+}
+
+.walletActivityMore:hover {
+  cursor: pointer;
+}
+
+.selected {
+  background-color: #ffffff;
+}
+
+.selected.walletActivityDetails .walletActivityPrice {
+  padding: 0.3rem 0 0.3rem 3rem;
+}
+
+.selected.first.walletActivityDetails .walletActivityPrice,
+.selected.first.walletActivityDetails .walletActivityTime,
+.selected.first.walletActivityDetails .walletActivityItemDescription {
+  padding-top: 1rem;
+}
+
+.selected.last.walletActivityDetails .walletActivityPrice,
+.selected.last.walletActivityDetails .walletActivityTime,
+.selected.last.walletActivityDetails .walletActivityItemDescription {
+  padding-bottom: 1rem;
+}

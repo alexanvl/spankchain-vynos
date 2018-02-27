@@ -60,8 +60,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       // TODO: backend integration to retrieve SpankCard balance
       spankBalance: '23',
       sendShown: false,
-      currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
-      currentWalletSubpage: WALLET_SUB_PAGE.NONE,
+      currentWalletPage: SPANK_CARD,
+      currentWalletSubpage: ACTIVITY,
     };
   }
 
@@ -75,19 +75,19 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
             let currentWalletPage, currentWalletSubpage;
             const currentBalance = web3.fromWei(balance, 'ether').toString()
 
-            if (Number(balance) === 0) {
-              currentWalletPage = WALLET_MAIN_PAGE.SEND_RECEIVE
-              currentWalletSubpage = WALLET_SUB_PAGE.NO_BALANCE
-            } else {
-              currentWalletPage = WALLET_MAIN_PAGE.SPANK_CARD
-              currentWalletSubpage = WALLET_SUB_PAGE.NONE
-            }
+            // if (Number(balance) === 0 && Number(this.state.spankBalance) === 0) {
+            //   currentWalletPage = SEND_RECEIVE
+            //   currentWalletSubpage = NO_BALANCE
+            // } else {
+            //   currentWalletPage = SPANK_CARD
+            //   currentWalletSubpage = NONE
+            // }
 
-            this.setState({
-              balance: currentBalance,
-              // currentWalletPage,
-              // currentWalletSubpage,
-            })
+            // this.setState({
+            //   balance: currentBalance,
+            //   currentWalletPage,
+            //   currentWalletSubpage,
+            // })
           })
         }, 500)
         this.setState({
