@@ -8,6 +8,10 @@
   padding-left: 1rem;
 }
 
+.ctaInputValue {
+  flex: 1 0 auto;
+}
+
 .ctaInputText {
   padding: .5rem 4rem;
   background: #fff;

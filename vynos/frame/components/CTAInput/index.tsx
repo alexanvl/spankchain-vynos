@@ -6,6 +6,7 @@ const s = require('./style.css')
 const CTAInput: React.SFC<any> = function(props) {
   const {
     className,
+    ctaContentClass,
     checked,
     onChange,
     value,
@@ -19,8 +20,10 @@ const CTAInput: React.SFC<any> = function(props) {
       [s.inverse]: isInverse,
       [s.connected]: isConnected,
     })}>
-      {value}
-      <div className={s.ctaInputText}>
+      <div className={s.ctaInputValue}>
+        {value}
+      </div>
+      <div className={classnames(s.ctaInputText, ctaContentClass)}>
         {ctaContent()}
       </div>
     </div>
@@ -29,6 +32,7 @@ const CTAInput: React.SFC<any> = function(props) {
 
 CTAInput.defaultProps = {
   className: '',
+  ctaContentClass: '',
   checked: null,
   onChange() {},
   isInverse: false,
