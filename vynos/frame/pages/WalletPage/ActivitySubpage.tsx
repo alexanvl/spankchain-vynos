@@ -78,8 +78,7 @@ class ActivitySubpage extends React.Component<any, any> {
                 <div className={s.walletActivityDay}>14</div>
               </T.TableCell>
               <T.TableCell className={s.walletActivityTime}>
-                <div className={s.walletActivityStart}>7:15</div>
-                <div className={s.walletActivityTimeSeparator}>-</div>
+                <div className={s.walletActivityStart}>7:15-</div>
                 <div className={s.walletActivityEnd}>7:15pm</div>
               </T.TableCell>
               <T.TableCell className={s.walletActivityItemDescription}>

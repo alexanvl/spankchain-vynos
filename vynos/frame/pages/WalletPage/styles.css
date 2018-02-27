@@ -262,7 +262,6 @@
   font-weight: 600;
   color: #797979;
   text-align: center;
-  margin-top: -0.7rem;
 }
 
 .walletActivityStart,
@@ -273,17 +272,8 @@
   color: #797979;
 }
 
-.walletActivityStart {
-  display: inline-block;
-}
-
-.walletActivityTimeSeparator {
-  display: inline-block;
-}
-
 .walletActivityEnd {
   display: block;
-  margin-top: -0.7rem;
 }
 
 .walletActivityItem,
@@ -298,7 +288,6 @@
 
 .walletActivityDescription {
   color: #b5b5b5;
-  margin-top: -0.7rem;
 }
 
 .walletActivitySubtract,
@@ -314,7 +303,7 @@
   border-radius: 1rem;
   border: 0.5px solid #cccccc;
   font-size: 0.9rem;
-  padding: 0rem 0.3rem;
+  padding: 0.2rem 0.3rem;
   margin-left: 0.3rem;
 }
 
@@ -340,18 +329,17 @@
 
 .walletActivityMore {
   color: #797979;
-  padding-right: 0.4rem;
-  padding-top: 0.35rem;
-  line-height: 7px;
-  letter-spacing: -6px;
+  line-height: 1.1rem;
+  letter-spacing: -0.4rem;
+  text-align: center;
+  text-indent: -0.4rem;
 }
 
 .walletActivityLess {
   color: #797979;
-  width: 27px;
-  height: 27px;
   font-weight: 600;
   border: 0.5px solid #cccccc;
+  line-height: 1.5rem;
 }
 
 .walletActivityMore:hover {
