@@ -19,6 +19,10 @@ const s = require('./ReceiveEther.css')
 
 export interface MapStateToProps {
   address: string
+  headerText: string
+  descriptionLineOne: string
+  descriptionLineTwo: string
+  linkText: string
 }
 
 export interface MapDispatchToProps {
@@ -39,18 +43,26 @@ function renderQR(address: string) {
 export class ReceiveEther extends React.Component<ReceiveEtherProps, any> {
 
   render() {
-    const { address } = this.props;
+    const {
+      address,
+      headerText,
+      descriptionLineOne,
+      descriptionLineTwo,
+      linkText,
+    } = this.props;
 
     return (
       <div className={s.container}>
-        <div className={s.header}>Receive Ether / Deposit</div>
+        <div className={s.header}>{headerText}</div>
         <div className={s.descriptionWrapper}>
           <div className={s.description}>
-            This is your Wallet address. You can copy it and
+            {descriptionLineOne}
           </div>
           <div className={s.description}>
-            send crypto from places like Coinbase.
-            <span className={s.seeTutorialText}>See Tutorial -></span>
+            {descriptionLineTwo}
+            <span className={s.seeTutorialText}>
+              {`${linkText} ->`}
+            </span>
           </div>
         </div>
         <div className={s.addressWrapper}>

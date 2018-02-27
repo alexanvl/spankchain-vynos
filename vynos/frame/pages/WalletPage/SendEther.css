@@ -5,7 +5,7 @@
 .header {
   padding: 2rem 3rem;
   font-family: gt-haptik;
-  font-size: 2rem;
+  font-size: 1.8rem;
   font-weight: 500;
   color: #797979;
 }
@@ -93,10 +93,12 @@
 }
 
 .adjustGasButton:hover {
+  color: white;
   background-color: rgba(121, 121, 121, 0.9);
 }
 
 .adjustGasButton:active {
+  color: white;
   background-color: #797979;
 }
 

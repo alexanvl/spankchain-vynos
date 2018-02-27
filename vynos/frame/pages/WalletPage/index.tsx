@@ -12,7 +12,6 @@ import WorkerProxy from '../../WorkerProxy'
 import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
 import ActivitySubpage from './ActivitySubpage'
-import NoBalanceSubpage from './NoBalanceSubpage'
 import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './SpankCardPage'
 import SendEther from './SendEther'
@@ -153,11 +152,27 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       case WALLET_SUB_PAGE.ACTIVITY:
         return <ActivitySubpage />
       case WALLET_SUB_PAGE.NO_BALANCE:
-        return <NoBalanceSubpage address={address} />
+        return (
+          <ReceiveEther
+            headerText="Not enough funds in your Wallet"
+            descriptionLineOne="If you want to tip them titties you have to send Ether to"
+            descriptionLineTwo="your SpankWallet."
+            linkText="See how to do this on Coinbase"
+            address={address}
+          />
+        )
       case WALLET_SUB_PAGE.SEND_ETHER:
         return <SendEther />
       case WALLET_SUB_PAGE.RECEIVE_ETHER:
-        return <ReceiveEther address={address} />
+        return (
+          <ReceiveEther
+            headerText="Receive Ether / Deposit"
+            descriptionLineOne="This is your Wallet address. You can copy it and"
+            descriptionLineTwo="send crypto from places like Coinbase."
+            linkText="See Tutorial"
+            address={address}
+          />
+        )
       case WALLET_SUB_PAGE.NONE:
       default:
         return null
