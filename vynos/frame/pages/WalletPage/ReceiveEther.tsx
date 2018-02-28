@@ -18,7 +18,7 @@ const s = require('./ReceiveEther.css')
 
 
 export interface MapStateToProps {
-  address: string
+  address: string|null
   headerText: string
   descriptionLineOne: string
   descriptionLineTwo: string
@@ -31,7 +31,11 @@ export interface MapDispatchToProps {
 
 export type ReceiveEtherProps = MapStateToProps & MapDispatchToProps
 
-function renderQR(address: string) {
+function renderQR(address: string|null) {
+  if (!address) {
+    return null
+  }
+
   let pngBuffer = qr.imageSync(address, {type: 'png', margin: 1}) as Buffer
   let dataURI = 'data:image/png;base64,' + pngBuffer.toString('base64')
 
@@ -72,7 +76,7 @@ export class ReceiveEther extends React.Component<ReceiveEtherProps, any> {
             ctaContentClass={s.ctaInputContent}
             value={address}
             ctaContent={() => (
-              <div className={s.ctaContentWrapper} onClick={() => copy(address)}>
+              <div className={s.ctaContentWrapper} onClick={() => address && copy(address)}>
                 <div className={s.ctaIcon} />
                 <span className={s.ctaText}>Copy</span>
               </div>

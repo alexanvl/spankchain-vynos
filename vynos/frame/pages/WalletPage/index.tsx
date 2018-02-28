@@ -46,11 +46,11 @@ export interface WalletPageStateProps {
   path: string
   web3: Web3
   workerProxy: WorkerProxy
+  address: string|null
+  walletBalance: string|null
 }
 
 export interface WalletPageState {
-  address: string
-  balance: string
   currentWalletPage: string
   currentWalletSubpage: string
   spankBalance: string
@@ -63,46 +63,12 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   constructor (props: any) {
     super(props);
     this.state = {
-      address: '',
-      balance: '0',
       // TODO: backend integration to retrieve SpankCard balance
-      spankBalance: '23',
+      spankBalance: '0',
       sendShown: false,
       currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
       currentWalletSubpage: WALLET_SUB_PAGE.NONE,
     };
-  }
-
-  componentDidMount () {
-    if (this.props.web3) {
-      let web3 = this.props.web3
-      web3.eth.getAccounts((err, accounts) => {
-        let address = accounts[0]
-        this.updateBalanceTimer = setInterval(() => {
-          web3.eth.getBalance(address, (err, balance) => {
-            let currentWalletPage, currentWalletSubpage;
-            const currentBalance = web3.fromWei(balance, 'ether').toString()
-
-            // if (Number(balance) === 0 && Number(this.state.spankBalance) === 0) {
-            //   currentWalletPage = SEND_RECEIVE
-            //   currentWalletSubpage = NO_BALANCE
-            // } else {
-            //   currentWalletPage = SPANK_CARD
-            //   currentWalletSubpage = NONE
-            // }
-
-            // this.setState({
-            //   balance: currentBalance,
-            //   currentWalletPage,
-            //   currentWalletSubpage,
-            // })
-          })
-        }, 500)
-        this.setState({
-          address: address
-        })
-      })
-    }
   }
 
   // renderSubpage () {
@@ -128,7 +94,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   // }
 
   renderMainPage() {
-    const { balance, currentWalletPage, spankBalance, address } = this.state;
+    const { currentWalletPage, spankBalance } = this.state
+    const { walletBalance, address } = this.props
 
     switch (currentWalletPage) {
       case WALLET_MAIN_PAGE.SPANK_CARD:
@@ -141,7 +108,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       case WALLET_MAIN_PAGE.SEND_RECEIVE:
         return (
           <SendReceivePage
-            balance={balance}
+            balance={walletBalance}
             address={address}
             onSendEtherClick={() => this.setState({ currentWalletSubpage: WALLET_SUB_PAGE.SEND_ETHER })}
             onReceiveEtherClick={() => this.setState({ currentWalletSubpage: WALLET_SUB_PAGE.RECEIVE_ETHER })}
@@ -153,7 +120,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 
   renderSubPage() {
-    const { address, currentWalletSubpage } = this.state;
+    const { currentWalletSubpage } = this.state;
+    const { address } = this.props
 
     switch (currentWalletSubpage) {
       case WALLET_SUB_PAGE.ACTIVITY:
@@ -211,6 +179,8 @@ function mapStateToProps(state: FrameState): WalletPageStateProps {
     path: state.shared.rememberPath,
     web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
+    address: state.wallet.main.address,
+    walletBalance: state.wallet.main.balance,
   }
 }
 

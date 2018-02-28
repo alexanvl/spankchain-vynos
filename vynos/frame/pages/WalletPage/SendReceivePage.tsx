@@ -7,8 +7,8 @@ const s = require("./styles.css");
 export interface Props {
   onSendEtherClick: () => void
   onReceiveEtherClick: () => void
-  address: string
-  balance: string
+  address: string|null
+  balance: string|null
 }
 
 
@@ -20,13 +20,13 @@ const SendReceivePage: React.SFC<Props> = (props) => {
     <div className={s.walletCard}>
       <div className={s.walletFunds}>
         <div className={s.walletFundsHeader}>Wallet Funds</div>
-        <div className={s.walletBalance}>${balance}</div>
+        <div className={s.walletBalance}>${balance || ' - '}</div>
       </div>
       <div className={s.walletActions}>
         <Button
           type="secondary"
           content="Copy Address"
-          onClick={() => copy(address)}
+          onClick={() => address && copy(address)}
           isMini
         />
         <Button

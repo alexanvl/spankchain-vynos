@@ -79,7 +79,7 @@ export default class Namespace {
       if (!data || !data.type) {
         return
       }
-      console.log(data.type)
+
       switch (data.type) {
         case 'vynos/parent/signupComplete':
           this.eventBus.emit('signupComplete')

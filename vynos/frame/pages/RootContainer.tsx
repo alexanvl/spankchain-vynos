@@ -44,11 +44,13 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
     const { web3, updateBalance, updateAddress } = this.props
 
     if (!web3) {
+      setTimeout(this.startWatching, 500);
       return;
     }
 
     web3.eth.getAccounts((err, accounts) => {
       if (err || !accounts || !accounts.length) {
+        setTimeout(this.startWatching, 500);
         return;
       }
 
@@ -57,10 +59,10 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
         const currentBalance = web3.fromWei(balance, 'ether').toString()
         updateAddress(address)
         updateBalance(currentBalance)
+        setTimeout(this.startWatching, 5000);
       })
     });
     
-    setTimeout(this.startWatching, 5000);
   }
 
   closeWallet = () => {
