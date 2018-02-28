@@ -1,12 +1,26 @@
 import * as React from "react";
+import {FrameState} from '../../redux/FrameState'
+import {connect} from 'react-redux'
 import CTAInput from '../../components/CTAInput/index'
 import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
 
 const s = require("./styles.css");
 
-const SpankCardPage: React.SFC<any> = (props) => {
-  const { spankBalance, onActivityClick } = props;
+export interface MapStateToProps {
+  walletBalance: string|null
+}
+
+export interface OwnProps {
+  spankBalance: string
+  onActivityClick: () => void
+  onGoToWalletView: () => void
+}
+
+export interface Props extends MapStateToProps,OwnProps{}
+
+const SpankCardPage: React.SFC<Props> = (props) => {
+  const { spankBalance, onActivityClick, walletBalance, onGoToWalletView } = props;
 
   return (
     <div className={s.walletSpankCardWrapper}>
@@ -16,7 +30,7 @@ const SpankCardPage: React.SFC<any> = (props) => {
           <CTAInput
             isInverse
             isConnected
-            value={`$${spankBalance}`}
+            value={`$${walletBalance || ' - '}`}
             ctaInputValueClass={s.spankCardCtaInputValue}
             ctaContent={() => (
               <div className={s.ctaContentWrapper} onClick={() => console.log('Filling')}>
@@ -27,7 +41,7 @@ const SpankCardPage: React.SFC<any> = (props) => {
           />
         </div>
         <div className={s.walletRowAction}>
-          <Button type="tertiary" content="More" />
+          <Button type="tertiary" content="More" onClick={onGoToWalletView} />
         </div>
       </div>
       <div className={s.walletSpankCardDetails}>
@@ -52,5 +66,10 @@ const SpankCardPage: React.SFC<any> = (props) => {
   )
 };
 
+function mapStateToProps(state: FrameState, ownProps: OwnProps): MapStateToProps {
+  return {
+    walletBalance: state.wallet.main.balance,
+  }
+}
 
-export default SpankCardPage;
+export default connect(mapStateToProps)(SpankCardPage);

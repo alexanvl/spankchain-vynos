@@ -7,9 +7,9 @@ import * as classnames from 'classnames'
 // import * as copy from 'copy-to-clipboard'
 // import * as qr from 'qr-image'
 // import postMessage from "../../lib/postMessage"
-// import {FrameState} from "../../redux/FrameState"
+import {FrameState} from "../../redux/FrameState"
 // import WorkerProxy from "../../WorkerProxy"
-// import * as actions from "../../redux/actions"
+import * as actions from "../../redux/actions"
 import Input from "../../components/Input/index"
 import Button from "../../components/Button/index"
 
@@ -17,7 +17,7 @@ const s = require('./LoadUpSpank.css')
 
 
 export interface MapStateToProps {
-  
+  walletBalance: string|null
 }
 
 export interface MapDispatchToProps {
@@ -43,9 +43,10 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, any> {
   }
 }
 
-// export default connect(
-//   null,
-//   null,
-// )(LoadUpSpank)
+function mapStateToProps(state: FrameState): MapStateToProps {
+  return {
+    walletBalance: state.wallet.main.balance,
+  }
+}
 
-export default LoadUpSpank
+export default connect(mapStateToProps)(LoadUpSpank)

@@ -57,6 +57,18 @@ export interface WalletPageState {
   sendShown: boolean
 }
 
+function hasBalance(balance: string|null): boolean {
+  if (!balance) {
+    return false
+  }
+
+  if (!Number(balance)) {
+    return false
+  }
+
+  return true
+}
+
 export class WalletPage extends React.Component<WalletPageStateProps, WalletPageState> {
   updateBalanceTimer: any;
 
@@ -69,6 +81,38 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
       currentWalletSubpage: WALLET_SUB_PAGE.NONE,
     };
+  }
+
+  getCurrentView() {
+    const { walletBalance } = this.props
+    const { spankBalance } = this.state
+
+    if (!hasBalance(walletBalance) && !hasBalance(spankBalance)) {
+      return {
+        currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
+        currentWalletSubpage: WALLET_SUB_PAGE.LOAD_UP_SPANK,
+      }
+    }
+
+    if (hasBalance(spankBalance)) {
+      return {
+        currentWalletPage: WALLET_MAIN_PAGE.SPANK_CARD,
+        currentWalletSubpage: WALLET_SUB_PAGE.NONE,
+      }
+    }
+
+    return {
+      currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
+      currentWalletSubpage: WALLET_SUB_PAGE.NONE,
+    }
+  }
+
+  componentWillMount() {
+    const { currentWalletPage, currentWalletSubpage } = this.getCurrentView()
+    this.setState({
+      currentWalletPage,
+      currentWalletSubpage,
+    })
   }
 
   // renderSubpage () {
@@ -102,6 +146,10 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         return (
           <SpankCardPage
             spankBalance={spankBalance}
+            onGoToWalletView={() => this.setState({
+              currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
+              currentWalletSubpage: WALLET_SUB_PAGE.GO_BACK_TO_SPANK_CARD,
+            })}
             onActivityClick={() => this.setState({ currentWalletSubpage: WALLET_SUB_PAGE.ACTIVITY })}
           />
         )
@@ -153,7 +201,14 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       case WALLET_SUB_PAGE.GO_BACK_TO_SPANK_CARD:
         return (
           <div className={s.goBackContainer}>
-            <Button className={s.goBackButton} content="Back to SpankCard" />
+            <Button
+              className={s.goBackButton}
+              content="Back to SpankCard"
+              onClick={() => this.setState({
+                currentWalletPage: WALLET_MAIN_PAGE.SPANK_CARD,
+                currentWalletSubpage: WALLET_SUB_PAGE.NONE,
+              })}
+            />
           </div>
         );
       case WALLET_SUB_PAGE.NONE:

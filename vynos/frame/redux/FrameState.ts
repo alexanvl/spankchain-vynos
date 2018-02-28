@@ -13,7 +13,7 @@ export interface TempState {
 
 export interface WalletMainState {
   address: string|null
-  balance: any
+  balance: string|null
 }
 
 export interface WalletState {
