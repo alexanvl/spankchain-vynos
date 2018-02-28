@@ -86,6 +86,10 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 
   render () {
+    if (!this.props.walletBalance) {
+      return <noscript />
+    }
+
     return (
       <div className={s.walletWrapper}>
         {this.renderMainPage()}

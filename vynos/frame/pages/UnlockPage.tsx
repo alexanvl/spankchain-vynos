@@ -137,7 +137,9 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
               isMini
             />
             <Button
-              content="Next"
+              content={() => (
+                <div className={style.loginButton} />
+              )}
               onClick={this.handleSubmit}
               isInverse
               isMini

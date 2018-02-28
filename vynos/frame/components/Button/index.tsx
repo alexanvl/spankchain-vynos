@@ -32,13 +32,19 @@ class Button extends React.Component<ButtonProps> {
     }).isRequired
   };
 
+  static defaultProps = {
+    type: BUTTON_TYPES.PRIMARY,
+    className: '',
+  }
+
   render () {
     const {
       type,
       className,
       isInverse,
       disabled,
-      isMini
+      isMini,
+      content,
     } = this.props
 
     const cn = classnames(s.btn, className, {
@@ -55,7 +61,7 @@ class Button extends React.Component<ButtonProps> {
         onClick={(e: any) => this.onClick(e)}
         disabled={disabled}
       >
-        {this.props.content}
+        {typeof content === 'function' ? content() : content }
       </button>
     )
   }

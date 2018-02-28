@@ -631,6 +631,13 @@ Channels page
   display: inline-flex !important;
 }
 
+.loginButton {
+  background-image: url(./images/arrow-right-pink.svg);
+  height: 1rem;
+  background-repeat: no-repeat;
+  background-size: 100% 1rem;
+}
+
 .content {
   display: flex;
   flex-flow: column nowrap;

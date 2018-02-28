@@ -36,7 +36,7 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, any> {
           You have funds in your wallet, please load up your SpankCard
         </div>
         <div className={s.footer}>
-          <Button content="Load up $69 into SpankCard" />
+          <Button content={`Load up $${this.props.walletBalance} into SpankCard`} />
         </div>
       </div>
     )
