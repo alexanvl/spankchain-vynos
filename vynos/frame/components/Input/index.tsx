@@ -10,6 +10,7 @@ const Input: React.SFC<any> = function(props) {
     disabled,
     placeholder,
     onChange,
+    onBlur,
     errorMessage,
     value,
     autoFocus,
@@ -26,6 +27,7 @@ const Input: React.SFC<any> = function(props) {
         disabled={disabled}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         autoFocus
       />
       <div className={s.errorMessage}>{errorMessage}</div>

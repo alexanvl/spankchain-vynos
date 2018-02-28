@@ -35,9 +35,10 @@
   border: 2px solid #b5b5b5 !important;
   border-radius: 4rem !important;
   padding-left: 1rem !important;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
   font-weight: 500;
   color: #000 !important;
+  text-transform: none !important;
 }
 
 .input input::placeholder {
@@ -48,6 +49,10 @@
 .input input::-webkit-inner-spin-button {
     -webkit-appearance: none;
     margin: 0;
+}
+
+.input div {
+  margin-left: 1rem;
 }
 
 .inputResult {
