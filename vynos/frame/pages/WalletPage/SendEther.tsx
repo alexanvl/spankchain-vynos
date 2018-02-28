@@ -27,7 +27,11 @@ export interface MapDispatchToProps {
   
 }
 
-export type SendEtherProps = MapStateToProps & MapDispatchToProps
+export interface OwnProps {
+  history: any
+}
+
+export type SendEtherProps = MapStateToProps & MapDispatchToProps & OwnProps
 
 export interface SendEtherState {
   addressError: string
@@ -36,6 +40,7 @@ export interface SendEtherState {
   balance: string
   isAddressDirty: boolean
   isBalanceDirty: boolean
+  disableSend: boolean
 }
 
 export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
@@ -48,6 +53,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       address: '',
       addressError: '',
       isAddressDirty: false,
+      disableSend: false,
     }
   }
 
@@ -147,6 +153,8 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       return
     }
 
+    this.setState({ disableSend: true })
+
     const tx = {
       from: walletAddress,
       to: address,
@@ -157,16 +165,30 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       if (err) {
         this.setState({
           balanceError: err.message,
+          disableSend: false,
         })
         return
       }
 
-      console.log('Transaction hash :', transactionHash);
+      this.setState({
+        balance: '',
+        balanceError: '',
+        isBalanceDirty: false,
+        address: '',
+        addressError: '',
+        isAddressDirty: false,
+        disableSend: false,
+      }, () => {
+        this.props.history.push('/wallet')
+      })
+
+      // console.log('Transaction hash :', transactionHash);
     })
   }
 
   render() {
-    const { addressError, balanceError } = this.state
+    const { addressError, balanceError, disableSend } = this.state
+    const { web3, walletAddress } = this.props
 
     return (
       <div className={s.container}>
@@ -206,7 +228,11 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
             className={s.adjustGasButton}
             content="Adjust Gas Limit/Price"
           />
-          <Button content="Next" onClick={this.onSendTransaction}/>
+          <Button
+            content="Next"
+            onClick={this.onSendTransaction}
+            disabled={!!addressError || !!balanceError || disableSend || !web3 || !walletAddress}
+          />
         </div>
       </div>
     )

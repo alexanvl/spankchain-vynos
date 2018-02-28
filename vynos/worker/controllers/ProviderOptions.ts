@@ -30,16 +30,17 @@ export default class ProviderOptions {
   }
 
   approveTransaction(txParams: any, callback: ApproveTransactionCallback) {
-    let transaction = transactions.ethereum(randomId().toString(), txParams.to, txParams.value, 0)
-    this.transactions.approveTransaction(transaction).then(result => {
-      if (result) {
-        callback(null, result)
-      } else {
-        callback('Vynos: User rejected transaction')
-      }
-    }).catch(error => {
-      callback(error.message)
-    })
+    callback(null, true)
+    // let transaction = transactions.ethereum(randomId().toString(), txParams.to, txParams.value, 0)
+    // this.transactions.approveTransaction(transaction).then(result => {
+    //   if (result) {
+    //     callback(null, result)
+    //   } else {
+    //     callback('Vynos: User rejected transaction')
+    //   }
+    // }).catch(error => {
+    //   callback(error.message)
+    // })
   }
 
   approveTransactionAlways(txParams: any, callback: ApproveTransactionCallback) {
