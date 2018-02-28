@@ -22,7 +22,6 @@ function webpackConfig (entry, devSupplement) {
       path: DIST_PATH
     },
     plugins: [
-      new webpack.HotModuleReplacementPlugin(),
       new webpack.NamedModulesPlugin(),
       new webpack.DefinePlugin({
         "window.RPC_URL": JSON.stringify(RPC_URL),
@@ -42,7 +41,7 @@ function webpackConfig (entry, devSupplement) {
         {
           test: /\.tsx?$/,
           exclude: [/node_modules/],
-          loaders: process.env.NODE_ENV === 'production' ? ["ts-loader"] : ["react-hot-loader/webpack", "ts-loader"]
+          loaders: ['ts-loader']
         },
         {
           enforce: "pre",
@@ -150,15 +149,9 @@ function webpackConfig (entry, devSupplement) {
 
 const VYNOS_LIVE = webpackConfig({
   vynos: [
-    'react-hot-loader/patch',
-    `webpack-dev-server/client?http://localhost:${process.env.HARNESS_PORT}`,
-    'webpack/hot/only-dev-server',
     path.resolve(__dirname, "vynos/vynos.ts"),
   ],
   frame: [
-    'react-hot-loader/patch',
-    `webpack-dev-server/client?http://localhost:${process.env.FRAME_PORT}`,
-    'webpack/hot/only-dev-server',
     path.resolve(__dirname, "vynos/frame.ts")
   ],
   worker: [

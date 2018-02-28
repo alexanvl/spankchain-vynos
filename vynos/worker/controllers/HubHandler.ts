@@ -13,7 +13,6 @@ export default class HubHandler {
 
   initializeHub (message: InitializeRequest, next: Function, end: EndFunction) {
     this.controller.initialize(message.params[0], message.params[1])
-      .then(() => this.controller.getHubBranding())
       .then(() => {
         const response: InitializeResponse = {
           id: message.id,

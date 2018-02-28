@@ -38,7 +38,6 @@ gulp.task("build:harness", ["build"], callback => {
 gulp.task("serve", () => {
   new WebpackDevServer(webpack(VYNOS_LIVE), {
     contentBase: 'vynos/',
-    hot: true,
     historyApiFallback: true,
     quiet: false,
     noInfo: false,
@@ -55,14 +54,13 @@ gulp.task("serve", () => {
     compress: true
   }).listen(process.env.FRAME_PORT, 'localhost', function(err) {
     if(err) throw new gutil.PluginError('build:serve', err);
-    gutil.log('webpack-dev-server', `http://localhost:${process.env.FRAME_PORT}/webpack-dev-server/index.html`);
+    gutil.log('webpack-dev-server', `http://localhost:${process.env.FRAME_PORT}/`);
   });
 });
 
 gulp.task("serve:built", () => {
   new WebpackDevServer(webpack(VYNOS), {
     contentBase: 'vynos/',
-    hot: true,
     historyApiFallback: true,
     quiet: false,
     noInfo: false,
@@ -78,7 +76,7 @@ gulp.task("serve:built", () => {
     }
   }).listen(process.env.FRAME_PORT, 'localhost', function(err) {
     if(err) throw new gutil.PluginError('serve:built', err);
-    gutil.log('webpack-dev-server', `http://localhost:${process.env.FRAME_PORT}/webpack-dev-server/index.html`);
+    gutil.log('webpack-dev-server', `http://localhost:${process.env.FRAME_PORT}/`);
   });
 });
 
@@ -91,7 +89,7 @@ gulp.task("serve:harness", ["serve"], () => {
     compress: true
   }).listen(process.env.HARNESS_PORT, 'localhost', function(err) {
     if(err) throw new gutil.PluginError('harness:serve', err);
-    gutil.log('webpack-dev-server', `http://localhost:${process.env.HARNESS_PORT}/webpack-dev-server/index.html`);
+    gutil.log('webpack-dev-server', `http://localhost:${process.env.HARNESS_PORT}/`);
   });
 });
 

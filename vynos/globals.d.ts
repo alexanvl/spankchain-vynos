@@ -72,14 +72,6 @@ interface NodeModule {
   children: NodeModule[];
 }
 
-interface HotReload {
-  accept: (componentPath: string, callback: () => void) => void
-}
-
-interface HotModule extends NodeModule {
-  hot: HotReload
-}
-
 interface WindowClient {
   url: string
   id: string

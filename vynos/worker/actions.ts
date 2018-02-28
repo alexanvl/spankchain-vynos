@@ -130,24 +130,20 @@ export function setCurrentAuthRealmHandler(state: WorkerState, currentAuthRealm:
 }
 
 export interface SetBrandingParam {
-  hubUrl: string
-  cardName: string
-  cardImageUrl: string
+  title?: string
+  companyName?: string
+  username?: string
+  backgroundColor?: string
+  textColor?: string
 }
 
 export const setHubBranding = actionCreator<SetBrandingParam>('persistent/setHubBranding')
 export function setHubBrandingHandler(state: WorkerState, branding: SetBrandingParam): WorkerState {
   return {
     ...state,
-    persistent: {
-      ...state.persistent,
-      branding: {
-        ...state.persistent.branding,
-        [branding.hubUrl]: {
-          cardName: branding.cardName,
-          cardImageUrl: branding.cardImageUrl
-        }
-      }
+    runtime: {
+      ...state.runtime,
+      branding
     }
   }
 }

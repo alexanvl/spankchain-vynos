@@ -8,6 +8,7 @@ export interface RuntimeState {
   currentAuthRealm: string
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
+  branding: BrandingState
 }
 
 export interface AuthorizationRequestState {
@@ -26,21 +27,22 @@ export interface SharedState {
   authorizedHubs: AuthorizedHubsState
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
+  branding: BrandingState
 }
 
 export interface PersistentState {
   didInit: boolean,
   keyring?: string,
   rememberPath: string
-  branding: BrandingState
   authorizedHubs: AuthorizedHubsState
 }
 
 export interface BrandingState {
-  [hubUrl: string]: {
-    cardName: string,
-    cardImageUrl: string
-  }
+  title?: string
+  companyName?: string
+  username?: string
+  backgroundColor?: string
+  textColor?: string
 }
 
 export interface AuthorizedHubsState {
@@ -62,14 +64,14 @@ export const INITIAL_SHARED_STATE: SharedState = {
   authorizationRequest: null,
   currentHubUrl: '',
   currentAuthRealm: '',
-  isFrameDisplayed: false
+  isFrameDisplayed: false,
+  branding: {}
 }
 
 export const INITIAL_STATE: WorkerState = {
   persistent: {
     didInit: false,
     rememberPath: '/',
-    branding: {},
     authorizedHubs: {}
   },
   runtime: {
@@ -78,7 +80,8 @@ export const INITIAL_STATE: WorkerState = {
     currentHubUrl: '',
     currentAuthRealm: '',
     authorizationRequest: null,
-    isFrameDisplayed: false
+    isFrameDisplayed: false,
+    branding: {},
   },
 }
 
@@ -93,6 +96,7 @@ export function buildSharedState(state: WorkerState): SharedState {
     currentAuthRealm: state.runtime.currentAuthRealm,
     authorizationRequest: state.runtime.authorizationRequest,
     authorizedHubs: state.persistent.authorizedHubs,
-    isFrameDisplayed: state.runtime.isFrameDisplayed
+    isFrameDisplayed: state.runtime.isFrameDisplayed,
+    branding: state.runtime.branding
   }
 }

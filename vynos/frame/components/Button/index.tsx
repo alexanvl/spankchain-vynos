@@ -1,48 +1,74 @@
-import * as React from 'react'
+import * as React from 'react' // eslint-disable-line no-unused-vars
 import * as classnames from 'classnames'
+import {PropTypes} from 'react'
 
 const s = require('./style.css')
 
 export const BUTTON_TYPES = {
   PRIMARY: 'primary',
   SECONDARY: 'secondary',
-  TERTIARY: 'tertiary',
+  TERTIARY: 'tertiary'
 }
 
-const Button: React.SFC<any> = function(props) {
-  const {
-    type,
-    content,
-    className,
-    isInverse,
-    disabled,
-    onClick,
-    isMini,
-  } = props
+export type ButtonType = 'primary' | 'secondary' | 'tertiary'
 
-  return (
-    <button
-      className={classnames(s.btn, className, {
-        [s.primary]: type === BUTTON_TYPES.PRIMARY,
-        [s.secondary]: type === BUTTON_TYPES.SECONDARY,
-        [s.tertiary]: type === BUTTON_TYPES.TERTIARY,
-        [s.inverse]: isInverse,
-        [s.mini]: isMini,
-      })}
-      onClick={onClick}
-      disabled={disabled}
-    >
-      {props.content}
-    </button>
-  )
+export interface ButtonProps {
+  type?: ButtonType
+  className?: string
+  isInverse?: boolean
+  disabled?: boolean
+  isMini?: boolean
+  content: any
+  onClick?: (e: any) => void
+  to?: string
 }
 
-Button.defaultProps = {
-  type: BUTTON_TYPES.PRIMARY,
-  className: '',
-  isInverse: false,
-  disabled: false,
-  isMini: false,
+class Button extends React.Component<ButtonProps> {
+  static contextTypes = {
+    router: PropTypes.shape({
+      history: PropTypes.shape({
+        push: PropTypes.func.isRequired
+      }).isRequired
+    }).isRequired
+  };
+
+  render () {
+    const {
+      type,
+      className,
+      isInverse,
+      disabled,
+      isMini
+    } = this.props
+
+    const cn = classnames(s.btn, className, {
+      [s.primary]: type === BUTTON_TYPES.PRIMARY,
+      [s.secondary]: type === BUTTON_TYPES.SECONDARY,
+      [s.tertiary]: type === BUTTON_TYPES.TERTIARY,
+      [s.inverse]: isInverse,
+      [s.mini]: isMini
+    })
+
+    return (
+      <button
+        className={cn}
+        onClick={(e: any) => this.onClick(e)}
+        disabled={disabled}
+      >
+        {this.props.content}
+      </button>
+    )
+  }
+
+  onClick (e: any) {
+    if (this.props.to) {
+      this.context.router.history.push(this.props.to)
+    }
+
+    if (this.props.onClick) {
+      this.props.onClick(e)
+    }
+  }
 }
 
 export default Button

@@ -111,7 +111,7 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
         <Route path="/authorize" component={AuthorizePage} />
 
         <Switch>
-          <Route exact path="/wallet" component={WalletPage} />
+          <Route path="/wallet" component={WalletPage} />
           <Route exact path="/unlock" render={() => <UnlockPage next={this.props.isAuthorizationExpected ? '/authenticate' : '/wallet'}/>} />
           <Route path="/init" component={InitPage} />
         </Switch>
@@ -119,14 +119,6 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
         <Route path="/" render={() => null} />
       </Switch>
     )
-  }
-
-  hide() {
-    postMessage(window, {
-      type: 'vynos/parent/hideFull'
-    })
-
-    return null
   }
 }
 

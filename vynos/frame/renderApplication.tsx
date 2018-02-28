@@ -40,13 +40,6 @@ async function renderToMountPoint(mountPoint: HTMLElement, workerProxy: WorkerPr
   }
 
   reload()
-
-  let hotReload = (module as HotModule).hot
-  if (hotReload) {
-    hotReload.accept("./vynos/frame/pages/RootContainer.tsx", () => {
-      reload()
-    })
-  }
 }
 
 export default function renderApplication (document: HTMLDocument, workerProxy: WorkerProxy) {

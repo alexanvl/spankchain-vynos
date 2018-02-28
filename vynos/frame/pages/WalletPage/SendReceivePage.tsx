@@ -1,20 +1,18 @@
-import * as React from "react";
+import * as React from 'react'
 import Button from '../../components/Button/index'
 import * as copy from 'copy-to-clipboard'
 
-const s = require("./styles.css");
+const s = require('./styles.css')
 
 export interface Props {
-  onSendEtherClick: () => void
-  onReceiveEtherClick: () => void
   address: string|null
   balance: string|null
 }
 
 
 const SendReceivePage: React.SFC<Props> = (props) => {
-  const { balance, onSendEtherClick, onReceiveEtherClick, address } = props;
-  const s = require("./styles.css");
+  const {balance, address} = props
+  const s = require('./styles.css')
 
   return (
     <div className={s.walletCard}>
@@ -29,22 +27,22 @@ const SendReceivePage: React.SFC<Props> = (props) => {
           onClick={() => address && copy(address)}
           isMini
         />
-        <Button
-          type="secondary"
-          content="Receive Ether"
-          onClick={onReceiveEtherClick}
-          isMini
-        />
-        <Button
-          type="secondary"
-          content="Send Ether"
-          onClick={onSendEtherClick}
-          isMini
-        />
+          <Button
+          to="/wallet/receive"
+            type="secondary"
+            content="Receive Ether"
+            isMini
+          />
+          <Button
+          to="/wallet/send"
+            type="secondary"
+            content="Send Ether"
+            isMini
+          />
       </div>
     </div>
   )
-};
+}
 
 
-export default SendReceivePage;
+export default SendReceivePage

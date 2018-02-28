@@ -3,8 +3,11 @@ import {Store} from 'redux'
 import * as actions from '../actions'
 
 export interface BrandingResponse {
-  cardName: string
-  cardImageUrl: string
+  title?: string
+  companyName?: string
+  username?: string
+  backgroundColor?: string
+  textColor?: string
 }
 
 export default class HubController {
@@ -31,12 +34,10 @@ export default class HubController {
     this.store.dispatch(actions.setCurrentAuthRealm(authRealm))
   }
 
-  getHubBranding (): Promise<null> {
-    return fetch(`${this.hubUrl}/branding`)
-      .then((res) => res.json())
-      .then((res: BrandingResponse) => this.store.dispatch(actions.setHubBranding({
-        hubUrl: this.hubUrl,
-        ...res
-      }))).then(() => null)
+  async getHubBranding (): Promise<null> {
+    const res = await fetch(`${this.hubUrl}/branding`)
+    const resJson: BrandingResponse = await res.json()
+    this.store.dispatch(actions.setHubBranding(resJson))
+    return null
   }
 }
