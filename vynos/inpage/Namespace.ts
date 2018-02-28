@@ -100,6 +100,12 @@ export default class Namespace {
       this.previousState = nextState
     })
 
+    document.addEventListener('keydown', (e: KeyboardEvent) => {
+      if (e.which === 27) {
+        this.client.toggleFrame(false)
+      }
+    })
+
     return this.client
   }
 
@@ -119,6 +125,10 @@ export default class Namespace {
   }
 
   async display () {
+    return this.client.toggleFrame(true)
+  }
+
+  private async doDisplay() {
     await this.ready()
     const {didInit, isLocked} = (await this.client.getSharedState()).result
 
@@ -131,11 +141,7 @@ export default class Namespace {
     }
   }
 
-  setContainerStyle (style: CSSStyleDeclaration): void {
-    this.frame.setContainerStyle(style)
-  }
-
-  hide (): void {
+  private doHide() {
     this.ready()
       .then(client => client.getSharedState())
       .then(({result: {didInit, isLocked}}) => {
@@ -146,6 +152,14 @@ export default class Namespace {
           this.frame.hide()
         }
       })
+  }
+
+  setContainerStyle (style: CSSStyleDeclaration): void {
+    this.frame.setContainerStyle(style)
+  }
+
+  async hide () {
+    return this.client.toggleFrame(false)
   }
 
   async ready (): Promise<VynosClient> {
@@ -159,9 +173,9 @@ export default class Namespace {
   private handleSpecificEvents(newState: SharedState) {
     if (this.previousState.isFrameDisplayed !== newState.isFrameDisplayed) {
       if (newState.isFrameDisplayed) {
-        this.display()
+        this.doDisplay()
       } else {
-        this.hide()
+        this.doHide()
       }
     }
 

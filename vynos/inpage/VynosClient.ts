@@ -13,7 +13,7 @@ import {
   InitializeRequest,
   InitializeResponse,
   ListChannelsRequest,
-  ListChannelsResponse
+  ListChannelsResponse, ToggleFrameRequest
 } from '../lib/rpc/yns'
 import {JSONRPC, randomId} from '../lib/Payload'
 import {PaymentChannel} from 'machinomy/dist/lib/channel'
@@ -132,5 +132,16 @@ export default class VynosClient implements Vynos {
     }
 
     return this.provider.ask(request) as Promise<AuthenticateResponse>
+  }
+
+  toggleFrame(state: boolean): Promise<void> {
+    const request: ToggleFrameRequest = {
+      id: randomId(),
+      method: ToggleFrameRequest.method,
+      jsonrpc: JSONRPC,
+      params: [state]
+    }
+
+    return this.provider.ask(request).then(() => {})
   }
 }

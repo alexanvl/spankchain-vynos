@@ -2,36 +2,35 @@ import * as React from 'react'
 import * as DOM from 'react-dom'
 import WorkerProxy from './WorkerProxy'
 import {Provider, Store} from 'react-redux'
-
-// import 'semantic-ui-css/semantic.min.css';
-import {createLogger} from "redux-logger";
-import * as redux from "redux";
-import {FrameState, initialState} from "./redux/FrameState";
-import RemoteStore from "./lib/RemoteStore";
-import createHashHistory from 'history/createHashHistory';
+import {createLogger} from 'redux-logger'
+import * as redux from 'redux'
+import {FrameState, initialState} from './redux/FrameState'
+import RemoteStore from './lib/RemoteStore'
 import reducers from './redux/reducers'
-import {AppContainer} from "react-hot-loader";
-import RootContainer from './pages/RootContainer';
+import RootContainer from './pages/RootContainer'
 import {BrowserRouter} from 'react-router-dom'
 
 const MOUNT_POINT_ID = 'mount-point'
 
-async function renderToMountPoint(mountPoint: HTMLElement, workerProxy: WorkerProxy) {
-  const history = createHashHistory()
+async function renderToMountPoint (mountPoint: HTMLElement, workerProxy: WorkerProxy) {
   const middleware = redux.applyMiddleware(createLogger())
   let store: Store<FrameState> = redux.createStore(reducers(workerProxy), initialState(workerProxy), middleware)
 
-  const frameState = await workerProxy.getSharedState();
+  const frameState = await workerProxy.getSharedState()
   let remoteStore = new RemoteStore(workerProxy, frameState)
   remoteStore.wireToLocal(store)
+
+  document.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.which === 27) {
+      workerProxy.toggleFrame(false)
+    }
+  })
 
   function reload () {
     const el = (
       <BrowserRouter>
         <Provider store={store}>
-          <AppContainer>
-            <RootContainer />
-          </AppContainer>
+          <RootContainer />
         </Provider>
       </BrowserRouter>
     )

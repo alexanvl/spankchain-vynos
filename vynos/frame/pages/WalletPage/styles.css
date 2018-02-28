@@ -25,7 +25,7 @@
 
 .walletRow {
   display: flex;
-  align-items: center;
+  align-items: stretch;
   flex-flow: row nowrap;
   justify-content: space-evenly;
   padding: 1rem 2rem;
@@ -33,6 +33,7 @@
 }
 
 .walletRowBalanceWrapper {
+  display: flex;
   flex: 1 0 auto;
   padding: 0 1rem;
 }
@@ -106,6 +107,7 @@
   font-style: normal;
   letter-spacing: 0.1px;
   flex: 0 0 auto;
+  align-self: center
 }
 
 .walletBalance {
@@ -183,14 +185,10 @@
 .ctaDivider {
   width: 1px;
   border-left: 1px solid #979797;
-  height: 8px;
+  height: 16px;
   position: relative;
   right: 2rem;
-  top: 0.5rem;
-}
-
-.ctaContentWrapper:hover .ctaDivider {
-  visibility: hidden;
+  top: 0;
 }
 
 .walletActivityWrapper {

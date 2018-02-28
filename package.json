@@ -76,7 +76,7 @@
     "localforage": "^1.5.0",
     "localforage-observable": "^1.3.1",
     "lodash": "^4.17.4",
-    "machinomy": "https://github.com/mslipper/machinomy.git#07806fb41a8d10d2a0a56addb52c9c37ab1bbe0e",
+    "machinomy": "https://github.com/mslipper/machinomy.git#d2f931065660f08166205f3f8c6e9ed6f4bb774a",
     "moment": "^2.19.1",
     "mux-demux": "^3.7.9",
     "nedb": "^1.8.0",
