@@ -1,6 +1,5 @@
 import {INITIAL_SHARED_STATE, SharedState} from '../../worker/WorkerState'
 import WorkerProxy from '../WorkerProxy'
-import {RouterState} from 'react-router-redux'
 
 export interface InitPageState {
   mnemonic: string|null
@@ -15,7 +14,6 @@ export interface TempState {
 export interface FrameState {
   temp: TempState
   shared: SharedState
-  router: RouterState
 }
 
 export function initialState(workerProxy: WorkerProxy): FrameState {
@@ -26,9 +24,6 @@ export function initialState(workerProxy: WorkerProxy): FrameState {
         showInitialDeposit: false,
       },
       workerProxy: workerProxy
-    },
-    router: {
-      location: null
     },
     shared: INITIAL_SHARED_STATE
   }

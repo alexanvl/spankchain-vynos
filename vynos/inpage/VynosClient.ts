@@ -1,7 +1,8 @@
 import StreamProvider from './../lib/StreamProvider'
 import {Duplex} from 'readable-stream'
 import {
-  AuthenticateRequest, AuthenticateResponse,
+  AuthenticateRequest,
+  AuthenticateResponse,
   BuyRequest,
   BuyResponse,
   CloseChannelRequest,
@@ -22,7 +23,6 @@ import PurchaseMeta, {purchaseMetaFromDocument} from '../lib/PurchaseMeta'
 import {SharedState} from '../worker/WorkerState'
 import {SharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/SharedStateBroadcast'
 import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
-import Promise = require('bluebird')
 
 export default class VynosClient implements Vynos {
   provider: StreamProvider
@@ -79,14 +79,17 @@ export default class VynosClient implements Vynos {
       jsonrpc: JSONRPC,
       params: [receiver, amount, gateway, meta, _purchase, channelValue ? channelValue : amount * 10]
     }
+
     return this.provider.ask(request).then((response: BuyResponse) => {
       if (response.error) {
-        return Promise.reject(response.error)
-      } else if (!response.result[0].channelId) {
-        return Promise.reject(response.result[1])
-      } else {
-        return response.result[0]
+        throw response.error
       }
+
+      if (!response.result[0].channelId) {
+        throw response.result[1]
+      }
+
+      return response.result[0]
     })
   }
 
@@ -120,7 +123,7 @@ export default class VynosClient implements Vynos {
     })
   }
 
-  authenticate(): Promise<AuthenticateResponse> {
+  authenticate (): Promise<AuthenticateResponse> {
     const request: AuthenticateRequest = {
       id: randomId(),
       method: AuthenticateRequest.method,

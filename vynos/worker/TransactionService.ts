@@ -1,4 +1,3 @@
-import Promise = require('bluebird')
 import TransactionStorage from '../lib/storage/TransactionMetaStorage'
 import { WorkerState } from './WorkerState'
 import { Store } from 'redux'

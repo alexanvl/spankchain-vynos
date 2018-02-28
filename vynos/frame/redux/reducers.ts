@@ -3,7 +3,6 @@ import {Reducer} from 'redux'
 import {reducerWithInitialState} from "typescript-fsa-reducers";
 import {FrameState, initialState} from "./FrameState";
 import * as actions from './actions'
-import {routerReducer} from 'react-router-redux'
 import {topmenu} from './menu'
 import WorkerProxy from "../WorkerProxy";
 
@@ -21,10 +20,8 @@ export default function reducers(workerProxy: WorkerProxy): Reducer<FrameState> 
     .case(actions.setPending, actions.setPendingHandler)
 
   return redux.combineReducers({
-    router: routerReducer,
     temp: tempReducer,
     shared: sharedReducer,
-
     menu: topmenu,
   });
 }

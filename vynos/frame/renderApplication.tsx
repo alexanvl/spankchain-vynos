@@ -4,7 +4,6 @@ import WorkerProxy from './WorkerProxy'
 import {Provider, Store} from 'react-redux'
 
 // import 'semantic-ui-css/semantic.min.css';
-import {routerMiddleware} from "react-router-redux";
 import {createLogger} from "redux-logger";
 import * as redux from "redux";
 import {FrameState, initialState} from "./redux/FrameState";
@@ -17,7 +16,7 @@ const MOUNT_POINT_ID = 'mount-point'
 
 async function renderToMountPoint(mountPoint: HTMLElement, workerProxy: WorkerProxy) {
   const history = createHashHistory()
-  const middleware = redux.applyMiddleware(createLogger(), routerMiddleware(history))
+  const middleware = redux.applyMiddleware(createLogger())
   let store: Store<FrameState> = redux.createStore(reducers(workerProxy), initialState(workerProxy), middleware)
 
   const frameState = await workerProxy.getSharedState();

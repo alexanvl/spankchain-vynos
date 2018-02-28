@@ -9,7 +9,6 @@ import TransactionService from '../TransactionService'
 import * as transactions from '../../lib/transactions'
 import PurchaseMeta from '../../lib/PurchaseMeta'
 import ChannelMetaStorage from '../../lib/storage/ChannelMetaStorage'
-import Promise = require('bluebird')
 import ZeroClientProvider = require('web3-provider-engine/zero')
 import Web3 = require('web3')
 

@@ -2,7 +2,6 @@ import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import VynosBuyResponse from './VynosBuyResponse'
 import {GetSharedStateResponse} from './rpc/yns'
 import PurchaseMeta from './PurchaseMeta'
-import Promise = require('bluebird')
 import Web3 = require('web3')
 
 export default interface Vynos {
