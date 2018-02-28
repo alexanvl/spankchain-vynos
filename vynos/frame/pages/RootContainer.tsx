@@ -1,6 +1,8 @@
 import * as React from 'react'
 import {Route, Switch, withRouter} from 'react-router-dom'
 import {connect} from 'react-redux'
+import {Dispatch} from 'redux'
+import Web3 = require('web3')
 import {FrameState} from '../redux/FrameState'
 import InitPage from './InitPage'
 import UnlockPage from './UnlockPage'
@@ -9,22 +11,62 @@ import ApprovePage from '../components/WalletPage/ApprovePage'
 import {RouteComponentProps} from 'react-router'
 import AuthorizePage from './AuthorizePage'
 import postMessage from "../lib/postMessage"
+import * as actions from "../redux/actions";
 
 export interface StateProps {
   isAuthorizationExpected: boolean
   isWalletExpected: boolean
   isUnlockExpected: boolean
   isTransactionPending: boolean
+  web3: Web3
 }
 
 export interface RootStateProps extends RouteComponentProps<any>, StateProps {
 }
 
-export type RootContainerProps = RootStateProps
+export interface RootDispatchProps {
+  updateBalance: (balance: string) => void
+  updateAddress: (address: string) => void
+}
+
+export type RootContainerProps = RootStateProps & RootDispatchProps
 
 export class RootContainer extends React.Component<RootContainerProps, any> {
+  componentWillMount() {
+    this.startWatching()
+  }
+
   componentDidMount () {
     this.determineRoute()
+  }
+
+  startWatching = () => {
+    const { web3, updateBalance, updateAddress } = this.props
+
+    if (!web3) {
+      return;
+    }
+
+    web3.eth.getAccounts((err, accounts) => {
+      if (err || !accounts || !accounts.length) {
+        return;
+      }
+
+      const address = accounts[0]
+      web3.eth.getBalance(address, (err, balance) => {
+        const currentBalance = web3.fromWei(balance, 'ether').toString()
+        updateAddress(address)
+        updateBalance(currentBalance)
+      })
+    });
+    
+    setTimeout(this.startWatching, 5000);
+  }
+
+  closeWallet = () => {
+    postMessage(window, {
+      type: 'vynos/parent/hide',
+    })
   }
 
   componentWillReceiveProps (nextProps: RootStateProps) {
@@ -38,7 +80,7 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
     this.determineRoute(nextProps)
   }
 
-  determineRoute (props?: RootContainerProps) {
+  determineRoute (props?: RootStateProps) {
     props = props || this.props
 
     if (props.isUnlockExpected) {
@@ -87,12 +129,23 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 }
 
 function mapStateToProps (state: FrameState): StateProps {
+  let workerProxy = state.temp.workerProxy
   return {
     isAuthorizationExpected: !!state.shared.authorizationRequest,
+    web3: workerProxy.getWeb3(),
     isUnlockExpected: state.shared.didInit && state.shared.isLocked,
     isWalletExpected: state.shared.didInit && !state.shared.isLocked && !state.temp.initPage.showInitialDeposit,
     isTransactionPending: state.shared.didInit && state.shared.isTransactionPending !== 0
   }
 }
 
-export default withRouter(connect<StateProps, undefined, any>(mapStateToProps)(RootContainer))
+function mapDispatchToProps(dispatch: Dispatch<FrameState>): RootDispatchProps {
+  return {
+    updateBalance: (balance: string) => dispatch(actions.updateBalance(balance)),
+    updateAddress: (address: string) => dispatch(actions.updateAddress(address)),
+  }
+}
+
+export default withRouter(
+  connect<StateProps, RootDispatchProps, any>(mapStateToProps, mapDispatchToProps)(RootContainer)
+)

@@ -19,9 +19,14 @@ export default function reducers(workerProxy: WorkerProxy): Reducer<FrameState> 
     .case(actions.setSharedState, actions.setSharedStateHandler)
     .case(actions.setPending, actions.setPendingHandler)
 
+  const walletReducer = reducerWithInitialState(state.wallet)
+    .case(actions.updateBalance, actions.updateBalanceHandler)
+    .case(actions.updateAddress, actions.updateAddressHandler)
+
   return redux.combineReducers({
     temp: tempReducer,
     shared: sharedReducer,
     menu: topmenu,
+    wallet: walletReducer,
   });
 }

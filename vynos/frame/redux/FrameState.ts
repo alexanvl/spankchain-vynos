@@ -11,9 +11,19 @@ export interface TempState {
   initPage: InitPageState
 }
 
+export interface WalletMainState {
+  address: string|null
+  balance: any
+}
+
+export interface WalletState {
+  main: WalletMainState
+}
+
 export interface FrameState {
   temp: TempState
   shared: SharedState
+  wallet: WalletState
 }
 
 export function initialState(workerProxy: WorkerProxy): FrameState {
@@ -25,6 +35,12 @@ export function initialState(workerProxy: WorkerProxy): FrameState {
       },
       workerProxy: workerProxy
     },
-    shared: INITIAL_SHARED_STATE
+    shared: INITIAL_SHARED_STATE,
+    wallet: {
+      main: {
+        address: null,
+        balance: null,
+      },
+    },
   }
 }

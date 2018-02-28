@@ -69,7 +69,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       spankBalance: '23',
       sendShown: false,
       currentWalletPage: WALLET_MAIN_PAGE.SEND_RECEIVE,
-      currentWalletSubpage: WALLET_SUB_PAGE.GO_BACK_TO_SPANK_CARD,
+      currentWalletSubpage: WALLET_SUB_PAGE.NONE,
     };
   }
 

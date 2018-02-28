@@ -1,7 +1,7 @@
 import actionCreatorFactory, {ActionCreator} from 'typescript-fsa'
 import {SharedState} from '../../worker/WorkerState'
 import {Store} from 'redux'
-import {FrameState, TempState} from './FrameState'
+import {FrameState, TempState, WalletState} from './FrameState'
 import WorkerProxy from "../WorkerProxy";
 
 const actionCreator = actionCreatorFactory("frame");
@@ -42,4 +42,27 @@ export function didAcknowledgeDepositHandler(state: TempState, mnemonic: string)
 export const setWorkerProxy: ActionCreator<WorkerProxy> = actionCreator<WorkerProxy>("temp/setWorkerProxy")
 export function setWorkerProxyHandler(state: TempState, workerProxy: WorkerProxy): TempState {
   return { ...state, workerProxy: workerProxy }
+}
+
+// Wallet actions
+export const updateBalance: ActionCreator<string> = actionCreator<string>("wallet/updateBalance");
+export function updateBalanceHandler(state: WalletState, balance: string): WalletState {
+  return {
+    ...state,
+    main: {
+      ...state.main,
+      balance,
+    },
+  }
+}
+
+export const updateAddress: ActionCreator<string> = actionCreator<string>("wallet/updateAddress");
+export function updateAddressHandler(state: WalletState, address: string): WalletState {
+  return {
+    ...state,
+    main: {
+      ...state.main,
+      address,
+    },
+  }
 }
