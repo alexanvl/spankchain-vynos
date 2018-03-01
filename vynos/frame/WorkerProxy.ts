@@ -253,7 +253,6 @@ export default class WorkerProxy extends EventEmitter {
   }
 
   watchWalletBalance(): Promise<void> {
-    console.log('method: ', WatchWalletBalanceRequest.method)
     const request: WatchWalletBalanceRequest = {
       id: randomId(),
       jsonrpc: JSONRPC,

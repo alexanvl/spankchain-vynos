@@ -11,8 +11,6 @@ import BigNumber = require('bignumber.js')
 import { Store } from 'redux'
 import * as actions from '../actions';
 
-const WALLET_BALANCE_UPDATED = "walletBalanceUpdated"
-
 export default class NotificationController {
   web3: Web3
   contract: any

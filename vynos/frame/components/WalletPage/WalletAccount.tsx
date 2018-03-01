@@ -2,7 +2,6 @@ import * as React from 'react'
 import {connect} from 'react-redux'
 import Web3 = require('web3')
 import {FrameState} from '../../redux/FrameState'
-import WorkerProxy from '../../WorkerProxy'
 
 import {Image} from 'semantic-ui-react'
 
@@ -10,7 +9,6 @@ const style = require('../../styles/ynos.css')
 
 export interface WalletAccountProps {
   web3?: Web3
-  // workerProxy: WorkerProxy
   onChangeAddress?: (address: string) => void
   onChangeDetailsDisplayed?: (value: boolean) => void
   onChangeBalance?: (balance: number) => void
@@ -91,7 +89,6 @@ export class WalletAccount extends React.Component<WalletAccountProps, WalletAcc
 
 function mapStateToProps(state: FrameState, ownProps: WalletAccountProps): WalletAccountProps {
   return {
-    // workerProxy: state.temp.workerProxy,
     web3: state.temp.workerProxy.web3,
     onChangeAddress: ownProps.onChangeAddress,
     onChangeDetailsDisplayed: ownProps.onChangeDetailsDisplayed,
