@@ -15,7 +15,6 @@ export default class NotificationHandler {
   }
 
   public async watchWalletBalance (message: WatchWalletBalanceRequest, next: Function, end: EndFunction) {
-    console.log('IN BROADCASTWALLETBALANCE');
     try {
       await this.controller.watchWalletBalance()
     } catch (e) {
@@ -33,8 +32,6 @@ export default class NotificationHandler {
   }
 
   handler (message: RequestPayload, next: Function, end: EndFunction) {
-    console.log('in handler: ', message);
-    console.log(WatchWalletBalanceRequest);
     if (WatchWalletBalanceRequest.match(message)) {
       this.watchWalletBalance(message, next, end)
     } else {

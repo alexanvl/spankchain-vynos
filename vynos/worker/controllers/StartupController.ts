@@ -136,10 +136,10 @@ export default class StartupController implements LifecycleAware {
     this.server.add(backgroundHandler.handler)
       .add(hubHandler.handler)
       .add(micropaymentsHandler.handler)
+      .add(notificationHandler.handler)
       .add(authController.handler)
       .add(frameController.handler)
       .add(networkController.handler)
-      .add(notificationHandler.handler)
 
     const ready: ReadyBroadcast = {
       id: ReadyBroadcastType,

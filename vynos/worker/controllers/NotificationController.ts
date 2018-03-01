@@ -7,10 +7,11 @@ import TransactionService from '../TransactionService'
 import { SharedState, WorkerState } from '../WorkerState'
 import SharedStateView from '../SharedStateView'
 import Web3 = require("web3")
+import BigNumber = require('bignumber.js')
 import { Store } from 'redux'
 import * as actions from '../actions';
 
-const WALLET_BALANCE_UPDATED = "walletBalanceUpdated'"
+const WALLET_BALANCE_UPDATED = "walletBalanceUpdated"
 
 export default class NotificationController {
   web3: Web3
@@ -23,6 +24,7 @@ export default class NotificationController {
   sharedStateView: SharedStateView
 
   constructor(providerOpts: ProviderOpts, store: Store<WorkerState>, sharedStateView: SharedStateView, transactions: TransactionService) {
+    this.providerOpts = providerOpts
     this.transactions = transactions
     this.events = new EventEmitter()
     this.store = store
@@ -30,12 +32,44 @@ export default class NotificationController {
   }
 
   public async watchWalletBalance() {
+    const account = await this.getAccount()
+
+    if (!account) {
+      setTimeout(this.watchWalletBalance.bind(this), 1000)
+      return;
+    }
+
     const contract = await this.getContract()
+    const web3 = await this.getWeb3()
     const events = await contract.allEvents({fromBlock: 0, toBlock: 'latest'});
 
-    events.watch((error:any, result:any) => {
-      this.store.dispatch(actions.updateWalletBalance(2))
+    events.watch(() => {
+      web3.eth.getBalance(account, (err, balance) => {
+        const currentBalance = web3.fromWei(balance, 'ether').toString()
+        this.store.dispatch(actions.updateWalletBalance(currentBalance))
+      })
     })
+   }
+
+  private async getAccount() {
+    if (this.account) {
+      return this.account
+    }
+
+    const accounts = await this.sharedStateView.getAccounts()
+    this.account = accounts[0]
+
+    return this.account
+  }
+
+  private async getWeb3() {
+    if (this.web3) {
+      return this.web3
+    }
+
+    this.web3 = new Web3(ZeroClientProvider(this.providerOpts))
+
+    return this.web3
   }
 
   private async getContract () {
@@ -43,9 +77,11 @@ export default class NotificationController {
       return this.contract
     }
 
-    const accounts = await this.sharedStateView.getAccounts()
-    this.account = accounts[0]
-    this.web3 = new Web3(ZeroClientProvider(this.providerOpts))
-    this.contract = await Unidirectional.contract(this.web3.currentProvider).deployed()
+    const account = this.account || await this.getAccount()
+    const web3 = this.web3 || await this.getWeb3()
+
+    this.contract = await Unidirectional.contract(web3.currentProvider).deployed()
+
+    return this.contract
   }
 }

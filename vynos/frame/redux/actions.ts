@@ -51,7 +51,7 @@ export function updateBalanceHandler(state: WalletState, balance: string): Walle
     ...state,
     main: {
       ...state.main,
-      balance,
+      balance: balance,
     },
   }
 }

@@ -46,7 +46,6 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 
   async startWatching() {
 
-    console.log('workerProxy: ', this.props.workerProxy)
     await this.props.workerProxy.watchWalletBalance()
 
     // const { web3, updateBalance, updateAddress } = this.props
