@@ -14,7 +14,6 @@ import {Store} from 'redux'
 import {LifecycleAware} from './LifecycleAware'
 import * as actions from '../actions';
 import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
-import Payment from 'machinomy/dist/lib/payment'
 
 export default class MicropaymentsController {
   providerOpts: ProviderOpts
@@ -60,26 +59,19 @@ export default class MicropaymentsController {
     return channelId
   }
 
-  async buy (receiver: string, price: number, meta: string, purchaseMeta: PurchaseMeta): Promise<VynosBuyResponse> {
+  async buy (price: number, meta: any): Promise<VynosBuyResponse> {
+    const receiver = (await this.sharedStateView.getSharedState()).branding.address
+    const hubUrl = await this.sharedStateView.getHubUrl()
     const machinomy = await this.getMachinomy()
-    const gateway = await this.sharedStateView.getHubUrl()
+
     const res = await machinomy.buy({
+      gateway: `${hubUrl}/payments`,
       receiver,
       price,
-      gateway,
-      meta
+      meta: JSON.stringify(meta)
     })
 
-    await this.channels.insertIfNotExists({
-      channelId: res.channelId,
-      title: purchaseMeta.siteName,
-      host: purchaseMeta.origin,
-      icon: purchaseMeta.siteIcon,
-      openingTime: Date.now()
-    })
-
-    const transaction = transactions.micropayment(purchaseMeta, receiver, price)
-    await this.transactions.addTransaction(transaction)
+    await this.populateChannels()
 
     return {
       channelId: res.channelId,
@@ -99,7 +91,10 @@ export default class MicropaymentsController {
 
     const accounts = await this.sharedStateView.getAccounts()
     const web3 = new Web3(ZeroClientProvider(this.providerOpts))
-    this.machinomy = new Machinomy(accounts[0], web3, {databaseUrl: 'nedb://vynos'})
+    this.machinomy = new Machinomy(accounts[0], web3, {
+      databaseUrl: 'nedb://vynos',
+      settlementPeriod: Number.MAX_SAFE_INTEGER
+    })
     return this.machinomy
   }
 }

@@ -13,13 +13,13 @@ import {
   InitializeRequest,
   InitializeResponse,
   ListChannelsRequest,
-  ListChannelsResponse, ToggleFrameRequest
+  ListChannelsResponse,
+  ToggleFrameRequest
 } from '../lib/rpc/yns'
 import {JSONRPC, randomId} from '../lib/Payload'
 import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import Vynos from '../lib/Vynos'
 import VynosBuyResponse from '../lib/VynosBuyResponse'
-import PurchaseMeta, {purchaseMetaFromDocument} from '../lib/PurchaseMeta'
 import {SharedState} from '../worker/WorkerState'
 import {SharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/SharedStateBroadcast'
 import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
@@ -71,26 +71,15 @@ export default class VynosClient implements Vynos {
     return this.provider.ask<CloseChannelRequest, any>(request)
   }
 
-  buy (receiver: string, amount: number, gateway: string, meta: string, purchase?: PurchaseMeta, channelValue?: number): Promise<VynosBuyResponse> {
-    let _purchase = purchase || purchaseMetaFromDocument(document)
+  buy (amount: number, meta: any): Promise<VynosBuyResponse> {
     let request: BuyRequest = {
       id: randomId(),
       method: BuyRequest.method,
       jsonrpc: JSONRPC,
-      params: [receiver, amount, gateway, meta, _purchase, channelValue ? channelValue : amount * 10]
+      params: [amount, meta]
     }
 
-    return this.provider.ask(request).then((response: BuyResponse) => {
-      if (response.error) {
-        throw response.error
-      }
-
-      if (!response.result[0].channelId) {
-        throw response.result[1]
-      }
-
-      return response.result[0]
-    })
+    return this.provider.ask(request).then((response: BuyResponse) => response.result)
   }
 
   listChannels (): Promise<PaymentChannel[]> {
@@ -134,7 +123,7 @@ export default class VynosClient implements Vynos {
     return this.provider.ask(request) as Promise<AuthenticateResponse>
   }
 
-  toggleFrame(state: boolean): Promise<void> {
+  toggleFrame (state: boolean): Promise<void> {
     const request: ToggleFrameRequest = {
       id: randomId(),
       method: ToggleFrameRequest.method,
@@ -142,6 +131,7 @@ export default class VynosClient implements Vynos {
       params: [state]
     }
 
-    return this.provider.ask(request).then(() => {})
+    return this.provider.ask(request).then(() => {
+    })
   }
 }

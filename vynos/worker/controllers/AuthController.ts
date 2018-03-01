@@ -137,17 +137,7 @@ export default class AuthController {
   private signNonce (origin: string, nonce: string): Promise<string> {
     let msg = this.sha3(`SpankWallet authentication message: ${this.sha3(nonce)} ${this.sha3(origin)}`)
 
-    const hashBuf = new Buffer(msg.split('x')[1], 'hex')
-    const prefix = new Buffer('\x19Ethereum Signed Message:\n')
-    const buf = Buffer.concat([
-      prefix,
-      new Buffer(String(hashBuf.length)),
-      hashBuf
-    ])
-
-    const data = this.sha3(buf)
-
-    return new Promise((resolve, reject) => this.providerOpts.signMessage!({data}, (err: any, sig: string) => {
+    return new Promise((resolve, reject) => this.providerOpts.signMessage!({data: msg}, (err: any, sig: string) => {
       if (err) {
         return reject(err)
       }

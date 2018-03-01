@@ -1,6 +1,8 @@
 import * as React from 'react'
 import Button from '../../components/Button/index'
 import * as copy from 'copy-to-clipboard'
+import Currency, {CurrencyType} from '../../components/Currency/index'
+import * as BigNumber from 'bignumber.js';
 
 const s = require('./styles.css')
 
@@ -18,7 +20,7 @@ const SendReceivePage: React.SFC<Props> = (props) => {
     <div className={s.walletCard}>
       <div className={s.walletFunds}>
         <div className={s.walletFundsHeader}>Wallet Funds</div>
-        <div className={s.walletBalance}>${balance || ' - '}</div>
+        <div className={s.walletBalance}><Currency amount={new BigNumber.BigNumber(balance || 0)} inputType={CurrencyType.ETH} /></div>
       </div>
       <div className={s.walletActions}>
         <Button

@@ -5,6 +5,7 @@ import FrameStream from '../lib/FrameStream'
 import {BROWSER_NOT_SUPPORTED_TEXT} from '../frame/constants'
 import {WalletOptions} from '../WalletOptions'
 import {SharedState} from '../worker/WorkerState'
+import * as BigNumber from 'bignumber.js';
 
 // DOM and Window is ready.
 async function isReady (): Promise<any> {
@@ -35,6 +36,10 @@ export default class Namespace {
   constructor (options: WalletOptions) {
     this.options = options
     this.eventBus = new EventEmitter()
+  }
+
+  async buy (amount: BigNumber.BigNumber, meta: any): Promise<void> {
+    return this.client.buy(amount.toNumber(), meta).then(() => {})
   }
 
   on (event: string, callback: (...args: any[]) => void) {

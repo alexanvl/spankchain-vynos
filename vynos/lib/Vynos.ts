@@ -11,5 +11,5 @@ export default interface Vynos {
   listChannels: () => Promise<PaymentChannel[]>
   initAccount: () => Promise<void>
   getSharedState: () => Promise<GetSharedStateResponse>
-  buy: (receiver: string, amount: number, gateway: string, meta: string, purchaseMeta?: PurchaseMeta) => Promise<VynosBuyResponse>
+  buy: (amount: number, meta: any) => Promise<VynosBuyResponse>
 }

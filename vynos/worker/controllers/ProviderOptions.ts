@@ -58,18 +58,28 @@ export default class ProviderOptions {
     })
   }
 
-  signMessageAlways(messageParams: any, callback: ApproveSignCallback) {  
+  signMessageAlways(messageParams: any, callback: ApproveSignCallback) {
     this.background.getPrivateKey().then(privateKey => {
-      let message = Buffer.from(messageParams.data.replace(/0x/, ''), 'hex')
-      let msgSig = ethUtil.ecsign(message, privateKey)
-      let rawMsgSig = ethUtil.bufferToHex(sigUtil.concatSig(msgSig.v, msgSig.r, msgSig.s))
+      const msg = messageParams.data
+
+      const hashBuf = new Buffer(msg.split('x')[1], 'hex')
+      const prefix = new Buffer('\x19Ethereum Signed Message:\n')
+      const buf = Buffer.concat([
+        prefix,
+        new Buffer(String(hashBuf.length)),
+        hashBuf
+      ])
+
+      const data = ethUtil.sha3(buf)
+      const msgSig = ethUtil.ecsign(data, privateKey)
+      const rawMsgSig = ethUtil.bufferToHex(sigUtil.concatSig(msgSig.v, msgSig.r, msgSig.s))
       callback(null, rawMsgSig)
     }).catch(error => {
       callback(error.message)
     })
   }
 
-  signMessage(messageParams: any, callback: ApproveSignCallback) {   
+  signMessage(messageParams: any, callback: ApproveSignCallback) {
     const transaction = transactions.signature(messageParams.from, messageParams.data)
     this.transactions.approveTransaction(transaction).then(result => {
       if (result) {

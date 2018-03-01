@@ -50,6 +50,7 @@ export interface BrandingState {
   username?: string
   backgroundColor?: string
   textColor?: string
+  address: string
 }
 
 export interface AuthorizedHubsState {
@@ -72,7 +73,9 @@ export const INITIAL_SHARED_STATE: SharedState = {
   currentHubUrl: '',
   currentAuthRealm: '',
   isFrameDisplayed: false,
-  branding: {},
+  branding: {
+    address: ''
+  },
   channels: {}
 }
 
@@ -89,7 +92,9 @@ export const INITIAL_STATE: WorkerState = {
     currentAuthRealm: '',
     authorizationRequest: null,
     isFrameDisplayed: false,
-    branding: {},
+    branding: {
+      address: ''
+    },
     channels: {}
   },
 }

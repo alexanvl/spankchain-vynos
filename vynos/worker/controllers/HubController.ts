@@ -8,6 +8,7 @@ export interface BrandingResponse {
   username?: string
   backgroundColor?: string
   textColor?: string
+  address: string
 }
 
 export default class HubController {

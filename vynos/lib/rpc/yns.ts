@@ -112,11 +112,11 @@ export interface CloseChannelResponse extends ResponsePayload {
   result: [string] //
 }
 
-export const BuyRequest = requestFactory<[string, number, string, PurchaseMeta]>('buyRequest')
+export const BuyRequest = requestFactory<[string, any]>('buyRequest')
 export type BuyRequest = RequestPayload
 
 export interface BuyResponse extends ResponsePayload {
-  result: [VynosBuyResponse]
+  result: VynosBuyResponse
 }
 
 export const TransactonResolved = requestFactory<never[]>('transactionResolved')

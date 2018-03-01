@@ -138,6 +138,7 @@ export interface SetBrandingParam {
   username?: string
   backgroundColor?: string
   textColor?: string
+  address: string
 }
 
 export const setHubBranding = actionCreator<SetBrandingParam>('persistent/setHubBranding')

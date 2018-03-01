@@ -4,7 +4,7 @@ import Currency from '../Currency/index'
 
 const s = require('./style.css')
 
-const WalletCard: React.SFC<any> = function(props) {
+const WalletCard: React.SFC<any> = function (props) {
   const {
     cardTitle,
     companyName,
@@ -15,7 +15,7 @@ const WalletCard: React.SFC<any> = function(props) {
     className,
     width,
     currency,
-    currencyValue,
+    currencyValue
   } = props
 
   const height = width * (18 / 30)
@@ -31,16 +31,16 @@ const WalletCard: React.SFC<any> = function(props) {
         backgroundColor,
         color,
         width: width + 'px',
-        height: height + 'px',
+        height: height + 'px'
       }}
     >
-      <div className={s.top} style={{ color }}>
+      <div className={s.top} style={{color}}>
         <div
           className={s.cardTitle}
           style={{
             fontSize: titleSize + 'px',
             lineHeight: titleSize + 'px',
-            color,
+            color
           }}
         >
           {cardTitle}
@@ -51,7 +51,7 @@ const WalletCard: React.SFC<any> = function(props) {
             style={{
               fontSize: companyNameSize + 'px',
               lineHeight: companyNameSize + 'px',
-              color,
+              color
             }}
           >
             by {companyName}
@@ -64,21 +64,28 @@ const WalletCard: React.SFC<any> = function(props) {
           style={{
             fontSize: companyNameSize + 'px',
             lineHeight: companyNameSize + 'px',
-            color,
+            color
           }}
         >
           {name}
         </div>
-        <div
-          className={s.currency}
-          style={{
-            fontSize: currencySize + 'px',
-            lineHeight: currencySize + 'px',
-            color,
-          }}>
-          {currency} <Currency amount={currencyValue} />
-        </div>
+        {currencyValue ? renderCurrencyValue(props) : null}
       </div>
+    </div>
+  )
+}
+
+function renderCurrencyValue (props: any) {
+  return (
+    <div
+      className={s.currency}
+      style={{
+        fontSize: props.currencySize + 'px',
+        lineHeight: props.currencySize + 'px',
+        color: props.color
+      }}>
+      {props.currency}
+      <Currency key="value" amount={props.currencyValue} />
     </div>
   )
 }
@@ -88,7 +95,7 @@ WalletCard.defaultProps = {
   backgroundColor: '#fff',
   color: '#ff007f',
   width: 300,
-  currency: '$',
+  currency: '$'
 }
 
 export default WalletCard
