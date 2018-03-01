@@ -12,6 +12,7 @@ export interface RuntimeState {
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
   forceRedirect?: string
+  updatedBalance: number
   branding: BrandingState
   channels: ChannelsState
   history: HistoryItem[]
@@ -44,6 +45,7 @@ export interface SharedState {
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
   forceRedirect?: string
+  updatedBalance: number
   branding: BrandingState
   channels: ChannelsState
   history: HistoryItem[]
@@ -90,7 +92,8 @@ export const INITIAL_SHARED_STATE: SharedState = {
     address: ''
   },
   channels: {},
-  history: []
+  history: [],
+  updatedBalance: 0,
 }
 
 export const INITIAL_STATE: WorkerState = {
@@ -112,7 +115,7 @@ export const INITIAL_STATE: WorkerState = {
       address: ''
     },
     channels: {},
-    history: []
+    history: [],
   },
 }
 
@@ -130,6 +133,7 @@ export function buildSharedState(state: WorkerState): SharedState {
     authorizedHubs: state.persistent.authorizedHubs,
     isFrameDisplayed: state.runtime.isFrameDisplayed,
     forceRedirect: state.runtime.forceRedirect,
+    updatedBalance: state.runtime.updatedBalance,
     branding: state.runtime.branding,
     channels: state.runtime.channels,
     history: state.runtime.history

@@ -229,3 +229,14 @@ export function setHistoryHandler(state: WorkerState, history: HistoryItem[]): W
     }
   }
 }
+
+export const updateWalletBalance = actionCreator<number>('runtime/updateWalletBalance')
+export function updateWalletBalanceHandler(state: WorkerState, balance: number): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      updatedBalance: balance
+    }
+  }
+}

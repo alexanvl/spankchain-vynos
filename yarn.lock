@@ -12,6 +12,16 @@
     truffle-contract "^3.0.0"
     web3 "^0.20.1"
 
+"@machinomy/contracts@https://github.com/mslipper/machinomy-contracts.git#33f57883bf57b919450861b268282b71e4fb1718":
+  version "4.0.1"
+  resolved "https://github.com/mslipper/machinomy-contracts.git#33f57883bf57b919450861b268282b71e4fb1718"
+  dependencies:
+    bignumber.js "4.1.0"
+    buffer "^5.0.7"
+    ethereumjs-util "^5.1.3"
+    truffle-contract "^3.0.0"
+    web3 "^0.20.1"
+
 "@machinomy/types-truffle-contract@https://github.com/machinomy/types-truffle-contract":
   version "0.0.1"
   resolved "https://github.com/machinomy/types-truffle-contract#e0f27e6818695c9dee8e6e74184d55994e45b206"

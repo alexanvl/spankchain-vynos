@@ -54,6 +54,7 @@ export default class StreamServer extends Duplex {
   }
 
   _write<A extends RequestPayload>(payload: A, encoding: string, next: () => void) {
+    console.log('pay,oad: ', payload)
     this.handle(payload)
     next()
   }
