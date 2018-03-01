@@ -1,6 +1,9 @@
 import actionCreatorFactory, {ActionCreator} from 'typescript-fsa'
 import {WorkerState} from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
+import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
+import {Cookie} from 'tough-cookie'
+import Serialized = Cookie.Serialized
 
 const actionCreator = actionCreatorFactory('worker')
 
@@ -118,7 +121,7 @@ export function setCurrentHubUrlHandler(state: WorkerState, currentHubUrl: strin
   }
 }
 
-export const setCurrentAuthRealm = actionCreator<string>('runtim/setAuthRealm')
+export const setCurrentAuthRealm = actionCreator<string>('runtime/setAuthRealm')
 export function setCurrentAuthRealmHandler(state: WorkerState, currentAuthRealm: string): WorkerState {
   return {
     ...state,
@@ -155,6 +158,45 @@ export function toggleFrameHandler(state: WorkerState, isFrameDisplayed: boolean
     runtime: {
       ...state.runtime,
       isFrameDisplayed
+    }
+  }
+}
+
+export const setChannels = actionCreator<SerializedPaymentChannel[]>('runtime/setChannels')
+export function setChannelsHandler(state: WorkerState, channels: SerializedPaymentChannel[]): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      channels: {
+        ...state.runtime.channels,
+        [state.runtime.currentHubUrl]: channels
+      }
+    }
+  }
+}
+
+export const setChannel = actionCreator<SerializedPaymentChannel>('runtime/setChannel')
+export function setChannelHandler(state: WorkerState, channel: SerializedPaymentChannel): WorkerState {
+  let channels = state.runtime.channels[state.runtime.currentHubUrl] || []
+  channels = [].concat(channels as any)
+
+  const index = channels.findIndex((ch: SerializedPaymentChannel) => ch.channelId === channel.channelId)
+
+  if (index === -1) {
+    channels.push(channel)
+  } else {
+    channels[index] = channel
+  }
+
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      channels: {
+        ...state.runtime.channels,
+        [state.runtime.currentHubUrl]: channels
+      }
     }
   }
 }

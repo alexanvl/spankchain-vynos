@@ -6,7 +6,6 @@ import WorkerProxy from '../../WorkerProxy'
 import ActivitySubpage from './ActivitySubpage'
 import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './CardPage'
-import LoadUpSpank from './LoadUpSpank'
 import {Route, Switch} from 'react-router'
 import SendReceiveWrapper from './SendReceiveWrapper'
 import Web3 = require('web3')
@@ -75,11 +74,6 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         <Route
           path="/wallet/(send|receive)"
           render={() => <SendReceiveWrapper address={address} balance={this.props.walletBalance} />}
-        />
-        <Route
-          exact
-          path="/wallet/load"
-          component={LoadUpSpank}
         />
       </Switch>
     )

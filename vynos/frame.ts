@@ -4,6 +4,7 @@ import PostStream from './lib/PostStream'
 import WorkerProxy from './frame/WorkerProxy'
 import renderApplication from './frame/renderApplication'
 import {Duplex} from 'readable-stream'
+import {ReadyBroadcast, ReadyBroadcastType} from './lib/rpc/ReadyBroadcast'
 
 class Client implements ServiceWorkerClient {
   workerStream: PostStream
@@ -27,7 +28,7 @@ class Client implements ServiceWorkerClient {
 
     this.workerStream.pipe(this.workerProxy.provider).pipe(this.workerStream)
 
-    renderApplication(document, this.workerProxy)
+    this.workerProxy.provider.listen<ReadyBroadcast>(ReadyBroadcastType, () => renderApplication(document, this.workerProxy))
   }
 
   unload () {

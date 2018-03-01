@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as classnames from 'classnames'
+import Currency from '../Currency/index'
 
 const s = require('./style.css')
 
@@ -75,7 +76,7 @@ const WalletCard: React.SFC<any> = function(props) {
             lineHeight: currencySize + 'px',
             color,
           }}>
-          {currency}{currencyValue}
+          {currency} <Currency amount={currencyValue} />
         </div>
       </div>
     </div>

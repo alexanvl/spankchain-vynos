@@ -1,51 +1,67 @@
-import * as React from "react"
-import Web3 = require('web3')
-import {connect} from "react-redux"
-// import {Dispatch} from 'redux'
-// import {MouseEvent} from "react"
-import * as classnames from 'classnames'
-// import * as copy from 'copy-to-clipboard'
-// import * as qr from 'qr-image'
-// import postMessage from "../../lib/postMessage"
-import {FrameState} from "../../redux/FrameState"
-// import WorkerProxy from "../../WorkerProxy"
-import * as actions from "../../redux/actions"
-import Input from "../../components/Input/index"
-import Button from "../../components/Button/index"
+import * as React from 'react'
+import {connect} from 'react-redux'
+import {FrameState} from '../../redux/FrameState'
+import Button from '../../components/Button/index'
+import WorkerProxy from '../../WorkerProxy'
+import * as BigNumber from 'bignumber.js';
 
 const s = require('./LoadUpSpank.css')
 
 
-export interface MapStateToProps {
-  walletBalance: string|null
+export interface StateProps {
+  walletBalance: string | null
+  cardTitle?: string
+  workerProxy: WorkerProxy
 }
 
-export interface MapDispatchToProps {
-  
+export type LoadUpSpankProps = StateProps
+
+export interface LoadUpSpankState {
+  isLoading: boolean
 }
 
-export type LoadUpSpankProps = MapStateToProps & MapDispatchToProps
+export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankState> {
+  constructor (props: LoadUpSpankProps) {
+    super(props)
 
+    this.state = {
+      isLoading: false
+    }
+  }
 
-export class LoadUpSpank extends React.Component<LoadUpSpankProps, any> {
+  async load () {
+    this.setState({
+      isLoading: true
+    })
 
-  render() {
+    const amount = new BigNumber.BigNumber(this.props.workerProxy.web3.toWei(this.props.walletBalance!, 'ether'))
+      .minus(this.props.workerProxy.web3.toWei(0.1, 'ether'))
+    await this.props.workerProxy.openChannel(amount)
+  }
+
+  render () {
     return (
       <div className={s.container}>
         <div className={s.header}>
-          You have funds in your wallet, please load up your SpankCard
+          You have funds in your wallet, please load up your {this.props.cardTitle}
         </div>
         <div className={s.footer}>
-          <Button content={`Load up $${this.props.walletBalance} into SpankCard`} />
+          <Button content={this.renderContent()} disabled={this.state.isLoading} onClick={() => this.load()} />
         </div>
       </div>
     )
   }
+
+  renderContent () {
+    return this.state.isLoading ? 'Loading...' : `Load up $${this.props.walletBalance} into SpankCard`
+  }
 }
 
-function mapStateToProps(state: FrameState): MapStateToProps {
+function mapStateToProps (state: FrameState): StateProps {
   return {
     walletBalance: state.wallet.main.balance,
+    cardTitle: state.shared.branding.title,
+    workerProxy: state.temp.workerProxy
   }
 }
 

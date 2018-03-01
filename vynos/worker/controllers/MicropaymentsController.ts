@@ -1,109 +1,105 @@
-import NetworkController from './NetworkController'
-import BackgroundController from './BackgroundController'
 import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
-import Machinomy, {BuyResult} from 'machinomy'
-import {ProviderOpts} from 'web3-provider-engine'
-import ProviderOptions from './ProviderOptions'
+import Machinomy from 'machinomy'
 import TransactionService from '../TransactionService'
 import * as transactions from '../../lib/transactions'
 import PurchaseMeta from '../../lib/PurchaseMeta'
 import ChannelMetaStorage from '../../lib/storage/ChannelMetaStorage'
+import SharedStateView from '../SharedStateView'
+import {ProviderOpts} from 'web3-provider-engine'
 import ZeroClientProvider = require('web3-provider-engine/zero')
 import Web3 = require('web3')
+import {WorkerState} from '../WorkerState'
+import {Store} from 'redux'
+import {LifecycleAware} from './LifecycleAware'
+import * as actions from '../actions';
+import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
+import Payment from 'machinomy/dist/lib/payment'
 
 export default class MicropaymentsController {
-  network: NetworkController
-  background: BackgroundController
-  account: string
+  providerOpts: ProviderOpts
+
+  store: Store<WorkerState>
+
+  sharedStateView: SharedStateView
+
   machinomy: Machinomy
+
   transactions: TransactionService
+
   channels: ChannelMetaStorage
+
   web3: Web3
 
-  constructor (network: NetworkController, background: BackgroundController, transactions: TransactionService) {
-    this.network = network
-    this.background = background
+  constructor (providerOpts: ProviderOpts, store: Store<WorkerState>, sharedStateView: SharedStateView, transactions: TransactionService) {
+    this.providerOpts = providerOpts
+    this.store = store
+    this.sharedStateView = sharedStateView
     this.transactions = transactions
     this.channels = new ChannelMetaStorage()
-    this.background.awaitUnlock(() => {
-      this.background.getAccounts().then(accounts => {
-        this.account = accounts[0]
-        let provider = ZeroClientProvider(this.providerOpts(network.rpcUrl))
-        this.web3 = new Web3(provider)
-      })
+  }
+
+  public async populateChannels(): Promise<void> {
+    const machinomy = await this.getMachinomy()
+    const channels = await machinomy.channels()
+
+    this.store.dispatch(actions.setChannels(channels.map(
+      (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+  }
+
+  public async openChannel (receiver: string, value: number): Promise<PaymentChannel> {
+    const machinomy = await this.getMachinomy()
+    const chan = await machinomy.open(receiver, value)
+    this.store.dispatch(actions.setChannel(PaymentChannelSerde.instance.serialize(chan)))
+    return chan
+  }
+
+  public async closeChannel (channelId: string): Promise<string> {
+    const machinomy = await this.getMachinomy()
+    await machinomy.close(channelId)
+    return channelId
+  }
+
+  async buy (receiver: string, price: number, meta: string, purchaseMeta: PurchaseMeta): Promise<VynosBuyResponse> {
+    const machinomy = await this.getMachinomy()
+    const gateway = await this.sharedStateView.getHubUrl()
+    const res = await machinomy.buy({
+      receiver,
+      price,
+      gateway,
+      meta
     })
-  }
 
-  providerOpts (rpcUrl: string): ProviderOpts {
-    let providerOptions = new ProviderOptions(this.background, this.transactions, rpcUrl)
-    return providerOptions.approving()
-  }
-
-  closeChannel (channelId: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      this.background.awaitUnlock(() => {
-        this.background.getAccounts().then(accounts => {
-          let account = accounts[0]
-          let machinomy = new Machinomy(account, this.web3, {databaseUrl: 'nedb://vynos'})
-          machinomy.close(channelId).then(() => {
-            resolve(channelId)
-          }).catch(reject)
-        })
-      })
+    await this.channels.insertIfNotExists({
+      channelId: res.channelId,
+      title: purchaseMeta.siteName,
+      host: purchaseMeta.origin,
+      icon: purchaseMeta.siteIcon,
+      openingTime: Date.now()
     })
+
+    const transaction = transactions.micropayment(purchaseMeta, receiver, price)
+    await this.transactions.addTransaction(transaction)
+
+    return {
+      channelId: res.channelId,
+      token: res.token
+    }
   }
 
-  buy (receiver: string, amount: number, gateway: string, meta: string, purchaseMeta: PurchaseMeta, channelValue?: number): Promise<VynosBuyResponse> {
-    return new Promise((resolve, reject) => {
-      this.background.awaitUnlock(() => {
-        this.background.getAccounts().then(accounts => {
-          let account = accounts[0]
-          let options
-          if (channelValue !== undefined) {
-            options = {databaseUrl: 'nedb://vynos', minimumChannelAmount: channelValue}
-          } else {
-            options = {databaseUrl: 'nedb://vynos'}
-          }
-          let machinomy = new Machinomy(account, this.web3, options)
-          return machinomy.buy({
-            receiver: receiver,
-            price: amount,
-            gateway: gateway,
-            meta: meta
-          }).then(response => {
-            return this.channels.insertIfNotExists({
-              channelId: response.channelId.toString(),
-              title: purchaseMeta.siteName,
-              host: purchaseMeta.origin,
-              icon: purchaseMeta.siteIcon,
-              openingTime: Date.now()
-            }).then(() => {
-              return response
-            })
-          }).then(response => {
-            let transaction = transactions.micropayment(purchaseMeta, receiver, amount)
-            return this.transactions.addTransaction(transaction).then(() => {
-              return response
-            })
-          }).then((res: BuyResult) => {
-            return {
-              channelId: res.channelId,
-              token: res.token
-            }
-          }).catch(reject)
-        })
-      })
-    })
+  async listChannels (): Promise<PaymentChannel[]> {
+    const machinomy = await this.getMachinomy()
+    return machinomy.channels()
   }
 
-  listChannels (): Promise<PaymentChannel[]> {
-    return new Promise((resolve, reject) => this.background.awaitUnlock(() => {
-      this.background.getAccounts().then((accounts: string[]) => {
-        const account = accounts[0]
-        const machinomy = new Machinomy(account, this.web3, {databaseUrl: 'nedb://vynos'})
-        return machinomy.channels().then(resolve).catch(reject)
-      })
-    }))
+  private async getMachinomy (): Promise<Machinomy> {
+    if (this.machinomy) {
+      return this.machinomy
+    }
+
+    const accounts = await this.sharedStateView.getAccounts()
+    const web3 = new Web3(ZeroClientProvider(this.providerOpts))
+    this.machinomy = new Machinomy(accounts[0], web3, {databaseUrl: 'nedb://vynos'})
+    return this.machinomy
   }
 }

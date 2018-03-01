@@ -16,5 +16,7 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.setAuthorizationRequest, actions.setAuthorizationRequestHandler)
   .case(actions.respondToAuthorizationRequest, actions.respondToAuthorizationRequestHandler)
   .case(actions.toggleFrame, actions.toggleFrameHandler)
+  .case(actions.setChannels, actions.setChannelsHandler)
+  .case(actions.setChannel, actions.setChannelHandler)
 
 export default reducers

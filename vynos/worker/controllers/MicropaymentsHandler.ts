@@ -7,7 +7,7 @@ import {
   CloseChannelRequest,
   CloseChannelResponse,
   ListChannelsRequest,
-  ListChannelsResponse
+  ListChannelsResponse, OpenChannelRequest, OpenChannelResponse, PopulateChannelsRequest, PopulateChannelsResponse
 } from '../../lib/rpc/yns'
 import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
 
@@ -17,6 +17,44 @@ export default class MicropaymentsHandler {
   constructor (controller: MicropaymentsController) {
     this.controller = controller
     this.handler = this.handler.bind(this)
+  }
+
+  async populateChannels(message: PopulateChannelsRequest, next: Function, end: EndFunction) {
+    try {
+      await this.controller.populateChannels()
+
+      const response: PopulateChannelsResponse = {
+        id: message.id,
+        jsonrpc: message.jsonrpc,
+        result: null
+      }
+
+      end(null, response)
+    } catch (e) {
+      end(e)
+    }
+  }
+
+  async openChannel (message: OpenChannelRequest, next: Function, end: EndFunction) {
+    const receiver = message.params[0]
+    const value = message.params[1]
+
+    let chan
+
+    try {
+      chan = await this.controller.openChannel(receiver, value)
+    } catch (e) {
+      end(e)
+      return
+    }
+
+    const res: OpenChannelResponse = {
+      id: message.id,
+      jsonrpc: message.jsonrpc,
+      result: chan.channelId
+    }
+
+    end(null, res)
   }
 
   closeChannel (message: CloseChannelRequest, next: Function, end: EndFunction) {
@@ -44,12 +82,10 @@ export default class MicropaymentsHandler {
 
   buy (message: BuyRequest, next: Function, end: EndFunction) {
     let receiver = message.params[0]
-    let amount = message.params[1]
-    let gateway = message.params[2]
-    let meta = message.params[3]
-    let purchaseMeta = message.params[4]
-    let channelValue = message.params[5]
-    this.controller.buy(receiver, amount, gateway, meta, purchaseMeta, channelValue).then(vynosBuyResponse => {
+    let price = message.params[1]
+    let meta = message.params[2]
+    let purchaseMeta = message.params[3]
+    this.controller.buy(receiver, price, meta, purchaseMeta).then(vynosBuyResponse => {
       let response: BuyResponse = {
         id: message.id,
         jsonrpc: message.jsonrpc,
@@ -60,7 +96,11 @@ export default class MicropaymentsHandler {
   }
 
   handler (message: RequestPayload, next: Function, end: EndFunction) {
-    if (CloseChannelRequest.match(message)) {
+    if (PopulateChannelsRequest.match(message)) {
+      this.populateChannels(message, next, end)
+    } else if (OpenChannelRequest.match(message)) {
+      this.openChannel(message, next, end)
+    } else if (CloseChannelRequest.match(message)) {
       this.closeChannel(message, next, end)
     } else if (ListChannelsRequest.match(message)) {
       this.listChannels(message, next, end)

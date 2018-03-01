@@ -4,324 +4,171 @@ import VynosBuyResponse from '../VynosBuyResponse'
 import PurchaseMeta from '../PurchaseMeta'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 
-export class InitializeRequest implements RequestPayload {
-  id: number
-  jsonrpc: typeof JSONRPC
-  method: typeof InitializeRequest.method
-  params: [string, string]
+export interface RequestConstructor {
+  method: string
+  match(payload: RequestPayload): boolean
+  new (): RequestPayload
+}
 
-  static method: string = 'yns_initialize'
+function requestFactory<P>(method: string): RequestConstructor {
+  method = `yns_${method}`
 
-  static match (payload: RequestPayload): payload is InitializeRequest {
-    return payload.method === InitializeRequest.method
+  return class GeneratedRequestPayload implements RequestPayload {
+    id: number
+    jsonrpc: typeof JSONRPC
+    method: string
+    params: P
+
+    static method: string = method
+
+    static match (payload: RequestPayload): payload is GeneratedRequestPayload {
+      return payload.method === method
+    }
   }
 }
+
+export const InitializeRequest = requestFactory<[string, string]>('initialize')
+export type InitializeRequest = RequestPayload
 
 export interface InitializeResponse extends ResponsePayload {
   result: boolean
 }
 
-export class AuthenticateRequest implements RequestPayload {
-  id: number
-  jsonrpc: typeof JSONRPC
-  method: typeof AuthenticateRequest.method
-  params: [string]
-
-  static method: string = 'yns_authenticate'
-
-  static match (payload: RequestPayload): payload is AuthenticateRequest {
-    return payload.method === AuthenticateRequest.method
-  }
-}
+export const AuthenticateRequest = requestFactory<[string, string]>('authenticate')
+export type AuthenticateRequest = RequestPayload
 
 export interface AuthenticateResponse extends ResponsePayload {
   result: { success: boolean, token?: string }
 }
 
-export class InitAccountRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof InitAccountRequest.method;
-  params: any[];
-
-  static method = "yns_initAccount"
-
-  static match(payload: RequestPayload): payload is InitAccountRequest {
-    return payload.method === InitAccountRequest.method
-  }
-}
+export const InitAccountRequest = requestFactory<any[]>('initAccount')
+export type InitAccountRequest = RequestPayload
 
 export interface InitAccountResponse extends ResponsePayload {
   result: string[]
 }
 
-export class GetSharedStateRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof GetSharedStateRequest.method;
-  params: any[];
-
-  static method: string = "yns_getSharedState"
-
-  static match(payload: RequestPayload): payload is GetSharedStateRequest {
-    return payload.method === GetSharedStateRequest.method
-  }
-}
+export const GetSharedStateRequest = requestFactory<any[]>('getSharedState')
+export type GetSharedStateRequest = RequestPayload
 
 export interface GetSharedStateResponse extends ResponsePayload {
   result: SharedState
 }
 
-export class DidStoreMnemonicRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof DidStoreMnemonicRequest.method;
-  params: any[];
-
-  static method: string = "yns_didStoreMnemonic"
-
-  static match(payload: RequestPayload): payload is DidStoreMnemonicRequest {
-    return payload.method === DidStoreMnemonicRequest.method
-  }
-}
+export const DidStoreMnemonicRequest = requestFactory<any[]>('didStoreMnemonic')
+export type DidStoreMnemonicRequest = RequestPayload
 
 export interface DidStoreMnemonicResponse extends ResponsePayload {
   result: null
 }
 
-export class RememberPageRequest implements RequestPayload {
-  id: number
-  jsonrpc: typeof JSONRPC
-  method: typeof RememberPageRequest.method
-  params: [string]
-
-  static method: string = "yns_rememberPage"
-
-  static match(payload: RequestPayload): payload is RememberPageRequest {
-    return payload.method === RememberPageRequest.method
-  }
-}
+export const RememberPageRequest = requestFactory<[string]>('rememberPage')
+export type RememberPageRequest = RequestPayload
 
 export interface RememberPageResponse extends ResponsePayload {
   result: null
 }
 
-export class GenKeyringRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof GenKeyringRequest.method;
-  params: string[];
-
-  static method = "yns_genKeyring"
-
-  static match(payload: RequestPayload): payload is GenKeyringRequest {
-    return payload.method === GenKeyringRequest.method
-  }
-}
+export const GenKeyringRequest = requestFactory<string[]>('genKeyring')
+export type GenKeyringRequest = RequestPayload
 
 export interface GenKeyringResponse extends ResponsePayload {
   result: string
 }
 
-// RestoreWalletRequest
-
-export class RestoreWalletRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof RestoreWalletRequest.method;
-  params: [string, string];
-
-  static method = "yns_restoreWallet"
-
-  static match(payload: RequestPayload): payload is RestoreWalletRequest {
-    return payload.method === RestoreWalletRequest.method
-  }
-}
+export const RestoreWalletRequest = requestFactory<[string, string]>('restoreWallet')
+export type RestoreWalletRequest = RequestPayload
 
 export interface RestoreWalletResponse extends ResponsePayload {
   result: string
 }
 
-export class UnlockWalletRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof UnlockWalletRequest.method;
-  params: string[];
-
-  static method = "yns_unlockWallet"
-
-  static match(payload: RequestPayload): payload is UnlockWalletRequest {
-    return payload.method === UnlockWalletRequest.method
-  }
-}
+export const UnlockWalletRequest = requestFactory<string[]>('unlockWallet')
+export type UnlockWalletRequest = RequestPayload
 
 export interface UnlockWalletResponse extends ResponsePayload {
   result: null
   error?: string
 }
 
-export class LockWalletRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof LockWalletRequest.method;
-  params: string[];
-
-  static method = "yns_lockWallet"
-
-  static match(payload: RequestPayload): payload is LockWalletRequest {
-    return payload.method === LockWalletRequest.method
-  }
-}
+export const LockWalletRequest = requestFactory<string[]>('lockWallet')
+export type LockWalletRequest = RequestPayload
 
 export interface LockWalletResponse extends ResponsePayload {
   result: null
 }
 
-export class CloseChannelRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof CloseChannelRequest.method;
-  params: [string];
+export const OpenChannelRequest = requestFactory<[string]>('openChannel')
+export type OpenChannelRequest = RequestPayload
 
-  static method = "yns_closeChannel"
-
-  static match(payload: RequestPayload): payload is CloseChannelRequest {
-    return payload.method === CloseChannelRequest.method
-  }
+export interface OpenChannelResponse extends ResponsePayload {
+  result: string
 }
+
+export const CloseChannelRequest = requestFactory<[string]>('closeChannel')
+export type CloseChannelRequest = RequestPayload
 
 export interface CloseChannelResponse extends ResponsePayload {
   result: [string] //
 }
 
-export class BuyRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof BuyRequest.method;
-  params: [string, number, string, string, PurchaseMeta, number];
-
-  static method = "yns_buyRequest"
-
-  static match(payload: RequestPayload): payload is BuyRequest {
-    return payload.method === BuyRequest.method
-  }
-}
-
-export class TransactonResolved implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof TransactonResolved.method;
-  params: never[];
-
-  static method = "yns_transactionResolved"
-
-  static match(payload: RequestPayload): payload is TransactonResolved {
-    return payload.method === TransactonResolved.method
-  }
-}
+export const BuyRequest = requestFactory<[string, number, string, PurchaseMeta]>('buyRequest')
+export type BuyRequest = RequestPayload
 
 export interface BuyResponse extends ResponsePayload {
   result: [VynosBuyResponse]
 }
 
-export class ListChannelsRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof ListChannelsRequest.method;
-  params: any[];
+export const TransactonResolved = requestFactory<never[]>('transactionResolved')
+export type TransactonResolved = RequestPayload
 
-  static method = "yns_listChannels"
-
-  static match(payload: RequestPayload): payload is ListChannelsRequest {
-    return payload.method === ListChannelsRequest.method
-  }
-}
+export const ListChannelsRequest = requestFactory<any[]>('listChannels')
+export type ListChannelsRequest = RequestPayload
 
 export interface ListChannelsResponse extends ResponsePayload {
   result: Array<SerializedPaymentChannel>
 }
 
-export class ChangeNetworkRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof ChangeNetworkRequest.method;
-  params: any[];
+export const PopulateChannelsRequest = requestFactory<any[]>('populateChannels')
+export type PopulateChannelsRequest = RequestPayload
 
-  static method: string = "yns_ChangeNetwork"
-
-  static match(payload: RequestPayload): payload is ChangeNetworkRequest {
-    return payload.method === ChangeNetworkRequest.method
-  }
+export interface PopulateChannelsResponse extends ResponsePayload {
+  result: null
 }
+
+export const ChangeNetworkRequest = requestFactory<any[]>('changeNetwork')
+export type ChangeNetworkRequest = RequestPayload
 
 export interface ChangeNetworkResponse extends ResponsePayload {
   result: string
 }
 
-export class GetPrivateKeyHexRequest implements RequestPayload {
-  id: number;
-  jsonrpc: typeof JSONRPC;
-  method: typeof GetPrivateKeyHexRequest.method;
-  params: never[];
-
-  static method = "yns_getPrivateKeyHex"
-
-  static match (payload: RequestPayload): payload is GetPrivateKeyHexRequest {
-    return payload.method === GetPrivateKeyHexRequest.method
-  }
-}
+export const GetPrivateKeyHexRequest = requestFactory<never[]>('getPrivateKeyHex')
+export type GetPrivateKeyHexRequest = RequestPayload
 
 export interface GetPrivateKeyHexResponse extends ResponsePayload {
   result: string
 }
 
-export class SetAuthorizationRequestRequest implements RequestPayload {
-  id: number
-  jsonrpc: typeof JSONRPC
-  method: typeof SetAuthorizationRequestRequest.method
-  params: [string, string]
-
-  static method: string = 'yns_setAuthorizationRequest'
-
-  static match (payload: RequestPayload): payload is SetAuthorizationRequestRequest {
-    return payload.method === SetAuthorizationRequestRequest.method
-  }
-}
+export const SetAuthorizationRequestRequest = requestFactory<[string, string]>('setAuthorizationRequest')
+export type SetAuthorizationRequestRequest = RequestPayload
 
 export interface SetAuthorizationRequestResponse extends ResponsePayload {
   result: null
 }
 
-export class RespondToAuthorizationRequestRequest implements RequestPayload {
-  id: number
-  jsonrpc: typeof JSONRPC
-  method: typeof RespondToAuthorizationRequestRequest.method
-  params: [boolean]
-
-  static method: string = 'yns_respondToAuthorizationRequest'
-
-  static match (payload: RequestPayload): payload is RespondToAuthorizationRequestRequest {
-    return payload.method === RespondToAuthorizationRequestRequest.method
-  }
-}
+export const RespondToAuthorizationRequestRequest = requestFactory<[boolean]>('respondToAuthorizationRequest')
+export type RespondToAuthorizationRequestRequest = RequestPayload
 
 export interface RespondToAuthorizationRequestResponse extends ResponsePayload {
   result: null
 }
 
-export class ToggleFrameRequest implements RequestPayload {
-  id: number
-  jsonrpc: typeof JSONRPC
-  method: typeof ToggleFrameRequest.method
-  params: [boolean]
-
-  static method: string = 'yns_toggleFrame'
-
-  static match (payload: RequestPayload): payload is ToggleFrameRequest {
-    return payload.method === ToggleFrameRequest.method
-  }
-}
+export const ToggleFrameRequest = requestFactory<[boolean]>('toggleFrame')
+export type ToggleFrameRequest = RequestPayload
 
 export interface ToggleFrameResponse extends ResponsePayload {
   result: null
 }
+
+

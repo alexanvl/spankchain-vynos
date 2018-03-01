@@ -65,11 +65,6 @@ export default class SharedStateView {
   }
 
   public async getState (): Promise<WorkerState> {
-    await this.hydrated()
     return this.background.getState()
-  }
-
-  private hydrated (): Promise<void> {
-    return new Promise((resolve) => this.background.awaitHydrated(resolve))
   }
 }

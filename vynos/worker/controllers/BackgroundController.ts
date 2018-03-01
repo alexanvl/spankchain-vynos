@@ -13,34 +13,20 @@ import localForage = require("localforage")
 import {EventEmitter} from "events";
 import GlobalEvents from '../../lib/GlobalEvents'
 import { CHANGE_NETWORK } from '../../lib/constants'
+import {LifecycleAware} from './LifecycleAware'
+import {BrandingResponse} from './HubController'
 
-const STATE_UPDATED_EVENT = "stateUpdated"
+const STATE_UPDATED_EVENT = 'stateUpdated'
+const INITIALIZED_EVENT = 'initialized'
 
 export default class BackgroundController {
   store: Store<WorkerState>
+
   events: EventEmitter
-  hydrated: boolean
 
-  constructor() {
-    let middleware = redux.compose(redux.applyMiddleware(createLogger()), autoRehydrate())
-    this.store = redux.createStore(reducers, INITIAL_STATE, middleware) as Store<WorkerState>
+  constructor(store: Store<WorkerState>) {
+    this.store = store
     this.events = new EventEmitter()
-    this.hydrated = false
-    localForage.config({driver: localForage.INDEXEDDB})
-    persistStore(this.store, { blacklist: ['runtime', 'shared'], storage: localForage }, (error, result) => {
-      this.hydrated = true
-      this.events.emit(STATE_UPDATED_EVENT)
-    })
-  }
-
-  awaitHydrated(fn: Function) {
-    if (this.hydrated) {
-      fn()
-    } else {
-      this.events.once(STATE_UPDATED_EVENT, () => {
-        fn()
-      })
-    }
   }
 
   awaitUnlock(fn: Function) {
@@ -74,12 +60,8 @@ export default class BackgroundController {
     return this.getState().then(buildSharedState)
   }
 
-  getState(): Promise<WorkerState> {
-    return new Promise(resolve => {
-      this.awaitHydrated(() => {
-        resolve(this.store.getState())
-      })
-    })
+  async getState(): Promise<WorkerState> {
+    return this.store.getState()
   }
 
   genKeyring(password: string): Promise<string> {
@@ -132,13 +114,8 @@ export default class BackgroundController {
     })
   }
 
-  didStoreMnemonic(): Promise<void> {
-    return new Promise(resolve => {
-      this.awaitHydrated(() => {
-        this.store.dispatch(actions.setDidStoreMnemonic(true))
-        resolve()
-      })
-    })
+  async didStoreMnemonic(): Promise<void> {
+    this.store.dispatch(actions.setDidStoreMnemonic(true))
   }
 
   unlockWallet(password: string): Promise<void> {
