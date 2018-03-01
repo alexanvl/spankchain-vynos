@@ -1,18 +1,14 @@
-import * as React from "react"
+import * as React from 'react'
+import {ChangeEvent} from 'react'
+import {connect} from 'react-redux'
+import {FrameState} from '../../redux/FrameState'
+import Input from '../../components/Input/index'
+import Button from '../../components/Button/index'
+import Currency, {CurrencyType} from '../../components/Currency/index'
 import Web3 = require('web3')
-import {connect} from "react-redux"
+import * as BigNumber from 'bignumber.js';
+
 const utils = require('web3-utils')
-// import {Dispatch} from 'redux'
-import {MouseEvent, ChangeEvent} from "react"
-import * as classnames from 'classnames'
-// import * as copy from 'copy-to-clipboard'
-// import * as qr from 'qr-image'
-// import postMessage from "../../lib/postMessage"
-import {FrameState} from "../../redux/FrameState"
-// import WorkerProxy from "../../WorkerProxy"
-// import * as actions from "../../redux/actions"
-import Input from "../../components/Input/index"
-import Button from "../../components/Button/index"
 
 const s = require('./SendEther.css')
 
@@ -24,7 +20,7 @@ export interface MapStateToProps {
 }
 
 export interface MapDispatchToProps {
-  
+
 }
 
 export interface OwnProps {
@@ -44,7 +40,7 @@ export interface SendEtherState {
 }
 
 export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
-  constructor(props: SendEtherProps) {
+  constructor (props: SendEtherProps) {
     super(props)
     this.state = {
       balance: '',
@@ -53,13 +49,13 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       address: '',
       addressError: '',
       isAddressDirty: false,
-      disableSend: false,
+      disableSend: false
     }
   }
 
   validateBalance = () => {
-    const { walletBalance } = this.props
-    const { balance, isBalanceDirty } = this.state
+    const {walletBalance} = this.props
+    const {balance, isBalanceDirty} = this.state
 
     if (!isBalanceDirty || !walletBalance) {
       return false
@@ -90,9 +86,9 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
   }
 
   validateAddress = () => {
-    const { walletAddress } = this.props
-    const { address, isAddressDirty } = this.state
-    const { isAddress } = utils
+    const {walletAddress} = this.props
+    const {address, isAddressDirty} = this.state
+    const {isAddress} = utils
 
     if (!isAddressDirty) {
       return false
@@ -126,21 +122,21 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
     this.setState({
       balance: (e.target as HTMLInputElement).value,
       balanceError: '',
-      isBalanceDirty: true,
-    });
+      isBalanceDirty: true
+    })
   }
 
   onAddressChange = (e: ChangeEvent<EventTarget>) => {
     this.setState({
       address: (e.target as HTMLInputElement).value,
       addressError: '',
-      isAddressDirty: true,
-    });
+      isAddressDirty: true
+    })
   }
 
   onSendTransaction = () => {
-    const { web3, walletAddress } = this.props
-    const { address, balance } = this.state
+    const {web3, walletAddress} = this.props
+    const {address, balance} = this.state
 
     if (!web3 || !walletAddress) {
       return
@@ -153,7 +149,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       return
     }
 
-    this.setState({ disableSend: true })
+    this.setState({disableSend: true})
 
     const tx = {
       from: walletAddress,
@@ -165,7 +161,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       if (err) {
         this.setState({
           balanceError: err.message,
-          disableSend: false,
+          disableSend: false
         })
         return
       }
@@ -177,7 +173,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
         address: '',
         addressError: '',
         isAddressDirty: false,
-        disableSend: false,
+        disableSend: false
       }, () => {
         this.props.history.push('/wallet')
       })
@@ -186,9 +182,9 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
     })
   }
 
-  render() {
-    const { addressError, balanceError, disableSend } = this.state
-    const { web3, walletAddress } = this.props
+  render () {
+    const {addressError, balanceError, disableSend} = this.state
+    const {web3, walletAddress} = this.props
 
     return (
       <div className={s.container}>
@@ -219,7 +215,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
           </div>
           <div className={s.inputResult}>
             <div className={s.inputEqual}>=</div>
-            <div className={s.inputTotal}>$0</div>
+            <div className={s.inputTotal}><Currency amount={new BigNumber.BigNumber(this.state.balance || 0)} inputType={CurrencyType.ETH} showUnit={true} /></div>
           </div>
         </div>
         <div className={s.footer}>
@@ -239,11 +235,11 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
   }
 }
 
-function mapStateToProps(state: FrameState): MapStateToProps {
+function mapStateToProps (state: FrameState): MapStateToProps {
   return {
     web3: state.temp.workerProxy.web3,
     walletAddress: state.wallet.main.address,
-    walletBalance: state.wallet.main.balance,
+    walletBalance: state.wallet.main.balance
   }
 }
 

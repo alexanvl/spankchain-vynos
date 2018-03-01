@@ -20,7 +20,7 @@ const SendReceivePage: React.SFC<Props> = (props) => {
     <div className={s.walletCard}>
       <div className={s.walletFunds}>
         <div className={s.walletFundsHeader}>Wallet Funds</div>
-        <div className={s.walletBalance}><Currency amount={new BigNumber.BigNumber(balance || 0)} inputType={CurrencyType.ETH} /></div>
+        <div className={s.walletBalance}><Currency amount={new BigNumber.BigNumber(balance || 0)} inputType={CurrencyType.ETH} showUnit={true} /></div>
       </div>
       <div className={s.walletActions}>
         <Button

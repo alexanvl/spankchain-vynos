@@ -42,7 +42,7 @@
 }
 
 .input input::placeholder {
-  color: #fff;
+  color: #b5b5b5;
 }
 
 .input input::-webkit-outer-spin-button,

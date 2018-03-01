@@ -35,7 +35,7 @@ class CardPage extends React.Component<StateProps, any> {
             <CTAInput
               isInverse
               isConnected
-              value={<Currency amount={walletBalance} inputType={CurrencyType.ETH}/>}
+              value={<Currency amount={walletBalance} inputType={CurrencyType.ETH} showUnit={true} />}
               ctaInputValueClass={s.spankCardCtaInputValue}
               ctaContent={() => (
                 <div className={s.ctaContentWrapper} onClick={() => console.log('Filling')}>

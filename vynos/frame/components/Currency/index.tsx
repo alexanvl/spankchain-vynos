@@ -21,17 +21,19 @@ export interface CurrencyProps extends StateProps {
   decimals?: number
   outputType?: CurrencyType.ETH | CurrencyType.USD
   inputType?: CurrencyType.ETH | CurrencyType.WEI
+  showUnit?: boolean
 }
 
 export class Currency extends React.Component<CurrencyProps, any> {
   public static defaultProps: Partial<CurrencyProps> = {
     decimals: 2,
     outputType: CurrencyType.USD,
-    inputType: CurrencyType.WEI
+    inputType: CurrencyType.WEI,
+    showUnit: false
   }
 
   render() {
-    const { amount, decimals, inputType, outputType } = this.props
+    const { amount, decimals, inputType, outputType, showUnit } = this.props
 
     let ret
 
@@ -48,7 +50,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
 
     return (
       <span className={s.currency}>
-        {ret}
+        {showUnit && outputType === CurrencyType.USD ? '$' : ''} {ret}
       </span>
     )
   }
