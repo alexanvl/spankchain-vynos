@@ -176,6 +176,10 @@ export default class Namespace {
   }
 
   private handleSpecificEvents(newState: SharedState) {
+    if (this.previousState.isLocked && !newState.isLocked) {
+      this.frame.display()
+    }
+
     if (this.previousState.isFrameDisplayed !== newState.isFrameDisplayed) {
       if (newState.isFrameDisplayed) {
         this.doDisplay()

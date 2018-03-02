@@ -21,24 +21,9 @@ export interface WalletPageStateProps {
   walletBalance: string
 }
 
-export interface WalletPageState {
-  spankBalance: string
-  sendShown: boolean
-}
-
-export class WalletPage extends React.Component<WalletPageStateProps, WalletPageState> {
-  constructor (props: any) {
-    super(props)
-    this.state = {
-      // TODO: backend integration to retrieve SpankCard balance
-      spankBalance: '23',
-      sendShown: false
-    }
-  }
-
+export class WalletPage extends React.Component<WalletPageStateProps> {
   renderMainPage () {
     const { walletBalance, address } = this.props
-    const { spankBalance } = this.state
 
     return (
       <Switch>
@@ -54,7 +39,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         <Route
           path="/wallet"
           render={() => (
-            <SpankCardPage spankBalance={spankBalance} />
+            <SpankCardPage />
           )}
         />
       </Switch>
@@ -80,12 +65,13 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 
   render () {
-    if (!this.props.walletBalance) {
+    if (!this.props.address) {
       return <noscript />
     }
 
     return (
       <div className={s.walletWrapper}>
+        <div className={s.cover} onClick={() => console.log('closing')}/>
         {this.renderMainPage()}
         {this.renderSubPage()}
       </div>

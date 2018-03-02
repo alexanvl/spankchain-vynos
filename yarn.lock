@@ -2724,6 +2724,12 @@ fetch-ponyfill@^4.0.0:
   dependencies:
     node-fetch "~1.7.1"
 
+fetch-ponyfill@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/fetch-ponyfill/-/fetch-ponyfill-5.0.1.tgz#2789ec179c1de357f60f9fd49e154a8b3fd8cd1b"
+  dependencies:
+    node-fetch "~2.0.0"
+
 file-loader@^0.11.2:
   version "0.11.2"
   resolved "https://registry.yarnpkg.com/file-loader/-/file-loader-0.11.2.tgz#4ff1df28af38719a6098093b88c82c71d1794a34"
@@ -4365,9 +4371,9 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@https://github.com/mslipper/machinomy.git#d2f931065660f08166205f3f8c6e9ed6f4bb774a":
+"machinomy@https://github.com/mslipper/machinomy.git#428c615935f48f8148e81c5c2b9cc7e9e5f3b7c5":
   version "1.6.0"
-  resolved "https://github.com/mslipper/machinomy.git#d2f931065660f08166205f3f8c6e9ed6f4bb774a"
+  resolved "https://github.com/mslipper/machinomy.git#428c615935f48f8148e81c5c2b9cc7e9e5f3b7c5"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
     "@machinomy/types-truffle-contract" "https://github.com/machinomy/types-truffle-contract"
@@ -4385,6 +4391,7 @@ macaddress@^0.2.8:
     commander "^2.9.0"
     debug "^3.1.0"
     ethereumjs-util "^5.1.2"
+    fetch-ponyfill "^5.0.1"
     homedir "https://github.com/ukstv/node-homedir"
     nedb "^1.8.0"
     prompt "^1.0.0"
@@ -4792,6 +4799,10 @@ node-fetch@^1.0.1, node-fetch@~1.7.1:
   dependencies:
     encoding "^0.1.11"
     is-stream "^1.0.1"
+
+node-fetch@~2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.0.0.tgz#982bba43ecd4f2922a29cc186a6bbb0bb73fcba6"
 
 node-forge@0.7.1:
   version "0.7.1"
