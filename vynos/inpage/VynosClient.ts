@@ -5,7 +5,7 @@ import {
   AuthenticateResponse,
   BuyRequest,
   BuyResponse,
-  CloseChannelsForCurrentHubRequest,
+  CloseChannelsForCurrentHubRequest, FetchHistoryRequest,
   GetSharedStateRequest,
   GetSharedStateResponse,
   InitAccountRequest,
@@ -16,11 +16,11 @@ import {
   ListChannelsResponse,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
-import {JSONRPC, randomId} from '../lib/Payload'
+import {JSONRPC, randomId, ResponsePayload} from '../lib/Payload'
 import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import Vynos from '../lib/Vynos'
 import VynosBuyResponse from '../lib/VynosBuyResponse'
-import {SharedState} from '../worker/WorkerState'
+import {HistoryItem, SharedState} from '../worker/WorkerState'
 import {SharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/SharedStateBroadcast'
 import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
 

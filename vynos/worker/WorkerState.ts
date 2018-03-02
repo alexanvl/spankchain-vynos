@@ -1,5 +1,6 @@
 import Wallet from 'ethereumjs-wallet'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
+import Payment from 'machinomy/dist/lib/payment'
 
 export interface RuntimeState {
   wallet?: Wallet
@@ -13,6 +14,7 @@ export interface RuntimeState {
   forceRedirect?: string
   branding: BrandingState
   channels: ChannelsState
+  history: HistoryItem[]
 }
 
 export interface AuthorizationRequestState {
@@ -22,6 +24,11 @@ export interface AuthorizationRequestState {
 
 export interface ChannelsState {
   [hubUrl: string]: SerializedPaymentChannel[]
+}
+
+export interface HistoryItem {
+  payment: { channelId: string, sender: string, price: string }
+  [key: string]: any
 }
 
 export interface SharedState {
@@ -39,6 +46,7 @@ export interface SharedState {
   forceRedirect?: string
   branding: BrandingState
   channels: ChannelsState
+  history: HistoryItem[]
 }
 
 export interface PersistentState {
@@ -81,7 +89,8 @@ export const INITIAL_SHARED_STATE: SharedState = {
   branding: {
     address: ''
   },
-  channels: {}
+  channels: {},
+  history: []
 }
 
 export const INITIAL_STATE: WorkerState = {
@@ -102,7 +111,8 @@ export const INITIAL_STATE: WorkerState = {
     branding: {
       address: ''
     },
-    channels: {}
+    channels: {},
+    history: []
   },
 }
 
@@ -121,6 +131,7 @@ export function buildSharedState(state: WorkerState): SharedState {
     isFrameDisplayed: state.runtime.isFrameDisplayed,
     forceRedirect: state.runtime.forceRedirect,
     branding: state.runtime.branding,
-    channels: state.runtime.channels
+    channels: state.runtime.channels,
+    history: state.runtime.history
   }
 }

@@ -1,13 +1,13 @@
 import StreamProvider from '../lib/StreamProvider'
 import {EventEmitter} from 'events'
-import {SharedState} from '../worker/WorkerState'
-import {JSONRPC, randomId} from '../lib/Payload'
+import {HistoryItem, SharedState} from '../worker/WorkerState'
+import {JSONRPC, randomId, ResponsePayload} from '../lib/Payload'
 import {isSharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/SharedStateBroadcast'
 import {
   AuthenticateRequest,
   AuthenticateResponse,
   ChangeNetworkRequest, CloseChannelsForCurrentHubRequest,
-  DidStoreMnemonicRequest,
+  DidStoreMnemonicRequest, FetchHistoryRequest,
   GenKeyringRequest,
   GenKeyringResponse,
   GetPrivateKeyHexRequest,
@@ -238,5 +238,16 @@ export default class WorkerProxy extends EventEmitter {
     return this.provider.ask(request).then(() => {
       return
     })
+  }
+
+  fetchHistory (): Promise<HistoryItem[]> {
+    const request: FetchHistoryRequest = {
+      id: randomId(),
+      method: FetchHistoryRequest.method,
+      jsonrpc: JSONRPC,
+      params: []
+    }
+
+    return this.provider.ask(request).then((res: ResponsePayload) => res.result)
   }
 }

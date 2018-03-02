@@ -1,5 +1,5 @@
 import actionCreatorFactory, {ActionCreator} from 'typescript-fsa'
-import {WorkerState} from './WorkerState'
+import {HistoryItem, WorkerState} from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import {Cookie} from 'tough-cookie'
@@ -215,6 +215,17 @@ export function setChannelHandler(state: WorkerState, channel: SerializedPayment
         ...state.runtime.channels,
         [state.runtime.currentHubUrl]: channels
       }
+    }
+  }
+}
+
+export const setHistory = actionCreator<HistoryItem[]>('runtime/setHistory')
+export function setHistoryHandler(state: WorkerState, history: HistoryItem[]): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      history
     }
   }
 }

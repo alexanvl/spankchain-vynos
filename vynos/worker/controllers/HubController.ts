@@ -1,6 +1,7 @@
-import {WorkerState} from '../WorkerState'
+import {HistoryItem, SharedState, WorkerState} from '../WorkerState'
 import {Store} from 'redux'
 import * as actions from '../actions'
+import SharedStateView from '../SharedStateView'
 
 export interface BrandingResponse {
   title?: string
@@ -14,10 +15,13 @@ export interface BrandingResponse {
 export default class HubController {
   store: Store<WorkerState>
 
+  sharedStateView: SharedStateView
+
   hubUrl: string
 
-  constructor (store: Store<WorkerState>) {
+  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView) {
     this.store = store
+    this.sharedStateView = sharedStateView
   }
 
   initialize (hubUrl: string, authRealm: string): Promise<null> {
@@ -33,6 +37,17 @@ export default class HubController {
 
   setAuthRealm (authRealm: string) {
     this.store.dispatch(actions.setCurrentAuthRealm(authRealm))
+  }
+
+  async fetchHistory(): Promise<HistoryItem[]> {
+    const hubUrl = await this.sharedStateView.getHubUrl()
+    const address = (await this.sharedStateView.getAccounts())[0]
+    const res = await fetch(`${hubUrl}/payments/${address}`, {
+      credentials: 'include'
+    })
+    const history = await res.json()
+    this.store.dispatch(actions.setHistory(history))
+    return history
   }
 
   async getHubBranding (): Promise<null> {

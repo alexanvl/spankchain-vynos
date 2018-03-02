@@ -1,5 +1,5 @@
 import {JSONRPC, RequestPayload, ResponsePayload} from '../Payload'
-import {SharedState} from '../../worker/WorkerState'
+import {HistoryItem, SharedState} from '../../worker/WorkerState'
 import VynosBuyResponse from '../VynosBuyResponse'
 import PurchaseMeta from '../PurchaseMeta'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
@@ -150,9 +150,6 @@ export interface GetPrivateKeyHexResponse extends ResponsePayload {
   result: string
 }
 
-export const SetAuthorizationRequestRequest = requestFactory<[string, string]>('setAuthorizationRequest')
-export type SetAuthorizationRequestRequest = RequestPayload
-
 export interface SetAuthorizationRequestResponse extends ResponsePayload {
   result: null
 }
@@ -171,4 +168,9 @@ export interface ToggleFrameResponse extends ResponsePayload {
   result: null
 }
 
+export const FetchHistoryRequest = requestFactory<any[]>('fetchHistory')
+export type FetchHistoryRequest = RequestPayload
 
+export interface FetchHistoryResponse extends ResponsePayload {
+  result: HistoryItem[]
+}

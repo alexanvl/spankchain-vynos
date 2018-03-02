@@ -123,7 +123,7 @@ export default class StartupController implements LifecycleAware {
     const transactionService = new TransactionService(this.store)
     const networkController = new NetworkController(backgroundController, transactionService)
     const providerOpts = new ProviderOptions(backgroundController, transactionService, networks.Ropsten).approving()
-    const hubController = new HubController(this.store)
+    const hubController = new HubController(this.store, sharedStateView)
     const hubHandler = new HubHandler(hubController)
     const micropaymentsController = new MicropaymentsController(providerOpts, this.store, sharedStateView, transactionService)
     const micropaymentsHandler = new MicropaymentsHandler(micropaymentsController)
