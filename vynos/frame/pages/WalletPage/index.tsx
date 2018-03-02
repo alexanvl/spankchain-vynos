@@ -9,6 +9,8 @@ import SpankCardPage from './CardPage'
 import {Route, Switch} from 'react-router'
 import SendReceiveWrapper from './SendReceiveWrapper'
 import Web3 = require('web3')
+import {cardBalance} from '../../redux/selectors/cardBalance'
+import * as BigNumber from 'bignumber.js';
 
 const s = require('./styles.css')
 
@@ -18,7 +20,8 @@ export interface WalletPageStateProps {
   web3: Web3
   workerProxy: WorkerProxy
   address: string
-  walletBalance: string
+  walletBalance: BigNumber.BigNumber
+  cardBalance: BigNumber.BigNumber
 }
 
 export class WalletPage extends React.Component<WalletPageStateProps> {
@@ -28,8 +31,7 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
   }
 
   renderMainPage () {
-    const { walletBalance, address } = this.props
-
+    const { walletBalance, cardBalance, address } = this.props
     return (
       <Switch>
         <Route
@@ -43,9 +45,10 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
         />
         <Route
           path="/wallet"
-          render={() => (
-            <SpankCardPage />
-          )}
+          render={() => {
+            console.log(walletBalance.toNumber())
+            return <SpankCardPage />
+          }}
         />
       </Switch>
     )
@@ -92,7 +95,8 @@ function mapStateToProps (state: FrameState): WalletPageStateProps {
     web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
     address: state.wallet.main.address!,
-    walletBalance: state.wallet.main.balance!,
+    walletBalance: new BigNumber.BigNumber(state.wallet.main.balance || 0),
+    cardBalance: cardBalance(state.shared),
   }
 }
 

@@ -2,15 +2,16 @@ import * as React from 'react';
 import ReceiveEther from './ReceiveEther'
 import {Route, Switch} from 'react-router'
 import SendEther from './SendEther'
+import * as BigNumber from 'bignumber.js';
 
 export interface SendReceiveWrapperProps {
-  balance: string
+  balance: BigNumber.BigNumber
   address: string
 }
 
 export default class SendReceiveWrapper extends React.Component<SendReceiveWrapperProps, {}> {
   render() {
-    if (this.props.balance === '0') {
+    if (!this.props.balance.toNumber()) {
       return (
         <ReceiveEther
           headerText="Not enough funds in your Wallet"

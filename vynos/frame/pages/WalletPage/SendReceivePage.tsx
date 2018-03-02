@@ -8,7 +8,7 @@ const s = require('./styles.css')
 
 export interface Props {
   address: string|null
-  balance: string|null
+  balance: BigNumber.BigNumber
 }
 
 
@@ -20,7 +20,13 @@ const SendReceivePage: React.SFC<Props> = (props) => {
     <div className={s.walletCard}>
       <div className={s.walletFunds}>
         <div className={s.walletFundsHeader}>Wallet Funds</div>
-        <div className={s.walletBalance}><Currency amount={new BigNumber.BigNumber(balance || 0)} inputType={CurrencyType.ETH} showUnit={true} /></div>
+        <div className={s.walletBalance}>
+          <Currency
+            amount={balance}
+            inputType={CurrencyType.ETH}
+            showUnit
+          />
+        </div>
       </div>
       <div className={s.walletActions}>
         <Button
