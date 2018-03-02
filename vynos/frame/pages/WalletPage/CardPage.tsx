@@ -7,7 +7,6 @@ import {connect} from 'react-redux'
 import {BrandingState} from '../../../worker/WorkerState'
 import {cardBalance} from '../../redux/selectors/cardBalance'
 import * as BigNumber from 'bignumber.js';
-import LoadUpSpank from './LoadUpSpank'
 import WorkerProxy from '../../WorkerProxy'
 import Currency, {CurrencyType} from '../../components/Currency/index'
 
@@ -98,17 +97,8 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             <Button to="/wallet/activity" type="secondary" content="Activity" isMini />
           </div>
         </div>
-        {this.renderLoadUp()}
       </div>
     )
-  }
-
-  renderLoadUp () {
-    if (this.props.cardBalance.gt(0)) {
-      return null
-    }
-
-    return <LoadUpSpank />
   }
 }
 

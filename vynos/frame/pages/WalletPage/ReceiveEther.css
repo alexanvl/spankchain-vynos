@@ -43,10 +43,14 @@
   box-shadow: 0 0 0px 2px #e4e4e4;
 }
 
+.ctaInputValue {
+  font-size: 1rem;
+}
+
 .ctaInputContent {
   padding: .65rem !important;
   width: 4rem;
-  box-shadow: 0 0 0 2px #ff3b81;
+  box-shadow: 0 0 0 4px #ff3b81;
 }
 
 .ctaInputContent:hover {

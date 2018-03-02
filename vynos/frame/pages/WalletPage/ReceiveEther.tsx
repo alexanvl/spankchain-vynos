@@ -74,6 +74,7 @@ export class ReceiveEther extends React.Component<ReceiveEtherProps, any> {
             isInverse
             className={s.ctaInput}
             ctaContentClass={s.ctaInputContent}
+            ctaInputValueClass={s.ctaInputValue}
             value={address}
             ctaContent={() => (
               <div className={s.ctaContentWrapper} onClick={() => address && copy(address)}>

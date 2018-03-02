@@ -12,6 +12,7 @@ import MainEntry from './MainEntry/index'
 import SendReceiveWrapper from './SendReceiveWrapper'
 import WalletCTAButton from './WalletCTAButton/index'
 import LoadCardCTAButton from './LoadCardCTAButton/index'
+import LoadUpSpank from './LoadUpSpank'
 import {cardBalance} from '../../redux/selectors/cardBalance'
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
@@ -45,6 +46,15 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
           component={SendReceivePage}
         />
         <Route
+          exact
+          path="/card/insufficient"
+          render={() => (
+            walletBalance.gt(0)
+              ? <SpankCardPage />
+              : <SendReceivePage />
+          )}
+        />
+        <Route
           path="/wallet/(send|receive)"
           component={SendReceivePage}
         />
@@ -57,7 +67,7 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
   }
 
   renderSubPage () {
-    const {address} = this.props
+    const {address, walletBalance} = this.props
 
     return (
       <Switch>
@@ -68,6 +78,15 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
             <WalletCTAButton
               to="/wallet"
             />
+          )}
+        />
+        <Route
+          exact
+          path="/card/insufficient"
+          render={() => (
+            walletBalance.gt(0)
+              ? <LoadUpSpank />
+              : <SendReceiveWrapper address={address} balance={this.props.walletBalance} />
           )}
         />
         <Route
