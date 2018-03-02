@@ -87,10 +87,6 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
   determineRoute (props?: RootStateProps) {
     props = props || this.props
 
-    if (props.isWalletExpected) {
-      this.props.history.push('/wallet')
-      return
-    }
 
     if (props.isUnlockExpected) {
       this.props.history.push('/unlock')
@@ -99,18 +95,27 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 
     if (props.isAuthorizationExpected) {
       this.props.history.push('/authorize')
+      return
     }
 
     if (props.isTransactionPending) {
       this.props.history.push('/approve')
+      return
     }
 
     if (!props.isWalletExpected) {
       this.props.history.push('/init')
+      return
+    }
+
+    if (props.isWalletExpected) {
+      this.props.history.push('/wallet')
+      return
     }
 
     if (!props.isFrameDisplayed) {
       this.props.history.push('/wallet')
+      return
     }
   }
 
