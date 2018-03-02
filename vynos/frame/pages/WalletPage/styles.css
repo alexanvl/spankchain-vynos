@@ -427,29 +427,3 @@
 .selected.last.walletActivityDetails .walletActivityItemDescription {
   padding-bottom: 1rem;
 }
-
-.goBackContainer {
-  display: flex;
-  flex-flow: column nowrap;
-  padding: 0 4rem 2rem;
-}
-
-.goBackButton {
-  background-color: #797979;
-  color: white;
-  font-size: 1.2rem;
-  font-weight: 500;
-  flex: 1 0 auto;
-}
-
-.goBackButton:hover {
-  color: white;
-  background-color: rgba(121, 121, 121, 0.9);
-}
-
-.goBackButton:active {
-  color: white;
-  background-color: #797979;
-}
-
-

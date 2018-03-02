@@ -11,6 +11,7 @@ import SpankCardPage from './CardPage'
 import MainEntry from './MainEntry/index'
 import SendReceiveWrapper from './SendReceiveWrapper'
 import WalletCTAButton from './WalletCTAButton/index'
+import LoadCardCTAButton from './LoadCardCTAButton/index'
 import {cardBalance} from '../../redux/selectors/cardBalance'
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
@@ -65,7 +66,6 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
           path="/card/to/wallet"
           render={() => (
             <WalletCTAButton
-              buttonClass={s.goBackButton}
               to="/wallet"
             />
           )}
@@ -78,6 +78,10 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
         <Route
           path="/wallet/(send|receive)"
           render={() => <SendReceiveWrapper address={address} balance={this.props.walletBalance} />}
+        />
+        <Route
+          path="/wallet"
+          component={LoadCardCTAButton}
         />
       </Switch>
     )
