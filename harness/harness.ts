@@ -55,6 +55,7 @@ window.addEventListener("load", function () {
   subToEvent('didUnlock')
   subToEvent('didShow')
   subToEvent('didHide')
+  subToEvent('didBuy')
 
   function subToEvent (name: string) {
     vynos.on(name, (data) => {
@@ -62,7 +63,7 @@ window.addEventListener("load", function () {
       const dl = document.createElement('dl')
       dl.textContent = name
       const dt = document.createElement('dt')
-      dt.textContent = data
+      dt.textContent = JSON.stringify(data)
       node.appendChild(dl)
       node.appendChild(dt)
       eventLog.appendChild(node)
