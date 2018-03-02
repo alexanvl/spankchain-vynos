@@ -6,11 +6,12 @@ import WorkerProxy from '../../WorkerProxy'
 import ActivitySubpage from './ActivitySubpage'
 import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './CardPage'
+import MainEntry from './MainEntry/index'
 import {Route, Switch} from 'react-router'
 import SendReceiveWrapper from './SendReceiveWrapper'
 import Web3 = require('web3')
 import {cardBalance} from '../../redux/selectors/cardBalance'
-import * as BigNumber from 'bignumber.js';
+import * as BigNumber from 'bignumber.js'
 
 const s = require('./styles.css')
 
@@ -36,19 +37,11 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
       <Switch>
         <Route
           path="/wallet/(send|receive)"
-          render={() => (
-            <SendReceivePage
-              balance={walletBalance}
-              address={address}
-            />
-          )}
+          component={SendReceivePage}
         />
         <Route
           path="/wallet"
-          render={() => {
-            console.log(walletBalance.toNumber())
-            return <SpankCardPage />
-          }}
+          component={MainEntry}
         />
       </Switch>
     )

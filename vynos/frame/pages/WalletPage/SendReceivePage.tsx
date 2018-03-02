@@ -1,18 +1,19 @@
 import * as React from 'react'
-import Button from '../../components/Button/index'
+import {connect} from 'react-redux'
 import * as copy from 'copy-to-clipboard'
-import Currency, {CurrencyType} from '../../components/Currency/index'
 import * as BigNumber from 'bignumber.js';
+import Button from '../../components/Button/index'
+import {FrameState} from '../../redux/FrameState'
+import Currency, {CurrencyType} from '../../components/Currency/index'
 
 const s = require('./styles.css')
 
-export interface Props {
-  address: string|null
+export interface MapStateToProps {
+  address: string
   balance: BigNumber.BigNumber
 }
 
-
-const SendReceivePage: React.SFC<Props> = (props) => {
+const SendReceivePage: React.SFC<MapStateToProps> = (props) => {
   const {balance, address} = props
   const s = require('./styles.css')
 
@@ -52,5 +53,11 @@ const SendReceivePage: React.SFC<Props> = (props) => {
   )
 }
 
+function mapStateToProps(state: FrameState): MapStateToProps {
+  return {
+    address: state.wallet.main.address!,
+    balance: new BigNumber.BigNumber(state.wallet.main.balance || 0),
+  }
+}
 
-export default SendReceivePage
+export default connect(mapStateToProps)(SendReceivePage)

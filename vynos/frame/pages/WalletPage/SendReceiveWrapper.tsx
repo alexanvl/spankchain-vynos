@@ -11,7 +11,7 @@ export interface SendReceiveWrapperProps {
 
 export default class SendReceiveWrapper extends React.Component<SendReceiveWrapperProps, {}> {
   render() {
-    if (!this.props.balance.toNumber()) {
+    if (!this.props.balance.gt(0)) {
       return (
         <ReceiveEther
           headerText="Not enough funds in your Wallet"
