@@ -18,6 +18,7 @@ export interface StateProps {
   isWalletExpected: boolean
   isUnlockExpected: boolean
   isTransactionPending: boolean
+  isFrameDisplayed: boolean
   web3: Web3
 }
 
@@ -75,7 +76,8 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
     if (this.props.isUnlockExpected === nextProps.isUnlockExpected &&
       this.props.isWalletExpected === nextProps.isWalletExpected &&
       this.props.isTransactionPending === nextProps.isTransactionPending &&
-      this.props.isAuthorizationExpected === nextProps.isAuthorizationExpected) {
+      this.props.isAuthorizationExpected === nextProps.isAuthorizationExpected &&
+      this.props.isFrameDisplayed === nextProps.isFrameDisplayed) {
       return
     }
 
@@ -106,6 +108,10 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
     if (!props.isWalletExpected) {
       this.props.history.push('/init')
     }
+
+    if (!props.isFrameDisplayed) {
+      this.props.history.push('/wallet')
+    }
   }
 
   render () {
@@ -130,6 +136,7 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 function mapStateToProps (state: FrameState): StateProps {
   let workerProxy = state.temp.workerProxy
   return {
+    isFrameDisplayed: state.shared.isFrameDisplayed,
     isAuthorizationExpected: !!state.shared.authorizationRequest,
     web3: workerProxy.getWeb3(),
     isUnlockExpected: state.shared.didInit && state.shared.isLocked,
