@@ -58,8 +58,8 @@ function mapStateToProps(state: FrameState): MapStateToProps {
   return {
     address: state.wallet.main.address!,
     walletBalance: new BigNumber.BigNumber(state.wallet.main.balance || 0),
-    cardBalance: new BigNumber.BigNumber(0),
-    // cardBalance: cardBalance(state.shared),
+    // cardBalance: new BigNumber.BigNumber(0),
+    cardBalance: cardBalance(state.shared),
     workerProxy: state.temp.workerProxy,
   }
 }

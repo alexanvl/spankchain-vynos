@@ -3,6 +3,7 @@ import Button from '../../../components/Button/index'
 import {connect} from 'react-redux'
 import {FrameState} from '../../../redux/FrameState'
 import WorkerProxy from '../../../WorkerProxy'
+import {cardBalance} from '../../../redux/selectors/cardBalance'
 import * as BigNumber from 'bignumber.js';
 
 const s = require('./index.css')
@@ -10,6 +11,7 @@ const s = require('./index.css')
 export interface MapStateToProps {
   workerProxy: WorkerProxy
   walletBalance: string | null
+  cardBalance: BigNumber.BigNumber
 }
 
 export type Props = MapStateToProps
@@ -41,9 +43,9 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
   }
 
   render() {
-    const { walletBalance } = this.props
+    const { walletBalance, cardBalance } = this.props
 
-    if (walletBalance === '0') {
+    if (walletBalance === '0' || cardBalance.gt(0)) {
       return <noscript />
     }
 
@@ -62,6 +64,7 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
 function mapStateToProps(state: FrameState): MapStateToProps {
   return {
     walletBalance: state.wallet.main.balance,
+    cardBalance: cardBalance(state.shared),
     workerProxy: state.temp.workerProxy
   }
 }
