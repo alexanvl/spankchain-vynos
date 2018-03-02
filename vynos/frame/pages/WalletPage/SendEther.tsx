@@ -16,7 +16,7 @@ const s = require('./SendEther.css')
 export interface MapStateToProps {
   web3?: Web3
   walletAddress: string | null
-  walletBalance: string | null
+  walletBalance: BigNumber.BigNumber
 }
 
 export interface MapDispatchToProps {
@@ -238,8 +238,8 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
 function mapStateToProps (state: FrameState): MapStateToProps {
   return {
     web3: state.temp.workerProxy.web3,
-    walletAddress: state.wallet.main.address,
-    walletBalance: state.wallet.main.balance
+    walletAddress: state.shared.walletData.main.address,
+    walletBalance: state.shared.walletData.main.balance
   }
 }
 
