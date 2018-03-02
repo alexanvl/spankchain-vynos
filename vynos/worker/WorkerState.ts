@@ -10,6 +10,7 @@ export interface RuntimeState {
   currentAuthToken: string
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
+  forceRedirect?: string
   branding: BrandingState
   channels: ChannelsState
 }
@@ -35,6 +36,7 @@ export interface SharedState {
   authorizedHubs: AuthorizedHubsState
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
+  forceRedirect?: string
   branding: BrandingState
   channels: ChannelsState
 }
@@ -96,6 +98,7 @@ export const INITIAL_STATE: WorkerState = {
     currentAuthToken: '',
     authorizationRequest: null,
     isFrameDisplayed: false,
+    forceRedirect: undefined,
     branding: {
       address: ''
     },
@@ -116,6 +119,7 @@ export function buildSharedState(state: WorkerState): SharedState {
     authorizationRequest: state.runtime.authorizationRequest,
     authorizedHubs: state.persistent.authorizedHubs,
     isFrameDisplayed: state.runtime.isFrameDisplayed,
+    forceRedirect: state.runtime.forceRedirect,
     branding: state.runtime.branding,
     channels: state.runtime.channels
   }

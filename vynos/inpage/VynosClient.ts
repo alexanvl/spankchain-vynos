@@ -123,12 +123,12 @@ export default class VynosClient implements Vynos {
     return this.provider.ask(request) as Promise<AuthenticateResponse>
   }
 
-  toggleFrame (state: boolean): Promise<void> {
+  toggleFrame (state: boolean, forceRedirect?: string): Promise<void> {
     const request: ToggleFrameRequest = {
       id: randomId(),
       method: ToggleFrameRequest.method,
       jsonrpc: JSONRPC,
-      params: [state]
+      params: [state, forceRedirect]
     }
 
     return this.provider.ask(request).then(() => {

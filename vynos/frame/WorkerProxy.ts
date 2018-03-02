@@ -212,12 +212,12 @@ export default class WorkerProxy extends EventEmitter {
     })
   }
 
-  toggleFrame (status: boolean): Promise<void> {
+  toggleFrame (status: boolean, forceRedirect?: string): Promise<void> {
     const request: ToggleFrameRequest = {
       id: randomId(),
       jsonrpc: JSONRPC,
       method: ToggleFrameRequest.method,
-      params: [status]
+      params: [status, forceRedirect]
     }
 
     return this.provider.ask(request).then(() => {

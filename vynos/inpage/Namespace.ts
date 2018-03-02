@@ -31,16 +31,23 @@ export default class Namespace extends EventEmitter {
     this.handleSharedStateUpdate = this.handleSharedStateUpdate.bind(this)
   }
 
-  public async buy (amount: BigNumber.BigNumber, meta: any): Promise<VynosBuyResponse> {
+  public async buy (amount: BigNumber.BigNumber, meta: any): Promise<VynosBuyResponse|null> {
     this.requireReady()
+    const { result: { didInit, isLocked } } = await this.client.getSharedState()
+    
+    if (!didInit || isLocked) {
+      this.show()
+      return null
+    }
+
     const res = await this.client.buy(amount.toNumber(), meta)
     this.emit('didBuy', res)
     return res
   }
 
-  public show() {
+  public show(forceRedirect?: string) {
     this.requireReady()
-    this.client.toggleFrame(true)
+    this.client.toggleFrame(true, forceRedirect)
       .catch((e: any) => this.emit('error', e))
   }
 

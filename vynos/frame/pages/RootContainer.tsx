@@ -12,6 +12,7 @@ import {RouteComponentProps} from 'react-router'
 import AuthorizePage from './AuthorizePage'
 import postMessage from "../lib/postMessage"
 import * as actions from "../redux/actions";
+import WorkerProxy from "../WorkerProxy"
 
 export interface StateProps {
   isAuthorizationExpected: boolean
@@ -19,7 +20,9 @@ export interface StateProps {
   isUnlockExpected: boolean
   isTransactionPending: boolean
   isFrameDisplayed: boolean
+  forceRedirect?: string
   web3: Web3
+  workerProxy: WorkerProxy
 }
 
 export interface RootStateProps extends RouteComponentProps<any>, StateProps {
@@ -77,7 +80,8 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
       this.props.isWalletExpected === nextProps.isWalletExpected &&
       this.props.isTransactionPending === nextProps.isTransactionPending &&
       this.props.isAuthorizationExpected === nextProps.isAuthorizationExpected &&
-      this.props.isFrameDisplayed === nextProps.isFrameDisplayed) {
+      this.props.isFrameDisplayed === nextProps.isFrameDisplayed &&
+      this.props.forceRedirect === nextProps.forceRedirect) {
       return
     }
 
@@ -109,6 +113,10 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
     }
 
     if (props.isWalletExpected) {
+      if (props.forceRedirect) {
+        this.props.history.push(props.forceRedirect)
+        return
+      }
       this.props.history.push('/wallet')
       return
     }
@@ -117,6 +125,7 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
       this.props.history.push('/wallet')
       return
     }
+
   }
 
   render () {
@@ -141,7 +150,9 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 function mapStateToProps (state: FrameState): StateProps {
   let workerProxy = state.temp.workerProxy
   return {
+    workerProxy,
     isFrameDisplayed: state.shared.isFrameDisplayed,
+    forceRedirect: state.shared.forceRedirect,
     isAuthorizationExpected: !!state.shared.authorizationRequest,
     web3: workerProxy.getWeb3(),
     isUnlockExpected: state.shared.didInit && state.shared.isLocked,
