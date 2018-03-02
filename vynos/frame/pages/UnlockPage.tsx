@@ -89,7 +89,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     })
   }
 
-  closeView () {
+  closeView = () => {
     this.props.workerProxy.toggleFrame(false)
   }
 

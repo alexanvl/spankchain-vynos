@@ -63,11 +63,11 @@
 }
 
 .spankCardCtaContent:hover {
-  box-shadow: 0 0 0 2px #ff3b81;
+  box-shadow: 0 0 0 3px #ff3b81;
 }
 
 .spankCardCtaContent:hover .ctaDivider {
-  display: none !important;
+  opacity: 0 !important;
 }
 
 .spankCardCtaInputValue {
@@ -208,11 +208,13 @@
 }
 
 .ctaDivider {
+  transition: opacity 200ms ease-in-out;
   width: 1px;
-  border-left: 1px solid #979797;
-  height: 16px;
+  border-left: 1px solid rgba(181, 181, 181, 0.4);
+  height: 1rem;
   position: relative;
   right: 2rem;
+  opacity: 1;
   top: 0;
 }
 

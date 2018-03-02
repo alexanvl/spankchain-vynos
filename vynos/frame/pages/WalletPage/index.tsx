@@ -22,6 +22,11 @@ export interface WalletPageStateProps {
 }
 
 export class WalletPage extends React.Component<WalletPageStateProps> {
+  closeFrame = () => {
+    const { workerProxy } = this.props
+    workerProxy.toggleFrame(false)
+  }
+
   renderMainPage () {
     const { walletBalance, address } = this.props
 
@@ -71,7 +76,7 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
 
     return (
       <div className={s.walletWrapper}>
-        <div className={s.cover} onClick={() => console.log('closing')}/>
+        <div className={s.cover} onClick={this.closeFrame}/>
         {this.renderMainPage()}
         {this.renderSubPage()}
       </div>
