@@ -229,6 +229,8 @@
 .walletActivityWrapper {
   background: #f0f0f0;
   padding: 2.5rem 0;
+  max-height: 17rem;
+  overflow-y: auto;
 }
 
 .walletActivityHeaderRow {
