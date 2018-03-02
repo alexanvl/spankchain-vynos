@@ -1,17 +1,19 @@
 import * as React from 'react'
-import {nameByPath} from './WalletMenu'
-import {FrameState} from '../../redux/FrameState'
+import {Route, Switch} from 'react-router'
 import {connect} from 'react-redux'
-import WorkerProxy from '../../WorkerProxy'
+import Web3 = require('web3')
+import * as BigNumber from 'bignumber.js'
+
+import {nameByPath} from './WalletMenu'
 import ActivitySubpage from './ActivitySubpage'
 import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './CardPage'
 import MainEntry from './MainEntry/index'
-import {Route, Switch} from 'react-router'
 import SendReceiveWrapper from './SendReceiveWrapper'
-import Web3 = require('web3')
+import WalletCTAButton from './WalletCTAButton/index'
 import {cardBalance} from '../../redux/selectors/cardBalance'
-import * as BigNumber from 'bignumber.js'
+import {FrameState} from '../../redux/FrameState'
+import WorkerProxy from '../../WorkerProxy'
 
 const s = require('./styles.css')
 
@@ -33,8 +35,14 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
 
   renderMainPage () {
     const { walletBalance, cardBalance, address } = this.props
+
     return (
       <Switch>
+        <Route
+          exact
+          path="/card/to/wallet"
+          component={SendReceivePage}
+        />
         <Route
           path="/wallet/(send|receive)"
           component={SendReceivePage}
@@ -52,6 +60,16 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
 
     return (
       <Switch>
+        <Route
+          exact
+          path="/card/to/wallet"
+          render={() => (
+            <WalletCTAButton
+              buttonClass={s.goBackButton}
+              to="/wallet"
+            />
+          )}
+        />
         <Route
           exact
           path="/wallet/activity"

@@ -1,0 +1,7 @@
+.container {
+  display: flex;
+  flex-flow: row nowrap;
+  padding: 0rem 4rem 2rem;
+  position: relative;
+  z-index: 200;
+}

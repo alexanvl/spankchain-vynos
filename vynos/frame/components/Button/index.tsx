@@ -67,8 +67,11 @@ class Button extends React.Component<ButtonProps> {
   }
 
   onClick (e: any) {
+    console.log(this.props.to)
+
     if (this.props.to) {
       this.context.router.history.push(this.props.to)
+      console.log(this.context.router)
     }
 
     if (this.props.onClick) {

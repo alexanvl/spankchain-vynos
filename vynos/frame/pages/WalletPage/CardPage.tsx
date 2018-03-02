@@ -71,7 +71,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             />
           </div>
           <div className={s.walletRowAction}>
-            <Button to="/wallet" type="tertiary" content="More" />
+            <Button to="/card/to/wallet" type="tertiary" content="More" />
           </div>
         </div>
         <div className={s.walletSpankCardDetails}>
