@@ -12,10 +12,10 @@ import { Store } from 'redux'
 import * as actions from '../actions';
 
 export default class NotificationController {
-  web3: Web3
+  web3: Web3|null
   contract: any
   transactions: TransactionService
-  account: string
+  account: string|null
   events: EventEmitter
   store: Store<WorkerState>
   providerOpts: ProviderOpts
@@ -24,6 +24,8 @@ export default class NotificationController {
   constructor(providerOpts: ProviderOpts, store: Store<WorkerState>, sharedStateView: SharedStateView, transactions: TransactionService) {
     this.providerOpts = providerOpts
     this.transactions = transactions
+    this.account = null
+    this.web3 = null
     this.events = new EventEmitter()
     this.store = store
     this.sharedStateView = sharedStateView
@@ -43,7 +45,7 @@ export default class NotificationController {
 
     events.watch(() => {
       web3.eth.getBalance(account, (err, balance) => {
-        const currentBalance = web3.fromWei(balance, 'ether').toString()
+        const currentBalance = new BigNumber.BigNumber(web3.fromWei(balance, 'ether'))
         this.store.dispatch(actions.updateWalletBalance(currentBalance))
       })
     })
@@ -56,6 +58,7 @@ export default class NotificationController {
 
     const accounts = await this.sharedStateView.getAccounts()
     this.account = accounts[0]
+    this.store.dispatch(actions.updateWalletAddress(this.account))
 
     return this.account
   }

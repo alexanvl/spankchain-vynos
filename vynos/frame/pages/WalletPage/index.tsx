@@ -10,12 +10,17 @@ import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './CardPage'
 import MainEntry from './MainEntry/index'
 import SendReceiveWrapper from './SendReceiveWrapper'
+<<<<<<< HEAD
 import WalletCTAButton from './WalletCTAButton/index'
 import LoadCardCTAButton from './LoadCardCTAButton/index'
 import LoadUpSpank from './LoadUpSpank'
 import {cardBalance} from '../../redux/selectors/cardBalance'
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
+=======
+import Web3 = require('web3')
+import * as BigNumber from 'bignumber.js'
+>>>>>>> Update balance
 
 const s = require('./styles.css')
 
@@ -24,9 +29,19 @@ export interface WalletPageStateProps {
   path: string
   web3: Web3
   workerProxy: WorkerProxy
+<<<<<<< HEAD
   address: string
   walletBalance: BigNumber.BigNumber
   cardBalance: BigNumber.BigNumber
+=======
+  address: string|null
+  walletBalance: BigNumber.BigNumber|null
+}
+
+export interface WalletPageState {
+  spankBalance: string
+  sendShown: boolean
+>>>>>>> Update balance
 }
 
 export class WalletPage extends React.Component<WalletPageStateProps> {
@@ -130,9 +145,14 @@ function mapStateToProps (state: FrameState): WalletPageStateProps {
     path: state.shared.rememberPath,
     web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
+<<<<<<< HEAD
     address: state.wallet.main.address!,
     walletBalance: new BigNumber.BigNumber(state.wallet.main.balance || 0),
     cardBalance: cardBalance(state.shared),
+=======
+    address: state.shared.walletData.main.address!,
+    walletBalance: state.shared.walletData.main.balance!,
+>>>>>>> Update balance
   }
 }
 

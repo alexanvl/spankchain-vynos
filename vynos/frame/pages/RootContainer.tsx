@@ -152,6 +152,7 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 
 function mapStateToProps (state: FrameState): StateProps {
   let workerProxy = state.temp.workerProxy
+  console.log('sahred: ', state.shared);
   return {
     workerProxy,
     isFrameDisplayed: state.shared.isFrameDisplayed,
