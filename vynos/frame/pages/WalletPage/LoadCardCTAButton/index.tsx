@@ -1,9 +1,10 @@
 import * as React from 'react'
-import Button from '../../../components/Button/index'
 import {connect} from 'react-redux'
 import {FrameState} from '../../../redux/FrameState'
 import WorkerProxy from '../../../WorkerProxy'
 import {cardBalance} from '../../../redux/selectors/cardBalance'
+import Button from '../../../components/Button/index'
+import Currency, {CurrencyType} from '../../../components/Currency/index'
 import * as BigNumber from 'bignumber.js';
 
 const s = require('./index.css')
@@ -39,7 +40,17 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
   renderContent () {
     return this.state.isLoading
       ? 'Loading...'
-      : `Load up $${this.props.walletBalance} into SpankCard`
+      : () => (
+        <span>
+          <span>Load up </span>
+          <Currency
+            amount={new BigNumber.BigNumber(this.props.walletBalance || 0)}
+            inputType={CurrencyType.ETH}
+            showUnit
+          />
+          <span> into SpankCard</span>
+        </span>
+      )
   }
 
   render() {

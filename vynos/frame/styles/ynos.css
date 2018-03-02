@@ -596,6 +596,7 @@ Channels page
   display: flex;
   flex-flow: column nowrap;
   background-color: #ff3b81;
+  padding-bottom: 3rem;
 }
 
 .header {
@@ -642,6 +643,7 @@ Channels page
   display: flex;
   flex-flow: column nowrap;
   align-items: center;
+  flex: 0 0 auto;
 }
 
 .funnelTitle {
@@ -653,6 +655,7 @@ Channels page
 
 .funnelWalletCard {
   margin: 3rem 0;
+  flex: 0 0 auto;
 }
 
 .passwordTextBox {

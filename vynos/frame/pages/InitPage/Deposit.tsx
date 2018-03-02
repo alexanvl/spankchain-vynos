@@ -15,7 +15,9 @@ import TextBox from "../../components/TextBox/index"
 import Input from "../../components/Input/index"
 import WalletCard from "../../components/WalletCard/index"
 import CTAInput from "../../components/CTAInput/index"
+
 const style = require('../../styles/ynos.css')
+const d = require('./Deposit.css')
 
 export interface DepositStateProps {
   web3?: Web3
@@ -76,6 +78,8 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
           </div>
           <CTAInput
             className={style.ctaInput}
+            ctaInputValueClass={d.ctaInputValue}
+            ctaContentClass={d.ctaInputContent}
             value={this.state.address}
             ctaContent={() => (
               <div className={style.ctaContentWrapper} onClick={() => copy(this.state.address)}>

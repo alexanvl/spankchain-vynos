@@ -95,8 +95,10 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
     return (
       <div className={s.walletWrapper}>
         <div className={s.cover} onClick={this.closeFrame}/>
-        {this.renderMainPage()}
-        {this.renderSubPage()}
+        <div className={s.walletContentContainer}>
+          {this.renderMainPage()}
+          {this.renderSubPage()}
+        </div>
       </div>
     )
   }

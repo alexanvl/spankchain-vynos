@@ -17,6 +17,11 @@
   overflow: hidden;
 }
 
+.walletContentContainer {
+  position: relative;
+  z-index: 200;
+}
+
 .walletCard {
   display: flex;
   flex-flow: row nowrap;
@@ -134,7 +139,8 @@
   font-style: normal;
   letter-spacing: 0.1px;
   flex: 0 0 auto;
-  align-self: center
+  align-self: center;
+  margin-bottom: .3rem;
 }
 
 .walletBalance {
