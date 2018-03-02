@@ -6,9 +6,12 @@ import WorkerProxy from '../../WorkerProxy'
 import ActivitySubpage from './ActivitySubpage'
 import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './CardPage'
+import MainEntry from './MainEntry/index'
 import {Route, Switch} from 'react-router'
 import SendReceiveWrapper from './SendReceiveWrapper'
 import Web3 = require('web3')
+import {cardBalance} from '../../redux/selectors/cardBalance'
+import * as BigNumber from 'bignumber.js'
 
 const s = require('./styles.css')
 
@@ -18,44 +21,27 @@ export interface WalletPageStateProps {
   web3: Web3
   workerProxy: WorkerProxy
   address: string
-  walletBalance: string
+  walletBalance: BigNumber.BigNumber
+  cardBalance: BigNumber.BigNumber
 }
 
-export interface WalletPageState {
-  spankBalance: string
-  sendShown: boolean
-}
-
-export class WalletPage extends React.Component<WalletPageStateProps, WalletPageState> {
-  constructor (props: any) {
-    super(props)
-    this.state = {
-      // TODO: backend integration to retrieve SpankCard balance
-      spankBalance: '23',
-      sendShown: false
-    }
+export class WalletPage extends React.Component<WalletPageStateProps> {
+  closeFrame = () => {
+    const { workerProxy } = this.props
+    workerProxy.toggleFrame(false)
   }
 
   renderMainPage () {
-    const { walletBalance, address } = this.props
-    const { spankBalance } = this.state
-
+    const { walletBalance, cardBalance, address } = this.props
     return (
       <Switch>
         <Route
           path="/wallet/(send|receive)"
-          render={() => (
-            <SendReceivePage
-              balance={walletBalance}
-              address={address}
-            />
-          )}
+          component={SendReceivePage}
         />
         <Route
           path="/wallet"
-          render={() => (
-            <SpankCardPage spankBalance={spankBalance} />
-          )}
+          component={MainEntry}
         />
       </Switch>
     )
@@ -80,12 +66,13 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 
   render () {
-    if (!this.props.walletBalance) {
+    if (!this.props.address) {
       return <noscript />
     }
 
     return (
       <div className={s.walletWrapper}>
+        <div className={s.cover} onClick={this.closeFrame}/>
         {this.renderMainPage()}
         {this.renderSubPage()}
       </div>
@@ -101,7 +88,8 @@ function mapStateToProps (state: FrameState): WalletPageStateProps {
     web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
     address: state.wallet.main.address!,
-    walletBalance: state.wallet.main.balance!,
+    walletBalance: new BigNumber.BigNumber(state.wallet.main.balance || 0),
+    cardBalance: cardBalance(state.shared),
   }
 }
 

@@ -61,6 +61,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
               isConnected
               value={<Currency amount={walletBalance} inputType={CurrencyType.ETH} showUnit={true} />}
               ctaInputValueClass={s.spankCardCtaInputValue}
+              ctaContentClass={s.spankCardCtaContent}
               ctaContent={() => (
                 <div className={s.ctaContentWrapper} onClick={() => console.log('Filling')}>
                   <div className={s.ctaDivider} />
@@ -70,7 +71,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             />
           </div>
           <div className={s.walletRowAction}>
-            <Button to="/wallet/send" type="tertiary" content="More" />
+            <Button to="/wallet" type="tertiary" content="More" />
           </div>
         </div>
         <div className={s.walletSpankCardDetails}>

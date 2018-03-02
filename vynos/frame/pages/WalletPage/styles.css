@@ -1,6 +1,14 @@
+.cover {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 100;
+}
+
 .walletWrapper {
   width: 36rem;
-  position: relative;
   z-index: 200;
   background-color: #fff;
   border-bottom-left-radius: 10px;
@@ -15,12 +23,16 @@
   padding: 2rem 4rem;
   height: 100%;
   justify-content: space-between;
+  position: relative;
+  z-index: 200;
 }
 
 .walletSpankCardWrapper {
   display: flex;
   height: 100%;
   flex-flow: column nowrap;
+  position: relative;
+  z-index: 200;
 }
 
 .walletRow {
@@ -48,9 +60,24 @@
   font-weight: 500;
 }
 
+.spankCardCtaContent {
+
+}
+
+.spankCardCtaContent:hover {
+  box-shadow: 0 0 0 3px #ff3b81;
+}
+
+.spankCardCtaContent:hover .ctaDivider {
+  opacity: 0 !important;
+}
+
 .spankCardCtaInputValue {
   font-weight: 500;
   font-size: 1.1rem;
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
 }
 
 .ctaText {
@@ -183,11 +210,13 @@
 }
 
 .ctaDivider {
+  transition: opacity 200ms ease-in-out;
   width: 1px;
-  border-left: 1px solid #979797;
-  height: 16px;
+  border-left: 1px solid rgba(181, 181, 181, 0.4);
+  height: 1rem;
   position: relative;
   right: 2rem;
+  opacity: 1;
   top: 0;
 }
 
