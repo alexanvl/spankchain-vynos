@@ -98,18 +98,18 @@ export interface LockWalletResponse extends ResponsePayload {
   result: null
 }
 
-export const OpenChannelRequest = requestFactory<[string]>('openChannel')
+export const OpenChannelRequest = requestFactory<any[]>('openChannel')
 export type OpenChannelRequest = RequestPayload
 
 export interface OpenChannelResponse extends ResponsePayload {
   result: string
 }
 
-export const CloseChannelRequest = requestFactory<[string]>('closeChannel')
-export type CloseChannelRequest = RequestPayload
+export const CloseChannelsForCurrentHubRequest = requestFactory<[string]>('closeChannelsForCurrentHub')
+export type CloseChannelsForCurrentHubRequest = RequestPayload
 
 export interface CloseChannelResponse extends ResponsePayload {
-  result: [string] //
+  result: null
 }
 
 export const BuyRequest = requestFactory<[string, any]>('buyRequest')

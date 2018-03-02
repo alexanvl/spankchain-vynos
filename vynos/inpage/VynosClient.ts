@@ -5,7 +5,7 @@ import {
   AuthenticateResponse,
   BuyRequest,
   BuyResponse,
-  CloseChannelRequest,
+  CloseChannelsForCurrentHubRequest,
   GetSharedStateRequest,
   GetSharedStateResponse,
   InitAccountRequest,
@@ -62,13 +62,13 @@ export default class VynosClient implements Vynos {
   }
 
   closeChannel (channelId: string): Promise<void> {
-    let request: CloseChannelRequest = {
+    let request: CloseChannelsForCurrentHubRequest = {
       id: randomId(),
-      method: CloseChannelRequest.method,
+      method: CloseChannelsForCurrentHubRequest.method,
       jsonrpc: JSONRPC,
       params: [channelId]
     }
-    return this.provider.ask<CloseChannelRequest, any>(request)
+    return this.provider.ask<CloseChannelsForCurrentHubRequest, any>(request)
   }
 
   buy (amount: number, meta: any): Promise<VynosBuyResponse> {

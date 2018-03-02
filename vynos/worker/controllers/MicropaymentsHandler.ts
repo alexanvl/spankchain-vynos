@@ -4,7 +4,7 @@ import {EndFunction} from '../../lib/StreamServer'
 import {
   BuyRequest,
   BuyResponse,
-  CloseChannelRequest,
+  CloseChannelsForCurrentHubRequest,
   CloseChannelResponse,
   ListChannelsRequest,
   ListChannelsResponse, OpenChannelRequest, OpenChannelResponse, PopulateChannelsRequest, PopulateChannelsResponse
@@ -57,13 +57,12 @@ export default class MicropaymentsHandler {
     end(null, res)
   }
 
-  closeChannel (message: CloseChannelRequest, next: Function, end: EndFunction) {
-    let channelId = message.params[0]
-    this.controller.closeChannel(channelId).then(channelId => {
-      let response: CloseChannelResponse = {
+  closeChannelsForCurrentHubRequest (message: CloseChannelsForCurrentHubRequest, next: Function, end: EndFunction) {
+    this.controller.closeChannelsForCurrentHub().then(channelId => {
+      const response: CloseChannelResponse = {
         id: message.id,
         jsonrpc: message.jsonrpc,
-        result: [channelId]
+        result: null
       }
       end(null, response)
     }).catch(end)
@@ -98,8 +97,8 @@ export default class MicropaymentsHandler {
       this.populateChannels(message, next, end)
     } else if (OpenChannelRequest.match(message)) {
       this.openChannel(message, next, end)
-    } else if (CloseChannelRequest.match(message)) {
-      this.closeChannel(message, next, end)
+    } else if (CloseChannelsForCurrentHubRequest.match(message)) {
+      this.closeChannelsForCurrentHubRequest(message, next, end)
     } else if (ListChannelsRequest.match(message)) {
       this.listChannels(message, next, end)
     } else if (BuyRequest.match(message)) {

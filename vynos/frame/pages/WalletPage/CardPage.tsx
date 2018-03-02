@@ -19,9 +19,33 @@ export interface StateProps extends BrandingState {
   workerProxy: WorkerProxy
 }
 
-class CardPage extends React.Component<StateProps, any> {
+export interface CardPageState {
+  isWithdrawing: boolean
+}
+
+class CardPage extends React.Component<StateProps, CardPageState> {
+  constructor (props: StateProps) {
+    super(props)
+
+    this.state = {
+      isWithdrawing: false
+    }
+  }
+
   async componentDidMount() {
     await this.props.workerProxy.populateChannels()
+  }
+
+  async onClickWithdraw () {
+    this.setState({
+      isWithdrawing: true
+    })
+
+    await this.props.workerProxy.closeChannelsForCurrentHub()
+
+    this.setState({
+      isWithdrawing: false
+    })
   }
 
   render() {
@@ -63,7 +87,13 @@ class CardPage extends React.Component<StateProps, any> {
             />
           </div>
           <div className={s.walletSpankCardActions}>
-            <Button type="secondary" content="Withdraw into Wallet" isMini />
+            <Button
+              type="secondary"
+              content={this.state.isWithdrawing ? 'Withdrawing...' : 'Withdraw to Wallet'}
+              disabled={this.state.isWithdrawing}
+              onClick={() => this.onClickWithdraw()}
+              isMini
+            />
             <Button to="/wallet/activity" type="secondary" content="Activity" isMini />
           </div>
         </div>

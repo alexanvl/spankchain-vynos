@@ -14,6 +14,8 @@ import {Store} from 'redux'
 import {LifecycleAware} from './LifecycleAware'
 import * as actions from '../actions';
 import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
+import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
+
 
 export default class MicropaymentsController {
   providerOpts: ProviderOpts
@@ -53,10 +55,18 @@ export default class MicropaymentsController {
     return chan
   }
 
-  public async closeChannel (channelId: string): Promise<string> {
-    const machinomy = await this.getMachinomy()
-    await machinomy.close(channelId)
-    return channelId
+  public async closeChannelsForCurrentHub (): Promise<void> {
+    const sharedState = await this.sharedStateView.getSharedState()
+    const hubUrl = await this.sharedStateView.getHubUrl()
+
+    const channels = sharedState.channels[hubUrl]
+
+    if (!channels) {
+      return
+    }
+
+    await Promise.all(channels.map((ch: SerializedPaymentChannel) => this.closeChannel(hubUrl, ch.channelId)))
+    await this.populateChannels()
   }
 
   async buy (price: number, meta: any): Promise<VynosBuyResponse> {
@@ -96,5 +106,12 @@ export default class MicropaymentsController {
       settlementPeriod: Number.MAX_SAFE_INTEGER
     })
     return this.machinomy
+  }
+
+  private async closeChannel(hubUrl: string, channelId: string): Promise<void> {
+    await fetch(`${hubUrl}/channels/${channelId}/close`, {
+      method: 'POST',
+      credentials: 'include'
+    })
   }
 }

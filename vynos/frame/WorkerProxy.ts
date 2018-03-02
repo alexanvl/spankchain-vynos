@@ -4,7 +4,7 @@ import {SharedState} from '../worker/WorkerState'
 import {JSONRPC, randomId} from '../lib/Payload'
 import {isSharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/SharedStateBroadcast'
 import {
-  ChangeNetworkRequest,
+  ChangeNetworkRequest, CloseChannelsForCurrentHubRequest,
   DidStoreMnemonicRequest,
   GenKeyringRequest,
   GenKeyringResponse,
@@ -51,6 +51,17 @@ export default class WorkerProxy extends EventEmitter {
     }
 
     return this.provider.ask(request).then((res: OpenChannelResponse) => res.result)
+  }
+
+  closeChannelsForCurrentHub(): Promise<void> {
+    const request: CloseChannelsForCurrentHubRequest = {
+      id: randomId(),
+      jsonrpc: JSONRPC,
+      method: CloseChannelsForCurrentHubRequest.method,
+      params: []
+    }
+
+    return this.provider.ask(request).then(() => {})
   }
 
   populateChannels(): Promise<void> {
