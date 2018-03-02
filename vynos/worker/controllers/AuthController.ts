@@ -77,6 +77,8 @@ export default class AuthController {
 
       const token = await this.doAuthenticate(origin)
 
+      this.store.dispatch(actions.setCurrentAuthToken(token))
+
       const response: AuthenticateResponse = {
         id: message.id,
         jsonrpc: message.jsonrpc,
@@ -87,8 +89,6 @@ export default class AuthController {
       }
 
       end(null, response)
-
-      this.frame.hide()
     } catch (e) {
       end(e)
     }

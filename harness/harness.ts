@@ -1,6 +1,6 @@
 import {VynosWindow} from '../vynos/window'
-import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js';
+import Namespace from '../vynos/inpage/Namespace'
 
 let _window = (window as VynosWindow);
 
@@ -14,26 +14,14 @@ window.addEventListener("load", function () {
     authRealm: 'SpankChain',
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
     window: _window
-  })
+  }) as Namespace
 
-
-  let customFrame = document.getElementById('custom_frame')
-  if (customFrame) {
-    vynos.init(customFrame as HTMLIFrameElement)
-  }
-
-  vynos.ready().then(instance => {
-    let provider = instance.provider
-    let web3 = new Web3(provider)
-    web3.eth.getAccounts((err, accounts) => {
-      console.log(accounts)
-    })
-  })
+  vynos.init().catch(console.error.bind(console))
 
   let displayButton = document.getElementById('display')
   if (displayButton) {
     displayButton.onclick = () => {
-      vynos.display()
+      vynos.show()
     }
   }
 
@@ -57,5 +45,27 @@ window.addEventListener("load", function () {
       })
     }
   }
-})
 
+  const eventLog = document.getElementById('event-log')!
+  subToEvent('error')
+  subToEvent('ready')
+  subToEvent('didOnboard')
+  subToEvent('didAuthenticate')
+  subToEvent('didLock')
+  subToEvent('didUnlock')
+  subToEvent('didShow')
+  subToEvent('didHide')
+
+  function subToEvent (name: string) {
+    vynos.on(name, (data) => {
+      const node = document.createDocumentFragment()
+      const dl = document.createElement('dl')
+      dl.textContent = name
+      const dt = document.createElement('dt')
+      dt.textContent = data
+      node.appendChild(dl)
+      node.appendChild(dt)
+      eventLog.appendChild(node)
+    })
+  }
+})

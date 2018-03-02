@@ -11,6 +11,7 @@ import Checkbox from "../../components/Checkbox/index"
 import Input from "../../components/Input/index"
 import WalletCard from "../../components/WalletCard/index"
 import Logo from '../../components/Logo'
+import {withRouter} from 'react-router'
 const style = require('../../styles/ynos.css')
 
 export interface MnemonicStateProps {
@@ -24,6 +25,7 @@ export interface MnemonicDispatchProps {
 
 export interface MnemonicStates {
   acknowledged: boolean
+  isAuthenticating: boolean
 }
 
 
@@ -33,13 +35,21 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
   constructor(props: MnemonicSubpageProps) {
     super(props)
     this.state = {
-      acknowledged: false
+      acknowledged: false,
+      isAuthenticating: false
     }
   }
-  handleSubmit () {
+
+  async handleSubmit () {
     if (this.state.acknowledged) {
       this.props.saveMnemonic(this.props.workerProxy)
     }
+
+    this.setState({
+      isAuthenticating: true
+    })
+
+    await this.props.workerProxy.authenticate()
   }
 
   render () {
@@ -85,10 +95,10 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
               isInverse
             />
             <Button
-              content="Next"
+              content={this.state.isAuthenticating ? 'Authenticating...' : 'Next'}
               onClick={this.handleSubmit.bind(this)}
               isInverse
-              disabled={!this.state.acknowledged}
+              disabled={!this.state.acknowledged && !this.state.isAuthenticating}
             />
           </div>
         </div>
@@ -112,4 +122,4 @@ function mapDispatchToProps(dispatch: Dispatch<FrameState>): MnemonicDispatchPro
     }
   }
 }
-export default connect(mapStateToProps, mapDispatchToProps)(Mnemonic)
+export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Mnemonic))

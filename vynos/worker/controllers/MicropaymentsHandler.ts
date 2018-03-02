@@ -35,14 +35,13 @@ export default class MicropaymentsHandler {
     }
   }
 
-  async openChannel (message: OpenChannelRequest, next: Function, end: EndFunction) {
-    const receiver = message.params[0]
-    const value = message.params[1]
+  async openChannelWithCurrentHub (message: OpenChannelRequest, next: Function, end: EndFunction) {
+    const value = message.params[0]
 
     let chan
 
     try {
-      chan = await this.controller.openChannel(receiver, value)
+      chan = await this.controller.openChannel(value)
     } catch (e) {
       end(e)
       return
@@ -96,7 +95,7 @@ export default class MicropaymentsHandler {
     if (PopulateChannelsRequest.match(message)) {
       this.populateChannels(message, next, end)
     } else if (OpenChannelRequest.match(message)) {
-      this.openChannel(message, next, end)
+      this.openChannelWithCurrentHub(message, next, end)
     } else if (CloseChannelsForCurrentHubRequest.match(message)) {
       this.closeChannelsForCurrentHubRequest(message, next, end)
     } else if (ListChannelsRequest.match(message)) {

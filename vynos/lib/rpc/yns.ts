@@ -98,7 +98,7 @@ export interface LockWalletResponse extends ResponsePayload {
   result: null
 }
 
-export const OpenChannelRequest = requestFactory<any[]>('openChannel')
+export const OpenChannelRequest = requestFactory<[number]>('openChannel')
 export type OpenChannelRequest = RequestPayload
 
 export interface OpenChannelResponse extends ResponsePayload {

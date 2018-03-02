@@ -4,6 +4,7 @@ import {FrameState} from '../../redux/FrameState'
 import Button from '../../components/Button/index'
 import WorkerProxy from '../../WorkerProxy'
 import * as BigNumber from 'bignumber.js';
+import Currency, {CurrencyType} from '../../components/Currency/index'
 
 const s = require('./LoadUpSpank.css')
 
@@ -36,7 +37,7 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
 
     const amount = new BigNumber.BigNumber(this.props.workerProxy.web3.toWei(this.props.walletBalance!, 'ether'))
       .minus(this.props.workerProxy.web3.toWei(0.1, 'ether'))
-    await this.props.workerProxy.openChannel(amount)
+    await this.props.workerProxy.openChannelWithCurrentHub(amount)
   }
 
   render () {
@@ -53,7 +54,15 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
   }
 
   renderContent () {
-    return this.state.isLoading ? 'Loading...' : `Load up $${this.props.walletBalance} into SpankCard`
+    if (this.state.isLoading) {
+      return 'Loading...'
+    }
+
+    return (
+      <span>
+        Load up <Currency amount={new BigNumber.BigNumber(this.props.walletBalance || 0)} inputType={CurrencyType.ETH} /> into SpankCard
+      </span>
+    )
   }
 }
 

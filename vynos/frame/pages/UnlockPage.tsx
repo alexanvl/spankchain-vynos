@@ -72,8 +72,8 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
       return
     }
 
+    await this.props.workerProxy.authenticate()
     const next = this.props.next || '/wallet'
-
     this.props.history.push(next)
   }
 
@@ -138,9 +138,10 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
             />
             <Button
               content={() => (
-                <div className={style.loginButton} />
+                this.state.loading ? 'Unlocking...' : <div className={style.loginButton} />
               )}
               onClick={this.handleSubmit}
+              disabled={this.state.loading}
               isInverse
               isMini
             />

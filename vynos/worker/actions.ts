@@ -132,6 +132,17 @@ export function setCurrentAuthRealmHandler(state: WorkerState, currentAuthRealm:
   }
 }
 
+export const setCurrentAuthToken = actionCreator<string>('runtime/setCurrentAuthToken')
+export function setCurrentAuthTokenHandler(state: WorkerState, currentAuthToken: string): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      currentAuthToken
+    }
+  }
+}
+
 export interface SetBrandingParam {
   title?: string
   companyName?: string

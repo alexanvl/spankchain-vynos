@@ -4,6 +4,8 @@ import {SharedState} from '../worker/WorkerState'
 import {JSONRPC, randomId} from '../lib/Payload'
 import {isSharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/SharedStateBroadcast'
 import {
+  AuthenticateRequest,
+  AuthenticateResponse,
   ChangeNetworkRequest, CloseChannelsForCurrentHubRequest,
   DidStoreMnemonicRequest,
   GenKeyringRequest,
@@ -42,12 +44,12 @@ export default class WorkerProxy extends EventEmitter {
     this.web3 = new Web3(this.provider)
   }
 
-  openChannel (amount: BigNumber.BigNumber): Promise<string> {
+  openChannelWithCurrentHub (amount: BigNumber.BigNumber): Promise<string> {
     const request: OpenChannelRequest = {
       id: randomId(),
       jsonrpc: JSONRPC,
       method: OpenChannelRequest.method,
-      params: ['0x3155694d7558eec974cfe35eaa3c2c7bcebb793f', amount.toNumber()]
+      params: [amount.toNumber()]
     }
 
     return this.provider.ask(request).then((res: OpenChannelResponse) => res.result)
@@ -185,6 +187,17 @@ export default class WorkerProxy extends EventEmitter {
     return this.provider.ask(request).then((response: GetPrivateKeyHexResponse) => {
       return response.result
     })
+  }
+
+  authenticate (): Promise<AuthenticateResponse> {
+    const request: AuthenticateRequest = {
+      id: randomId(),
+      method: AuthenticateRequest.method,
+      jsonrpc: JSONRPC,
+      params: [window.location.hostname]
+    }
+
+    return this.provider.ask(request) as Promise<AuthenticateResponse>
   }
 
   respondToAuthorizationRequest (res: boolean): Promise<void> {

@@ -4,6 +4,7 @@ import WorkerProxy from '../WorkerProxy'
 import {FrameState} from '../redux/FrameState'
 import {AuthorizationRequestState} from '../../worker/WorkerState'
 import Button from '../components/Button/index'
+import {RouteComponentProps, withRouter} from 'react-router'
 
 const s = require('./WalletPage/styles.css')
 
@@ -12,12 +13,14 @@ export interface StateProps {
   authRequest: AuthorizationRequestState | null
 }
 
+export interface AuthorizePageProps extends RouteComponentProps<any>, StateProps {}
+
 export interface AuthorizePageState {
   authRealm: string
 }
 
-export class AuthorizePage extends React.Component<StateProps, AuthorizePageState> {
-  constructor (props: StateProps) {
+export class AuthorizePage extends React.Component<AuthorizePageProps, AuthorizePageState> {
+  constructor (props: AuthorizePageProps) {
     super(props)
 
     this.state = {
@@ -41,6 +44,8 @@ export class AuthorizePage extends React.Component<StateProps, AuthorizePageStat
     if (!res) {
       await this.props.workerProxy.toggleFrame(false)
     }
+
+    this.props.history.push('/wallet')
   }
 
   render () {
@@ -65,4 +70,4 @@ function mapStateToProps (state: FrameState): StateProps {
   }
 }
 
-export default connect(mapStateToProps)(AuthorizePage)
+export default withRouter(connect(mapStateToProps)(AuthorizePage))

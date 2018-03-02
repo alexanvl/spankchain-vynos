@@ -7,6 +7,7 @@ export interface RuntimeState {
   lastUpdateDb: number
   currentHubUrl: string
   currentAuthRealm: string
+  currentAuthToken: string
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
   branding: BrandingState
@@ -29,6 +30,7 @@ export interface SharedState {
   rememberPath: string
   lastUpdateDb: number
   currentHubUrl: string
+  currentAuthToken: string
   currentAuthRealm: string
   authorizedHubs: AuthorizedHubsState
   authorizationRequest: AuthorizationRequestState|null
@@ -72,6 +74,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   authorizationRequest: null,
   currentHubUrl: '',
   currentAuthRealm: '',
+  currentAuthToken: '',
   isFrameDisplayed: false,
   branding: {
     address: ''
@@ -90,6 +93,7 @@ export const INITIAL_STATE: WorkerState = {
     lastUpdateDb: 0,
     currentHubUrl: '',
     currentAuthRealm: '',
+    currentAuthToken: '',
     authorizationRequest: null,
     isFrameDisplayed: false,
     branding: {
@@ -108,6 +112,7 @@ export function buildSharedState(state: WorkerState): SharedState {
     lastUpdateDb: state.runtime.lastUpdateDb,
     currentHubUrl: state.runtime.currentHubUrl,
     currentAuthRealm: state.runtime.currentAuthRealm,
+    currentAuthToken: state.runtime.currentAuthToken,
     authorizationRequest: state.runtime.authorizationRequest,
     authorizedHubs: state.persistent.authorizedHubs,
     isFrameDisplayed: state.runtime.isFrameDisplayed,

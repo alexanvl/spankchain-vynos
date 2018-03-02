@@ -1,12 +1,3 @@
-import postMessage from '../frame/lib/postMessage'
-
-const FRAME_HEIGHT = 440
-const FRAME_WIDTH = 480
-const CLOSE_HEIGHT = 0
-const CLOSE_WIDTH = 130 // %
-
-const imgUpArrow = require('../frame/styles/images/up-arrow.svg')
-
 export default class Frame {
   element: HTMLIFrameElement
   containerElement: HTMLDivElement
@@ -17,7 +8,6 @@ export default class Frame {
 
   constructor(scriptAddress: string, frameElement?: HTMLIFrameElement) {
     this.vynosScriptAddress = scriptAddress
-    let srcCloseButton = this.vynosScriptAddress.replace(/vynos(.|.dev.)js/, imgUpArrow)
 
     if (frameElement) {
       this.element = frameElement
@@ -36,12 +26,6 @@ export default class Frame {
       this.coverElement.style.left = '0'
       this.coverElement.style.zIndex = '100'
       this.coverElement.style.transition = 'opacity 500ms'
-
-      // this.coverElement.addEventListener('click', () => {
-      //   postMessage(window, {
-      //     type: 'vynos/parent/hide',
-      //   })
-      // })
 
       let style = '#vynos_frame_img_close_button{width: 40px;bottom: 3px;position: absolute;left: 50%;margin-left: -20px;opacity:0;transition: opacity 1s}' +
         '#vynos_frame_close_button:hover > #vynos_frame_img_close_button{opacity: 1}'
@@ -84,27 +68,6 @@ export default class Frame {
     this.containerElement.style.transition = 'margin-top 0.7s'
   }
 
-  setFullPage() {
-    // Set iframe styles
-    this.element.style.borderWidth = '0px'
-    this.element.height = '100%'
-    this.element.width = '100%'
-    this.element.style.transition = 'none'
-    this.element.style.opacity = '1'
-    this.element.style.position = 'relative'
-    this.element.style.zIndex = '200'
-    // Set container styles
-    this.containerElement.style.position = 'fixed'
-    this.containerElement.style.top = '0px'
-    this.containerElement.style.right = '0'
-    this.containerElement.style.left = '0'
-    this.containerElement.style.width = '100vw'
-    this.containerElement.style.height = '100vh'
-    this.containerElement.style.zIndex = '9999999'
-    this.containerElement.style.transition = 'none'
-    this.containerElement.style.marginTop = '0px'
-  }
-
   attach(document: HTMLDocument) {
     if (this.containerElement && !this.containerElement.parentElement) {
       document.body.insertBefore(this.containerElement, document.body.firstChild)
@@ -120,12 +83,6 @@ export default class Frame {
     if (containerStyle.bottom) this.containerElement.style.bottom = containerStyle.bottom
   }
 
-  displayFull() {
-    this.setFullPage()
-    this.element.style.opacity = '1'
-    this.containerElement.style.marginTop = '0px'
-  }
-
   display() {
     const ctx = this
     this.setWalletCard()
@@ -135,18 +92,6 @@ export default class Frame {
     setTimeout(() => {
       ctx.coverElement.style.opacity = '1'
     }, 16)
-  }
-
-  hideFull() {
-    const ctx = this
-    this.setFullPage()
-    this.containerElement.style.marginTop = '-100vh'
-    this.element.style.opacity = '0'
-    this.coverElement.style.opacity = '0'
-
-    setTimeout(() => {
-      ctx.coverElement.style.display = 'none'
-    }, 250)
   }
 
   hide() {

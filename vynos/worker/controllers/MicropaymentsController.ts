@@ -2,19 +2,15 @@ import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import Machinomy from 'machinomy'
 import TransactionService from '../TransactionService'
-import * as transactions from '../../lib/transactions'
-import PurchaseMeta from '../../lib/PurchaseMeta'
 import ChannelMetaStorage from '../../lib/storage/ChannelMetaStorage'
 import SharedStateView from '../SharedStateView'
 import {ProviderOpts} from 'web3-provider-engine'
-import ZeroClientProvider = require('web3-provider-engine/zero')
-import Web3 = require('web3')
 import {WorkerState} from '../WorkerState'
 import {Store} from 'redux'
-import {LifecycleAware} from './LifecycleAware'
-import * as actions from '../actions';
-import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
-import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
+import * as actions from '../actions'
+import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
+import ZeroClientProvider = require('web3-provider-engine/zero')
+import Web3 = require('web3')
 
 
 export default class MicropaymentsController {
@@ -40,7 +36,7 @@ export default class MicropaymentsController {
     this.channels = new ChannelMetaStorage()
   }
 
-  public async populateChannels(): Promise<void> {
+  public async populateChannels (): Promise<void> {
     const machinomy = await this.getMachinomy()
     const channels = await machinomy.channels()
 
@@ -48,7 +44,9 @@ export default class MicropaymentsController {
       (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
   }
 
-  public async openChannel (receiver: string, value: number): Promise<PaymentChannel> {
+  public async openChannel (value: number): Promise<PaymentChannel> {
+    const state = await this.sharedStateView.getSharedState()
+    const receiver = state.branding.address
     const machinomy = await this.getMachinomy()
     const chan = await machinomy.open(receiver, value)
     this.store.dispatch(actions.setChannel(PaymentChannelSerde.instance.serialize(chan)))
@@ -108,7 +106,7 @@ export default class MicropaymentsController {
     return this.machinomy
   }
 
-  private async closeChannel(hubUrl: string, channelId: string): Promise<void> {
+  private async closeChannel (hubUrl: string, channelId: string): Promise<void> {
     await fetch(`${hubUrl}/channels/${channelId}/close`, {
       method: 'POST',
       credentials: 'include'
