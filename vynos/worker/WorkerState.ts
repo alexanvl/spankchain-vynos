@@ -4,8 +4,8 @@ import Payment from 'machinomy/dist/lib/payment'
 import BigNumber = require('bignumber.js')
 
 export interface WalletMainState {
-  address: string|null
-  balance: BigNumber.BigNumber|null
+  address: string
+  balance: BigNumber.BigNumber
 }
 
 export interface WalletState {
@@ -105,8 +105,8 @@ export const INITIAL_SHARED_STATE: SharedState = {
   history: [],
   walletData: {
     main: {
-      address: null,
-      balance: null,
+      address: '',
+      balance: 0,
     },
   },
 }
@@ -133,8 +133,8 @@ export const INITIAL_STATE: WorkerState = {
     history: [],
     walletData: {
       main: {
-        address: null,
-        balance: null,
+        address: '',
+        balance: 0,
       },
     },
   },
