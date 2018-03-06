@@ -35,6 +35,7 @@ gulp.task("build:harness", ["build"], callback => {
 });
 
 // Serve Vynos, Frame at http://localhost:9999/webpack-dev-server
+let devserverPort = process.env.FRAME_PORT || '9090'
 gulp.task("serve", () => {
   new WebpackDevServer(webpack(VYNOS_LIVE), {
     contentBase: 'vynos/',
@@ -52,9 +53,9 @@ gulp.task("serve", () => {
       chunkModules: false
     },
     compress: true
-  }).listen(process.env.FRAME_PORT, 'localhost', function(err) {
+  }).listen(devserverPort, 'localhost', function(err) {
     if(err) throw new gutil.PluginError('build:serve', err);
-    gutil.log('webpack-dev-server', `http://localhost:${process.env.FRAME_PORT}/`);
+    gutil.log('webpack-dev-server', `http://localhost:${devserverPort}/`);
   });
 });
 
@@ -74,9 +75,9 @@ gulp.task("serve:built", () => {
       chunks: false,
       chunkModules: false
     }
-  }).listen(process.env.FRAME_PORT, 'localhost', function(err) {
+  }).listen(devserverPort, 'localhost', function(err) {
     if(err) throw new gutil.PluginError('serve:built', err);
-    gutil.log('webpack-dev-server', `http://localhost:${process.env.FRAME_PORT}/`);
+    gutil.log('webpack-dev-server', `http://localhost:${devserverPort}/`);
   });
 });
 
