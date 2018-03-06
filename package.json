@@ -15,7 +15,6 @@
     "**/typescript-fsa": "2.3.1"
   },
   "devDependencies": {
-    "@machinomy/contracts": "https://github.com/mslipper/machinomy-contracts.git#33f57883bf57b919450861b268282b71e4fb1718",
     "@machinomy/types-truffle-contract": "https://github.com/machinomy/types-truffle-contract",
     "@types/html2canvas": "^0.5.35",
     "@types/jasmine": "^2.5.52",

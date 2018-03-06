@@ -4,7 +4,6 @@ import Wallet from 'ethereumjs-wallet'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import {Cookie} from 'tough-cookie'
 import Serialized = Cookie.Serialized
-import BigNumber = require('bignumber.js')
 
 const actionCreator = actionCreatorFactory('worker')
 
@@ -227,23 +226,6 @@ export function setHistoryHandler(state: WorkerState, history: HistoryItem[]): W
     runtime: {
       ...state.runtime,
       history
-    }
-  }
-}
-
-export const updateWalletBalance = actionCreator<BigNumber.BigNumber>('runtime/updateWalletBalance')
-export function updateWalletBalanceHandler(state: WorkerState, balance: BigNumber.BigNumber): WorkerState {
-  return {
-    ...state,
-    runtime: {
-      ...state.runtime,
-      walletData: {
-        ...state.runtime.walletData,
-        main: {
-          ...state.runtime.walletData.main,
-          balance: balance,
-        }
-      }
     }
   }
 }

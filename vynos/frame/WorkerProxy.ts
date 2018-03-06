@@ -23,8 +23,7 @@ import {
   ToggleFrameRequest,
   TransactonResolved,
   UnlockWalletRequest,
-  UnlockWalletResponse,
-  WatchWalletBalanceRequest,
+  UnlockWalletResponse
 } from '../lib/rpc/yns'
 import {Action} from 'redux'
 import Web3 = require('web3')
@@ -250,16 +249,5 @@ export default class WorkerProxy extends EventEmitter {
     }
 
     return this.provider.ask(request).then((res: ResponsePayload) => res.result)
-  }
-
-  watchWalletBalance(): Promise<void> {
-    const request: WatchWalletBalanceRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: WatchWalletBalanceRequest.method,
-      params: [],
-    }
-
-    return this.provider.ask(request).then(() => {})
   }
 }

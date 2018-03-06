@@ -10,7 +10,7 @@ const s = require('./LoadUpSpank.css')
 
 
 export interface StateProps {
-  walletBalance: BigNumber.BigNumber
+  walletBalance: string | null
   cardTitle?: string
   workerProxy: WorkerProxy
 }
@@ -68,7 +68,7 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
 
 function mapStateToProps (state: FrameState): StateProps {
   return {
-    walletBalance: state.shared.walletData.main.balance,
+    walletBalance: state.wallet.main.balance,
     cardTitle: state.shared.branding.title,
     workerProxy: state.temp.workerProxy
   }

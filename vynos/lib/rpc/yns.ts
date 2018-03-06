@@ -174,10 +174,3 @@ export type FetchHistoryRequest = RequestPayload
 export interface FetchHistoryResponse extends ResponsePayload {
   result: HistoryItem[]
 }
-
-export const WatchWalletBalanceRequest = requestFactory<any[]>('watchWalletBalance')
-export type WatchWalletBalanceRequest = RequestPayload
-
-export interface WatchWalletBalanceResponse extends ResponsePayload {
-  result: null
-}

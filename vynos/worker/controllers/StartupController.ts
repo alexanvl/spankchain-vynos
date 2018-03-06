@@ -23,8 +23,6 @@ import NetworkController from './NetworkController'
 import HubHandler from './HubHandler'
 import MicropaymentsController from './MicropaymentsController'
 import MicropaymentsHandler from './MicropaymentsHandler'
-import NotificationController from './NotificationController'
-import NotificationHandler from './NotificationHandler'
 import {LifecycleAware} from './LifecycleAware'
 import {ReadyBroadcast, ReadyBroadcastType} from '../../lib/rpc/ReadyBroadcast'
 const networks = require('../../networks.json')
@@ -130,13 +128,10 @@ export default class StartupController implements LifecycleAware {
     const micropaymentsController = new MicropaymentsController(providerOpts, this.store, sharedStateView, transactionService)
     const micropaymentsHandler = new MicropaymentsHandler(micropaymentsController)
     const authController = new AuthController(this.store, sharedStateView, providerOpts, frameController)
-    const notificationController = new NotificationController(providerOpts, this.store, sharedStateView, transactionService)
-    const notificationHandler = new NotificationHandler(notificationController)
 
     this.server.add(backgroundHandler.handler)
       .add(hubHandler.handler)
       .add(micropaymentsHandler.handler)
-      .add(notificationHandler.handler)
       .add(authController.handler)
       .add(frameController.handler)
       .add(networkController.handler)

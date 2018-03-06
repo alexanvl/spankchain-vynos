@@ -1,16 +1,6 @@
 import Wallet from 'ethereumjs-wallet'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import Payment from 'machinomy/dist/lib/payment'
-import BigNumber = require('bignumber.js')
-
-export interface WalletMainState {
-  address: string
-  balance: BigNumber.BigNumber
-}
-
-export interface WalletState {
-  main: WalletMainState
-}
 
 export interface RuntimeState {
   wallet?: Wallet
@@ -25,7 +15,6 @@ export interface RuntimeState {
   branding: BrandingState
   channels: ChannelsState
   history: HistoryItem[]
-  walletData: WalletState
 }
 
 export interface AuthorizationRequestState {
@@ -58,7 +47,6 @@ export interface SharedState {
   branding: BrandingState
   channels: ChannelsState
   history: HistoryItem[]
-  walletData: WalletState
 }
 
 export interface PersistentState {
@@ -102,13 +90,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
     address: ''
   },
   channels: {},
-  history: [],
-  walletData: {
-    main: {
-      address: '',
-      balance: 0,
-    },
-  },
+  history: []
 }
 
 export const INITIAL_STATE: WorkerState = {
@@ -130,13 +112,7 @@ export const INITIAL_STATE: WorkerState = {
       address: ''
     },
     channels: {},
-    history: [],
-    walletData: {
-      main: {
-        address: '',
-        balance: 0,
-      },
-    },
+    history: []
   },
 }
 
@@ -154,7 +130,6 @@ export function buildSharedState(state: WorkerState): SharedState {
     authorizedHubs: state.persistent.authorizedHubs,
     isFrameDisplayed: state.runtime.isFrameDisplayed,
     forceRedirect: state.runtime.forceRedirect,
-    walletData: state.runtime.walletData,
     branding: state.runtime.branding,
     channels: state.runtime.channels,
     history: state.runtime.history

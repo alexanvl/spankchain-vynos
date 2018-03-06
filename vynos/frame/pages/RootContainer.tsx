@@ -12,7 +12,7 @@ import {RouteComponentProps} from 'react-router'
 import AuthorizePage from './AuthorizePage'
 import postMessage from "../lib/postMessage"
 import * as actions from "../redux/actions";
-import WorkerProxy from '../WorkerProxy';
+import WorkerProxy from "../WorkerProxy"
 
 export interface StateProps {
   isAuthorizationExpected: boolean
@@ -44,9 +44,29 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
     this.determineRoute()
   }
 
-  async startWatching() {
+  startWatching = () => {
+    const { web3, updateBalance, updateAddress } = this.props
 
-    await this.props.workerProxy.watchWalletBalance()
+    if (!web3) {
+      setTimeout(this.startWatching, 500);
+      return;
+    }
+
+    web3.eth.getAccounts((err, accounts) => {
+      if (err || !accounts || !accounts.length) {
+        setTimeout(this.startWatching, 500);
+        return;
+      }
+
+      const address = accounts[0]
+      web3.eth.getBalance(address, (err, balance) => {
+        const currentBalance = web3.fromWei(balance, 'ether').toString()
+        updateAddress(address)
+        updateBalance(currentBalance)
+        setTimeout(this.startWatching, 5000);
+      })
+    });
+    
   }
 
   closeWallet = () => {
