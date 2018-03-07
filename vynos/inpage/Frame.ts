@@ -34,7 +34,8 @@ export default class Frame {
 
       this.notifications = document.createElement('div')
       this.notifications.id = 'vynos_notifications'
-      this.notifications.style.marginTop = '25px'
+      this.notifications.style.marginTop = '0'
+      this.notifications.style.height = '0'
 
       this.containerElement.appendChild(this.coverElement)
       this.containerElement.appendChild(this.element)
