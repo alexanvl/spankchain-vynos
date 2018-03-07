@@ -6,6 +6,7 @@ import {cardBalance} from '../../../redux/selectors/cardBalance'
 import Button from '../../../components/Button/index'
 import Currency, {CurrencyType} from '../../../components/Currency/index'
 import * as BigNumber from 'bignumber.js';
+import * as classnames from 'classnames';
 
 const s = require('./index.css')
 
@@ -39,7 +40,7 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
 
   renderContent () {
     return this.state.isLoading
-      ? 'Loading...'
+      ? <span className={s.loaderWrapper}><span className={s.spCircle} /> <span>Card is being filled</span></span>
       : () => (
         <span>
           <span>Load up </span>
@@ -60,13 +61,19 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
       return <noscript />
     }
 
+    const btnClass = classnames({
+      [s.loading]: this.state.isLoading
+    })
+
     return (
       <div className={s.container}>
         <Button
+          className={btnClass}
           content={this.renderContent()}
           disabled={this.state.isLoading}
           onClick={this.load}
         />
+        {this.state.isLoading ? <span className={s.small}>Estimated time: 30 seconds.</span> : null}
       </div>
     )
   }
