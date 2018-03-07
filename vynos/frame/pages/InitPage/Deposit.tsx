@@ -21,10 +21,12 @@ const d = require('./Deposit.css')
 
 export interface DepositStateProps {
   web3?: Web3
+  workerProxy: WorkerProxy
 }
 
 export interface DepositStates {
   address: string
+  isAuthenticating: boolean
 }
 
 export type DepositProps = DepositStateProps & DepositDispatchProps
@@ -38,7 +40,18 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
     super(props)
     this.state = {
       address: '',
+      isAuthenticating: false,
     }
+  }
+
+  handleSubmit = async () => {
+    this.setState({
+      isAuthenticating: true
+    })
+
+    await this.props.workerProxy.authenticate()
+
+    this.props.didAcknowledgeDeposit()
   }
 
   componentDidMount() {
@@ -100,7 +113,7 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
             <Button
               content="Next"
               isInverse
-              onClick={this.props.didAcknowledgeDeposit}
+              onClick={this.handleSubmit}
             />
           </div>
         </div>
@@ -113,6 +126,7 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
 function mapStateToProps(state: FrameState): DepositStateProps {
   return {
     web3: state.temp.workerProxy.web3,
+    workerProxy: state.temp.workerProxy,
   }
 }
 

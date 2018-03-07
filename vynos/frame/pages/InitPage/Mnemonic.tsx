@@ -44,12 +44,6 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
     if (this.state.acknowledged) {
       this.props.saveMnemonic(this.props.workerProxy)
     }
-
-    this.setState({
-      isAuthenticating: true
-    })
-
-    await this.props.workerProxy.authenticate()
   }
 
   render () {
