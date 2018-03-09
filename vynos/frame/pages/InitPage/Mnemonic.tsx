@@ -1,12 +1,27 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
 import {Dispatch} from 'redux'
+// <<<<<<< HEAD
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import * as actions from '../../redux/actions'
 import Button from '../../components/Button/index'
 import Checkbox from '../../components/Checkbox/index'
 import WalletCard from '../../components/WalletCard/index'
+import OnboardingContainer from './OnboardingContainer'
+
+// =======
+// import {MouseEvent} from "react";
+// import {FrameState} from "../../redux/FrameState";
+// import WorkerProxy from "../../WorkerProxy";
+// import * as actions from "../../redux/actions";
+// import Button from "../../components/Button/index"
+// import TextBox from "../../components/TextBox/index"
+// import Checkbox from "../../components/Checkbox/index"
+// import Input from "../../components/Input/index"
+// import WalletCard from "../../components/WalletCard/index"
+// import Logo from '../../components/Logo'
+// >>>>>>> Add progress dots assets to wallet funnel
 import {withRouter} from 'react-router'
 
 const style = require('../../styles/ynos.css')
@@ -47,19 +62,8 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
     const mnemonic = this.props.mnemonic || ''
 
     return (
-      <div className={style.fullContainer}>
-        <div className={style.header}>
-          <div className={style.progressDots}>O O O O O O O</div>
-          <div className={style.hamburger} />
-        </div>
+      <OnboardingContainer totalSteps={4} currentStep={1}>
         <div className={style.content}>
-          <WalletCard
-            width={275}
-            cardTitle="SpankCard"
-            companyName="SpankChain"
-            name="spanktoshi"
-            className={style.funnelWalletCard}
-          />
           <div className={style.funnelTitle}>Backup Codes</div>
           <div className={style.seedPhraseText}>
             These are your backup words to be able to restore your SpankWallet. Keep them somewhere safe and secret.
@@ -93,7 +97,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
             />
           </div>
         </div>
-      </div>
+      </OnboardingContainer>
     )
   }
 }

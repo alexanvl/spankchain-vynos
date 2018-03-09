@@ -1,0 +1,52 @@
+.container {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-flow: column nowrap;
+  background-color: #ff3b81;
+  padding-bottom: 3rem;
+}
+
+.header {
+  padding: 2rem 2rem 1rem;
+}
+
+.progressDots {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+}
+
+.line {
+  background-image: url(../../styles/images/line.svg);
+  height: 1rem;
+  width: 3.5rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  opacity: .25;
+  margin: 0 .25rem;
+}
+
+.activeLine {
+  opacity: 1;
+}
+
+.dot {
+  background-image: url(../../styles/images/dot.svg);
+  height: .5rem;
+  width: .5rem;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center center;
+  opacity: .25;
+}
+
+.activeDot {
+  opacity: 1;
+}
+
+
+.funnelWalletCard {
+  margin: 2rem auto;
+}

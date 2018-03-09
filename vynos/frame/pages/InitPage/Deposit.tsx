@@ -15,6 +15,7 @@ import TextBox from "../../components/TextBox/index"
 import Input from "../../components/Input/index"
 import WalletCard from "../../components/WalletCard/index"
 import CTAInput from "../../components/CTAInput/index"
+import OnboardingContainer from './OnboardingContainer'
 
 const style = require('../../styles/ynos.css')
 const d = require('./Deposit.css')
@@ -72,19 +73,8 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
 
   render () {
     return (
-      <div className={style.fullContainer}>
-        <div className={style.header}>
-          <div className={style.progressDots}>O O O O O O O</div>
-          <div className={style.hamburger} />
-        </div>
+      <OnboardingContainer totalSteps={4} currentStep={2}>
         <div className={style.content}>
-          <WalletCard
-            width={275}
-            cardTitle="SpankCard"
-            companyName="SpankChain"
-            name="spanktoshi"
-            className={style.funnelWalletCard}
-          />
           <div className={style.funnelTitle}>Transfer Funds</div>
           <div className={style.seedPhraseText}>
             This is your SpankWallet address. You can copy it and send crypto from places like Coinbase.
@@ -118,7 +108,7 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
           </div>
         </div>
         {this.renderQR()}
-      </div>
+      </OnboardingContainer>
     )
   }
 }

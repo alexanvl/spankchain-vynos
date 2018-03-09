@@ -4,6 +4,7 @@ import {Dispatch} from 'redux'
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import {connect} from 'react-redux'
+// <<<<<<< HEAD
 import * as actions from '../../redux/actions'
 import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../../constants'
 import RestorePage from '../RestorePage'
@@ -11,6 +12,18 @@ import Button from '../../components/Button/index'
 import TextBox from '../../components/TextBox/index'
 import Input from '../../components/Input/index'
 import WalletCard from '../../components/WalletCard/index'
+import OnboardingContainer from './OnboardingContainer'
+// =======
+// import * as actions from "../../redux/actions";
+// import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../../constants';
+// import RestorePage from "../RestorePage";
+// import Logo from "../../components/Logo";
+// import Button from "../../components/Button/index"
+// import TextBox from "../../components/TextBox/index"
+// import Input from "../../components/Input/index"
+// import WalletCard from "../../components/WalletCard/index"
+// import OnboardingContainer from './OnboardingContainer'
+// >>>>>>> Add progress dots assets to wallet funnel
 
 const style = require('../../styles/ynos.css')
 
@@ -138,19 +151,8 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
       return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
 
     return (
-      <div className={style.fullContainer}>
-        <div className={style.header}>
-          <div className={style.progressDots}>O O O O O O O</div>
-          <div className={style.hamburger} />
-        </div>
+      <OnboardingContainer totalSteps={4} currentStep={0}>
         <div className={style.content}>
-          <WalletCard
-            width={275}
-            cardTitle="SpankCard"
-            companyName="SpankChain"
-            name="spanktoshi"
-            className={style.funnelWalletCard}
-          />
           <div className={style.funnelTitle}>Create SpankCard</div>
           <TextBox className={style.passwordTextBox}>
             Your SpankWallet allows you to tip without any delay and to save you crypto fees by bundling payments.
@@ -180,7 +182,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
             />
           </div>
         </div>
-      </div>
+      </OnboardingContainer>
     )
   }
 }
