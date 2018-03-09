@@ -1,18 +1,32 @@
 import * as React from "react"
+import {connect} from 'react-redux'
 import * as classnames from "classnames"
+import WorkerProxy from '../../WorkerProxy'
+import {FrameState} from '../../redux/FrameState'
 import WalletCard from "../../components/WalletCard/index"
+import WalletMiniCard from "../../components/WalletMiniCard/index"
 const s = require('./OnboardingContainer.css')
 
-export interface Props {
-  children?: any
-  totalSteps?: number
-  currentStep?: number
+export interface MapStateToProps {
+  workerProxy: WorkerProxy
 }
 
-export default class OnboardingContainer extends React.Component<Props> {
+export interface OwnProps {
+  children?: any
+  totalSteps: number
+  currentStep: number
+}
+
+export type Props = MapStateToProps & OwnProps
+
+export class OnboardingContainer extends React.Component<Props> {
+
+  closeView = () => {
+    this.props.workerProxy.toggleFrame(false)
+  }
 
   renderProgressDots() {
-    const { totalSteps = 4, currentStep = 0 } = this.props
+    const { totalSteps, currentStep } = this.props
     const steps = []
 
     for (let i = 0; i < totalSteps; i++) {
@@ -47,7 +61,12 @@ export default class OnboardingContainer extends React.Component<Props> {
       <div className={s.container}>
         <div className={s.header}>
           {this.renderProgressDots()}
-          <div className={s.hamburger} />
+          <WalletMiniCard
+            onClick={this.closeView}
+            isLocked
+            inverse
+            alwaysLarge
+          />
         </div>
         <WalletCard
           width={275}
@@ -62,3 +81,11 @@ export default class OnboardingContainer extends React.Component<Props> {
   }
 
 }
+
+function mapStateToProps(state: FrameState, ownProps: OwnProps): MapStateToProps {
+  return {
+    workerProxy: state.temp.workerProxy,
+  }
+}
+
+export default connect(mapStateToProps)(OnboardingContainer)
