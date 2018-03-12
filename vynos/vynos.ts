@@ -1,7 +1,6 @@
 import { DevWindow, VynosWindow } from './window'
 import Namespace from './inpage/Namespace'
 import { BROWSER_NOT_SUPPORTED_TEXT } from './frame/constants'
-import * as html2canvas from 'html2canvas'
 
 let global = window as DevWindow & VynosWindow
 
@@ -12,18 +11,6 @@ if (!isVynosPresent) {
 }
 
 document.addEventListener('onload', () => {
-  if (!document.querySelectorAll('meta[property="og:image"]').length) {
-    html2canvas(document.body, {
-      width: document.body.clientHeight,
-      height: document.body.clientHeight,
-      logging: false
-    }).then(canvas => {
-      let metaImageNode = document.createElement('meta')
-      metaImageNode.setAttribute('property', 'og:image')
-      metaImageNode.setAttribute('content', canvas.toDataURL())
-      document.body.appendChild(metaImageNode)
-    })
-  }
 
   if (!("serviceWorker" in navigator)) {
     let b = document.createElement('div');

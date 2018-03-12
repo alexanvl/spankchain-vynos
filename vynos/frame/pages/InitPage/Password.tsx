@@ -4,14 +4,13 @@ import {Dispatch} from 'redux'
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import {connect} from 'react-redux'
-import * as actions from "../../redux/actions";
-import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../../constants';
-import RestorePage from "../RestorePage";
-import Logo from "../../components/Logo";
-import Button from "../../components/Button/index"
-import TextBox from "../../components/TextBox/index"
-import Input from "../../components/Input/index"
-import WalletCard from "../../components/WalletCard/index"
+import * as actions from '../../redux/actions'
+import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../../constants'
+import RestorePage from '../RestorePage'
+import Button from '../../components/Button/index'
+import TextBox from '../../components/TextBox/index'
+import Input from '../../components/Input/index'
+import WalletCard from '../../components/WalletCard/index'
 
 const style = require('../../styles/ynos.css')
 
@@ -35,30 +34,30 @@ export type PasswordSubpageProps = PasswordSubpageStateProps & PasswordSubpageDi
 
 export class Password extends React.Component<PasswordSubpageProps, PasswordState> {
   constructor (props: PasswordSubpageProps) {
-    super(props);
+    super(props)
     this.state = {
       password: '',
       passwordConfirmation: '',
       passwordError: null,
       passwordConfirmationError: null,
       displayRestore: false
-    };
+    }
     this.handleChangePassword = this.handleChangePassword.bind(this)
     this.handleChangePasswordConfirmation = this.handleChangePasswordConfirmation.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
   isValid () {
-    let passwordError = this.state.passwordError;
+    let passwordError = this.state.passwordError
     if (this.state.password.length < MINIMUM_PASSWORD_LENGTH) {
-      passwordError = PASSWORD_HINT_TEXT;
+      passwordError = PASSWORD_HINT_TEXT
       this.setState({
         passwordError: passwordError
       })
     }
-    let passwordConfirmationError = this.state.passwordConfirmationError;
+    let passwordConfirmationError = this.state.passwordConfirmationError
     if (this.state.passwordConfirmation !== this.state.password && this.state.password) {
-      passwordConfirmationError = PASSWORD_CONFIRMATION_HINT_TEXT;
+      passwordConfirmationError = PASSWORD_CONFIRMATION_HINT_TEXT
       this.setState({
         passwordConfirmationError: passwordConfirmationError
       })
@@ -72,7 +71,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     }
   }
 
-  handleChangePassword(ev: ChangeEvent<EventTarget>) {
+  handleChangePassword (ev: ChangeEvent<EventTarget>) {
     let value = (ev.target as HTMLInputElement).value
     this.setState({
       password: value,
@@ -81,7 +80,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     })
   }
 
-  handleChangePasswordConfirmation(ev: ChangeEvent<EventTarget>) {
+  handleChangePasswordConfirmation (ev: ChangeEvent<EventTarget>) {
     let value = (ev.target as HTMLInputElement).value
     this.setState({
       passwordConfirmation: value,
@@ -100,7 +99,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
 
   renderPasswordHint () {
     if (this.state.passwordError) {
-      return <span className={style.errorText}><i className={style.vynosInfo}/> {this.state.passwordError}</span>;
+      return <span className={style.errorText}><i className={style.vynosInfo} /> {this.state.passwordError}</span>
     } else {
       return <span className={style.passLenText}>At least {MINIMUM_PASSWORD_LENGTH} characters</span>
     }
@@ -108,17 +107,17 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
 
   renderPasswordConfirmationInput () {
     let className = this.state.passwordConfirmationError ? style.inputError : ''
-    return  <input type="password"
-                   placeholder="Password Confirmation"
-                   className={className}
-                   onChange={this.handleChangePasswordConfirmation} />
+    return <input type="password"
+                  placeholder="Password Confirmation"
+                  className={className}
+                  onChange={this.handleChangePasswordConfirmation} />
   }
 
   renderPasswordConfirmationHint () {
     if (this.state.passwordConfirmationError) {
-      return <span className={style.errorText}><i className={style.vynosInfo}/> {this.state.passwordConfirmationError}</span>;
+      return <span className={style.errorText}><i className={style.vynosInfo} /> {this.state.passwordConfirmationError}</span>
     } else {
-      return <span className={style.errorText}>&nbsp;</span>;
+      return <span className={style.errorText}>&nbsp;</span>
     }
   }
 
@@ -186,13 +185,13 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
   }
 }
 
-function mapStateToProps(state: FrameState): PasswordSubpageStateProps {
+function mapStateToProps (state: FrameState): PasswordSubpageStateProps {
   return {
     workerProxy: state.temp.workerProxy
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch<FrameState>): PasswordSubpageDispatchProps {
+function mapDispatchToProps (dispatch: Dispatch<FrameState>): PasswordSubpageDispatchProps {
   return {
     genKeyring: (workerProxy, password) => {
       workerProxy.genKeyring(password).then(mnemonic => {

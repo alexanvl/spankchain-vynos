@@ -4,6 +4,5 @@ const networks = {
   RINKEBY: 'https://rinkeby.infura.io/T1S8a0bkyrGD7jxJBgeH',
 }
 
-const CHANGE_NETWORK = 'changeNetwork'
 
-export { networks, CHANGE_NETWORK }
+export { networks }

@@ -1,22 +1,19 @@
-import * as React from "react";
-import {connect} from "react-redux";
+import * as React from 'react'
+import {connect} from 'react-redux'
 import {Dispatch} from 'redux'
-import {MouseEvent} from "react";
-import {FrameState} from "../../redux/FrameState";
-import WorkerProxy from "../../WorkerProxy";
-import * as actions from "../../redux/actions";
-import Button from "../../components/Button/index"
-import TextBox from "../../components/TextBox/index"
-import Checkbox from "../../components/Checkbox/index"
-import Input from "../../components/Input/index"
-import WalletCard from "../../components/WalletCard/index"
-import Logo from '../../components/Logo'
+import {FrameState} from '../../redux/FrameState'
+import WorkerProxy from '../../WorkerProxy'
+import * as actions from '../../redux/actions'
+import Button from '../../components/Button/index'
+import Checkbox from '../../components/Checkbox/index'
+import WalletCard from '../../components/WalletCard/index'
 import {withRouter} from 'react-router'
+
 const style = require('../../styles/ynos.css')
 
 export interface MnemonicStateProps {
   workerProxy: WorkerProxy
-  mnemonic: string|null
+  mnemonic: string | null
 }
 
 export interface MnemonicDispatchProps {
@@ -32,7 +29,7 @@ export interface MnemonicStates {
 export type MnemonicSubpageProps = MnemonicStateProps & MnemonicDispatchProps
 
 export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStates> {
-  constructor(props: MnemonicSubpageProps) {
+  constructor (props: MnemonicSubpageProps) {
     super(props)
     this.state = {
       acknowledged: false,
@@ -78,7 +75,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
           <div className={style.ackMnemonics}>
             <Checkbox
               className={style.ackCheckbox}
-              onChange={(e: any) => this.setState({ acknowledged: e.target.checked })}
+              onChange={(e: any) => this.setState({acknowledged: e.target.checked})}
             />
             <div className={style.ackText}>I've copied the backup words somewhere safe and secret.</div>
           </div>
@@ -104,11 +101,11 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
 function mapStateToProps (state: FrameState): MnemonicStateProps {
   return {
     workerProxy: state.temp.workerProxy,
-    mnemonic: state.temp.initPage.mnemonic,
+    mnemonic: state.temp.initPage.mnemonic
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch<FrameState>): MnemonicDispatchProps {
+function mapDispatchToProps (dispatch: Dispatch<FrameState>): MnemonicDispatchProps {
   return {
     saveMnemonic: workerProxy => {
       workerProxy.didStoreMnemonic()
@@ -116,4 +113,5 @@ function mapDispatchToProps(dispatch: Dispatch<FrameState>): MnemonicDispatchPro
     }
   }
 }
+
 export default withRouter(connect(mapStateToProps, mapDispatchToProps)(Mnemonic))

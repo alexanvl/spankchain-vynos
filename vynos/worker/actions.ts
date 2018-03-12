@@ -2,13 +2,11 @@ import actionCreatorFactory, {ActionCreator} from 'typescript-fsa'
 import {HistoryItem, PendingTransaction, WorkerState} from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
-import {Cookie} from 'tough-cookie'
-import Serialized = Cookie.Serialized
 
 const actionCreator = actionCreatorFactory('worker')
 
 // Runtime
-export const setWallet = actionCreator<Wallet|undefined>('runtime/setWallet')
+export const setWallet: ActionCreator<Wallet|undefined> = actionCreator<Wallet|undefined>('runtime/setWallet')
 export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): WorkerState {
   return { ...state,
     runtime: { ...state.runtime, wallet },
@@ -16,7 +14,7 @@ export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): 
 }
 
 // Persistent
-export const setKeyring = actionCreator<string>('persistent/setKeyring')
+export const setKeyring: ActionCreator<string> = actionCreator<string>('persistent/setKeyring')
 export function setKeyringHandler(state: WorkerState, keyring: string): WorkerState {
   return { ...state,
     persistent: { ...state.persistent, keyring },
@@ -27,7 +25,7 @@ export interface RestoreWalletParam {
   keyring: string,
   wallet: Wallet
 }
-export const restoreWallet = actionCreator<RestoreWalletParam>('persistent+runtime/restoreWallet')
+export const restoreWallet: ActionCreator<RestoreWalletParam> = actionCreator<RestoreWalletParam>('persistent+runtime/restoreWallet')
 export function restoreWalletHandler(state: WorkerState, param: RestoreWalletParam): WorkerState {
   return { ...state,
     persistent: { ...state.persistent, didInit: true, keyring: param.keyring },
@@ -35,7 +33,7 @@ export function restoreWalletHandler(state: WorkerState, param: RestoreWalletPar
   }
 }
 
-export const setDidStoreMnemonic = actionCreator<boolean>('persistent/setDidStoreMnemonic')
+export const setDidStoreMnemonic: ActionCreator<boolean> = actionCreator<boolean>('persistent/setDidStoreMnemonic')
 export function setDidStoreMnemonicHandler(state: WorkerState): WorkerState {
   return {
     ...state,
@@ -43,7 +41,7 @@ export function setDidStoreMnemonicHandler(state: WorkerState): WorkerState {
   }
 }
 
-export const setTransactionPending = actionCreator<boolean>('runtime/setTransactionPending')
+export const setTransactionPending: ActionCreator<boolean> = actionCreator<boolean>('runtime/setTransactionPending')
 export function setTransactionPendingHandler(state: WorkerState, pending: boolean): WorkerState {
   let pendingDate = 0
   if (pending) {
@@ -60,7 +58,7 @@ export interface AuthorizationRequestParam {
   authRealm: string
 }
 
-export const setAuthorizationRequest = actionCreator<AuthorizationRequestParam>('runtime/authorizationRequest')
+export const setAuthorizationRequest: ActionCreator<AuthorizationRequestParam> = actionCreator<AuthorizationRequestParam>('runtime/authorizationRequest')
 export function setAuthorizationRequestHandler(state: WorkerState, authorizationRequest: AuthorizationRequestParam): WorkerState {
   return {
     ...state,
@@ -71,7 +69,7 @@ export function setAuthorizationRequestHandler(state: WorkerState, authorization
   }
 }
 
-export const respondToAuthorizationRequest = actionCreator<boolean>('runtime/respondToAuthorizationRequest')
+export const respondToAuthorizationRequest: ActionCreator<boolean> = actionCreator<boolean>('runtime/respondToAuthorizationRequest')
 export function respondToAuthorizationRequestHandler(state: WorkerState, response: boolean): WorkerState {
   const newState = {
     ...state,
@@ -94,7 +92,7 @@ export function respondToAuthorizationRequestHandler(state: WorkerState, respons
   return newState
 }
 
-export const rememberPage = actionCreator<string>('persistent/rememberPage')
+export const rememberPage: ActionCreator<string> = actionCreator<string>('persistent/rememberPage')
 export function rememberPageHandler(state: WorkerState, path: string): WorkerState {
   return {
     ...state,
@@ -102,7 +100,7 @@ export function rememberPageHandler(state: WorkerState, path: string): WorkerSta
   }
 }
 
-export const setLastUpdateDb = actionCreator<number>('runtime/setLastUpdateDb')
+export const setLastUpdateDb: ActionCreator<number> = actionCreator<number>('runtime/setLastUpdateDb')
 export function setLastUpdateDbHandler(state: WorkerState, timestamp: number): WorkerState {
   return {
     ...state,
@@ -110,7 +108,7 @@ export function setLastUpdateDbHandler(state: WorkerState, timestamp: number): W
   }
 }
 
-export const setCurrentHubUrl = actionCreator<string>('runtime/setCurrentHub')
+export const setCurrentHubUrl: ActionCreator<string> = actionCreator<string>('runtime/setCurrentHub')
 export function setCurrentHubUrlHandler(state: WorkerState, currentHubUrl: string): WorkerState {
   return {
     ...state,
@@ -121,7 +119,7 @@ export function setCurrentHubUrlHandler(state: WorkerState, currentHubUrl: strin
   }
 }
 
-export const setCurrentAuthRealm = actionCreator<string>('runtime/setAuthRealm')
+export const setCurrentAuthRealm: ActionCreator<string> = actionCreator<string>('runtime/setAuthRealm')
 export function setCurrentAuthRealmHandler(state: WorkerState, currentAuthRealm: string): WorkerState {
   return {
     ...state,
@@ -132,7 +130,7 @@ export function setCurrentAuthRealmHandler(state: WorkerState, currentAuthRealm:
   }
 }
 
-export const setCurrentAuthToken = actionCreator<string>('runtime/setCurrentAuthToken')
+export const setCurrentAuthToken: ActionCreator<string> = actionCreator<string>('runtime/setCurrentAuthToken')
 export function setCurrentAuthTokenHandler(state: WorkerState, currentAuthToken: string): WorkerState {
   return {
     ...state,
@@ -152,7 +150,7 @@ export interface SetBrandingParam {
   address: string
 }
 
-export const setHubBranding = actionCreator<SetBrandingParam>('persistent/setHubBranding')
+export const setHubBranding: ActionCreator<SetBrandingParam> = actionCreator<SetBrandingParam>('persistent/setHubBranding')
 export function setHubBrandingHandler(state: WorkerState, branding: SetBrandingParam): WorkerState {
   return {
     ...state,
@@ -168,7 +166,7 @@ export interface ToggleFrameParam {
   forceRedirect?: string
 }
 
-export const toggleFrame = actionCreator<ToggleFrameParam>('runtime/toggleFrame')
+export const toggleFrame: ActionCreator<ToggleFrameParam> = actionCreator<ToggleFrameParam>('runtime/toggleFrame')
 export function toggleFrameHandler(state: WorkerState, payload: ToggleFrameParam): WorkerState {
   return {
     ...state,
@@ -180,7 +178,7 @@ export function toggleFrameHandler(state: WorkerState, payload: ToggleFrameParam
   }
 }
 
-export const setChannels = actionCreator<SerializedPaymentChannel[]>('runtime/setChannels')
+export const setChannels: ActionCreator<SerializedPaymentChannel[]> = actionCreator<SerializedPaymentChannel[]>('runtime/setChannels')
 export function setChannelsHandler(state: WorkerState, channels: SerializedPaymentChannel[]): WorkerState {
   return {
     ...state,
@@ -194,7 +192,7 @@ export function setChannelsHandler(state: WorkerState, channels: SerializedPayme
   }
 }
 
-export const setChannel = actionCreator<SerializedPaymentChannel>('runtime/setChannel')
+export const setChannel: ActionCreator<SerializedPaymentChannel> = actionCreator<SerializedPaymentChannel>('runtime/setChannel')
 export function setChannelHandler(state: WorkerState, channel: SerializedPaymentChannel): WorkerState {
   let channels = state.runtime.channels[state.runtime.currentHubUrl] || []
   channels = [].concat(channels as any)
@@ -219,7 +217,7 @@ export function setChannelHandler(state: WorkerState, channel: SerializedPayment
   }
 }
 
-export const setHistory = actionCreator<HistoryItem[]>('runtime/setHistory')
+export const setHistory: ActionCreator<HistoryItem[]> = actionCreator<HistoryItem[]>('runtime/setHistory')
 export function setHistoryHandler(state: WorkerState, history: HistoryItem[]): WorkerState {
   return {
     ...state,
@@ -230,7 +228,7 @@ export function setHistoryHandler(state: WorkerState, history: HistoryItem[]): W
   }
 }
 
-export const setBalance = actionCreator<string>('runtime/setBalance')
+export const setBalance: ActionCreator<string> = actionCreator<string>('runtime/setBalance')
 export function setBalanceHandler(state: WorkerState, balance: string): WorkerState {
   return {
     ...state,
@@ -241,7 +239,7 @@ export function setBalanceHandler(state: WorkerState, balance: string): WorkerSt
   }
 }
 
-export const setPendingTransaction = actionCreator<PendingTransaction|null>('runtime/setPendingTransaction')
+export const setPendingTransaction: ActionCreator<PendingTransaction|null> = actionCreator<PendingTransaction|null>('runtime/setPendingTransaction')
 export function setPendingTransactionHandler(state: WorkerState, pendingTransaction: PendingTransaction|null): WorkerState {
   return {
     ...state,
