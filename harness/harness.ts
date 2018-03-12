@@ -1,6 +1,6 @@
 import {VynosWindow} from '../vynos/window'
 import * as BigNumber from 'bignumber.js';
-import Namespace from '../vynos/inpage/Namespace'
+import Vynos from '../vynos/inpage/Vynos'
 
 let _window = (window as VynosWindow);
 
@@ -9,12 +9,12 @@ window.addEventListener("load", function () {
     throw new Error('no script found.')
   }
 
-  let vynos = new _window.Vynos({
+  let vynos = new Vynos({
     hubUrl: 'http://165.227.202.164:8080',
     authRealm: 'SpankChain',
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
     window: _window
-  }) as Namespace
+  })
 
   vynos.init().catch(console.error.bind(console))
 

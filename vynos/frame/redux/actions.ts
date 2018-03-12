@@ -6,12 +6,8 @@ import WorkerProxy from "../WorkerProxy";
 
 const actionCreator = actionCreatorFactory("frame");
 
-export type SetSharedStateArgs = {
-  sharedState: SharedState,
-  store: Store<FrameState>
-}
-export const setSharedState: ActionCreator<SetSharedStateArgs> = actionCreator<SetSharedStateArgs>("shared/setSharedState");
-export function setSharedStateHandler(state: SharedState, {sharedState, store}: SetSharedStateArgs): SharedState {
+export const setSharedState: ActionCreator<SharedState> = actionCreator<SharedState>("shared/setSharedState");
+export function setSharedStateHandler(state: SharedState, sharedState: SharedState): SharedState {
   return sharedState
 }
 

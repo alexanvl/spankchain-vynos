@@ -1,136 +1,68 @@
-import StreamProvider from './../lib/StreamProvider'
-import {Duplex} from 'readable-stream'
 import {
   AuthenticateRequest,
   AuthenticateResponse,
   BuyRequest,
-  BuyResponse,
-  CloseChannelsForCurrentHubRequest,
   GetSharedStateRequest,
-  GetSharedStateResponse,
   InitAccountRequest,
-  InitAccountResponse,
-  InitializeRequest,
-  InitializeResponse,
   ListChannelsRequest,
-  ListChannelsResponse,
+  RegisterHubRequest,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
-import {JSONRPC, randomId} from '../lib/Payload'
 import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import VynosBuyResponse from '../lib/VynosBuyResponse'
 import {SharedState} from '../worker/WorkerState'
-import {SharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/SharedStateBroadcast'
-import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
+import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
+import JsonRpcClient from '../lib/messaging/JsonRpcClient'
+import {WorkerReadyBroadcastEvent} from '../lib/rpc/WorkerReadyBroadcast'
+import {SharedStateBroadcastEvent} from '../lib/rpc/SharedStateBroadcast'
 
-export default class VynosClient {
-  provider: StreamProvider
+export default class VynosClient extends JsonRpcClient {
+  workerReady: boolean = false
 
-  constructor (stream: Duplex) {
-    this.provider = new StreamProvider('VynosClient')
-    this.provider.pipe(stream).pipe(this.provider)
+  constructor (target: Window, origin: string) {
+    super('VynosClient', target, window, origin)
+    this.onWorkerReady = this.onWorkerReady.bind(this)
+    this.once(WorkerReadyBroadcastEvent, this.onWorkerReady)
   }
 
-  initialize (hubUrl: string, authRealm: string): Promise<boolean> {
-    const request: InitializeRequest = {
-      id: randomId(),
-      method: InitializeRequest.method,
-      jsonrpc: JSONRPC,
-      params: [hubUrl, authRealm]
+  onWorkerReady () {
+    this.workerReady = true
+  }
+
+  async initialize (hubUrl: string, authRealm: string): Promise<boolean> {
+    if (!this.workerReady) {
+      await new Promise((resolve) => this.once(WorkerReadyBroadcastEvent, resolve))
     }
 
-    return this.provider.ask(request).then((res: InitializeResponse) => {
-      return res.result
-    })
-  }
-
-  depositToChannel (ch: PaymentChannel): Promise<PaymentChannel> {
-    return Promise.resolve(ch)
+    return this.call<boolean>(RegisterHubRequest.method, hubUrl, authRealm)
   }
 
   initAccount (): Promise<void> {
-    let request: InitAccountRequest = {
-      id: randomId(),
-      method: InitAccountRequest.method,
-      jsonrpc: JSONRPC,
-      params: []
-    }
-    return this.provider.ask(request).then((response: InitAccountResponse) => {
-      return
-    })
-  }
-
-  closeChannel (channelId: string): Promise<void> {
-    let request: CloseChannelsForCurrentHubRequest = {
-      id: randomId(),
-      method: CloseChannelsForCurrentHubRequest.method,
-      jsonrpc: JSONRPC,
-      params: [channelId]
-    }
-    return this.provider.ask<CloseChannelsForCurrentHubRequest, any>(request)
+    return this.call(InitAccountRequest.method)
   }
 
   buy (amount: number, meta: any): Promise<VynosBuyResponse> {
-    let request: BuyRequest = {
-      id: randomId(),
-      method: BuyRequest.method,
-      jsonrpc: JSONRPC,
-      params: [amount, meta]
-    }
-
-    return this.provider.ask(request).then((response: BuyResponse) => response.result)
+    return this.call(BuyRequest.method, amount, meta)
   }
 
   listChannels (): Promise<PaymentChannel[]> {
-    let request: ListChannelsRequest = {
-      id: randomId(),
-      method: ListChannelsRequest.method,
-      jsonrpc: JSONRPC,
-      params: []
-    }
-    return this.provider.ask(request).then((response: ListChannelsResponse) => {
-      return response.result.map(pc => PaymentChannelSerde.instance.deserialize(pc))
-    })
+    return this.call(ListChannelsRequest.method).then((res: SerializedPaymentChannel[]) =>
+      res.map(pc => PaymentChannelSerde.instance.deserialize(pc)))
   }
 
-  getSharedState (): Promise<GetSharedStateResponse> {
-    const request: GetSharedStateRequest = {
-      id: randomId(),
-      method: GetSharedStateRequest.method,
-      jsonrpc: JSONRPC,
-      params: []
-    }
-
-    return this.provider.ask(request)
+  getSharedState (): Promise<SharedState> {
+    return this.call(GetSharedStateRequest.method)
   }
 
   onSharedStateUpdate (fn: (state: SharedState) => void): void {
-    this.provider.listen<SharedStateBroadcast>(SharedStateBroadcastType, broadcast => {
-      let state = broadcast.result
-      fn(state)
-    })
+    this.addListener(SharedStateBroadcastEvent, (state: SharedState) => fn(state))
   }
 
   authenticate (): Promise<AuthenticateResponse> {
-    const request: AuthenticateRequest = {
-      id: randomId(),
-      method: AuthenticateRequest.method,
-      jsonrpc: JSONRPC,
-      params: [window.location.hostname]
-    }
-
-    return this.provider.ask(request) as Promise<AuthenticateResponse>
+    return this.call(AuthenticateRequest.method, window.location.hostname)
   }
 
   toggleFrame (state: boolean, forceRedirect?: string): Promise<void> {
-    const request: ToggleFrameRequest = {
-      id: randomId(),
-      method: ToggleFrameRequest.method,
-      jsonrpc: JSONRPC,
-      params: [state, forceRedirect]
-    }
-
-    return this.provider.ask(request).then(() => {
-    })
+    return this.call(ToggleFrameRequest.method, state, forceRedirect)
   }
 }

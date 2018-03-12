@@ -5,7 +5,7 @@ import {Provider, Store} from 'react-redux'
 import {createLogger} from 'redux-logger'
 import * as redux from 'redux'
 import {FrameState, initialState} from './redux/FrameState'
-import RemoteStore from './lib/RemoteStore'
+import RemoteStoreUpdater from './lib/RemoteStoreUpdater'
 import reducers from './redux/reducers'
 import RootContainer from './pages/RootContainer'
 import {BrowserRouter} from 'react-router-dom'
@@ -13,11 +13,17 @@ import {BrowserRouter} from 'react-router-dom'
 const MOUNT_POINT_ID = 'mount-point'
 
 async function renderToMountPoint (mountPoint: HTMLElement, workerProxy: WorkerProxy) {
-  const middleware = redux.applyMiddleware(createLogger())
-  let store: Store<FrameState> = redux.createStore(reducers(workerProxy), initialState(workerProxy), middleware)
+  let store: Store<FrameState>
+
+  if (process.env.DEBUG) {
+    const middleware = redux.applyMiddleware(createLogger())
+    store = redux.createStore(reducers(workerProxy), initialState(workerProxy), middleware)
+  } else {
+    store = redux.createStore(reducers(workerProxy), initialState(workerProxy))
+  }
 
   const frameState = await workerProxy.getSharedState()
-  let remoteStore = new RemoteStore(workerProxy, frameState)
+  let remoteStore = new RemoteStoreUpdater(workerProxy, frameState)
   remoteStore.wireToLocal(store)
 
   document.addEventListener('keydown', (e: KeyboardEvent) => {

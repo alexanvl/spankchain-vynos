@@ -1,8 +1,4 @@
-import StreamProvider from '../lib/StreamProvider'
-import {EventEmitter} from 'events'
 import {HistoryItem, SharedState} from '../worker/WorkerState'
-import {JSONRPC, randomId, ResponsePayload} from '../lib/Payload'
-import {isSharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/SharedStateBroadcast'
 import {
   AuthenticateRequest,
   AuthenticateResponse,
@@ -10,250 +6,109 @@ import {
   DidStoreMnemonicRequest,
   FetchHistoryRequest,
   GenKeyringRequest,
-  GenKeyringResponse,
-  GetPrivateKeyHexRequest,
-  GetPrivateKeyHexResponse,
   GetSharedStateRequest,
-  GetSharedStateResponse,
   LockWalletRequest,
   OpenChannelRequest,
-  OpenChannelResponse,
   PopulateChannelsRequest,
   RememberPageRequest,
   RespondToAuthorizationRequestRequest,
   RestoreWalletRequest,
-  RestoreWalletResponse,
   SendRequest,
+  StatusRequest,
   ToggleFrameRequest,
-  TransactonResolved,
-  UnlockWalletRequest,
-  UnlockWalletResponse
+  UnlockWalletRequest
 } from '../lib/rpc/yns'
-import {Action} from 'redux'
 import * as BigNumber from 'bignumber.js'
+import JsonRpcClient from '../lib/messaging/JsonRpcClient'
+import {WorkerStatus} from '../lib/rpc/WorkerStatus'
+import {JSONRPCResponsePayload} from 'web3'
 import Web3 = require('web3')
+import {Postable} from '../lib/messaging/Postable'
 
-export default class WorkerProxy extends EventEmitter {
-  provider: StreamProvider
+export default class WorkerProxy extends JsonRpcClient {
   web3: Web3
 
-  constructor () {
-    super()
-    this.provider = new StreamProvider('WorkerProxy')
-    this.provider.listen(SharedStateBroadcastType, data => {
-      if (isSharedStateBroadcast(data)) {
-        this.emit(SharedStateBroadcastType, data)
+  constructor (target: Postable) {
+    super('WorkerProxy', target, navigator.serviceWorker, window.location.origin)
+    this.web3 = new Web3({
+      sendAsync: (payload: Web3.JSONRPCRequestPayload,
+                  callback: (err: Error, result: JSONRPCResponsePayload) => void) => {
+        this.call(payload.method, ...payload.params)
+          .then((res: JSONRPCResponsePayload) => {
+            (callback as any)(null, res)
+          })
+          .catch((e: any) => {
+            (callback as any)(e, null)
+          })
       }
     })
-    this.web3 = new Web3(this.provider)
   }
 
   openChannelWithCurrentHub (amount: BigNumber.BigNumber): Promise<string> {
-    const request: OpenChannelRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: OpenChannelRequest.method,
-      params: [amount.toNumber()]
-    }
-
-    return this.provider.ask(request).then((res: OpenChannelResponse) => res.result)
+    return this.call(OpenChannelRequest.method, amount.toNumber())
   }
 
   closeChannelsForCurrentHub (): Promise<void> {
-    const request: CloseChannelsForCurrentHubRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: CloseChannelsForCurrentHubRequest.method,
-      params: []
-    }
-
-    return this.provider.ask(request).then(() => {
-    })
+    return this.call(CloseChannelsForCurrentHubRequest.method)
   }
 
   populateChannels (): Promise<void> {
-    const request: PopulateChannelsRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: PopulateChannelsRequest.method,
-      params: []
-    }
-
-    return this.provider.ask(request).then(() => {
-    })
+    return this.call(PopulateChannelsRequest.method)
   }
 
   getWeb3 (): Web3 {
-    return new Web3(this.provider)
+    return this.web3
   }
 
   doLock (): Promise<void> {
-    let request: LockWalletRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: LockWalletRequest.method,
-      params: []
-    }
-    return this.provider.ask(request).then(() => {
-      return
-    })
+    return this.call(LockWalletRequest.method)
   }
 
   doUnlock (password: string): Promise<string | undefined> {
-    let request: UnlockWalletRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: UnlockWalletRequest.method,
-      params: [password]
-    }
-    return this.provider.ask(request).then((response: UnlockWalletResponse) => {
-      return response.error
-    })
+    return this.call(UnlockWalletRequest.method, password)
   }
 
   genKeyring (password: string): Promise<string> {
-    let request: GenKeyringRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: GenKeyringRequest.method,
-      params: [password]
-    }
-    return this.provider.ask(request).then((response: GenKeyringResponse) => {
-      return response.result
-    })
+    return this.call(GenKeyringRequest.method, password)
   }
 
   restoreWallet (password: string, mnemonic: string): Promise<string> {
-    let request: RestoreWalletRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: RestoreWalletRequest.method,
-      params: [password, mnemonic]
-    }
-    return this.provider.ask(request).then((response: RestoreWalletResponse) => {
-      return response.result
-    })
+    return this.call(RestoreWalletRequest.method, password, mnemonic)
   }
 
   getSharedState (): Promise<SharedState> {
-    const id = randomId()
-
-    let request: GetSharedStateRequest = {
-      id,
-      jsonrpc: JSONRPC,
-      method: GetSharedStateRequest.method,
-      params: []
-    }
-    return this.provider.ask(request).then((response: GetSharedStateResponse) => {
-      return response.result
-    })
+    return this.call(GetSharedStateRequest.method)
   }
 
   didStoreMnemonic (): Promise<void> {
-    let request: DidStoreMnemonicRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: DidStoreMnemonicRequest.method,
-      params: []
-    }
-    return this.provider.ask(request).then(() => {
-      return
-    })
+    return this.call(DidStoreMnemonicRequest.method)
   }
 
-  rememberPage (path: string): void {
-    let request: RememberPageRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: RememberPageRequest.method,
-      params: [path]
-    }
-    this.provider.ask(request).then(() => {
-      // Do Nothing
-    })
-  }
-
-  resolveTransaction (): void {
-    let request: TransactonResolved = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: TransactonResolved.method,
-      params: []
-    }
-    this.provider.ask(request)
-  }
-
-  getPrivateKeyHex (): Promise<string> {
-    let request: GetPrivateKeyHexRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: GetPrivateKeyHexRequest.method,
-      params: []
-    }
-    return this.provider.ask(request).then((response: GetPrivateKeyHexResponse) => {
-      return response.result
-    })
+  rememberPage (path: string): Promise<void> {
+    return this.call(RememberPageRequest.method, path)
   }
 
   authenticate (): Promise<AuthenticateResponse> {
-    const request: AuthenticateRequest = {
-      id: randomId(),
-      method: AuthenticateRequest.method,
-      jsonrpc: JSONRPC,
-      params: [window.location.hostname]
-    }
-
-    return this.provider.ask(request) as Promise<AuthenticateResponse>
+    return this.call(AuthenticateRequest.method, window.location.hostname)
   }
 
   respondToAuthorizationRequest (res: boolean): Promise<void> {
-    const request: RespondToAuthorizationRequestRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: RespondToAuthorizationRequestRequest.method,
-      params: [res]
-    }
-
-    return this.provider.ask(request).then(() => {
-    })
+    return this.call(RespondToAuthorizationRequestRequest.method, res)
   }
 
   toggleFrame (status: boolean, forceRedirect?: string): Promise<void> {
-    const request: ToggleFrameRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: ToggleFrameRequest.method,
-      params: [status, forceRedirect]
-    }
-
-    return this.provider.ask(request).then(() => {
-    })
-  }
-
-  dispatch<A extends Action> (action: A) {
-    console.warn('WorkerProxy#dispatch', action)
+    return this.call(ToggleFrameRequest.method, status, forceRedirect)
   }
 
   fetchHistory (): Promise<HistoryItem[]> {
-    const request: FetchHistoryRequest = {
-      id: randomId(),
-      method: FetchHistoryRequest.method,
-      jsonrpc: JSONRPC,
-      params: []
-    }
-
-    return this.provider.ask(request).then((res: ResponsePayload) => res.result)
+    return this.call(FetchHistoryRequest.method)
   }
 
   send (to: string, value: string): Promise<void> {
-    const request: SendRequest = {
-      id: randomId(),
-      method: SendRequest.method,
-      jsonrpc: JSONRPC,
-      params: [to, value]
-    }
+    return this.call(SendRequest.method, to, value)
+  }
 
-    return this.provider.ask(request).then(() => {
-    })
+  status (): Promise<WorkerStatus> {
+    return this.callWithTimeout(500, StatusRequest.method)
   }
 }
