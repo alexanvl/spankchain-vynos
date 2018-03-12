@@ -28,7 +28,7 @@ const Input: React.SFC<any> = function(props) {
         value={value}
         onChange={onChange}
         onBlur={onBlur}
-        autoFocus
+        autoFocus={autoFocus}
       />
       <div className={s.errorMessage}>{errorMessage}</div>
     </div>
@@ -39,6 +39,7 @@ Input.defaultProps = {
   type: 'text',
   className: '',
   disabled: false,
+  autoFocus: false
 }
 
 export default Input

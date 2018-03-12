@@ -7,10 +7,11 @@ const s = require('./style.css')
 export const BUTTON_TYPES = {
   PRIMARY: 'primary',
   SECONDARY: 'secondary',
-  TERTIARY: 'tertiary'
+  TERTIARY: 'tertiary',
+  DARK: 'dark'
 }
 
-export type ButtonType = 'primary' | 'secondary' | 'tertiary'
+export type ButtonType = 'primary' | 'secondary' | 'tertiary' | 'dark'
 
 export interface ButtonProps {
   type?: ButtonType
@@ -51,6 +52,7 @@ class Button extends React.Component<ButtonProps> {
       [s.primary]: type === BUTTON_TYPES.PRIMARY,
       [s.secondary]: type === BUTTON_TYPES.SECONDARY,
       [s.tertiary]: type === BUTTON_TYPES.TERTIARY,
+      [s.dark]: type === BUTTON_TYPES.DARK,
       [s.inverse]: isInverse,
       [s.mini]: isMini
     })
@@ -68,7 +70,8 @@ class Button extends React.Component<ButtonProps> {
 
   onClick (e: any) {
     if (this.props.to) {
-      this.context.router.history.push(this.props.to)
+      this.props.to.indexOf('http') === 0 ? window.open(this.props.to) :
+        this.context.router.history.push(this.props.to)
     }
 
     if (this.props.onClick) {

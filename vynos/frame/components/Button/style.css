@@ -108,3 +108,9 @@
   padding: .25rem .5rem;
   font-size: .7rem;
 }
+
+.dark {
+  background: #4A4A4A !important;
+  color: white !important;
+  opacity: 1 !important;
+}

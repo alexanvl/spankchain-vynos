@@ -35,8 +35,8 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
       isLoading: true
     })
 
-    const amount = new BigNumber.BigNumber(this.props.workerProxy.web3.toWei(this.props.walletBalance!, 'ether'))
-      .minus(this.props.workerProxy.web3.toWei(0.1, 'ether'))
+    const amount = new BigNumber.BigNumber(this.props.walletBalance!)
+      .minus(this.props.workerProxy.web3.toWei('0.005', 'ether'))
     await this.props.workerProxy.openChannelWithCurrentHub(amount)
   }
 
@@ -60,7 +60,7 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
 
     return (
       <span>
-        Load up <Currency amount={new BigNumber.BigNumber(this.props.walletBalance || 0)} inputType={CurrencyType.ETH} /> into SpankCard
+        Load up <Currency amount={this.props.walletBalance} inputType={CurrencyType.WEI} /> into SpankCard
       </span>
     )
   }
@@ -68,7 +68,7 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
 
 function mapStateToProps (state: FrameState): StateProps {
   return {
-    walletBalance: state.wallet.main.balance,
+    walletBalance: state.shared.balance,
     cardTitle: state.shared.branding.title,
     workerProxy: state.temp.workerProxy
   }

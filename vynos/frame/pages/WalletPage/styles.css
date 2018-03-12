@@ -435,3 +435,11 @@
 .selected.last.walletActivityDetails .walletActivityItemDescription {
   padding-bottom: 1rem;
 }
+
+.pendingAmount {
+  margin-left: 0.3rem;
+}
+
+.pendingAmount, .pendingAmount .currency {
+  color: #B5B5B5;
+}

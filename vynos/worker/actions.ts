@@ -1,5 +1,5 @@
 import actionCreatorFactory, {ActionCreator} from 'typescript-fsa'
-import {HistoryItem, WorkerState} from './WorkerState'
+import {HistoryItem, PendingTransaction, WorkerState} from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import {Cookie} from 'tough-cookie'
@@ -226,6 +226,28 @@ export function setHistoryHandler(state: WorkerState, history: HistoryItem[]): W
     runtime: {
       ...state.runtime,
       history
+    }
+  }
+}
+
+export const setBalance = actionCreator<string>('runtime/setBalance')
+export function setBalanceHandler(state: WorkerState, balance: string): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      balance
+    }
+  }
+}
+
+export const setPendingTransaction = actionCreator<PendingTransaction|null>('runtime/setPendingTransaction')
+export function setPendingTransactionHandler(state: WorkerState, pendingTransaction: PendingTransaction|null): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      pendingTransaction
     }
   }
 }

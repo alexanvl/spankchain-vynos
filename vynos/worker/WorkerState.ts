@@ -15,6 +15,8 @@ export interface RuntimeState {
   branding: BrandingState
   channels: ChannelsState
   history: HistoryItem[]
+  balance: string
+  pendingTransaction: PendingTransaction|null
 }
 
 export interface AuthorizationRequestState {
@@ -29,6 +31,11 @@ export interface ChannelsState {
 export interface HistoryItem {
   payment: { channelId: string, sender: string, price: string }
   [key: string]: any
+}
+
+export interface PendingTransaction {
+  amount: string
+  hash: string
 }
 
 export interface SharedState {
@@ -47,6 +54,9 @@ export interface SharedState {
   branding: BrandingState
   channels: ChannelsState
   history: HistoryItem[]
+  balance: string
+  pendingTransaction: PendingTransaction|null
+  address: string|null
 }
 
 export interface PersistentState {
@@ -90,7 +100,10 @@ export const INITIAL_SHARED_STATE: SharedState = {
     address: ''
   },
   channels: {},
-  history: []
+  history: [],
+  balance: '0',
+  pendingTransaction: null,
+  address: null
 }
 
 export const INITIAL_STATE: WorkerState = {
@@ -112,7 +125,9 @@ export const INITIAL_STATE: WorkerState = {
       address: ''
     },
     channels: {},
-    history: []
+    history: [],
+    balance: '0',
+    pendingTransaction: null
   },
 }
 
@@ -132,6 +147,9 @@ export function buildSharedState(state: WorkerState): SharedState {
     forceRedirect: state.runtime.forceRedirect,
     branding: state.runtime.branding,
     channels: state.runtime.channels,
-    history: state.runtime.history
+    history: state.runtime.history,
+    balance: state.runtime.balance,
+    pendingTransaction: state.runtime.pendingTransaction,
+    address: state.runtime.wallet ? state.runtime.wallet.getAddressString() : null
   }
 }

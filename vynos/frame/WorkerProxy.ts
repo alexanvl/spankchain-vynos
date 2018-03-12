@@ -19,7 +19,7 @@ import {
   RememberPageRequest,
   RespondToAuthorizationRequestRequest,
   RestoreWalletRequest,
-  RestoreWalletResponse,
+  RestoreWalletResponse, SendRequest,
   ToggleFrameRequest,
   TransactonResolved,
   UnlockWalletRequest,
@@ -249,5 +249,16 @@ export default class WorkerProxy extends EventEmitter {
     }
 
     return this.provider.ask(request).then((res: ResponsePayload) => res.result)
+  }
+
+  send(to: string, value: string): Promise<void> {
+    const request: SendRequest = {
+      id: randomId(),
+      method: SendRequest.method,
+      jsonrpc: JSONRPC,
+      params: [to, value]
+    }
+
+    return this.provider.ask(request).then(() => {})
   }
 }

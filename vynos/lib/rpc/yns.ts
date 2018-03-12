@@ -174,3 +174,10 @@ export type FetchHistoryRequest = RequestPayload
 export interface FetchHistoryResponse extends ResponsePayload {
   result: HistoryItem[]
 }
+
+export const SendRequest = requestFactory<[string, string]>('send')
+export type SendRequest = RequestPayload
+
+export interface SendResponse extends ResponsePayload {
+  result: null
+}

@@ -33,8 +33,8 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
       isLoading: true
     })
 
-    const amount = new BigNumber.BigNumber(this.props.workerProxy.web3.toWei(this.props.walletBalance!, 'ether'))
-      .minus(this.props.workerProxy.web3.toWei(0.1, 'ether'))
+    const amount = new BigNumber.BigNumber(this.props.walletBalance!)
+      .minus(this.props.workerProxy.web3.toWei('0.005', 'ether'))
     await this.props.workerProxy.openChannelWithCurrentHub(amount)
   }
 
@@ -45,8 +45,8 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
         <span>
           <span>Load up </span>
           <Currency
-            amount={new BigNumber.BigNumber(this.props.walletBalance || 0)}
-            inputType={CurrencyType.ETH}
+            amount={this.props.walletBalance}
+            inputType={CurrencyType.WEI}
             showUnit
           />
           <span> into SpankCard</span>
@@ -81,7 +81,7 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
 
 function mapStateToProps(state: FrameState): MapStateToProps {
   return {
-    walletBalance: state.wallet.main.balance,
+    walletBalance: state.shared.balance,
     cardBalance: cardBalance(state.shared),
     workerProxy: state.temp.workerProxy
   }

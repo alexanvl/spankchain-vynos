@@ -25,6 +25,7 @@ import MicropaymentsController from './MicropaymentsController'
 import MicropaymentsHandler from './MicropaymentsHandler'
 import {LifecycleAware} from './LifecycleAware'
 import {ReadyBroadcast, ReadyBroadcastType} from '../../lib/rpc/ReadyBroadcast'
+import WalletController from './WalletController'
 const networks = require('../../networks.json')
 
 export default class StartupController implements LifecycleAware {
@@ -128,12 +129,16 @@ export default class StartupController implements LifecycleAware {
     const micropaymentsController = new MicropaymentsController(providerOpts, this.store, sharedStateView, transactionService)
     const micropaymentsHandler = new MicropaymentsHandler(micropaymentsController)
     const authController = new AuthController(this.store, sharedStateView, providerOpts, frameController)
+    const walletController = new WalletController(networkController, this.store, sharedStateView)
+
+    walletController.start()
 
     this.server.add(backgroundHandler.handler)
       .add(hubHandler.handler)
       .add(micropaymentsHandler.handler)
       .add(authController.handler)
       .add(frameController.handler)
+      .add(walletController.handler)
       .add(networkController.handler)
 
     const ready: ReadyBroadcast = {
