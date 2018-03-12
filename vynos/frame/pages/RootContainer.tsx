@@ -46,7 +46,6 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
   determineRoute (props?: RootStateProps) {
     props = props || this.props
 
-
     if (props.isUnlockExpected) {
       this.props.history.push('/unlock')
       return
