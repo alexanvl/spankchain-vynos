@@ -1,7 +1,6 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
 import {Dispatch} from 'redux'
-// <<<<<<< HEAD
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import * as actions from '../../redux/actions'
@@ -9,19 +8,6 @@ import Button from '../../components/Button/index'
 import Checkbox from '../../components/Checkbox/index'
 import WalletCard from '../../components/WalletCard/index'
 import OnboardingContainer from './OnboardingContainer'
-
-// =======
-// import {MouseEvent} from "react";
-// import {FrameState} from "../../redux/FrameState";
-// import WorkerProxy from "../../WorkerProxy";
-// import * as actions from "../../redux/actions";
-// import Button from "../../components/Button/index"
-// import TextBox from "../../components/TextBox/index"
-// import Checkbox from "../../components/Checkbox/index"
-// import Input from "../../components/Input/index"
-// import WalletCard from "../../components/WalletCard/index"
-// import Logo from '../../components/Logo'
-// >>>>>>> Add progress dots assets to wallet funnel
 import {withRouter} from 'react-router'
 
 const style = require('../../styles/ynos.css')

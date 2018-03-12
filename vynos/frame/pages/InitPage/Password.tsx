@@ -4,7 +4,6 @@ import {Dispatch} from 'redux'
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import {connect} from 'react-redux'
-// <<<<<<< HEAD
 import * as actions from '../../redux/actions'
 import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../../constants'
 import RestorePage from '../RestorePage'
@@ -13,17 +12,6 @@ import TextBox from '../../components/TextBox/index'
 import Input from '../../components/Input/index'
 import WalletCard from '../../components/WalletCard/index'
 import OnboardingContainer from './OnboardingContainer'
-// =======
-// import * as actions from "../../redux/actions";
-// import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../../constants';
-// import RestorePage from "../RestorePage";
-// import Logo from "../../components/Logo";
-// import Button from "../../components/Button/index"
-// import TextBox from "../../components/TextBox/index"
-// import Input from "../../components/Input/index"
-// import WalletCard from "../../components/WalletCard/index"
-// import OnboardingContainer from './OnboardingContainer'
-// >>>>>>> Add progress dots assets to wallet funnel
 
 const style = require('../../styles/ynos.css')
 
