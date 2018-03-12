@@ -78,7 +78,6 @@
     "machinomy": "1.6.1",
     "moment": "^2.19.1",
     "mux-demux": "^3.7.9",
-    "nedb": "^1.8.0",
     "qr-image": "^3.2.0",
     "react": "15.6.0",
     "react-copy-to-clipboard": "^5.0.1",

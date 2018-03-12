@@ -1,53 +1,42 @@
-import BackgroundController from "./BackgroundController";
-import ZeroClientProvider = require("web3-provider-engine/zero")
-import { ProviderOpts } from "web3-provider-engine";
+import BackgroundController from './BackgroundController'
+import {ProviderOpts} from 'web3-provider-engine'
+import {Payload} from '../../lib/Payload'
+import {EndFunction} from '../../lib/StreamServer'
+import ProviderOptions from './ProviderOptions'
+import ZeroClientProvider = require('web3-provider-engine/zero')
 import Engine = require('web3-provider-engine')
-import { Payload } from "../../lib/Payload";
-import { EndFunction } from "../../lib/StreamServer";
-import Web3 = require("web3")
-import ProviderOptions from "./ProviderOptions";
-import TransactionService from "../TransactionService";
-import SettingStorage from "../../lib/storage/SettingStorage";
+import Web3 = require('web3')
 
-const settingStorage = new SettingStorage()
+const networks = require('../../networks.json')
+const DEFAULT_NETWORK = 'Ropsten'
 
 export default class NetworkController {
-  background: BackgroundController
-  provider: Engine
-  web3: Web3
-  transactions: TransactionService
-  rpcUrl: string
-  ready: Promise<void>
+  private background: BackgroundController
 
-  constructor (backgroundController: BackgroundController, transactions: TransactionService) {
+  private provider: Engine
+
+  private rpcUrl: string
+
+  providerOpts: ProviderOpts
+
+  web3: Web3
+
+  constructor (backgroundController: BackgroundController) {
     this.background = backgroundController
-    this.transactions = transactions
+    this.rpcUrl = networks[DEFAULT_NETWORK]
+    this.providerOpts = new ProviderOptions(this.background, this.rpcUrl).approving()
+    this.provider = ZeroClientProvider(this.providerOpts)
+    this.web3 = new Web3(this.provider)
     this.handler = this.handler.bind(this)
-    this.getNetwork()
   }
 
   handler (message: Payload, next: Function, end: EndFunction) {
-    this.ready.then(() => {
-      this.provider.sendAsync(message, (error, response) => {
-        if (error) {
-          end(error)
-        } else {
-          end(null, response)
-        }
-      })
-    })
-  }
-
-  providerOpts (rpcUrl: string): ProviderOpts {
-    let providerOptions = new ProviderOptions(this.background, this.transactions, rpcUrl)
-    return providerOptions.walled()
-  }
-
-  getNetwork () {
-    this.ready = settingStorage.getNetwork().then((network: any) => {
-      this.rpcUrl = network.value
-      this.provider = ZeroClientProvider(this.providerOpts(this.rpcUrl))
-      this.web3 = new Web3(this.provider)
+    this.provider.sendAsync(message, (error, response) => {
+      if (error) {
+        end(error)
+      } else {
+        end(null, response)
+      }
     })
   }
 }

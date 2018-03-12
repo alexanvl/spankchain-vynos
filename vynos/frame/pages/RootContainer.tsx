@@ -5,7 +5,6 @@ import {FrameState} from '../redux/FrameState'
 import InitPage from './InitPage'
 import UnlockPage from './UnlockPage'
 import WalletPage from './WalletPage'
-import ApprovePage from '../components/WalletPage/ApprovePage'
 import {RouteComponentProps} from 'react-router'
 import AuthorizePage from './AuthorizePage'
 import WorkerProxy from "../WorkerProxy"
@@ -56,11 +55,6 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
       return
     }
 
-    if (props.isTransactionPending) {
-      this.props.history.push('/approve')
-      return
-    }
-
     if (!props.isWalletExpected) {
       this.props.history.push('/init')
       return
@@ -85,8 +79,6 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
   render () {
     return (
       <Switch>
-        <Route path="/approve" component={ApprovePage} />
-
         <Route path="/authorize" component={AuthorizePage} />
 
         <Switch>
