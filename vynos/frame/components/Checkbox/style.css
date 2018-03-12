@@ -47,8 +47,6 @@
   height: .7rem;
   border: solid #ff3b81;
   border-width: 0 2px 2px 0;
-  -webkit-transform: rotate(45deg);
-  -ms-transform: rotate(45deg);
   transform: rotate(45deg);
 }
 
@@ -60,4 +58,12 @@
   width: 1.2rem;
   background-color: white;
   border-radius: 4px;
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  /* Style the checkmark/indicator */
+  .container .checkmark:after {
+    left: 5px;
+    top: 1px;
+  }
 }
