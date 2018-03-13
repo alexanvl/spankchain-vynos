@@ -725,6 +725,7 @@ Channels page
   width: 300px;
   display: flex;
   flex-flow: row nowrap;
+  padding-bottom: 2rem;
 }
 
 .mnemonicFooter button {
@@ -790,4 +791,38 @@ Channels page
   position: fixed;
   bottom: 2rem;
   right: 2rem;
+}
+
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  .passwordTextBox {
+    width: 75%;
+  }
+
+  .passwordInput {
+    width: 75% !important;
+  }
+
+  .funnelFooter {
+    width: 90% !important;
+  }
+
+  .seedPhraseText {
+    width: 85% !important;
+  }
+
+  .seedWords {
+    width: 80% !important;
+  }
+
+  .ctaInput {
+    width: 80% !important;
+  }
+
+  .qrCode {
+    position: relative;
+    left: 0;
+    right: 0;
+    margin: 2rem auto;
+  }
 }

@@ -39,7 +39,6 @@ export default class WalletController implements LifecycleAware {
   }
 
   public async send (to: string, value: string) {
-    await this.networkController.ready
     const from = (await this.sharedStateView.getAccounts())[0]
 
     const tx = {
@@ -145,8 +144,6 @@ export default class WalletController implements LifecycleAware {
     if (!this.isWatching) {
       return
     }
-
-    await this.networkController.ready
 
     let address
 

@@ -86,7 +86,6 @@ export default class Frame {
 
   display() {
     const ctx = this
-    this.setWalletCard()
     this.element.style.opacity = '1'
     this.containerElement.style.marginTop = '0px'
     ctx.coverElement.style.display = 'block'
@@ -97,7 +96,6 @@ export default class Frame {
 
   hide() {
     const ctx = this
-    this.setWalletCard()
     this.containerElement.style.marginTop = '-100vh'
     this.element.style.opacity = '0'
     this.coverElement.style.opacity = '0'

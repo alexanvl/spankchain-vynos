@@ -5,7 +5,7 @@ import {
   AuthenticateResponse,
   BuyRequest,
   BuyResponse,
-  CloseChannelsForCurrentHubRequest, FetchHistoryRequest,
+  CloseChannelsForCurrentHubRequest,
   GetSharedStateRequest,
   GetSharedStateResponse,
   InitAccountRequest,
@@ -16,15 +16,14 @@ import {
   ListChannelsResponse,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
-import {JSONRPC, randomId, ResponsePayload} from '../lib/Payload'
+import {JSONRPC, randomId} from '../lib/Payload'
 import {PaymentChannel} from 'machinomy/dist/lib/channel'
-import Vynos from '../lib/Vynos'
 import VynosBuyResponse from '../lib/VynosBuyResponse'
-import {HistoryItem, SharedState} from '../worker/WorkerState'
+import {SharedState} from '../worker/WorkerState'
 import {SharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/SharedStateBroadcast'
 import {PaymentChannelSerde} from 'machinomy/dist/lib/payment_channel'
 
-export default class VynosClient implements Vynos {
+export default class VynosClient {
   provider: StreamProvider
 
   constructor (stream: Duplex) {
