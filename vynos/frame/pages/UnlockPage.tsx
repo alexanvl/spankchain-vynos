@@ -10,6 +10,7 @@ import TextBox from '../components/TextBox/index'
 import Input from '../components/Input/index'
 import WalletCard from '../components/WalletCard/index'
 import WalletMiniCard from '../components/WalletMiniCard/index'
+import OnboardingContainer from '../pages/InitPage/OnboardingContainer'
 import {RouteComponentProps, withRouter} from 'react-router'
 import _ = require('lodash')
 
@@ -99,24 +100,8 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     }
 
     return (
-      <div className={style.fullContainer}>
-        <div className={style.loginHeader}>
-          <WalletMiniCard
-            className={style.loginWalletMiniCard}
-            onClick={this.closeView}
-            isLocked
-            inverse
-            alwaysLarge
-          />
-        </div>
+      <OnboardingContainer totalSteps={0} currentStep={0}>
         <div className={style.content}>
-          <WalletCard
-            width={275}
-            cardTitle="SpankCard"
-            companyName="SpankChain"
-            name="spanktoshi"
-            className={style.funnelWalletCard}
-          />
           <div className={style.funnelTitle}>Login to SpankCard</div>
           <TextBox className={style.passwordTextBox}>
             We see you already have a SpankWallet, please login.
@@ -147,7 +132,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
             />
           </div>
         </div>
-      </div>
+      </OnboardingContainer>
     )
   }
 }
