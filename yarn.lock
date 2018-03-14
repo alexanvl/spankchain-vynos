@@ -4361,9 +4361,9 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@https://github.com/mslipper/machinomy.git#428c615935f48f8148e81c5c2b9cc7e9e5f3b7c5":
-  version "1.6.0"
-  resolved "https://github.com/mslipper/machinomy.git#428c615935f48f8148e81c5c2b9cc7e9e5f3b7c5"
+machinomy@1.6.1:
+  version "1.6.1"
+  resolved "https://registry.yarnpkg.com/machinomy/-/machinomy-1.6.1.tgz#1729d81f07a5a9e21c1fc7c4bb7c9c20dd8ca565"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
     "@machinomy/types-truffle-contract" "https://github.com/machinomy/types-truffle-contract"

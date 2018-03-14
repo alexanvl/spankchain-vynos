@@ -6,8 +6,9 @@ import {isSharedStateBroadcast, SharedStateBroadcastType} from '../lib/rpc/Share
 import {
   AuthenticateRequest,
   AuthenticateResponse,
-  ChangeNetworkRequest, CloseChannelsForCurrentHubRequest,
-  DidStoreMnemonicRequest, FetchHistoryRequest,
+  CloseChannelsForCurrentHubRequest,
+  DidStoreMnemonicRequest,
+  FetchHistoryRequest,
   GenKeyringRequest,
   GenKeyringResponse,
   GetPrivateKeyHexRequest,
@@ -15,19 +16,22 @@ import {
   GetSharedStateRequest,
   GetSharedStateResponse,
   LockWalletRequest,
-  OpenChannelRequest, OpenChannelResponse, PopulateChannelsRequest,
+  OpenChannelRequest,
+  OpenChannelResponse,
+  PopulateChannelsRequest,
   RememberPageRequest,
   RespondToAuthorizationRequestRequest,
   RestoreWalletRequest,
   RestoreWalletResponse,
+  SendRequest,
   ToggleFrameRequest,
   TransactonResolved,
   UnlockWalletRequest,
   UnlockWalletResponse
 } from '../lib/rpc/yns'
 import {Action} from 'redux'
+import * as BigNumber from 'bignumber.js'
 import Web3 = require('web3')
-import * as BigNumber from 'bignumber.js';
 
 export default class WorkerProxy extends EventEmitter {
   provider: StreamProvider
@@ -55,7 +59,7 @@ export default class WorkerProxy extends EventEmitter {
     return this.provider.ask(request).then((res: OpenChannelResponse) => res.result)
   }
 
-  closeChannelsForCurrentHub(): Promise<void> {
+  closeChannelsForCurrentHub (): Promise<void> {
     const request: CloseChannelsForCurrentHubRequest = {
       id: randomId(),
       jsonrpc: JSONRPC,
@@ -63,10 +67,11 @@ export default class WorkerProxy extends EventEmitter {
       params: []
     }
 
-    return this.provider.ask(request).then(() => {})
+    return this.provider.ask(request).then(() => {
+    })
   }
 
-  populateChannels(): Promise<void> {
+  populateChannels (): Promise<void> {
     const request: PopulateChannelsRequest = {
       id: randomId(),
       jsonrpc: JSONRPC,
@@ -74,7 +79,8 @@ export default class WorkerProxy extends EventEmitter {
       params: []
     }
 
-    return this.provider.ask(request).then(() => {})
+    return this.provider.ask(request).then(() => {
+    })
   }
 
   getWeb3 (): Web3 {
@@ -228,18 +234,6 @@ export default class WorkerProxy extends EventEmitter {
     console.warn('WorkerProxy#dispatch', action)
   }
 
-  changeNetwork (): Promise<void> {
-    let request: ChangeNetworkRequest = {
-      id: randomId(),
-      jsonrpc: JSONRPC,
-      method: ChangeNetworkRequest.method,
-      params: []
-    }
-    return this.provider.ask(request).then(() => {
-      return
-    })
-  }
-
   fetchHistory (): Promise<HistoryItem[]> {
     const request: FetchHistoryRequest = {
       id: randomId(),
@@ -249,5 +243,17 @@ export default class WorkerProxy extends EventEmitter {
     }
 
     return this.provider.ask(request).then((res: ResponsePayload) => res.result)
+  }
+
+  send (to: string, value: string): Promise<void> {
+    const request: SendRequest = {
+      id: randomId(),
+      method: SendRequest.method,
+      jsonrpc: JSONRPC,
+      params: [to, value]
+    }
+
+    return this.provider.ask(request).then(() => {
+    })
   }
 }

@@ -97,3 +97,38 @@
   font-size: 1rem;
   font-weight: 500;
 }
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  .header {
+    padding: 2rem;
+  }
+
+  .descriptionWrapper {
+    padding: 0 2rem;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+
+  .qrWrapper {
+    padding: 0 2rem;
+  }
+
+  .ctaInputValue {
+    flex: 1 1 auto;
+    width: 0;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    display: inline-block;
+    line-height: 2.5rem;
+    align-items: center;
+  }
+
+  .walletQR {
+    width: 6rem;
+    height: 6rem;
+  }
+}
+

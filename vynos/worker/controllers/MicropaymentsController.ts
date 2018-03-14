@@ -1,8 +1,6 @@
 import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import Machinomy from 'machinomy'
-import TransactionService from '../TransactionService'
-import ChannelMetaStorage from '../../lib/storage/ChannelMetaStorage'
 import SharedStateView from '../SharedStateView'
 import {ProviderOpts} from 'web3-provider-engine'
 import {WorkerState} from '../WorkerState'
@@ -22,18 +20,12 @@ export default class MicropaymentsController {
 
   machinomy: Machinomy
 
-  transactions: TransactionService
-
-  channels: ChannelMetaStorage
-
   web3: Web3
 
-  constructor (providerOpts: ProviderOpts, store: Store<WorkerState>, sharedStateView: SharedStateView, transactions: TransactionService) {
+  constructor (providerOpts: ProviderOpts, store: Store<WorkerState>, sharedStateView: SharedStateView) {
     this.providerOpts = providerOpts
     this.store = store
     this.sharedStateView = sharedStateView
-    this.transactions = transactions
-    this.channels = new ChannelMetaStorage()
   }
 
   public async populateChannels (): Promise<void> {

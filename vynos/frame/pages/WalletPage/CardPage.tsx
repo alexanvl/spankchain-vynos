@@ -13,7 +13,7 @@ import Currency, {CurrencyType} from '../../components/Currency/index'
 const s = require('./styles.css')
 
 export interface StateProps extends BrandingState {
-  walletBalance: BigNumber.BigNumber
+  walletBalance: string
   cardBalance: BigNumber.BigNumber
   workerProxy: WorkerProxy
 }
@@ -40,7 +40,11 @@ class CardPage extends React.Component<StateProps, CardPageState> {
       isWithdrawing: true
     })
 
-    await this.props.workerProxy.closeChannelsForCurrentHub()
+    try {
+      await this.props.workerProxy.closeChannelsForCurrentHub()
+    } catch (e) {
+      console.error(e)
+    }
 
     this.setState({
       isWithdrawing: false
@@ -58,7 +62,8 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             <CTAInput
               isInverse
               isConnected
-              value={<Currency amount={walletBalance} inputType={CurrencyType.ETH} showUnit={true} />}
+              value={<Currency amount={walletBalance} inputType={CurrencyType.WEI} showUnit={true} />}
+              className={s.spankCardCta}
               ctaInputValueClass={s.spankCardCtaInputValue}
               ctaContentClass={s.spankCardCtaContent}
               ctaContent={() => (
@@ -105,7 +110,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
 function mapStateToProps (state: FrameState, ownProps: any): StateProps {
   return {
     ...state.shared.branding,
-    walletBalance: new BigNumber.BigNumber(state.wallet.main.balance || 0),
+    walletBalance: state.shared.balance,
     cardBalance: cardBalance(state.shared),
     workerProxy: state.temp.workerProxy
   }

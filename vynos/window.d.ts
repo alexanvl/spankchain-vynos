@@ -6,7 +6,6 @@ export interface DevWindow extends Window {
 
 export interface VynosWindow extends Window {
   Vynos: typeof Namespace,
-  showVynosNotification: any
 }
 
 declare var window: DevWindow & VynosWindow;

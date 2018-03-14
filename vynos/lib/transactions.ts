@@ -2,7 +2,6 @@ import Transaction from './TransactionMeta'
 import {randomId} from './Payload'
 import TransactionKind from './TransactionKind'
 import TransactionState from './TransactionState'
-import PurchaseMeta from './PurchaseMeta'
 
 export function ethereum(id: string, to: string, amount: number, fee: number): Transaction {
   return {
@@ -14,20 +13,6 @@ export function ethereum(id: string, to: string, amount: number, fee: number): T
     fee,
     kind: TransactionKind.ETHEREUM,
     state: TransactionState.PENDING,
-  }
-}
-
-export function micropayment(purchaseMeta: PurchaseMeta, receiver: string, amount: number): Transaction {
-  return {
-    id: randomId().toString(),
-    title: purchaseMeta.siteName,
-    description: purchaseMeta.description,
-    icon: purchaseMeta.icon,
-    time: Date.now(),
-    amount,
-    fee: 0,
-    kind: TransactionKind.MICROPAYMENT,
-    state: TransactionState.APPROVED,
   }
 }
 

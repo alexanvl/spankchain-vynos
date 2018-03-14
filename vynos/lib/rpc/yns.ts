@@ -1,7 +1,6 @@
 import {JSONRPC, RequestPayload, ResponsePayload} from '../Payload'
 import {HistoryItem, SharedState} from '../../worker/WorkerState'
 import VynosBuyResponse from '../VynosBuyResponse'
-import PurchaseMeta from '../PurchaseMeta'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 
 export interface RequestConstructor {
@@ -136,13 +135,6 @@ export interface PopulateChannelsResponse extends ResponsePayload {
   result: null
 }
 
-export const ChangeNetworkRequest = requestFactory<any[]>('changeNetwork')
-export type ChangeNetworkRequest = RequestPayload
-
-export interface ChangeNetworkResponse extends ResponsePayload {
-  result: string
-}
-
 export const GetPrivateKeyHexRequest = requestFactory<never[]>('getPrivateKeyHex')
 export type GetPrivateKeyHexRequest = RequestPayload
 
@@ -173,4 +165,11 @@ export type FetchHistoryRequest = RequestPayload
 
 export interface FetchHistoryResponse extends ResponsePayload {
   result: HistoryItem[]
+}
+
+export const SendRequest = requestFactory<[string, string]>('send')
+export type SendRequest = RequestPayload
+
+export interface SendResponse extends ResponsePayload {
+  result: null
 }

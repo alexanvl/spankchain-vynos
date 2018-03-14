@@ -2,8 +2,6 @@ import BackgroundController from './BackgroundController'
 import {JSONRPC, RequestPayload} from '../../lib/Payload'
 import {EndFunction} from '../../lib/StreamServer'
 import {
-  ChangeNetworkRequest,
-  ChangeNetworkResponse,
   DidStoreMnemonicRequest,
   DidStoreMnemonicResponse,
   GenKeyringRequest,
@@ -143,18 +141,6 @@ export default class BackgroundHandler {
     end(null)
   }
 
-  changeNetwork (message: ChangeNetworkRequest, next: Function, end: EndFunction) {
-    let response: ChangeNetworkResponse = {
-      id: message.id,
-      jsonrpc: message.jsonrpc,
-      result: 'ok'
-    }
-
-    this.controller.changeNetwork().then(() => {
-      end(null, response)
-    }).catch(end)
-  }
-
   getPrivateKeyHex (message: GetPrivateKeyHexRequest, next: Function, end: EndFunction) {
     this.controller.getPrivateKey().then((buffer: Buffer) => {
       let response: GetPrivateKeyHexResponse = {
@@ -185,8 +171,6 @@ export default class BackgroundHandler {
       this.rememberPage(message, next, end)
     } else if (TransactonResolved.match(message)) {
       this.resolveTransaction(message, next, end)
-    } else if (ChangeNetworkRequest.match(message)) {
-      this.changeNetwork(message, next, end)
     } else if (GetPrivateKeyHexRequest.match(message)) {
       this.getPrivateKeyHex(message, next, end)
     } else {

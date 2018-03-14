@@ -24,7 +24,7 @@ export interface WalletPageStateProps {
   path: string
   web3: Web3
   workerProxy: WorkerProxy
-  address: string
+  address: string|null
   walletBalance: BigNumber.BigNumber
   cardBalance: BigNumber.BigNumber
 }
@@ -36,7 +36,7 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
   }
 
   renderMainPage () {
-    const { walletBalance, cardBalance, address } = this.props
+    const { walletBalance } = this.props
 
     return (
       <Switch>
@@ -86,7 +86,7 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
           render={() => (
             walletBalance.gt(0)
               ? <LoadUpSpank />
-              : <SendReceiveWrapper address={address} balance={this.props.walletBalance} />
+              : <SendReceiveWrapper address={address!} balance={this.props.walletBalance} />
           )}
         />
         <Route
@@ -96,7 +96,7 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
         />
         <Route
           path="/wallet/(send|receive)"
-          render={() => <SendReceiveWrapper address={address} balance={this.props.walletBalance} />}
+          render={() => <SendReceiveWrapper address={address!} balance={this.props.walletBalance} />}
         />
         <Route
           path="/wallet"
@@ -130,8 +130,8 @@ function mapStateToProps (state: FrameState): WalletPageStateProps {
     path: state.shared.rememberPath,
     web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
-    address: state.wallet.main.address!,
-    walletBalance: new BigNumber.BigNumber(state.wallet.main.balance || 0),
+    address: state.shared.address,
+    walletBalance: new BigNumber.BigNumber(state.shared.balance),
     cardBalance: cardBalance(state.shared),
   }
 }

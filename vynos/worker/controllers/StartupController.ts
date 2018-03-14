@@ -9,23 +9,21 @@ import {EventEmitter} from 'events'
 import {BrandingResponse, default as HubController} from './HubController'
 import ServiceWorkerStream from '../../lib/ServiceWorkerStream'
 import {JSONRPC, RequestPayload} from '../../lib/Payload'
-import {EndFunction, default as StreamServer} from '../../lib/StreamServer'
+import {default as StreamServer, EndFunction} from '../../lib/StreamServer'
 import {InitializeRequest, InitializeResponse} from '../../lib/rpc/yns'
-import localForage = require('localforage')
 import BackgroundHandler from './BackgroundHandler'
-import ProviderOptions from './ProviderOptions'
 import AuthController from './AuthController'
 import FrameController from './FrameController'
 import BackgroundController from './BackgroundController'
 import SharedStateView from '../SharedStateView'
-import TransactionService from '../TransactionService'
 import NetworkController from './NetworkController'
 import HubHandler from './HubHandler'
 import MicropaymentsController from './MicropaymentsController'
 import MicropaymentsHandler from './MicropaymentsHandler'
 import {LifecycleAware} from './LifecycleAware'
 import {ReadyBroadcast, ReadyBroadcastType} from '../../lib/rpc/ReadyBroadcast'
-const networks = require('../../networks.json')
+import WalletController from './WalletController'
+import localForage = require('localforage')
 
 export default class StartupController implements LifecycleAware {
   stream: ServiceWorkerStream
@@ -40,7 +38,7 @@ export default class StartupController implements LifecycleAware {
 
   constructor (stream: ServiceWorkerStream) {
     this.stream = stream
-    this.server = new StreamServer("Worker", true)
+    this.server = new StreamServer('Worker', true)
 
     const middleware = redux.compose(redux.applyMiddleware(createLogger()), autoRehydrate())
     this.store = redux.createStore(reducers, INITIAL_STATE, middleware) as Store<WorkerState>
@@ -53,7 +51,8 @@ export default class StartupController implements LifecycleAware {
     this.stream.pipe(this.server).pipe(this.stream)
   }
 
-  public async stop (): Promise<void> {}
+  public async stop (): Promise<void> {
+  }
 
   public handler (message: RequestPayload, next: Function, end: EndFunction) {
     if (InitializeRequest.match(message)) {
@@ -120,20 +119,22 @@ export default class StartupController implements LifecycleAware {
     const backgroundHandler = new BackgroundHandler(backgroundController)
     const frameController = new FrameController(this.store)
     const sharedStateView = new SharedStateView(backgroundController)
-    const transactionService = new TransactionService(this.store)
-    const networkController = new NetworkController(backgroundController, transactionService)
-    const providerOpts = new ProviderOptions(backgroundController, transactionService, networks.Ropsten).approving()
+    const networkController = new NetworkController(backgroundController)
     const hubController = new HubController(this.store, sharedStateView)
     const hubHandler = new HubHandler(hubController)
-    const micropaymentsController = new MicropaymentsController(providerOpts, this.store, sharedStateView, transactionService)
+    const micropaymentsController = new MicropaymentsController(networkController.providerOpts, this.store, sharedStateView)
     const micropaymentsHandler = new MicropaymentsHandler(micropaymentsController)
-    const authController = new AuthController(this.store, sharedStateView, providerOpts, frameController)
+    const authController = new AuthController(this.store, sharedStateView, networkController.providerOpts, frameController)
+    const walletController = new WalletController(networkController, this.store, sharedStateView)
+
+    walletController.start()
 
     this.server.add(backgroundHandler.handler)
       .add(hubHandler.handler)
       .add(micropaymentsHandler.handler)
       .add(authController.handler)
       .add(frameController.handler)
+      .add(walletController.handler)
       .add(networkController.handler)
 
     const ready: ReadyBroadcast = {

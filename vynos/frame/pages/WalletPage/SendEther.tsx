@@ -7,16 +7,17 @@ import Button from '../../components/Button/index'
 import Currency, {CurrencyType} from '../../components/Currency/index'
 import Web3 = require('web3')
 import * as BigNumber from 'bignumber.js';
-
-const utils = require('web3-utils')
+import WorkerProxy from '../../WorkerProxy'
+import {PendingTransaction} from '../../../worker/WorkerState'
 
 const s = require('./SendEther.css')
-
+const utils = require('web3-utils')
 
 export interface MapStateToProps {
-  web3?: Web3
+  workerProxy: WorkerProxy
   walletAddress: string | null
   walletBalance: string | null
+  pendingTransaction: PendingTransaction | null
 }
 
 export interface MapDispatchToProps {
@@ -37,6 +38,7 @@ export interface SendEtherState {
   isAddressDirty: boolean
   isBalanceDirty: boolean
   disableSend: boolean
+  isConfirming: boolean
 }
 
 export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
@@ -49,8 +51,13 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       address: '',
       addressError: '',
       isAddressDirty: false,
-      disableSend: false
+      disableSend: false,
+      isConfirming: false
     }
+
+    this.onSendTransaction = this.onSendTransaction.bind(this)
+    this.confirm = this.confirm.bind(this)
+    this.cancel = this.cancel.bind(this)
   }
 
   validateBalance = () => {
@@ -134,60 +141,65 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
     })
   }
 
-  onSendTransaction = () => {
-    const {web3, walletAddress} = this.props
+  async onSendTransaction() {
     const {address, balance} = this.state
 
-    if (!web3 || !walletAddress) {
+    this.setState({
+      disableSend: true
+    })
+
+    try {
+      await this.props.workerProxy.send(address, this.props.workerProxy.web3.toWei(balance, 'ether'))
+    } catch (e) {
+      console.error(e)
       return
     }
 
-    const isAddressValid = this.validateAddress()
-    const isBalanceValid = this.validateBalance()
+    this.setState({
+      balance: '',
+      balanceError: '',
+      isBalanceDirty: false,
+      address: '',
+      addressError: '',
+      isAddressDirty: false,
+      disableSend: false
+    }, () => {
+      this.props.history.push('/wallet')
+    })
+  }
 
-    if (!isAddressValid || !isBalanceValid) {
+  confirm () {
+    const validAddress = this.validateAddress()
+    const validBalance = this.validateBalance()
+
+    if (!validAddress || !validBalance) {
       return
     }
 
-    this.setState({disableSend: true})
+    this.setState({
+      isConfirming: true
+    })
+  }
 
-    const tx = {
-      from: walletAddress,
-      to: address,
-      value: web3.toWei(balance, 'ether')
-    }
-
-    web3.eth.sendTransaction(tx, (err, transactionHash) => {
-      if (err) {
-        this.setState({
-          balanceError: err.message,
-          disableSend: false
-        })
-        return
-      }
-
-      this.setState({
-        balance: '',
-        balanceError: '',
-        isBalanceDirty: false,
-        address: '',
-        addressError: '',
-        isAddressDirty: false,
-        disableSend: false
-      }, () => {
-        this.props.history.push('/wallet')
-      })
-
-      // console.log('Transaction hash :', transactionHash);
+  cancel () {
+    this.setState({
+      isConfirming: false
     })
   }
 
   render () {
-    const {addressError, balanceError, disableSend} = this.state
-    const {web3, walletAddress} = this.props
-
     return (
       <div className={s.container}>
+        {this.props.pendingTransaction ? this.renderPendingContent() : this.renderNormalContent()}
+      </div>
+    )
+  }
+
+  renderNormalContent () {
+    const {addressError, balanceError, isConfirming } = this.state
+
+    return (
+      <div>
         <div className={s.header}>Send Ether</div>
         <div className={s.contentRow}>
           <div className={s.inputWrapper}>
@@ -196,8 +208,8 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
               className={s.input}
               placeholder="0x3930DdDf234..."
               onChange={this.onAddressChange}
-              onBlur={this.validateAddress}
               errorMessage={addressError}
+              disabled={isConfirming}
             />
           </div>
         </div>
@@ -209,27 +221,88 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
               type="number"
               placeholder="0.00"
               onChange={this.onBalanceChange}
-              onBlur={this.validateBalance}
               errorMessage={balanceError}
+              disabled={isConfirming}
             />
           </div>
           <div className={s.inputResult}>
             <div className={s.inputEqual}>=</div>
-            <div className={s.inputTotal}><Currency amount={new BigNumber.BigNumber(this.state.balance || 0)} inputType={CurrencyType.ETH} showUnit={true} /></div>
+            <div className={s.inputTotal}>
+              <Currency amount={new BigNumber.BigNumber(this.state.balance || 0)} inputType={CurrencyType.ETH} showUnit={true} />
+            </div>
+          </div>
+        </div>
+        {isConfirming ? this.renderConfirmingFooter() : this.renderNormalFooter()}
+      </div>
+    )
+  }
+
+  renderPendingContent () {
+    const { hash } = this.props.pendingTransaction!
+
+    return (
+      <div>
+        <div className={s.header}>Withdrawing From Wallet</div>
+        <div className={s.contentRow}>
+          <div className={s.spinnerWrapper}>
+            <div className={s.spinner} />
+            Pending
+          </div>
+        </div>
+        <div className={s.contentRow}>
+          <div className={s.small}>
+            Transaction ID <br /> {hash}
           </div>
         </div>
         <div className={s.footer}>
           <Button
-            type="secondary"
-            className={s.adjustGasButton}
-            content="Adjust Gas Limit/Price"
+            type="tertiary"
+            onClick={() => this.props.workerProxy.toggleFrame(false)}
+            content="Close Window"
           />
           <Button
-            content="Next"
-            onClick={this.onSendTransaction}
-            disabled={!!addressError || !!balanceError || disableSend || !web3 || !walletAddress}
+            content="View Transaction"
+            type="dark"
+            to={`https://etherscan.io/tx/${hash}`}
           />
         </div>
+      </div>
+    )
+  }
+
+  renderNormalFooter () {
+    const {addressError, balanceError, disableSend } = this.state
+    const { walletAddress } = this.props
+
+    return (
+      <div className={s.footer}>
+        <Button
+          type="secondary"
+          className={s.adjustGasButton}
+          content="Adjust Gas Limit/Price"
+        />
+        <Button
+          content="Next"
+          onClick={this.confirm}
+          disabled={!!addressError || !!balanceError || disableSend || !walletAddress}
+        />
+      </div>
+    )
+  }
+
+  renderConfirmingFooter () {
+    return (
+      <div className={s.footer}>
+        <Button
+          type="tertiary"
+          content="Cancel"
+          onClick={this.cancel}
+        />
+        <Button
+          content="Confirm"
+          type="dark"
+          onClick={this.onSendTransaction}
+        />
       </div>
     )
   }
@@ -237,9 +310,10 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
 
 function mapStateToProps (state: FrameState): MapStateToProps {
   return {
-    web3: state.temp.workerProxy.web3,
-    walletAddress: state.wallet.main.address,
-    walletBalance: state.wallet.main.balance
+    workerProxy: state.temp.workerProxy,
+    walletAddress: state.shared.address,
+    walletBalance: state.shared.balance,
+    pendingTransaction: state.shared.pendingTransaction
   }
 }
 

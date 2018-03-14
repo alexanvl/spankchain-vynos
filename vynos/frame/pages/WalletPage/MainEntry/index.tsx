@@ -1,9 +1,5 @@
-import * as React from "react"
-import Web3 = require('web3')
-import {connect} from "react-redux"
-import {Dispatch} from 'redux'
-import {MouseEvent} from "react"
-import * as classnames from 'classnames'
+import * as React from 'react'
+import {connect} from 'react-redux'
 import SendReceivePage from '../SendReceivePage'
 import SpankCardPage from '../CardPage'
 import {FrameState} from '../../../redux/FrameState'
@@ -11,11 +7,9 @@ import {cardBalance} from '../../../redux/selectors/cardBalance'
 import WorkerProxy from '../../../WorkerProxy'
 import * as BigNumber from 'bignumber.js'
 
-const s = require('./index.css')
-
 export interface MapStateToProps {
   address: string
-  walletBalance: BigNumber.BigNumber
+  walletBalance: string
   cardBalance: BigNumber.BigNumber
   workerProxy: WorkerProxy
 }
@@ -37,7 +31,7 @@ export class MainEntry extends React.Component<Props, State> {
   }
 
   render() {
-    const { walletBalance, cardBalance, address } = this.props
+    const { cardBalance, address } = this.props
     const { isInitializingBalances } = this.state
 
     if (!address || isInitializingBalances) {
@@ -56,9 +50,8 @@ export class MainEntry extends React.Component<Props, State> {
 
 function mapStateToProps(state: FrameState): MapStateToProps {
   return {
-    address: state.wallet.main.address!,
-    walletBalance: new BigNumber.BigNumber(state.wallet.main.balance || 0),
-    // cardBalance: new BigNumber.BigNumber(0),
+    address: state.shared.address!,
+    walletBalance: state.shared.balance!,
     cardBalance: cardBalance(state.shared),
     workerProxy: state.temp.workerProxy,
   }
