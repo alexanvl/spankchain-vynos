@@ -1,5 +1,4 @@
 import JsonRpcServer, {ErrResCallback} from '../messaging/JsonRpcServer'
-import {Postable} from '../messaging/Postable'
 import Engine = require('web3-provider-engine')
 import Web3 = require('web3')
 
@@ -21,8 +20,8 @@ export default class WorkerServer extends JsonRpcServer {
 
   web3: Web3
 
-  constructor (backgroundController: BackgroundController, source: Listenable, target: Postable) {
-    super('WorkerServer', ['http://localhost:9090'], source, target)
+  constructor (backgroundController: BackgroundController, source: Listenable, target: WindowClient) {
+    super('WorkerServer', [target.url.replace('/frame.html', '')], source, target)
     this.providerOpts = new ProviderOptions(backgroundController, networks[DEFAULT_NETWORK]).approving()
     this.provider = ZeroClientProvider(this.providerOpts)
     this.web3 = new Web3(this.provider)
