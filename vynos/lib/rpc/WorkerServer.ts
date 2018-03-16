@@ -1,4 +1,5 @@
 import JsonRpcServer, {ErrResCallback} from '../messaging/JsonRpcServer'
+import {Postable} from '../messaging/Postable'
 import Engine = require('web3-provider-engine')
 import Web3 = require('web3')
 
