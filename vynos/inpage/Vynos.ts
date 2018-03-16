@@ -1,14 +1,14 @@
 import VynosClient from './VynosClient'
 import * as EventEmitter from 'events'
 import Frame from './Frame'
-import FrameStream from '../lib/FrameStream'
 import {WalletOptions} from '../WalletOptions'
 import {SharedState} from '../worker/WorkerState'
 import * as BigNumber from 'bignumber.js';
 import Web3 = require('web3')
 import VynosBuyResponse from '../lib/VynosBuyResponse'
+import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 
-export default class Namespace extends EventEmitter {
+export default class Vynos extends EventEmitter {
   private options: WalletOptions
 
   private client: VynosClient
@@ -33,8 +33,8 @@ export default class Namespace extends EventEmitter {
 
   public async buy (amount: BigNumber.BigNumber, meta: any): Promise<VynosBuyResponse|null> {
     this.requireReady()
-    const { result: { didInit, isLocked } } = await this.client.getSharedState()
-    
+    const { didInit, isLocked } = await this.client.getSharedState()
+
     if (!didInit || isLocked) {
       this.show()
       return null
@@ -84,12 +84,10 @@ export default class Namespace extends EventEmitter {
     this.frame = new Frame(this.options.scriptElement.src)
     this.frame.attach(this.options.window.document)
 
-    const stream = new FrameStream('vynos').toFrame(this.frame.element)
-    this.client = new VynosClient(stream)
-    this.provider = this.client.provider
+    this.client = new VynosClient(this.frame.element.contentWindow, 'http://localhost:9090')
     await this.client.initialize(this.options.hubUrl, this.options.authRealm)
 
-    this.previousState = (await this.client.getSharedState()).result
+    this.previousState = await this.client.getSharedState()
     this.client.onSharedStateUpdate(this.handleSharedStateUpdate)
     this.emit('update', this.previousState)
 

@@ -1,11 +1,4 @@
-import {RequestPayload} from '../../lib/Payload'
-import {EndFunction} from '../../lib/StreamServer'
-import {
-  AuthenticateRequest,
-  AuthenticateResponse,
-  RespondToAuthorizationRequestRequest,
-  SetAuthorizationRequestResponse
-} from '../../lib/rpc/yns'
+import {AuthenticateRequest, RespondToAuthorizationRequestRequest} from '../../lib/rpc/yns'
 import {WorkerState} from '../WorkerState'
 import {Store} from 'redux'
 import * as actions from '../actions'
@@ -13,6 +6,8 @@ import {ProviderOpts} from 'web3-provider-engine'
 import AuthStateMachine from '../../lib/AuthStateMachine'
 import FrameController from './FrameController'
 import SharedStateView from '../SharedStateView'
+import AbstractController from './AbstractController'
+import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 
 const util = require('ethereumjs-util')
 
@@ -20,7 +15,7 @@ export interface NonceResponse {
   nonce: string
 }
 
-export default class AuthController {
+export default class AuthController extends AbstractController {
   private store: Store<WorkerState>
 
   private sharedStateView: SharedStateView
@@ -30,78 +25,54 @@ export default class AuthController {
   private frame: FrameController
 
   constructor (store: Store<WorkerState>, sharedStateView: SharedStateView, providerOpts: ProviderOpts, frame: FrameController) {
+    super()
     this.store = store
     this.sharedStateView = sharedStateView
     this.providerOpts = providerOpts
     this.frame = frame
-    this.handler = this.handler.bind(this)
   }
 
-  respondToAuthorizationRequest (message: RespondToAuthorizationRequestRequest, next: Function, end: EndFunction) {
-    this.store.dispatch(actions.respondToAuthorizationRequest(message.params[0]))
+  respondToAuthorizationRequest (res: boolean) {
+    this.store.dispatch(actions.respondToAuthorizationRequest(res))
+  }
 
-    const response: SetAuthorizationRequestResponse = {
-      id: message.id,
-      jsonrpc: message.jsonrpc,
-      result: null
+  async authenticate (origin: string) {
+    const isLocked = await this.sharedStateView.isLocked()
+    const hubUrl = await this.sharedStateView.getHubUrl()
+    const authRealm = await this.sharedStateView.getAuthRealm()
+
+    if (isLocked) {
+      this.frame.show()
+      await this.sharedStateView.awaitUnlock()
     }
 
-    end(null, response)
-  }
+    const hasAuthorizedHub = await this.sharedStateView.hasAuthorizedHub(hubUrl)
 
-  async authenticate (message: AuthenticateRequest, next: Function, end: EndFunction) {
-    try {
-      const isLocked = await this.sharedStateView.isLocked()
-      const hubUrl = await this.sharedStateView.getHubUrl()
-      const authRealm = await this.sharedStateView.getAuthRealm()
-      const origin = message.params[0]
+    if (!hasAuthorizedHub) {
+      this.frame.show()
 
-      if (isLocked) {
-        this.frame.show()
-        await this.sharedStateView.awaitUnlock()
-      }
+      this.store.dispatch(actions.setAuthorizationRequest({
+        hubUrl,
+        authRealm
+      }))
 
-      const hasAuthorizedHub = await this.sharedStateView.hasAuthorizedHub(hubUrl)
+      const machine = new AuthStateMachine(this.store, authRealm)
+      await machine.awaitAuthorization()
+    }
 
-      if (!hasAuthorizedHub) {
-        this.frame.show()
+    const token = await this.doAuthenticate(origin)
 
-        this.store.dispatch(actions.setAuthorizationRequest({
-          hubUrl,
-          authRealm
-        }))
+    this.store.dispatch(actions.setCurrentAuthToken(token))
 
-        const machine = new AuthStateMachine(this.store, authRealm)
-        await machine.awaitAuthorization()
-      }
-
-      const token = await this.doAuthenticate(origin)
-
-      this.store.dispatch(actions.setCurrentAuthToken(token))
-
-      const response: AuthenticateResponse = {
-        id: message.id,
-        jsonrpc: message.jsonrpc,
-        result: {
-          success: true,
-          token
-        }
-      }
-
-      end(null, response)
-    } catch (e) {
-      end(e)
+    return {
+      success: true,
+      token
     }
   }
 
-  handler (message: RequestPayload, next: Function, end: EndFunction) {
-    if (RespondToAuthorizationRequestRequest.match(message)) {
-      this.respondToAuthorizationRequest(message, next, end)
-    } else if (AuthenticateRequest.match(message)) {
-      this.authenticate(message, next, end)
-    } else {
-      next()
-    }
+  registerHandlers (server: JsonRpcServer) {
+    this.registerHandler(server, RespondToAuthorizationRequestRequest.method, this.respondToAuthorizationRequest)
+    this.registerHandler(server, AuthenticateRequest.method, this.authenticate)
   }
 
   private async doAuthenticate (origin: string): Promise<string> {
