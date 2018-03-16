@@ -2,18 +2,23 @@ import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import Machinomy from 'machinomy'
 import SharedStateView from '../SharedStateView'
-import {ProviderOpts} from 'web3-provider-engine'
 import {WorkerState} from '../WorkerState'
 import {Store} from 'redux'
 import * as actions from '../actions'
 import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
-import ZeroClientProvider = require('web3-provider-engine/zero')
+import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
+import {
+  BuyRequest,
+  CloseChannelsForCurrentHubRequest,
+  ListChannelsRequest,
+  OpenChannelRequest,
+  PopulateChannelsRequest
+} from '../../lib/rpc/yns'
+import AbstractController from './AbstractController'
 import Web3 = require('web3')
 
 
-export default class MicropaymentsController {
-  providerOpts: ProviderOpts
-
+export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
 
   sharedStateView: SharedStateView
@@ -22,8 +27,9 @@ export default class MicropaymentsController {
 
   web3: Web3
 
-  constructor (providerOpts: ProviderOpts, store: Store<WorkerState>, sharedStateView: SharedStateView) {
-    this.providerOpts = providerOpts
+  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
+    super()
+    this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView
   }
@@ -59,7 +65,7 @@ export default class MicropaymentsController {
     await this.populateChannels()
   }
 
-  async buy (price: number, meta: any): Promise<VynosBuyResponse> {
+  public async buy (price: number, meta: any): Promise<VynosBuyResponse> {
     const receiver = (await this.sharedStateView.getSharedState()).branding.address
     const hubUrl = await this.sharedStateView.getHubUrl()
     const machinomy = await this.getMachinomy()
@@ -79,7 +85,15 @@ export default class MicropaymentsController {
     }
   }
 
-  async listChannels (): Promise<PaymentChannel[]> {
+  public registerHandlers (server: JsonRpcServer) {
+    this.registerHandler(server, PopulateChannelsRequest.method, this.populateChannels)
+    this.registerHandler(server, OpenChannelRequest.method, this.openChannel)
+    this.registerHandler(server, CloseChannelsForCurrentHubRequest.method, this.closeChannelsForCurrentHub)
+    this.registerHandler(server, ListChannelsRequest.method, this.listChannels)
+    this.registerHandler(server, BuyRequest.method, this.buy)
+  }
+
+  public async listChannels (): Promise<PaymentChannel[]> {
     const machinomy = await this.getMachinomy()
     return machinomy.channels()
   }
@@ -90,8 +104,7 @@ export default class MicropaymentsController {
     }
 
     const accounts = await this.sharedStateView.getAccounts()
-    const web3 = new Web3(ZeroClientProvider(this.providerOpts))
-    this.machinomy = new Machinomy(accounts[0], web3, {
+    this.machinomy = new Machinomy(accounts[0], this.web3, {
       databaseUrl: 'nedb://vynos',
       settlementPeriod: Number.MAX_SAFE_INTEGER
     })

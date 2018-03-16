@@ -1,42 +1,63 @@
 import {register, ServiceWorkerClient} from './lib/serviceWorkerClient'
-import FrameStream from './lib/FrameStream'
-import PostStream from './lib/PostStream'
 import WorkerProxy from './frame/WorkerProxy'
+import FrameServer from './lib/rpc/FrameServer'
+import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
+import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
+import {WorkerStatus} from './lib/rpc/WorkerStatus'
+import {WorkerReadyBroadcastEvent} from './lib/rpc/WorkerReadyBroadcast'
 import renderApplication from './frame/renderApplication'
-import {Duplex} from 'readable-stream'
-import {ReadyBroadcast, ReadyBroadcastType} from './lib/rpc/ReadyBroadcast'
 
 class Client implements ServiceWorkerClient {
-  workerStream: PostStream
-  windowStream: Duplex
   workerProxy: WorkerProxy
 
-  constructor () {
-    this.workerProxy = new WorkerProxy()
-    this.windowStream = new FrameStream("vynos").toParent()
-  }
+  frameServer: FrameServer
 
   load (serviceWorker: ServiceWorker) {
-    this.workerStream = new PostStream({
-      sourceName: "frame",
-      targetName: "worker",
-      source: navigator.serviceWorker,
-      target: serviceWorker
-    })
+    this.pollWorker = this.pollWorker.bind(this)
+    this.workerProxy = new WorkerProxy(serviceWorker)
+    this.frameServer = new FrameServer('*', this.workerProxy)
 
-    this.windowStream.pipe(this.workerStream).pipe(this.windowStream)
+    this.passEvent(ReadyBroadcastEvent)
+    this.passEvent(SharedStateBroadcastEvent)
 
-    this.workerStream.pipe(this.workerProxy.provider).pipe(this.workerStream)
+    this.pollWorker()
 
-    this.workerProxy.provider.listen<ReadyBroadcast>(ReadyBroadcastType, () => renderApplication(document, this.workerProxy))
+    this.workerProxy.once(ReadyBroadcastEvent, () => renderApplication(document, this.workerProxy))
   }
 
   unload () {
-    this.windowStream.unpipe(this.workerStream)
-    this.workerStream.unpipe(this.windowStream)
-    this.workerStream.unpipe(this.workerProxy.provider)
-    this.workerProxy.provider.unpipe(this.workerStream)
-    this.workerStream.end()
+    this.frameServer.stop().catch(console.error.bind(console))
+  }
+
+  private passEvent (name: string) {
+    this.workerProxy.addListener(name, (...args: any[]) => this.frameServer.broadcast(name, ...args))
+  }
+
+  private pollWorker () {
+    const poll = async () => {
+      const maxAttempts = 10
+      let attempt = 0
+      let status = WorkerStatus.INITIALIZING
+
+      while (status === WorkerStatus.INITIALIZING) {
+        if (attempt === maxAttempts) {
+          throw new Error('Timed out.')
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+
+        try {
+          status = await this.workerProxy.status()
+        } catch (e) {
+        }
+
+        attempt++
+      }
+
+      this.frameServer.broadcast(WorkerReadyBroadcastEvent)
+    }
+
+    poll().catch(console.error.bind(console))
   }
 }
 

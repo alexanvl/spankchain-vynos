@@ -4,15 +4,15 @@ import {Store} from 'redux'
 import {LifecycleAware} from './LifecycleAware'
 import {setBalance, setPendingTransaction} from '../actions'
 import * as BigNumber from 'bignumber.js'
-import {RequestPayload} from '../../lib/Payload'
-import {EndFunction} from '../../lib/StreamServer'
-import {SendRequest, SendResponse} from '../../lib/rpc/yns'
-import NetworkController from './NetworkController'
+import {SendRequest} from '../../lib/rpc/yns'
+import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
+import AbstractController from './AbstractController'
+import Web3 = require('web3')
 
 const utils = require('web3-utils')
 
-export default class WalletController implements LifecycleAware {
-  networkController: NetworkController
+export default class WalletController extends AbstractController implements LifecycleAware {
+  web3: Web3
 
   store: Store<WorkerState>
 
@@ -20,12 +20,12 @@ export default class WalletController implements LifecycleAware {
 
   isWatching: boolean = false
 
-  constructor (networkController: NetworkController, store: Store<WorkerState>, sharedStateView: SharedStateView) {
-    this.networkController = networkController
+  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
+    super()
+    this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView
 
-    this.handler = this.handler.bind(this)
     this.watchBalance = this.watchBalance.bind(this)
   }
 
@@ -53,7 +53,7 @@ export default class WalletController implements LifecycleAware {
       throw new Error(addressError)
     }
 
-    const hash = await new Promise<string>((resolve, reject) => this.networkController.web3.eth.sendTransaction(tx, (err: any, txHash: string) => {
+    const hash = await new Promise<string>((resolve, reject) => this.web3.eth.sendTransaction(tx, (err: any, txHash: string) => {
       if (err) {
         return reject(err)
       }
@@ -68,7 +68,7 @@ export default class WalletController implements LifecycleAware {
 
     const originalBalance = (await this.sharedStateView.getSharedState()).balance
 
-    const poll = async () => new Promise<null | number>((resolve, reject) => this.networkController.web3.eth.getTransaction(hash, (err: any, res: any) => {
+    const poll = async () => new Promise<null | number>((resolve, reject) => this.web3.eth.getTransaction(hash, (err: any, res: any) => {
       if (err) {
         reject(err)
       }
@@ -99,26 +99,8 @@ export default class WalletController implements LifecycleAware {
     throw new Error('Transaction timed out.')
   }
 
-  public doSend (message: SendRequest, next: Function, end: EndFunction) {
-    const [to, value] = message.params
-
-    this.send(to, value).then(() => {
-      const res: SendResponse = {
-        id: message.id,
-        jsonrpc: message.jsonrpc,
-        result: null
-      }
-
-      end(null, res)
-    }).catch(end)
-  }
-
-  public handler (message: RequestPayload, next: Function, end: EndFunction) {
-    if (SendRequest.match(message)) {
-      this.doSend(message, next, end)
-    } else {
-      next()
-    }
+  public registerHandlers (server: JsonRpcServer) {
+    this.registerHandler(server, SendRequest.method, this.send)
   }
 
   private async awaitBalanceChange (originalBalance: string) {
@@ -157,7 +139,7 @@ export default class WalletController implements LifecycleAware {
       return setTimeout(this.watchBalance, 1000)
     }
 
-    this.networkController.web3.eth.getBalance(address, (err: any, balance: BigNumber.BigNumber) => {
+    this.web3.eth.getBalance(address, (err: any, balance: BigNumber.BigNumber) => {
       if (err) {
         console.error('Failed to get balance:', err)
         setTimeout(this.watchBalance, 5000)

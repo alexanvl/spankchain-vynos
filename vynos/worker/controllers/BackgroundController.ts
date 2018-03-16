@@ -3,18 +3,32 @@ import {buildSharedState, SharedState, WorkerState} from '../WorkerState'
 import * as actions from '../actions'
 import Keyring from '../../frame/lib/Keyring'
 import {EventEmitter} from 'events'
+import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
+import AbstractController from './AbstractController'
+import {
+  DidStoreMnemonicRequest,
+  GenKeyringRequest,
+  GetSharedStateRequest,
+  InitAccountRequest,
+  LockWalletRequest,
+  RememberPageRequest,
+  RestoreWalletRequest,
+  TransactionResolved,
+  UnlockWalletRequest
+} from '../../lib/rpc/yns'
 import bip39 =require('bip39')
 import hdkey = require('ethereumjs-wallet/hdkey')
 import Wallet = require('ethereumjs-wallet')
 
 const STATE_UPDATED_EVENT = 'stateUpdated'
 
-export default class BackgroundController {
+export default class BackgroundController extends AbstractController {
   store: Store<WorkerState>
 
   events: EventEmitter
 
   constructor (store: Store<WorkerState>) {
+    super()
     this.store = store
     this.events = new EventEmitter()
   }
@@ -134,5 +148,17 @@ export default class BackgroundController {
         fn(sharedState)
       })
     })
+  }
+
+  registerHandlers (server: JsonRpcServer) {
+    this.registerHandler(server, GetSharedStateRequest.method, this.getSharedState)
+    this.registerHandler(server, GenKeyringRequest.method, this.genKeyring)
+    this.registerHandler(server, RestoreWalletRequest.method, this.restoreWallet)
+    this.registerHandler(server, DidStoreMnemonicRequest.method, this.didStoreMnemonic)
+    this.registerHandler(server, UnlockWalletRequest.method, this.unlockWallet)
+    this.registerHandler(server, LockWalletRequest.method, this.lockWallet)
+    this.registerHandler(server, InitAccountRequest.method, this.awaitUnlock)
+    this.registerHandler(server, RememberPageRequest.method, this.rememberPage)
+    this.registerHandler(server, TransactionResolved.method, this.getSharedState)
   }
 }

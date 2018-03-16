@@ -1,0 +1,11 @@
+{
+  "name": "xhr",
+  "version": "1.0.0",
+  "description": "Stub XHR module.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}
