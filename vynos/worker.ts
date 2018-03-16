@@ -54,6 +54,7 @@ async function initialize (self: ServiceWorkerGlobalScope, onMessageWrapper: OnM
     })
   })
 
+  backgroundController.registerHandlers(server)
   server.addHandler(StatusRequest.method, (cb: ErrResCallback) => cb(null, status))
   server.addHandler(RegisterHubRequest.method, async (cb: ErrResCallback, hubUrl: string, authRealm: string) => {
     try {
@@ -82,7 +83,6 @@ async function initializeControllers (server: WorkerServer, store: Store<WorkerS
 
   walletController.start()
 
-  backgroundController.registerHandlers(server)
   hubController.registerHandlers(server)
   micropaymentsController.registerHandlers(server)
   authController.registerHandlers(server)

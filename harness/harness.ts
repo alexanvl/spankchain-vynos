@@ -41,7 +41,8 @@ window.addEventListener("load", function () {
         streamId: 'abc-123',
         streamName: 'SpankCam',
         performerId: 'abc-234',
-        performerName: 'Butter Bubble'
+        performerName: 'Butter Bubble',
+        performerAddress: '0xdeadbeef'
       })
     }
   }
