@@ -55,6 +55,7 @@
     "uglifyjs-webpack-plugin": "^1.0.0-beta.3",
     "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings",
     "webpack": "^2.6.1",
+    "webpack-cli": "^2.0.12",
     "webpack-dev-server": "^2.4.5",
     "webpack-package-loaders-plugin": "^3.0.0"
   },
