@@ -32,7 +32,7 @@ export class OnboardingContainer extends React.Component<Props> {
     for (let i = 0; i < totalSteps; i++) {
       if (i > 0) {
         steps.push(
-          <div
+          <div key={'line' + '-' + i}
             className={classnames(s.line, {
               [s.activeLine]: i <= currentStep,
             })}
@@ -41,7 +41,7 @@ export class OnboardingContainer extends React.Component<Props> {
       }
 
       steps.push(
-        <div
+        <div key={'dot' + '-' + i}
           className={classnames(s.dot, {
             [s.activeDot]: i <= currentStep,
           })}
@@ -50,8 +50,9 @@ export class OnboardingContainer extends React.Component<Props> {
     }
 
     return (
-      <div className={s.progressDots}>
-        {steps}
+      <div
+        className={s.progressDots}>
+          {steps}
       </div>
     )
   }
