@@ -32,7 +32,10 @@ function webpackConfig (entry, devSupplement) {
         }
       }),
       new webpack.IgnorePlugin(/^(pg|mongodb)$/), // ignore pg and mongo since we're using nedb
-      new PackageLoadersPlugin()
+      new PackageLoadersPlugin(),
+      new CopyWebpackPlugin([
+        path.resolve(__dirname,'vynos', 'frame.html')
+      ]),
     ],
     resolve: {
       extensions: [".ts", ".tsx", ".js", ".json"]
@@ -140,9 +143,6 @@ function webpackConfig (entry, devSupplement) {
         }
       }
     }))
-    config.plugins.push(new CopyWebpackPlugin([
-      path.resolve(__dirname,'vynos', 'frame.html')
-    ]))
   }
 
   return config
