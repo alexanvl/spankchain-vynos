@@ -15,6 +15,7 @@ export interface OwnProps {
   children?: any
   totalSteps: number
   currentStep: number
+  headerText?: string
 }
 
 export type Props = MapStateToProps & OwnProps
@@ -56,10 +57,17 @@ export class OnboardingContainer extends React.Component<Props> {
     )
   }
 
+  renderHeaderText() {
+    return this.props.headerText
+      ? <div className={s.headerText}>{this.props.headerText}</div>
+      : null
+  }
+
   render() {
     return (
       <div className={s.container}>
         <div className={s.header}>
+          {this.renderHeaderText()}
           {this.renderProgressDots()}
           <WalletMiniCard
             onClick={this.closeView}

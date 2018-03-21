@@ -8,24 +8,34 @@ import Deposit from './Deposit'
 export interface InitPageProps {
   mnemonic: string|null
   showInitialDeposit: boolean
+  isPerformer?: boolean
 }
 
 const InitPage: React.SFC<InitPageProps> = (props) => {
-  if (props.showInitialDeposit) {
-    return <Deposit />
-  }
+  if (props.isPerformer) {
+    if (props.mnemonic) {
+      return <Mnemonic />
+    }
 
-  if (props.mnemonic) {
-    return <Mnemonic />
-  }
+    return <Password />
+  } else {
+    if (props.showInitialDeposit) {
+      return <Deposit />
+    }
 
-  return <Password />
+    if (props.mnemonic) {
+      return <Mnemonic />
+    }
+
+    return <Password />
+  }
 }
 
 function mapStateToProps(state: FrameState): InitPageProps {
   return {
     mnemonic: state.temp.initPage.mnemonic,
     showInitialDeposit: state.temp.initPage.showInitialDeposit,
+    isPerformer: state.shared.isPerformer,
   }
 }
 

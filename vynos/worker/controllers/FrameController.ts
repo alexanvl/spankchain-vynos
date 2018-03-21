@@ -21,8 +21,8 @@ export default class FrameController extends AbstractController {
     this.store.dispatch(actions.toggleFrame({isFrameDisplayed: false}))
   }
 
-  private toggleFrame (isFrameDisplayed: boolean, forceRedirect: string) {
-    this.store.dispatch(actions.toggleFrame({isFrameDisplayed, forceRedirect}))
+  private toggleFrame (isFrameDisplayed: boolean, forceRedirect: string, isPerformer?: boolean) {
+    this.store.dispatch(actions.toggleFrame({isFrameDisplayed, forceRedirect, isPerformer}))
   }
 
   public registerHandlers (server: JsonRpcServer) {

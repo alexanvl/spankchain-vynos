@@ -164,6 +164,7 @@ export function setHubBrandingHandler(state: WorkerState, branding: SetBrandingP
 export interface ToggleFrameParam {
   isFrameDisplayed: boolean
   forceRedirect?: string
+  isPerformer?: boolean
 }
 
 export const toggleFrame: ActionCreator<ToggleFrameParam> = actionCreator<ToggleFrameParam>('runtime/toggleFrame')
@@ -174,6 +175,7 @@ export function toggleFrameHandler(state: WorkerState, payload: ToggleFrameParam
       ...state.runtime,
       isFrameDisplayed: payload.isFrameDisplayed,
       forceRedirect: payload.forceRedirect,
+      isPerformer: payload.isPerformer,
     }
   }
 }

@@ -11,6 +11,7 @@ export interface RuntimeState {
   currentAuthToken: string
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
+  isPerformer?: boolean
   forceRedirect?: string
   branding: BrandingState
   channels: ChannelsState
@@ -51,6 +52,7 @@ export interface SharedState {
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
   forceRedirect?: string
+  isPerformer?: boolean
   branding: BrandingState
   channels: ChannelsState
   history: HistoryItem[]
@@ -96,6 +98,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   currentAuthRealm: '',
   currentAuthToken: '',
   isFrameDisplayed: false,
+  isPerformer: false,
   branding: {
     address: ''
   },
@@ -120,6 +123,7 @@ export const INITIAL_STATE: WorkerState = {
     currentAuthToken: '',
     authorizationRequest: null,
     isFrameDisplayed: false,
+    isPerformer: false,
     forceRedirect: undefined,
     branding: {
       address: ''
@@ -145,6 +149,7 @@ export function buildSharedState(state: WorkerState): SharedState {
     authorizedHubs: state.persistent.authorizedHubs,
     isFrameDisplayed: state.runtime.isFrameDisplayed,
     forceRedirect: state.runtime.forceRedirect,
+    isPerformer: state.runtime.isPerformer,
     branding: state.runtime.branding,
     channels: state.runtime.channels,
     history: state.runtime.history,

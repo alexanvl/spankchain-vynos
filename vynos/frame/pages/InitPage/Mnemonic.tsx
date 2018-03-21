@@ -15,10 +15,12 @@ const style = require('../../styles/ynos.css')
 export interface MnemonicStateProps {
   workerProxy: WorkerProxy
   mnemonic: string | null
+  isPerformer?: boolean
 }
 
 export interface MnemonicDispatchProps {
   saveMnemonic: (workerProxy: WorkerProxy) => void
+  didAcknowledgeDeposit: () => void
 }
 
 export interface MnemonicStates {
@@ -41,14 +43,28 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
   async handleSubmit () {
     if (this.state.acknowledged) {
       this.props.saveMnemonic(this.props.workerProxy)
+
+      if (this.props.isPerformer) {
+        this.props.didAcknowledgeDeposit()
+        this.setState({
+          isAuthenticating: true
+        })
+
+        await this.props.workerProxy.authenticate()
+      }
     }
   }
 
   render () {
+    const { isPerformer } = this.props
     const mnemonic = this.props.mnemonic || ''
 
     return (
-      <OnboardingContainer totalSteps={4} currentStep={1}>
+      <OnboardingContainer
+        headerText={isPerformer ? 'Become a Model' : ''}
+        totalSteps={isPerformer ? 3 : 4}
+        currentStep={1}
+      >
         <div className={style.content}>
           <div className={style.funnelTitle}>Backup Codes</div>
           <div className={style.seedPhraseText}>
@@ -91,7 +107,8 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
 function mapStateToProps (state: FrameState): MnemonicStateProps {
   return {
     workerProxy: state.temp.workerProxy,
-    mnemonic: state.temp.initPage.mnemonic
+    mnemonic: state.temp.initPage.mnemonic,
+    isPerformer: state.shared.isPerformer,
   }
 }
 
@@ -100,6 +117,9 @@ function mapDispatchToProps (dispatch: Dispatch<FrameState>): MnemonicDispatchPr
     saveMnemonic: workerProxy => {
       workerProxy.didStoreMnemonic()
       dispatch(actions.didStoreMnemonic(''))
+    },
+    didAcknowledgeDeposit: () => {
+      dispatch(actions.didAcknowledgeDeposit(''))
     }
   }
 }

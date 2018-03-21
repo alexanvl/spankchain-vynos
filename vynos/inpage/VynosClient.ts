@@ -62,7 +62,7 @@ export default class VynosClient extends JsonRpcClient {
     return this.call(AuthenticateRequest.method, window.location.hostname)
   }
 
-  toggleFrame (state: boolean, forceRedirect?: string): Promise<void> {
-    return this.call(ToggleFrameRequest.method, state, forceRedirect)
+  toggleFrame (state: boolean, forceRedirect?: string, isPerformer?: boolean): Promise<void> {
+    return this.call(ToggleFrameRequest.method, state, forceRedirect, isPerformer)
   }
 }
