@@ -141,6 +141,7 @@ export default class Vynos extends EventEmitter {
     }
 
     if (this.previousState.currentAuthToken !== newState.currentAuthToken) {
+      this.client.toggleFrame(false)
       this.emit('didAuthenticate', newState.currentAuthToken)
     }
   }
