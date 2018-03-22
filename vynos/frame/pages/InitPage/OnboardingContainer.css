@@ -13,6 +13,13 @@
   flex: 0 0 auto;
 }
 
+.headerText {
+  color: #fff;
+  display: flex;
+  align-items: center;
+  padding-right: 1rem;
+}
+
 .progressDots {
   display: flex;
   flex-flow: row nowrap;
