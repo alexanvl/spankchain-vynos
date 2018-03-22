@@ -4,6 +4,8 @@ const path = require("path"),
   PackageLoadersPlugin = require('webpack-package-loaders-plugin'),
   UglifyJSPlugin = require('uglifyjs-webpack-plugin')
   CopyWebpackPlugin = require('copy-webpack-plugin')
+  
+let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
 
 require('dotenv').config({ path: '.env' });
@@ -29,7 +31,7 @@ function webpackConfig (entry, devSupplement) {
         "process.env": {
           "NODE_ENV": JSON.stringify(process.env.NODE_ENV || 'development'), // This has effect on the react lib size,
           "DEBUG": process.env.NODE_ENV !== 'production',
-          "FRAME_URL": JSON.stringify(process.env.FRAME_URL)
+          "FRAME_URL": JSON.stringify(FRAME_URL)
         }
       }),
       new webpack.IgnorePlugin(/^(pg|mongodb)$/), // ignore pg and mongo since we're using nedb
