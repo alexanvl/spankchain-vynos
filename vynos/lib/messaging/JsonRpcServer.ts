@@ -53,7 +53,7 @@ export default class JsonRpcServer extends EventEmitter {
   public broadcast(type: string, ...data: any[]) {
     this.log('Broadcasting %s', type)
 
-    if (typeof WindowClient !== 'undefined' && this.target instanceof WindowClient) {
+    if (typeof WindowClient !== 'undefined' && (this.target as any).isWrapper) {
       this.target.postMessage({
         type: `broadcast/${type}`,
         data

@@ -22,7 +22,7 @@ export default class WorkerServer extends JsonRpcServer {
   web3: Web3
 
   constructor (backgroundController: BackgroundController, source: Listenable, target: WindowClient) {
-    super('WorkerServer', [target.url.replace('/frame.html', '')], source, target)
+    super('WorkerServer', [ process.env.FRAME_URL as string ], source, target)
     this.providerOpts = new ProviderOptions(backgroundController, networks[DEFAULT_NETWORK]).approving()
     this.provider = ZeroClientProvider(this.providerOpts)
     this.web3 = new Web3(this.provider)

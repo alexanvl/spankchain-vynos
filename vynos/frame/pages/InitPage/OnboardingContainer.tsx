@@ -37,6 +37,7 @@ export class OnboardingContainer extends React.Component<Props> {
             className={classnames(s.line, {
               [s.activeLine]: i <= currentStep,
             })}
+            key={`${i}-line`}
           />
         )
       }
@@ -46,6 +47,7 @@ export class OnboardingContainer extends React.Component<Props> {
           className={classnames(s.dot, {
             [s.activeDot]: i <= currentStep,
           })}
+          key={`${i}-dot`}
         />
       )
     }

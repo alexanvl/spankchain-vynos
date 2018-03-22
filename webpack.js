@@ -28,7 +28,8 @@ function webpackConfig (entry, devSupplement) {
         "self.CONTRACT_ADDRESS": JSON.stringify(CONTRACT_ADDRESS),
         "process.env": {
           "NODE_ENV": JSON.stringify(process.env.NODE_ENV || 'development'), // This has effect on the react lib size,
-          "DEBUG": process.env.NODE_ENV !== 'production'
+          "DEBUG": process.env.NODE_ENV !== 'production',
+          "FRAME_URL": JSON.stringify(process.env.FRAME_URL)
         }
       }),
       new webpack.IgnorePlugin(/^(pg|mongodb)$/), // ignore pg and mongo since we're using nedb
