@@ -4,6 +4,8 @@ const path = require("path"),
   PackageLoadersPlugin = require('webpack-package-loaders-plugin'),
   UglifyJSPlugin = require('uglifyjs-webpack-plugin')
   CopyWebpackPlugin = require('copy-webpack-plugin')
+  
+let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
 
 require('dotenv').config({ path: '.env' });
@@ -28,11 +30,15 @@ function webpackConfig (entry, devSupplement) {
         "self.CONTRACT_ADDRESS": JSON.stringify(CONTRACT_ADDRESS),
         "process.env": {
           "NODE_ENV": JSON.stringify(process.env.NODE_ENV || 'development'), // This has effect on the react lib size,
-          "DEBUG": process.env.NODE_ENV !== 'production'
+          "DEBUG": process.env.NODE_ENV !== 'production',
+          "FRAME_URL": JSON.stringify(FRAME_URL)
         }
       }),
       new webpack.IgnorePlugin(/^(pg|mongodb)$/), // ignore pg and mongo since we're using nedb
-      new PackageLoadersPlugin()
+      new PackageLoadersPlugin(),
+      new CopyWebpackPlugin([
+        path.resolve(__dirname,'vynos', 'frame.html')
+      ]),
     ],
     resolve: {
       extensions: [".ts", ".tsx", ".js", ".json"]
@@ -140,9 +146,6 @@ function webpackConfig (entry, devSupplement) {
         }
       }
     }))
-    config.plugins.push(new CopyWebpackPlugin([
-      path.resolve(__dirname,'vynos', 'frame.html')
-    ]))
   }
 
   return config

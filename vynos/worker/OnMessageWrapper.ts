@@ -4,7 +4,7 @@ export default class OnMessageWrapper extends EventEmitter {
   constructor (self: ServiceWorkerGlobalScope) {
     super()
     this.onMessage = this.onMessage.bind(this)
-    self.onmessage = this.onMessage
+    self.addEventListener('message', this.onMessage)
   }
 
   public onMessage(e: any) {

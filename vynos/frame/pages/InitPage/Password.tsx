@@ -25,6 +25,7 @@ export interface PasswordState {
 
 export interface PasswordSubpageStateProps {
   workerProxy: WorkerProxy
+  isPerformer?: boolean
 }
 
 export interface PasswordSubpageDispatchProps {
@@ -134,16 +135,28 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     })
   }
 
+  getText() {
+    return this.props.isPerformer
+      ? 'This is how you’ll get paid, payouts as often as you like, no chargebacks. SpankCard is a very safe and secure payment method based on crypto currencies.'
+      : 'Your SpankWallet allows you to tip without any delay and to save you crypto fees by bundling payments.'
+  }
+
   render () {
+    const { isPerformer } = this.props
+
     if (this.state.displayRestore)
       return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
 
     return (
-      <OnboardingContainer totalSteps={4} currentStep={0}>
+      <OnboardingContainer
+        headerText={isPerformer ? 'Become a Model' : ''}
+        totalSteps={isPerformer ? 3 : 4}
+        currentStep={0}
+      >
         <div className={style.content}>
           <div className={style.funnelTitle}>Create SpankCard</div>
           <TextBox className={style.passwordTextBox}>
-            Your SpankWallet allows you to tip without any delay and to save you crypto fees by bundling payments.
+            {this.getText()}
           </TextBox>
           <Input
             placeholder="New Password"
@@ -177,7 +190,8 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
 
 function mapStateToProps (state: FrameState): PasswordSubpageStateProps {
   return {
-    workerProxy: state.temp.workerProxy
+    workerProxy: state.temp.workerProxy,
+    isPerformer: state.shared.isPerformer,
   }
 }
 

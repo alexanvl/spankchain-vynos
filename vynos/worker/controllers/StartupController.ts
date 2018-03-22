@@ -10,7 +10,7 @@ export default class StartupController {
     this.store = store
   }
 
-  public async onInitializationRequest (hubUrl: string, authRealm: string) {
+  public async registerHub (hubUrl: string, authRealm: string) {
     this.setCurrentHubUrl(hubUrl)
     this.setAuthRealm(authRealm)
     await this.getHubBranding(hubUrl)

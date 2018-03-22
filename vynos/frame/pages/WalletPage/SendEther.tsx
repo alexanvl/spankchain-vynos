@@ -39,6 +39,7 @@ export interface SendEtherState {
   isBalanceDirty: boolean
   disableSend: boolean
   isConfirming: boolean
+  isAdjustingGas: boolean
 }
 
 export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
@@ -52,7 +53,8 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       addressError: '',
       isAddressDirty: false,
       disableSend: false,
-      isConfirming: false
+      isConfirming: false,
+      isAdjustingGas: false,
     }
 
     this.onSendTransaction = this.onSendTransaction.bind(this)
@@ -187,10 +189,65 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
     })
   }
 
+  renderAdjustGas() {
+    return (
+      <div>
+        <div className={s.header}>Adjust Gas Price and Gas Limit</div>
+        <div className={s.contentRow}>
+          <div className={s.inputWrapper}>
+            <div className={s.inputLabel}>Gas Price</div>
+            <Input
+              className={s.input}
+              type="number"
+              placeholder="4"
+            />
+          </div>
+        </div>
+        <div className={s.contentRow}>
+          <div className={s.inputWrapper}>
+            <div className={s.inputLabel}>Gas Limit</div>
+            <Input
+              className={s.input}
+              type="number"
+              placeholder="53,000"
+            />
+            <div className={s.gasText}>
+              We calculate the suggested gas price/limit based on network success rates.
+            </div>
+          </div>
+        </div>
+        <div className={s.footer}>
+          <Button
+            type="secondary"
+            className={s.adjustGasButton}
+            content="Cancel"
+            onClick={() => this.setState({ isAdjustingGas: false })}
+          />
+          <Button
+            onClick={() => this.setState({ isAdjustingGas: false })}
+            content="Confirm"
+          />
+        </div>
+      </div>
+    )
+  }
+
+  renderContent() {
+    if (this.props.pendingTransaction) {
+      return this.renderPendingContent()
+    }
+
+    if (this.state.isAdjustingGas) {
+      return this.renderAdjustGas()
+    }
+
+    return this.renderNormalContent()
+  }
+
   render () {
     return (
       <div className={s.container}>
-        {this.props.pendingTransaction ? this.renderPendingContent() : this.renderNormalContent()}
+        {this.renderContent()}
       </div>
     )
   }
@@ -279,6 +336,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
         <Button
           type="secondary"
           className={s.adjustGasButton}
+          onClick={() => this.setState({ isAdjustingGas: true })}
           content="Adjust Gas Limit/Price"
         />
         <Button
