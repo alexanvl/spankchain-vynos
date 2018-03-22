@@ -34,7 +34,7 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
     })
 
     const amount = new BigNumber.BigNumber(this.props.walletBalance!)
-      .minus(this.props.workerProxy.web3.toWei('0.005', 'ether'))
+      .minus(this.props.workerProxy.web3.toWei('0.01', 'ether'))
     await this.props.workerProxy.openChannelWithCurrentHub(amount)
   }
 

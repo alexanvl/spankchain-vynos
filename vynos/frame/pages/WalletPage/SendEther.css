@@ -22,12 +22,17 @@
   flex: 1 0 auto;
 }
 
-.inputLabel {
+.inputLabel,
+.gasText {
   font-family: CartographMonoCF;
   font-size: .8rem;
   font-weight: 500;
   color: #797979;
   margin: 0 0 1rem 1rem;
+}
+
+.gasText {
+  font-size: .65rem;
 }
 
 .input input {
