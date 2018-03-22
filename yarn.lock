@@ -8281,12 +8281,6 @@ types-bn@^0.0.1:
   dependencies:
     bn.js "4.11.7"
 
-"types-bn@https://github.com/machinomy/types-bn.git":
-  version "0.0.1"
-  resolved "https://github.com/machinomy/types-bn.git#08ede69e138640d332b0dae0dc2e2fffee5f7160"
-  dependencies:
-    bn.js "4.11.7"
-
 types-ethereumjs-util@^0.0.5:
   version "0.0.5"
   resolved "https://registry.yarnpkg.com/types-ethereumjs-util/-/types-ethereumjs-util-0.0.5.tgz#a65060741c73d1ee5157b9ba2d502b4fe4a19d1c"
@@ -8298,6 +8292,11 @@ types-ethereumjs-util@^0.0.5:
 types-ethereumjs-util@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/types-ethereumjs-util/-/types-ethereumjs-util-0.0.6.tgz#41f4c9f6416748572b9fcb9ddcd83f0f749600d8"
+  dependencies:
+    bn.js "^4.11.7"
+    buffer "^5.0.6"
+    rlp "^2.0.0"
+    types-bn "https://github.com/machinomy/types-bn.git"
 
 types-rlp@^0.0.1:
   version "0.0.1"
