@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "gulp serve:built",
+    "start": "gulp serve",
     "build": "gulp build",
     "build:harness": "gulp build:harness",
     "harness": "gulp serve:harness",
