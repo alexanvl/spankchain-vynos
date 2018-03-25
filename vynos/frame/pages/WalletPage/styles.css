@@ -94,10 +94,19 @@
   opacity: .15;
 }
 
+.walletSpankCardContent {
+  padding: 2rem 3rem;
+}
+
+.walletSpankCardError {
+  font-size: 1rem;
+  margin-bottom: 2rem;
+  color: #ff3b80;
+}
+
 .walletSpankCardDetails {
   display: flex;
   flex-flow: row nowrap;
-  padding: 2rem 3rem;
   justify-content: space-between;
 }
 

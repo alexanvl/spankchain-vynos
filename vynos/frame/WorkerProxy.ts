@@ -2,7 +2,7 @@ import {HistoryItem, SharedState} from '../worker/WorkerState'
 import {
   AuthenticateRequest,
   AuthenticateResponse,
-  CloseChannelsForCurrentHubRequest,
+  CloseChannelsForCurrentHubRequest, DepositRequest,
   DidStoreMnemonicRequest,
   FetchHistoryRequest,
   GenKeyringRequest,
@@ -50,6 +50,10 @@ export default class WorkerProxy extends JsonRpcClient {
 
   closeChannelsForCurrentHub (): Promise<void> {
     return this.call(CloseChannelsForCurrentHubRequest.method)
+  }
+
+  deposit (amount: BigNumber.BigNumber): Promise<void> {
+    return this.call(DepositRequest.method, amount.toNumber())
   }
 
   populateChannels (): Promise<void> {

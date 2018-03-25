@@ -3,17 +3,17 @@
   "version": "0.0.1",
   "license": "Apache-2.0",
   "scripts": {
-    "start": "gulp serve:built",
+    "start": "gulp serve",
     "build": "gulp build",
     "build:harness": "gulp build:harness",
-    "harness": "gulp harness:serve",
+    "harness": "gulp serve:harness",
     "lint": "tslint -t stylish -c ../common/tslint.json --project '.' vynos/**/*.ts"
   },
   "resolutions": {
     "**/@types/react": "15.6.0",
     "**/@types/react-router": "4.0.15",
     "**/typescript-fsa": "2.3.1",
-    "**/xhr": "./xhr"
+    "**/bn.js": "4.11.7"
   },
   "devDependencies": {
     "@machinomy/types-truffle-contract": "https://github.com/machinomy/types-truffle-contract",
@@ -56,8 +56,7 @@
     "web3-typescript-typings": "https://github.com/machinomy/web3-typescript-typings",
     "webpack": "^2.6.1",
     "webpack-cli": "^2.0.12",
-    "webpack-dev-server": "^2.4.5",
-    "webpack-package-loaders-plugin": "^3.0.0"
+    "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
     "@types/classnames": "^2.2.3",

@@ -35,8 +35,11 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
       isLoading: true
     })
 
+    const gasPrice = this.props.workerProxy.web3.toWei('50', 'gwei')
+    const gasCost = new BigNumber.BigNumber(gasPrice).times(300000)
+
     const amount = new BigNumber.BigNumber(this.props.walletBalance!)
-      .minus(this.props.workerProxy.web3.toWei('0.005', 'ether'))
+      .minus(gasCost)
     await this.props.workerProxy.openChannelWithCurrentHub(amount)
   }
 
