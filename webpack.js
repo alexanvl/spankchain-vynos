@@ -6,6 +6,8 @@ const path = require('path'),
 
 require('dotenv').config({ path: '.env' });
 
+let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
+
 function resolvePath(dir) {
   return path.resolve.apply(path, [__dirname].concat(dir.split('/')));
 }
@@ -36,7 +38,7 @@ function webpackConfig (entry) {
         'process.env': {
           'NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'), // This has effect on the react lib size,
           'DEBUG': process.env.NODE_ENV !== 'production',
-          'FRAME_URL': JSON.stringify(process.env.FRAME_URL)
+          'FRAME_URL': JSON.stringify(FRAME_URL)
         }
       })
     ],
