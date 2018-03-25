@@ -5,7 +5,6 @@ WORKDIR /home/node/app
 ADD package.json .
 ADD yarn.lock .
 
-ADD xhr xhr
 RUN yarn --production=false --frozen-lockfile --cache-folder /root/.yarn
 
 ADD . .
