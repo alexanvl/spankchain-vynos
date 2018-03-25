@@ -63,12 +63,13 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     try {
       await this.props.workerProxy.doUnlock(password)
     } catch (err) {
-      passwordError = err
+      passwordError = err.message
     }
 
     if (passwordError) {
       this.setState({
-        passwordError
+        passwordError,
+        loading: false
       })
       return
     }
