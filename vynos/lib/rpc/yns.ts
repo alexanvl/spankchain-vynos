@@ -69,6 +69,9 @@ export type OpenChannelRequest = RequestPayload
 export const CloseChannelsForCurrentHubRequest = requestFactory<[string]>('closeChannelsForCurrentHub')
 export type CloseChannelsForCurrentHubRequest = RequestPayload
 
+export const DepositRequest = requestFactory<[string]>('deposit')
+export type DepositRequest = RequestPayload
+
 export const BuyRequest = requestFactory<[string, any]>('buyRequest')
 export type BuyRequest = RequestPayload
 

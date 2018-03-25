@@ -124,12 +124,16 @@ export default class Vynos extends EventEmitter {
   private handleSpecificEvents(newState: SharedState) {
     if (this.previousState.isFrameDisplayed !== newState.isFrameDisplayed) {
       if (newState.isFrameDisplayed) {
-        this.frame.display()
         this.emit('didShow')
       } else {
-        this.frame.hide()
         this.emit('didHide')
       }
+    }
+
+    if (newState.isFrameDisplayed) {
+      this.frame.display()
+    } else {
+      this.frame.hide()
     }
 
     if (this.previousState.isLocked !== newState.isLocked) {

@@ -9,7 +9,7 @@ import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import {
   BuyRequest,
-  CloseChannelsForCurrentHubRequest,
+  CloseChannelsForCurrentHubRequest, DepositRequest,
   ListChannelsRequest,
   OpenChannelRequest,
   PopulateChannelsRequest
@@ -65,6 +65,21 @@ export default class MicropaymentsController extends AbstractController {
     await this.populateChannels()
   }
 
+  public async deposit(amount: number): Promise<void> {
+    const sharedState = await this.sharedStateView.getSharedState()
+    const hubUrl = await this.sharedStateView.getHubUrl()
+    const channels = sharedState.channels[hubUrl]
+
+    if (!channels) {
+      throw new Error('No open channel.')
+    }
+
+    const machinomy = await this.getMachinomy()
+
+    await machinomy.deposit(channels[0].channelId, amount)
+    await this.populateChannels()
+  }
+
   public async buy (price: number, meta: any): Promise<VynosBuyResponse> {
     const receiver = (await this.sharedStateView.getSharedState()).branding.address
     const hubUrl = await this.sharedStateView.getHubUrl()
@@ -89,6 +104,7 @@ export default class MicropaymentsController extends AbstractController {
     this.registerHandler(server, PopulateChannelsRequest.method, this.populateChannels)
     this.registerHandler(server, OpenChannelRequest.method, this.openChannel)
     this.registerHandler(server, CloseChannelsForCurrentHubRequest.method, this.closeChannelsForCurrentHub)
+    this.registerHandler(server, DepositRequest.method, this.deposit)
     this.registerHandler(server, ListChannelsRequest.method, this.listChannels)
     this.registerHandler(server, BuyRequest.method, this.buy)
   }
@@ -115,6 +131,10 @@ export default class MicropaymentsController extends AbstractController {
     await fetch(`${hubUrl}/channels/${channelId}/close`, {
       method: 'POST',
       credentials: 'include'
+    }).then((res) => {
+      if (res.status > 204) {
+        throw new Error('Withdrawal failed. Please try again.')
+      }
     })
   }
 }
