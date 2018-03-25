@@ -14,6 +14,7 @@ const Input: React.SFC<any> = function(props) {
     errorMessage,
     value,
     autoFocus,
+    inverse,
   } = props
 
   return (
@@ -30,7 +31,9 @@ const Input: React.SFC<any> = function(props) {
         onBlur={onBlur}
         autoFocus={autoFocus}
       />
-      <div className={s.errorMessage}>{errorMessage}</div>
+      <div className={classnames(s.errorMessage, {
+        [s.inverse]: inverse
+      })}>{errorMessage}</div>
     </div>
   )
 }
