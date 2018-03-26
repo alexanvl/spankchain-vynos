@@ -5,13 +5,15 @@ WORKDIR /home/node/app
 ADD package.json .
 ADD yarn.lock .
 
-ADD xhr xhr
 RUN yarn --production=false --frozen-lockfile --cache-folder /root/.yarn
 
 ADD . .
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
+
+ARG FRAME_URL
+ENV FRAME_URL=${FRAME_URL}
 
 RUN npm run build
 

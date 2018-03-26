@@ -3,6 +3,7 @@ steps:
     args: [
             'build',
             '--build-arg', 'NODE_ENV=${_ENV}',
+            '--build-arg', 'FRAME_URL=${_FRAME_URL}',
             '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/vynos/${_ENV}:$COMMIT_SHA',
             '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/vynos/${_ENV}:latest',
             '.'
