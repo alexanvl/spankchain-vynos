@@ -312,7 +312,8 @@
   font-weight: 600;
 }
 
-.walletActivityEntry {
+.walletActivityEntry td {
+  border: 0;
   border-bottom: 1px solid #e5e5e5;
 }
 
@@ -322,6 +323,46 @@
 
 .walletActivityTime {
   padding: 0 2rem;
+}
+
+.walletActivityDetails .walletActivityPrice {
+  padding: 0.5rem 0 0.5rem 3rem;
+}
+
+.walletActivityDetails .walletActivityPrice {
+  padding: 0.5rem 0 0.5rem 3rem;
+}
+
+.walletActivityEntryFirst .walletActivityPrice {
+  padding-top: 1.5rem;
+}
+
+.walletActivityEntryFirst .walletActivityItemDescription,
+.walletActivityEntryFirst .walletActivityTime {
+  padding-top: 1rem;
+}
+
+.walletActivityEntryLast .walletActivityPrice {
+  padding-top: 0.5rem;
+  padding-bottom: 1.5rem;
+}
+
+.walletActivityEntryLast .walletActivityItemDescription,
+.walletActivityEntryLast .walletActivityTime {
+  vertical-align: top;
+  padding-top: 1rem;
+}
+
+.walletActivityEntryLast .walletActivityItem {
+  padding: 0;
+}
+
+.walletActivityEntryToggled {
+  background: white !important;
+}
+
+.walletActivityEntrySingle td {
+  padding-bottom: 1rem;
 }
 
 .walletActivityPrice {
@@ -423,6 +464,14 @@
 
 .walletActivityMore:hover {
   cursor: pointer;
+}
+
+.walletActivityMoreToggled {
+  text-indent: -9999px;
+  background-image: url('../../styles/images/close-button-dark.svg');
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-size: 9px;
 }
 
 .selected {

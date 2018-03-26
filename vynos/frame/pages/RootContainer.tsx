@@ -7,7 +7,7 @@ import UnlockPage from './UnlockPage'
 import WalletPage from './WalletPage'
 import {RouteComponentProps} from 'react-router'
 import AuthorizePage from './AuthorizePage'
-import WorkerProxy from "../WorkerProxy"
+import WorkerProxy from '../WorkerProxy'
 
 export interface StateProps {
   isAuthorizationExpected: boolean
@@ -25,8 +25,25 @@ export interface RootStateProps extends RouteComponentProps<any>, StateProps {
 export type RootContainerProps = RootStateProps
 
 export class RootContainer extends React.Component<RootContainerProps, any> {
+  constructor(props: RootContainerProps) {
+    super(props)
+
+    this.lock = this.lock.bind(this)
+  }
+
   componentDidMount () {
     this.determineRoute()
+    window.addEventListener('keydown', this.lock)
+  }
+
+  componentWillUnmount () {
+    window.removeEventListener('keydown', this.lock)
+  }
+
+  lock (e: KeyboardEvent) {
+    if (e.ctrlKey && e.which === 76) {
+      this.props.workerProxy.doLock()
+    }
   }
 
   componentWillReceiveProps (nextProps: RootStateProps) {
@@ -83,7 +100,8 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 
         <Switch>
           <Route path="/(wallet|card)" component={WalletPage} />
-          <Route exact path="/unlock" render={() => <UnlockPage next={this.props.isAuthorizationExpected ? '/authenticate' : '/wallet'}/>} />
+          <Route exact path="/unlock" render={() => <UnlockPage
+            next={this.props.isAuthorizationExpected ? '/authenticate' : '/wallet'} />} />
           <Route path="/init" component={InitPage} />
         </Switch>
 
