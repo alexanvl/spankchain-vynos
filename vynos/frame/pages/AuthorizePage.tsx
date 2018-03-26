@@ -39,12 +39,8 @@ export class AuthorizePage extends React.Component<AuthorizePageProps, Authorize
   }
 
   async onClickResponse (res: boolean) {
+    await this.props.workerProxy.toggleFrame(false)
     await this.props.workerProxy.respondToAuthorizationRequest(res)
-
-    if (!res) {
-      await this.props.workerProxy.toggleFrame(false)
-    }
-
     this.props.history.push('/wallet')
   }
 
