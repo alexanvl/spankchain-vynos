@@ -84,7 +84,11 @@ export default class Vynos extends EventEmitter {
     this.frame = new Frame(this.options.scriptElement.src)
     this.frame.attach(this.options.window.document)
 
-    this.client = new VynosClient(this.frame.element.contentWindow, 'http://localhost:9090')
+    const src = this.frame.element.src
+    const parts = src.split('/')
+    const origin = `${parts[0]}//${parts[2]}`
+
+    this.client = new VynosClient(this.frame.element.contentWindow, origin)
     await this.client.initialize(this.options.hubUrl, this.options.authRealm)
 
     this.previousState = await this.client.getSharedState()
