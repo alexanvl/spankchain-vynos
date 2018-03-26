@@ -50,9 +50,8 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
       isAuthenticating: true
     })
 
+    await this.props.didAcknowledgeDeposit()
     await this.props.workerProxy.authenticate()
-
-    this.props.didAcknowledgeDeposit()
   }
 
   componentDidMount() {
@@ -122,12 +121,7 @@ function mapStateToProps(state: FrameState): DepositStateProps {
 
 function mapDispatchToProps(dispatch: Dispatch<FrameState>): DepositDispatchProps {
   return {
-    didAcknowledgeDeposit: () => {
-      dispatch(actions.didAcknowledgeDeposit(''))
-      postMessage(window, {
-        type: 'vynos/parent/signupComplete',
-      })
-    }
+    didAcknowledgeDeposit: () => dispatch(actions.didAcknowledgeDeposit(''))
   }
 }
 
