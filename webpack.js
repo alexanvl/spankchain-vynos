@@ -2,7 +2,8 @@ const path = require('path'),
   webpack = require('webpack'),
   DIST_PATH = path.resolve(__dirname, 'dist'),
   UglifyJSPlugin = require('uglifyjs-webpack-plugin'),
-  CopyWebpackPlugin = require('copy-webpack-plugin')
+  HtmlWebpackPlugin = require('html-webpack-plugin'),
+  WorkerRunnerPlugin = require('./WorkerRunnerPlugin')
 
 require('dotenv').config({ path: '.env' });
 
@@ -23,12 +24,12 @@ function stubDependency(regex) {
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS,
   RPC_URL = process.env.RPC_URL;
 
-function webpackConfig (entry) {
+function webpackConfig (entry, hash = true) {
   const config = {
     entry: entry,
     devtool: 'source-map',
     output: {
-      filename: '[name].js',
+      filename: process.env.NODE_ENV === 'production' && hash ? '[name].[chunkhash].js' : '[name].js',
       path: DIST_PATH
     },
     plugins: [
@@ -153,6 +154,10 @@ function webpackConfig (entry) {
   return config
 }
 
+const WORKER_FILE_REGEX = /^worker(\.)?([\w\d]+)?\.js$/i;
+const COMMONS_FILE_REGEX = /^commons(\.)?([\w\d]+)?\.js$/i;
+const FRAME_FILE_REGEX = /^frame(\.)?([\w\d]+)?\.js$/i;
+
 function vynosConfig(entry) {
   const config = webpackConfig(entry);
 
@@ -162,14 +167,24 @@ function vynosConfig(entry) {
     stubDependency(/^(request|xhr)$/),
     replaceDependency(/^unorm$/, 'stubs/unorm.js'),
     replaceDependency(/Unidirectional\.json$/, 'vendor/@machinomy/contracts/dist/build/contracts/Unidirectional.json'),
+    new webpack.HashedModuleIdsPlugin(),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'commons',
-      filename: 'commons.js'
+      filename: process.env.NODE_ENV === 'production' ? 'commons.[chunkhash].js' : 'commons.js'
     }),
-    new CopyWebpackPlugin([
-      resolvePath('vynos/frame.html'),
-      resolvePath('vynos/workerRunner.js'),
-    ])
+    new HtmlWebpackPlugin({
+      template: resolvePath('vynos/frame.html'),
+      filename: 'frame.html'
+    }),
+    new WorkerRunnerPlugin({
+      contentScripts: [
+        COMMONS_FILE_REGEX,
+        WORKER_FILE_REGEX
+      ],
+      filename: process.env.NODE_ENV === 'production' ? 'workerRunner.[hash].js' : 'workerRunner.js',
+      replaceFilename: 'workerRunner.js',
+      replacer: (filename) => filename.match(FRAME_FILE_REGEX)
+    })
   ]);
 
   return config
@@ -186,11 +201,11 @@ const VYNOS_BACKGROUND = vynosConfig({
 
 const VYNOS_SDK = webpackConfig({
   vynos: resolvePath('vynos/vynos.ts')
-});
+}, false);
 
 const HARNESS = webpackConfig({
   harness: resolvePath('harness/harness.ts')
-});
+}, false);
 
 
 module.exports.HARNESS = HARNESS;
