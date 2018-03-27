@@ -103,6 +103,10 @@ export default class Vynos extends EventEmitter {
 
     this.ready = true
     this.emit('ready')
+
+    if (!this.previousState.isLocked) {
+      this.emit('didUnlock', this.previousState.address)
+    }
   }
 
   async setupAndLogin (): Promise<{ token: string }> {
@@ -141,7 +145,7 @@ export default class Vynos extends EventEmitter {
     }
 
     if (this.previousState.isLocked !== newState.isLocked) {
-      this.emit(newState.isLocked ? 'didLock' : 'didUnlock')
+      this.emit(newState.isLocked ? 'didLock' : 'didUnlock', newState.address)
     }
 
     if (this.previousState.didInit !== newState.didInit && newState.didInit) {

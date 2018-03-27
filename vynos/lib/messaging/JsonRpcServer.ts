@@ -81,8 +81,18 @@ export default class JsonRpcServer extends EventEmitter {
   private onMessage (e: any) {
     const data = e.data
 
-    if (!this.originValidator.isAllowed(e.origin)) {
-      this.log('Received message from non-whitelisted origin %s.', e.origin)
+    let origin = e.origin
+
+    // Firefox doesn't set the origin for some reason. See https://bugzilla.mozilla.org/show_bug.cgi?id=1448740
+    if (!origin || !origin.length) {
+      const sourceLoc = e.source.url
+      const parts = sourceLoc.split('/')
+      origin = `${parts[0]}//${parts[2]}`
+    }
+
+    if (!this.originValidator.isAllowed(origin)) {
+
+      this.log('Received message from non-whitelisted origin %s.', origin)
       return
     }
 

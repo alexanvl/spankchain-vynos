@@ -163,12 +163,16 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
             type="password"
             className={style.passwordInput}
             onChange={this.handleChangePassword}
+            errorMessage={this.state.passwordError}
+            inverse
           />
           <Input
             placeholder="Confirm Password"
             type="password"
             className={style.passwordInput}
             onChange={this.handleChangePasswordConfirmation}
+            errorMessage={this.state.passwordConfirmationError}
+            inverse
           />
           <div className={style.funnelFooter}>
             <Button

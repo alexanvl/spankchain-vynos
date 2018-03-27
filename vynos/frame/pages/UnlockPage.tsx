@@ -112,7 +112,9 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
             type="password"
             className={style.passwordInput}
             onChange={this.handleChangePassword}
+            errorMessage={this.state.passwordError}
             autoFocus
+            inverse
           />
           <div className={style.funnelFooter}>
             <Button
