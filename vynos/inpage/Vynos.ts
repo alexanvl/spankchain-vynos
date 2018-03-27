@@ -9,7 +9,7 @@ import VynosBuyResponse from '../lib/VynosBuyResponse'
 import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 
 export interface Balance {
-  balance: string
+  balanceInWei: string
 }
 
 export interface GetBalanceResponse {
@@ -48,10 +48,10 @@ export default class Vynos extends EventEmitter {
         const { balance, channels, currentHubUrl } = state
         const currentChannels = channels[currentHubUrl] || []
         return {
-          wallet: { balance },
+          wallet: { balanceInWei: balance },
           channels: currentChannels.reduce((acc: any, channel: any) => {
             const { channelId, spent, value } = channel
-            acc[channel.channelId] = { balance: `${value - spent}` }
+            acc[channel.channelId] = { balanceInWei: `${value - spent}` }
             return acc
           }, {}),
         }
