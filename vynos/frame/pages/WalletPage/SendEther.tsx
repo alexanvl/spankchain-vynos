@@ -67,12 +67,31 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
   }
 
   componentWillMount() {
-    this.props.workerProxy.web3.eth.estimateGas({}, (err, data) => {
+    this.getGas()
+  }
+
+  getGas() {
+    const {
+      eth: { estimateGas, getGasPrice },
+      fromWei,
+    } = this.props.workerProxy.web3
+
+    estimateGas({}, (err, data) => {
       if (err) {
         return
       }
 
       this.setState({ gas: '' + data })
+    })
+
+    getGasPrice((err, data) => {
+      if (err) {
+        return
+      }
+
+      this.setState({
+        gasPrice: '' + fromWei(data.toNumber(), 'gwei'),
+      })
     })
   }
 
@@ -254,7 +273,10 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
             type="secondary"
             className={s.adjustGasButton}
             content="Cancel"
-            onClick={() => this.setState({ isAdjustingGas: false })}
+            onClick={() => {
+              this.setState({ isAdjustingGas: false })
+              this.getGas()
+            }}
           />
           <Button
             onClick={() => this.setState({ isAdjustingGas: false })}
