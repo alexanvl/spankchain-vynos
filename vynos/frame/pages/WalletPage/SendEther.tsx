@@ -309,6 +309,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
 
   renderNormalContent () {
     const { addressError, balanceError, isConfirming, address, balance } = this.state
+    const { web3 } = this.props.workerProxy
 
     return (
       <div>
@@ -328,7 +329,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
         </div>
         <div className={s.contentRow}>
           <div className={s.inputWrapper}>
-            <div className={s.inputLabel}>Ether Amount</div>
+            <div className={s.inputLabel}>Finney Amount</div>
             <Input
               className={s.input}
               type="number"
@@ -342,7 +343,11 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
           <div className={s.inputResult}>
             <div className={s.inputEqual}>=</div>
             <div className={s.inputTotal}>
-              <Currency amount={new BigNumber.BigNumber(this.state.balance || 0)} inputType={CurrencyType.ETH} showUnit={true} />
+              <Currency
+                amount={web3.toWei(new BigNumber.BigNumber(this.state.balance || 0), 'finney')}
+                inputType={CurrencyType.WEI}
+                showUnit={true}
+              />
             </div>
           </div>
         </div>
