@@ -38,13 +38,15 @@ export default class WalletController extends AbstractController implements Life
     this.stopWatchingBalance()
   }
 
-  public async send (to: string, value: string) {
+  public async send (to: string, value: string, gas?: string, gasPrice?: string) {
     const from = (await this.sharedStateView.getAccounts())[0]
 
     const tx = {
       from,
       to,
-      value
+      value,
+      gas,
+      gasPrice,
     }
 
     const addressError = this.validateAddress(from, to)
