@@ -1,13 +1,17 @@
 import * as React from 'react'
+import {ChangeEvent, ReactNode} from 'react'
 import {connect} from 'react-redux'
-import { Container, Menu, Form, Button, Divider } from 'semantic-ui-react'
+import WorkerProxy from '../WorkerProxy'
+import {FrameState} from '../redux/FrameState'
+import OnboardingContainer from './InitPage/OnboardingContainer'
+import TextBox from '../components/TextBox/index'
+import Input from '../components/Input/index'
+import Button from '../components/Button/index'
+import bip39 = require('bip39')
+import {MINIMUM_PASSWORD_LENGTH} from '../constants'
+
 const style = require('../styles/ynos.css')
 
-import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../constants'
-import WorkerProxy from '../WorkerProxy'
-import {FrameState} from "../redux/FrameState";
-import {ChangeEvent, FormEvent} from "react";
-import bip39 = require('bip39')
 
 export interface RestorePageStateProps {
   workerProxy: WorkerProxy
@@ -18,7 +22,8 @@ export interface RestorePageProps extends RestorePageStateProps {
 }
 
 export interface RestorePageState {
-  seed?: string
+  seeds: string[]
+  showingPassword: boolean
   seedError?: string
   password?: string
   passwordConfirmation?: string
@@ -26,158 +31,211 @@ export interface RestorePageState {
   passwordConfirmationError?: string
 }
 
+const alpha = /^[a-z]*$/i
+
 class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
   constructor (props: RestorePageProps) {
     super(props)
-    this.state = {}
-  }
 
-  goBack () {
-    this.props.goBack()
-  }
-
-  handleSubmit (ev: FormEvent<HTMLFormElement>) {
-    ev.preventDefault()
-    if (this.isValid() && this.state.password && this.state.seed) {
-      this.props.workerProxy.restoreWallet(this.state.password, this.state.seed).then(() => {
-        this.goBack()
-      })
-    }
-  }
-
-  isValid () {
-    let passwordError = this.state.passwordError;
-    if (this.state.password && this.state.password.length < MINIMUM_PASSWORD_LENGTH) {
-      passwordError = PASSWORD_HINT_TEXT;
-      this.setState({
-        passwordError: passwordError
-      })
+    this.state = {
+      seeds: [],
+      showingPassword: false
     }
 
-    let passwordConfirmationError = this.state.passwordConfirmationError;
-    if (this.state.passwordConfirmation !== this.state.password && this.state.passwordConfirmation) {
-      passwordConfirmationError = PASSWORD_CONFIRMATION_HINT_TEXT;
-      this.setState({
-        passwordConfirmationError: passwordConfirmationError
-      })
-    }
-
-    let seedError = this.state.seedError
-    if (this.state.seed && !bip39.validateMnemonic(this.state.seed)) {
-      seedError = 'Probably mistyped seed phrase'
-      this.setState({
-        seedError: seedError
-      })
-    }
-
-    return !(passwordError || passwordConfirmationError || seedError)
+    this.updateSeed = this.updateSeed.bind(this)
+    this.handleSubmitSeed = this.handleSubmitSeed.bind(this)
+    this.handleSubmitPassword = this.handleSubmitPassword.bind(this)
+    this.handleChangePassword = this.handleChangePassword.bind(this)
+    this.handleChangePasswordConfirmation = this.handleChangePasswordConfirmation.bind(this)
   }
 
-  handleChangeSeed (ev: ChangeEvent<EventTarget>) {
-    let value = (ev.target as HTMLInputElement).value
-    this.setValue({
-      seed: value
+  updateSeed (i: number, e: any) {
+    const value = e.target.value.toLowerCase()
+
+    if (!value.match(alpha)) {
+      return
+    }
+
+    const seeds = [].concat(this.state.seeds as any) as string[]
+    seeds[i] = value
+
+    this.setState({
+      seeds
     })
   }
 
+  setSeed (i: number) {
+    return {
+      value: this.state.seeds[i] || '',
+      onChange: (e: KeyboardEvent) => this.updateSeed(i, e)
+    }
+  }
+
+  handleSubmitSeed () {
+    const phrase = this.state.seeds.join(' ')
+
+    if (!bip39.validateMnemonic(phrase)) {
+      this.setState({
+        seedError: 'Invalid seed phrase. Did you forget or mistype a word?'
+      })
+
+      return
+    }
+
+    this.setState({
+      showingPassword: true
+    })
+  }
+
+  async handleSubmitPassword () {
+    if (!this.state.password || this.state.password.length < MINIMUM_PASSWORD_LENGTH) {
+      this.setState({
+        passwordError: 'Password is too short.'
+      })
+      return
+    }
+
+    if (this.state.passwordConfirmation !== this.state.password && this.state.passwordConfirmation) {
+      this.setState({
+        passwordConfirmationError: 'Passwords do not match.'
+      })
+      return
+    }
+
+    try {
+      await this.props.workerProxy.restoreWallet(this.state.password!, this.state.seeds.join(' '))
+    } catch (e) {
+      this.setState({
+        passwordError: e.message
+      })
+
+      return
+    }
+
+    this.props.goBack()
+  }
+
   handleChangePassword (ev: ChangeEvent<EventTarget>) {
-    let value = (ev.target as HTMLInputElement).value
-    this.setValue({
+    const value = (ev.target as HTMLInputElement).value
+
+    this.setState({
       password: value
     })
   }
 
   handleChangePasswordConfirmation (ev: ChangeEvent<EventTarget>) {
-    let value = (ev.target as HTMLInputElement).value
-    this.setValue({
+    const value = (ev.target as HTMLInputElement).value
+
+    this.setState({
       passwordConfirmation: value
     })
   }
 
-  setValue(state: RestorePageState) {
-    let base = {
-      passwordError: undefined,
-      passwordConfirmationError: undefined,
-      seedError: undefined
-    }
-    let next = Object.assign(base, state)
-    this.setState(next)
-  }
-
-  renderSeedInput () {
-    let className = style.mnemonicInput + ' ' + (this.state.seedError ? style.inputError : '')
-    return <textarea placeholder="Seed Phrase"
-                     className={className}
-                     rows={3}
-                     onChange={this.handleChangeSeed.bind(this)} />
-  }
-
-  renderSeedHint () {
-    if (this.state.seedError) {
-      return <span className={style.errorText}><i className={style.vynosInfo}/> {this.state.seedError}</span>;
-    } else {
-      return <span className={style.passLenText} />
-    }
-  }
-
-  renderPasswordInput () {
-    let className = this.state.passwordError ? style.inputError : ''
-    return <input type="password"
-                  placeholder="Password"
-                  className={className}
-                  onChange={this.handleChangePassword.bind(this)} />
-  }
-
-  renderPasswordHint () {
-    if (this.state.passwordError) {
-      return <span className={style.errorText}><i className={style.vynosInfo}/> {this.state.passwordError}</span>;
-    } else {
-      return <span className={style.passLenText}>At least {MINIMUM_PASSWORD_LENGTH} characters</span>
-    }
-  }
-
-  renderPasswordConfirmationInput () {
-    let className = this.state.passwordConfirmationError ? style.inputError : ''
-    return  <input type="password"
-                   placeholder="Password Confirmation"
-                   className={className}
-                   onChange={this.handleChangePasswordConfirmation.bind(this)} />
-  }
-
-  renderPasswordConfirmationHint () {
-    if (this.state.passwordConfirmationError) {
-      return <span className={style.errorText}><i className={style.vynosInfo}/> {this.state.passwordConfirmationError}</span>;
-    } else {
-      return <span className={style.errorText}>&nbsp;</span>;
-    }
-  }
-
   render () {
-    return <div>
-      <Menu className={style.clearBorder}>
-        <Menu.Item link className={style.menuIntoOneItemFluid} onClick={this.goBack.bind(this)}>
-          <i className={style.vynosArrowBack}/> Restore a Wallet
-        </Menu.Item>
-      </Menu>
-      <Container textAlign="center">
-        <Form className={style.encryptionForm} onSubmit={this.handleSubmit.bind(this)}>
-          <Form.Field className={style.clearIndent}>
-            {this.renderSeedInput()}
-            {this.renderSeedHint()}
-          </Form.Field>
-          <Form.Field className={style.clearIndent}>
-            {this.renderPasswordInput()}
-            {this.renderPasswordHint()}
-          </Form.Field>
-          <Form.Field className={style.clearIndent}>
-            {this.renderPasswordConfirmationInput()}
-            {this.renderPasswordConfirmationHint()}
-          </Form.Field>
-          <Divider hidden />
-          <Button type='submit' content="Restore" primary className={style.buttonNav} />
-        </Form>
-      </Container>
-    </div>
+    return (
+      <OnboardingContainer totalSteps={0} currentStep={0}>
+        {this.renderContent()}
+      </OnboardingContainer>
+    )
+  }
+
+  renderContent (): ReactNode {
+    if (this.state.showingPassword) {
+      return this.renderPassword()
+    }
+
+    return this.renderSeedPhrase()
+  }
+
+  renderPassword (): ReactNode {
+    return (
+      <div className={style.content}>
+        <div className={style.funnelTitle}>
+          Restore Backup Seed
+        </div>
+        <TextBox className={style.passwordTextBox}>
+          Enter a new password to encrypt your wallet.
+        </TextBox>
+        <Input
+          placeholder="New Password"
+          type="password"
+          className={style.passwordInput}
+          onChange={this.handleChangePassword}
+          errorMessage={this.state.passwordError}
+          inverse
+        />
+        <Input
+          placeholder="Confirm Password"
+          type="password"
+          className={style.passwordInput}
+          onChange={this.handleChangePasswordConfirmation}
+          errorMessage={this.state.passwordConfirmationError}
+          inverse
+        />
+        <div className={style.funnelFooter}>
+          <Button
+            type="secondary"
+            content="Go Back"
+            onClick={this.props.goBack}
+            isInverse
+          />
+          <Button
+            content="Next"
+            onClick={this.handleSubmitPassword}
+            isInverse
+          />
+        </div>
+      </div>
+    )
+  }
+
+  renderSeedPhrase (): ReactNode {
+    return (
+      <div className={style.content}>
+        <div className={style.funnelTitle}>
+          Restore Backup Seed
+        </div>
+        <TextBox className={style.passwordTextBox}>
+          {this.state.seedError ? this.state.seedError : 'Enter your SpankCard backup codes. Use tab to jump to the next field.'}
+        </TextBox>
+        {this.renderFields()}
+        <div className={style.funnelFooter}>
+          <Button
+            type="secondary"
+            content="Go Back"
+            onClick={this.props.goBack}
+            isInverse
+          />
+          <Button
+            content={<div className={style.loginButton} />}
+            onClick={this.handleSubmitSeed}
+            isInverse
+          />
+        </div>
+      </div>
+    )
+  }
+
+  renderFields () {
+    const out = []
+
+    for (let i = 0; i < 12; i++) {
+      out.push(
+        <li key={i} className={style.backupFieldWrapper}>
+          <Input
+            autoFocus={i === 0}
+            className={style.backupField}
+            {...this.setSeed(i)}
+          />
+        </li>
+      )
+    }
+
+    return (
+      <ol className={style.backupFields}>
+        {out}
+      </ol>
+    )
   }
 }
 
