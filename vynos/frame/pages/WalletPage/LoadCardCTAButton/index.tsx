@@ -42,11 +42,13 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
     return this.state.isLoading
       ? <span className={s.loaderWrapper}><span className={s.spCircle} /> <span>Card is being filled</span></span>
       : () => (
-        <span>
+        <span className={s.loadUpWrapper}>
           <span>Load up </span>
           <Currency
             amount={this.props.walletBalance}
             inputType={CurrencyType.WEI}
+            outputType={CurrencyType.FINNEY}
+            className={s.loadUpCurrency}
             showUnit
           />
           <span> into SpankCard</span>

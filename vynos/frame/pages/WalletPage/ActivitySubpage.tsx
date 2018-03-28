@@ -134,11 +134,16 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
           <div className={s.walletActivityHeader}>Activity</div>
           <div className={s.walletAmountWrapper}>
             <div className={s.walletAmount}>
-              <Currency amount={aggregateAmount} outputType={CurrencyType.USD} showUnit />
+              <Currency
+                amount={aggregateAmount}
+                outputType={CurrencyType.FINNEY}
+                unitClassName={s.activityFinneySign}
+                showUnit
+              />
             </div>
             <div className={s.walletEqual}>=</div>
             <div className={s.walletConverted}>
-              <Currency amount={aggregateAmount} outputType={CurrencyType.ETH} /> ETH
+              <Currency amount={aggregateAmount} outputType={CurrencyType.USD} showUnit/>
             </div>
           </div>
         </div>
@@ -199,6 +204,8 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
             <div className={s.walletActivitySubtractAmount}>
               <Currency
                 amount={total}
+                outputType={CurrencyType.FINNEY}
+                unitClassName={s.activityFinneySign}
                 showUnit
               />
             </div>
@@ -230,6 +237,8 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
               <div className={s.walletActivitySubtractAmount}>
                 <Currency
                   amount={item.payment.price}
+                  outputType={CurrencyType.FINNEY}
+                  unitClassName={s.activityFinneySign}
                   showUnit
                 />
               </div>
