@@ -64,7 +64,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
       isRefilling: true
     })
 
-    const gasPrice = this.props.workerProxy.web3.toWei('50', 'gwei')
+    const gasPrice = await this.getGasPrice()
     const gasCost = new BigNumber.BigNumber(gasPrice).times(300000)
 
     const amount = new BigNumber.BigNumber(this.props.walletBalance!)
@@ -75,13 +75,26 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     } catch (e) {
       this.setState({
         isRefilling: false,
-        error: e.code === -32603 ? 'Insufficient funds. Please deposit more ETH.' : 'Failed to load up SpankCard. Please try again.'
+        error: e.code === -32603
+          ? 'Insufficient funds. Please deposit more ETH.'
+          : 'Failed to load up SpankCard. Please try again.'
       })
       return
     }
 
     this.setState({
       isRefilling: false
+    })
+  }
+
+
+  private async getGasPrice(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.props.workerProxy.web3.eth.getGasPrice((err: any, data: any) => {
+        return err
+          ? reject(err)
+          : resolve(data)
+      })
     })
   }
 
@@ -96,7 +109,16 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             <CTAInput
               isInverse
               isConnected
-              value={<Currency amount={walletBalance} inputType={CurrencyType.WEI} showUnit={true} />}
+              value={(
+                <Currency
+                  amount={walletBalance}
+                  inputType={CurrencyType.WEI}
+                  outputType={CurrencyType.FINNEY}
+                  className={s.sendReceiveCurrency}
+                  unitClassName={s.finneyUnit}
+                  showUnit={true}
+                />
+              )}
               className={s.spankCardCta}
               ctaInputValueClass={s.spankCardCtaInputValue}
               ctaContentClass={s.spankCardCtaContent}

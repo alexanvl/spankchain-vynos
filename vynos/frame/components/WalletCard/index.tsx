@@ -1,6 +1,7 @@
 import * as React from 'react'
 import * as classnames from 'classnames'
-import Currency from '../Currency/index'
+import Currency, { CurrencyType } from '../Currency/index'
+import FinneySign from '../FinneySign/index'
 
 const s = require('./style.css')
 
@@ -84,8 +85,8 @@ function renderCurrencyValue (props: any) {
         lineHeight: props.currencySize + 'px',
         color: props.color
       }}>
-      {props.currency}
-      <Currency key="value" amount={props.currencyValue} />
+      <FinneySign className={s.finneySign} />
+      <Currency key="value" amount={props.currencyValue} outputType={CurrencyType.FINNEY}/>
     </div>
   )
 }

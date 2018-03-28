@@ -52,7 +52,7 @@
 .walletRowBalanceWrapper {
   display: flex;
   flex: 1 0 auto;
-  padding: 0 1rem;
+  padding: 0 .8rem;
 }
 
 .walletRowAction {
@@ -65,8 +65,12 @@
   font-weight: 500;
 }
 
-.spankCardCtaContent {
+.activityFinneySign {
+  border-color: #cccccc;
+} 
 
+.spankCardCtaContent {
+  padding: .2rem 1rem !important;
 }
 
 .spankCardCtaContent:hover {
@@ -143,7 +147,7 @@
 
 .walletFundsHeader {
   font-family: gt-haptik;
-  font-size: 1rem;
+  font-size: .8rem;
   font-weight: bold;
   font-style: normal;
   letter-spacing: 0.1px;
@@ -230,7 +234,7 @@
   border-left: 1px solid rgba(181, 181, 181, 0.4);
   height: 1rem;
   position: relative;
-  right: 2rem;
+  right: 1rem;
   opacity: 1;
   top: 0;
 }
@@ -500,6 +504,20 @@
 
 .pendingAmount, .pendingAmount .currency {
   color: #B5B5B5;
+}
+
+.sendReceiveCurrency {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.finneyUnit {
+  margin-left: 0;
+  margin-top: 0;
+  border-color: #b5b5b5;
+  margin-bottom: .05rem;
 }
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {

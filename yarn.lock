@@ -1758,12 +1758,6 @@ clean-css@4.1.x:
   dependencies:
     source-map "0.5.x"
 
-clean-webpack-plugin@^0.1.19:
-  version "0.1.19"
-  resolved "https://registry.yarnpkg.com/clean-webpack-plugin/-/clean-webpack-plugin-0.1.19.tgz#ceda8bb96b00fe168e9b080272960d20fdcadd6d"
-  dependencies:
-    rimraf "^2.6.1"
-
 cli-cursor@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/cli-cursor/-/cli-cursor-1.0.2.tgz#64da3f7d56a54412e59794bd62dc35295e8f2987"
@@ -5177,9 +5171,9 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@https://github.com/mslipper/machinomy#88d9fa823d097611e5d37f2fadab2da05032bcc9":
+"machinomy@https://github.com/mslipper/machinomy#92c422675d77d08fb4b20d76b7a503528dfefa01":
   version "1.6.3"
-  resolved "https://github.com/mslipper/machinomy#88d9fa823d097611e5d37f2fadab2da05032bcc9"
+  resolved "https://github.com/mslipper/machinomy#92c422675d77d08fb4b20d76b7a503528dfefa01"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
     "@machinomy/types-truffle-contract" "https://github.com/machinomy/types-truffle-contract"
@@ -6021,8 +6015,6 @@ p-limit@^1.0.0, p-limit@^1.1.0:
 p-locate@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/p-locate/-/p-locate-2.0.0.tgz#20a0103b222a70c8fd39cc2e580680f3dde5ec43"
-  dependencies:
-    p-limit "^1.1.0"
 
 p-map@^1.1.1:
   version "1.2.0"
@@ -8498,11 +8490,6 @@ types-ethereumjs-util@^0.0.5:
 types-ethereumjs-util@^0.0.6:
   version "0.0.6"
   resolved "https://registry.yarnpkg.com/types-ethereumjs-util/-/types-ethereumjs-util-0.0.6.tgz#41f4c9f6416748572b9fcb9ddcd83f0f749600d8"
-  dependencies:
-    bn.js "^4.11.7"
-    buffer "^5.0.6"
-    rlp "^2.0.0"
-    types-bn "https://github.com/machinomy/types-bn.git"
 
 types-rlp@^0.0.1:
   version "0.0.1"

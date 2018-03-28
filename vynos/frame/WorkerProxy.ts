@@ -108,8 +108,8 @@ export default class WorkerProxy extends JsonRpcClient {
     return this.call(FetchHistoryRequest.method)
   }
 
-  send (to: string, value: string): Promise<void> {
-    return this.call(SendRequest.method, to, value)
+  send (to: string, value: string, gas?: string, gasPrice?: string): Promise<void> {
+    return this.call(SendRequest.method, to, value, gas, gasPrice)
   }
 
   status (): Promise<WorkerStatus> {

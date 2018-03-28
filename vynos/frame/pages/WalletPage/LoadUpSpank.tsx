@@ -35,12 +35,23 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
       isLoading: true
     })
 
-    const gasPrice = this.props.workerProxy.web3.toWei('50', 'gwei')
+    const gasPrice = await this.getGasPrice()
     const gasCost = new BigNumber.BigNumber(gasPrice).times(300000)
 
     const amount = new BigNumber.BigNumber(this.props.walletBalance!)
       .minus(gasCost)
+
     await this.props.workerProxy.openChannelWithCurrentHub(amount)
+  }
+
+  private async getGasPrice(): Promise<any> {
+    return new Promise((resolve, reject) => {
+      this.props.workerProxy.web3.eth.getGasPrice((err: any, data: any) => {
+        return err
+          ? reject(err)
+          : resolve(data)
+      })
+    })
   }
 
   render () {

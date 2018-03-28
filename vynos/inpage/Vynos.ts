@@ -8,6 +8,17 @@ import Web3 = require('web3')
 import VynosBuyResponse from '../lib/VynosBuyResponse'
 import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 
+export interface Balance {
+  balanceInWei: string
+}
+
+export interface GetBalanceResponse {
+  wallet: Balance
+  channels: {
+    [key: string]: Balance
+  }
+}
+
 export default class Vynos extends EventEmitter {
   private options: WalletOptions
 
@@ -29,6 +40,22 @@ export default class Vynos extends EventEmitter {
     super()
     this.options = options
     this.handleSharedStateUpdate = this.handleSharedStateUpdate.bind(this)
+  }
+
+  public async getBalance(): Promise<GetBalanceResponse> {
+    return this.client.getSharedState()
+      .then(state => {
+        const { balance, channels, currentHubUrl } = state
+        const currentChannels = channels[currentHubUrl] || []
+        return {
+          wallet: { balanceInWei: balance },
+          channels: currentChannels.reduce((acc: any, channel: any) => {
+            const { channelId, spent, value } = channel
+            acc[channel.channelId] = { balanceInWei: `${value - spent}` }
+            return acc
+          }, {}),
+        }
+      })
   }
 
   public async buy (amount: BigNumber.BigNumber, meta: any): Promise<VynosBuyResponse|null> {
