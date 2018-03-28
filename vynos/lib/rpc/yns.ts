@@ -93,5 +93,5 @@ export type ToggleFrameRequest = RequestPayload
 export const FetchHistoryRequest = requestFactory<any[]>('fetchHistory')
 export type FetchHistoryRequest = RequestPayload
 
-export const SendRequest = requestFactory<[string, string]>('send')
+export const SendRequest = requestFactory<[string, string, string, string]>('send')
 export type SendRequest = RequestPayload

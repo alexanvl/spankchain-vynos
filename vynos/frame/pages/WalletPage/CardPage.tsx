@@ -96,7 +96,16 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             <CTAInput
               isInverse
               isConnected
-              value={<Currency amount={walletBalance} inputType={CurrencyType.WEI} showUnit={true} />}
+              value={(
+                <Currency
+                  amount={walletBalance}
+                  inputType={CurrencyType.WEI}
+                  outputType={CurrencyType.FINNEY}
+                  className={s.sendReceiveCurrency}
+                  unitClassName={s.finneyUnit}
+                  showUnit={true}
+                />
+              )}
               className={s.spankCardCta}
               ctaInputValueClass={s.spankCardCtaInputValue}
               ctaContentClass={s.spankCardCtaContent}

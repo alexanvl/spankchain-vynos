@@ -25,6 +25,9 @@ class SendReceivePage extends React.Component<MapStateToProps>  {
             <Currency
               amount={balance}
               inputType={CurrencyType.WEI}
+              outputType={CurrencyType.FINNEY}
+              className={s.sendReceiveCurrency}
+              unitClassName={s.finneyUnit}
               showUnit
             />
             {this.renderPending()}
@@ -65,6 +68,9 @@ class SendReceivePage extends React.Component<MapStateToProps>  {
         <Currency
           amount={this.props.pendingAmount}
           inputType={CurrencyType.WEI}
+          outputType={CurrencyType.FINNEY}
+          className={s.sendReceiveCurrency}
+          unitClassName={s.finneyUnit}
           showUnit
         />
       </span>
