@@ -37,6 +37,18 @@
   margin-left: 0 !important;
 }
 
+.loadUpWrapper,
+.loadUpCurrency {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.loadUpCurrency {
+  padding-right: .25rem;
+}
+
 .loading {
   background: #4A4A4A !important;
   color: white !important;

@@ -5171,9 +5171,9 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@https://github.com/mslipper/machinomy#88d9fa823d097611e5d37f2fadab2da05032bcc9":
+"machinomy@https://github.com/mslipper/machinomy#92c422675d77d08fb4b20d76b7a503528dfefa01":
   version "1.6.3"
-  resolved "https://github.com/mslipper/machinomy#88d9fa823d097611e5d37f2fadab2da05032bcc9"
+  resolved "https://github.com/mslipper/machinomy#92c422675d77d08fb4b20d76b7a503528dfefa01"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
     "@machinomy/types-truffle-contract" "https://github.com/machinomy/types-truffle-contract"
@@ -6006,7 +6006,7 @@ p-lazy@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/p-lazy/-/p-lazy-1.0.0.tgz#ec53c802f2ee3ac28f166cc82d0b2b02de27a835"
 
-p-limit@^1.0.0, p-limit@^1.1.0:
+p-limit@^1.0.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/p-limit/-/p-limit-1.2.0.tgz#0e92b6bedcb59f022c13d0f1949dc82d15909f1c"
   dependencies:
@@ -6015,8 +6015,6 @@ p-limit@^1.0.0, p-limit@^1.1.0:
 p-locate@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/p-locate/-/p-locate-2.0.0.tgz#20a0103b222a70c8fd39cc2e580680f3dde5ec43"
-  dependencies:
-    p-limit "^1.1.0"
 
 p-map@^1.1.1:
   version "1.2.0"
@@ -8472,12 +8470,6 @@ typedarray@^0.0.6:
 types-bn@^0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/types-bn/-/types-bn-0.0.1.tgz#4253c7c7251b14e1d77cdca6f58800e5e2b82c4b"
-  dependencies:
-    bn.js "4.11.7"
-
-"types-bn@https://github.com/machinomy/types-bn.git":
-  version "0.0.1"
-  resolved "https://github.com/machinomy/types-bn.git#08ede69e138640d332b0dae0dc2e2fffee5f7160"
   dependencies:
     bn.js "4.11.7"
 

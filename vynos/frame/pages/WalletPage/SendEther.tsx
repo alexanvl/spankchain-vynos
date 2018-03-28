@@ -194,7 +194,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
     try {
       await this.props.workerProxy.send(
         address,
-        this.props.workerProxy.web3.toWei(balance, 'ether'),
+        this.props.workerProxy.web3.toWei(balance, 'finney'),
         gas,
         this.props.workerProxy.web3.toWei(gasPrice, 'gwei')
       )
