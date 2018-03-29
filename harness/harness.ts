@@ -47,6 +47,11 @@ window.addEventListener("load", function () {
     }
   }
 
+  const lockButton = document.getElementById('lock')
+  if (lockButton) {
+    lockButton.onclick = () => vynos.lock()
+  }
+
   const eventLog = document.getElementById('event-log')!
   subToEvent('error')
   subToEvent('ready')

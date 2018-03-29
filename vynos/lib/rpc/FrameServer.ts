@@ -6,7 +6,7 @@ import {
   InitAccountRequest,
   RegisterHubRequest,
   ListChannelsRequest,
-  ToggleFrameRequest
+  ToggleFrameRequest, LockWalletRequest
 } from './yns'
 import WorkerProxy from '../../frame/WorkerProxy'
 import {AllowedOrigins} from '../messaging/OriginValidator'
@@ -27,6 +27,7 @@ export default class FrameServer extends JsonRpcServer {
     this.passThroughHandler(GetSharedStateRequest.method)
     this.passThroughHandler(AuthenticateRequest.method)
     this.passThroughHandler(ToggleFrameRequest.method)
+    this.passThroughHandler(LockWalletRequest.method)
 
     this.passThroughEvent(ReadyBroadcastEvent)
     this.passThroughEvent(WorkerReadyBroadcastEvent)

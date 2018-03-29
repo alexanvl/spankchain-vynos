@@ -72,6 +72,11 @@ export default class Vynos extends EventEmitter {
     return res
   }
 
+  public async lock() {
+    this.requireReady()
+    return this.client.lock()
+  }
+
   public show(forceRedirect?: string, isPerformer?: boolean) {
     this.requireReady()
     this.client.toggleFrame(true, forceRedirect, isPerformer)
