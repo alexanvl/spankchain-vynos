@@ -13,6 +13,7 @@ import WalletMiniCard from '../components/WalletMiniCard/index'
 import OnboardingContainer from '../pages/InitPage/OnboardingContainer'
 import {RouteComponentProps, withRouter} from 'react-router'
 import _ = require('lodash')
+import Submittable from '../components/Submittable'
 
 const style = require('../styles/ynos.css')
 
@@ -107,33 +108,36 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
           <TextBox className={style.passwordTextBox}>
             We see you already have a SpankWallet, please login.
           </TextBox>
-          <Input
-            placeholder="Password"
-            type="password"
-            className={style.passwordInput}
-            onChange={this.handleChangePassword}
-            errorMessage={this.state.passwordError}
-            autoFocus
-            inverse
-          />
-          <div className={style.funnelFooter}>
-            <Button
-              type="secondary"
-              content="Restore SpankWallet"
-              onClick={this.doDisplayRestore}
-              isInverse
-              isMini
+          <Submittable onSubmit={this.handleSubmit}>
+            <Input
+              placeholder="Password"
+              type="password"
+              className={style.passwordInput}
+              onChange={this.handleChangePassword}
+              errorMessage={this.state.passwordError}
+              autoFocus
+              inverse
             />
-            <Button
-              content={() => (
-                this.state.loading ? 'Unlocking...' : <div className={style.loginButton} />
-              )}
-              onClick={this.handleSubmit}
-              disabled={this.state.loading}
-              isInverse
-              isMini
-            />
-          </div>
+            <div className={style.funnelFooter}>
+              <Button
+                type="secondary"
+                content="Restore SpankWallet"
+                onClick={this.doDisplayRestore}
+                isInverse
+                isMini
+              />
+              <Button
+                content={() => (
+                  this.state.loading ? 'Unlocking...' : <div className={style.loginButton} />
+                )}
+                onClick={this.handleSubmit}
+                disabled={this.state.loading}
+                isInverse
+                isMini
+                isSubmit
+              />
+            </div>
+          </Submittable>
         </div>
       </OnboardingContainer>
     )
