@@ -63,9 +63,6 @@ export type UnlockWalletRequest = RequestPayload
 export const LockWalletRequest = requestFactory<string[]>('lockWallet')
 export type LockWalletRequest = RequestPayload
 
-export const OpenChannelRequest = requestFactory<[number]>('openChannel')
-export type OpenChannelRequest = RequestPayload
-
 export const CloseChannelsForCurrentHubRequest = requestFactory<[string]>('closeChannelsForCurrentHub')
 export type CloseChannelsForCurrentHubRequest = RequestPayload
 

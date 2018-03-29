@@ -11,7 +11,6 @@ import {
   BuyRequest,
   CloseChannelsForCurrentHubRequest, DepositRequest,
   ListChannelsRequest,
-  OpenChannelRequest,
   PopulateChannelsRequest
 } from '../../lib/rpc/yns'
 import AbstractController from './AbstractController'
@@ -42,15 +41,6 @@ export default class MicropaymentsController extends AbstractController {
       (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
   }
 
-  public async openChannel (value: number): Promise<PaymentChannel> {
-    const state = await this.sharedStateView.getSharedState()
-    const receiver = state.branding.address
-    const machinomy = await this.getMachinomy()
-    const chan = await machinomy.open(receiver, value)
-    this.store.dispatch(actions.setChannel(PaymentChannelSerde.instance.serialize(chan)))
-    return chan
-  }
-
   public async closeChannelsForCurrentHub (): Promise<void> {
     const sharedState = await this.sharedStateView.getSharedState()
     const hubUrl = await this.sharedStateView.getHubUrl()
@@ -68,15 +58,16 @@ export default class MicropaymentsController extends AbstractController {
   public async deposit(amount: number): Promise<void> {
     const sharedState = await this.sharedStateView.getSharedState()
     const hubUrl = await this.sharedStateView.getHubUrl()
+    const machinomy = await this.getMachinomy()
     const channels = sharedState.channels[hubUrl]
 
-    if (!channels) {
-      throw new Error('No open channel.')
+    if (channels && channels.length) {
+      await machinomy.deposit(channels[0].channelId, amount)
+    } else {
+      const receiver = sharedState.branding.address
+      await machinomy.open(receiver, amount)
     }
 
-    const machinomy = await this.getMachinomy()
-
-    await machinomy.deposit(channels[0].channelId, amount)
     await this.populateChannels()
   }
 
@@ -102,7 +93,6 @@ export default class MicropaymentsController extends AbstractController {
 
   public registerHandlers (server: JsonRpcServer) {
     this.registerHandler(server, PopulateChannelsRequest.method, this.populateChannels)
-    this.registerHandler(server, OpenChannelRequest.method, this.openChannel)
     this.registerHandler(server, CloseChannelsForCurrentHubRequest.method, this.closeChannelsForCurrentHub)
     this.registerHandler(server, DepositRequest.method, this.deposit)
     this.registerHandler(server, ListChannelsRequest.method, this.listChannels)

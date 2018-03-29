@@ -7,6 +7,7 @@ import Button from '../../../components/Button/index'
 import Currency, {CurrencyType} from '../../../components/Currency/index'
 import * as BigNumber from 'bignumber.js';
 import * as classnames from 'classnames';
+import entireBalance from '../../../lib/entireBalance'
 
 const s = require('./index.css')
 
@@ -33,9 +34,8 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
       isLoading: true
     })
 
-    const amount = new BigNumber.BigNumber(this.props.walletBalance!)
-      .minus(this.props.workerProxy.web3.toWei('0.05', 'ether'))
-    await this.props.workerProxy.openChannelWithCurrentHub(amount)
+    const amount = await entireBalance(this.props.workerProxy, new BigNumber.BigNumber(this.props.walletBalance!))
+    await this.props.workerProxy.deposit(amount)
   }
 
   renderContent () {
