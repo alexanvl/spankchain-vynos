@@ -26,6 +26,11 @@ export default class StartupController {
 
   private async getHubBranding (hubUrl: string): Promise<null> {
     const res = await fetch(`${hubUrl}/branding`)
+
+    if (res.status !== 200) {
+      throw new Error('Failed to get hub branding.')
+    }
+
     const resJson: BrandingResponse = await res.json()
     this.store.dispatch(actions.setHubBranding(resJson))
     return null

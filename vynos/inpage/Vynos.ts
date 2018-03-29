@@ -116,7 +116,13 @@ export default class Vynos extends EventEmitter {
     const origin = `${parts[0]}//${parts[2]}`
 
     this.client = new VynosClient(this.frame.element.contentWindow, origin)
-    await this.client.initialize(this.options.hubUrl, this.options.authRealm)
+
+    try {
+      await this.client.initialize(this.options.hubUrl, this.options.authRealm)
+    } catch (err) {
+      this.emit('error', err)
+      throw err
+    }
 
     this.previousState = await this.client.getSharedState()
     this.client.onSharedStateUpdate(this.handleSharedStateUpdate)
