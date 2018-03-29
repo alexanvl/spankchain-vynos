@@ -4,7 +4,7 @@ import {
   BuyRequest,
   GetSharedStateRequest,
   InitAccountRequest,
-  ListChannelsRequest,
+  ListChannelsRequest, LockWalletRequest,
   RegisterHubRequest,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
@@ -64,5 +64,9 @@ export default class VynosClient extends JsonRpcClient {
 
   toggleFrame (state: boolean, forceRedirect?: string, isPerformer?: boolean): Promise<void> {
     return this.call(ToggleFrameRequest.method, state, forceRedirect, isPerformer)
+  }
+
+  lock (): Promise<void> {
+    return this.call(LockWalletRequest.method)
   }
 }
