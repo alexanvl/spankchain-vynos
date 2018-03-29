@@ -75,6 +75,22 @@ export default class MicropaymentsController extends AbstractController {
     const receiver = (await this.sharedStateView.getSharedState()).branding.address
     const hubUrl = await this.sharedStateView.getHubUrl()
     const machinomy = await this.getMachinomy()
+    const channels = await machinomy.channels()
+
+    // machinomy performs the below two checks internally, however
+    // it will open a channel automatically if no suitable existing
+    // channels are found. the wallet needs user interaction to fill it,
+    // so we throw errors if there is no open channel or the channel does
+    // not have sufficient funds.
+    if (!channels.length) {
+      throw new Error('A channel must be open.')
+    }
+
+    const chan = channels[0]
+
+    if (chan.spent.add(price) > chan.value) {
+      throw new Error('Insufficient funds.')
+    }
 
     const res = await machinomy.buy({
       gateway: `${hubUrl}/payments`,
