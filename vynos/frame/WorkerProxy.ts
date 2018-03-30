@@ -9,7 +9,7 @@ import {
   GetSharedStateRequest,
   LockWalletRequest,
   PopulateChannelsRequest,
-  RememberPageRequest,
+  RememberPageRequest, ResetRequest,
   RespondToAuthorizationRequestRequest,
   RestoreWalletRequest,
   SendRequest, StartAuthenticationRequest,
@@ -117,5 +117,9 @@ export default class WorkerProxy extends JsonRpcClient {
 
   status (): Promise<WorkerStatus> {
     return this.callWithTimeout(500, StatusRequest.method)
+  }
+
+  reset (): Promise<void> {
+    return this.call(ResetRequest.method)
   }
 }

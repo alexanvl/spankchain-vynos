@@ -852,6 +852,18 @@ Channels page
   display: flex;
 }
 
+.resetText {
+  color: white;
+  font-size: 0.6rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.resetText span {
+  cursor: pointer;
+  font-family: CartographMonoCF;
+}
+
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
   .passwordTextBox {
     width: 75%;

@@ -1,5 +1,5 @@
 import {
-  AuthenticateRequest, FinishAuthenticationRequest, RespondToAuthorizationRequestRequest,
+  AuthenticateRequest, FinishAuthenticationRequest, ResetRequest, RespondToAuthorizationRequestRequest,
   StartAuthenticationRequest
 } from '../../lib/rpc/yns'
 import {WorkerState} from '../WorkerState'
@@ -12,6 +12,8 @@ import SharedStateView from '../SharedStateView'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import requestJson from '../../frame/lib/request'
+import localForage = require('localforage')
+
 
 const util = require('ethereumjs-util')
 

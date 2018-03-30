@@ -251,3 +251,8 @@ export function setPendingTransactionHandler(state: WorkerState, pendingTransact
     }
   }
 }
+
+export const reset: ActionCreator<null> = actionCreator<null>('runtime/reset')
+export function resetHandler(): WorkerState {
+  return undefined as any
+}

@@ -22,5 +22,6 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.setHistory, actions.setHistoryHandler)
   .case(actions.setBalance, actions.setBalanceHandler)
   .case(actions.setPendingTransaction, actions.setPendingTransactionHandler)
+  .case(actions.reset, actions.resetHandler)
 
 export default reducers

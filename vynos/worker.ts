@@ -1,7 +1,7 @@
 import {asServiceWorker} from './worker/window'
 import * as redux from 'redux'
 import {Store} from 'redux'
-import {RegisterHubRequest, StatusRequest} from './lib/rpc/yns'
+import {RegisterHubRequest, ResetRequest, StatusRequest} from './lib/rpc/yns'
 import StartupController from './worker/controllers/StartupController'
 import WorkerServer from './lib/rpc/WorkerServer'
 import {autoRehydrate, persistStore} from 'redux-persist'
@@ -21,6 +21,7 @@ import WalletController from './worker/controllers/WalletController'
 import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import debug from './lib/debug'
 import localForage = require('localforage')
+import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
 
 export class ClientWrapper implements WindowClient {
   private self: ServiceWorkerGlobalScope
@@ -103,6 +104,25 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
         await startupController.registerHub(hubUrl, authRealm)
         server.broadcast(ReadyBroadcastEvent)
         status = WorkerStatus.READY
+        cb(null, null)
+      } catch (e) {
+        cb(e, null)
+      }
+    })
+    server.addHandler(ResetRequest.method, async (cb: ErrResCallback) => {
+      try {
+        await new Promise((resolve, reject) => {
+          const req = indexedDB.deleteDatabase('NeDB')
+          req.onerror = reject
+          // blocked is OK to resolve because we refresh the page
+          // in response to the reset broadcast event
+          req.onblocked = resolve
+          req.onsuccess = resolve
+        })
+
+        await localForage.clear()
+
+        server.broadcast(ResetBroadcastEvent)
         cb(null, null)
       } catch (e) {
         cb(e, null)
