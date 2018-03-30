@@ -37,7 +37,7 @@ function renderQR(address: string|null) {
 }
 
 export class ReceiveEther extends React.Component<Props, State> {
-  timeout: number
+  timeout: any
   
   state = {
     isCopied: false,

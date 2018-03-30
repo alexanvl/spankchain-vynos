@@ -18,7 +18,7 @@ export interface State {
 }
 
 class SendReceivePage extends React.Component<MapStateToProps, State>  {
-  timeout: number
+  timeout: any
 
   state = {
     isCopied: false,
