@@ -17,6 +17,8 @@ export interface AuthorizePageProps extends RouteComponentProps<any>, StateProps
 
 export interface AuthorizePageState {
   authRealm: string
+  hasError: boolean
+  isAuthenticating: boolean
 }
 
 export class AuthorizePage extends React.Component<AuthorizePageProps, AuthorizePageState> {
@@ -24,7 +26,9 @@ export class AuthorizePage extends React.Component<AuthorizePageProps, Authorize
     super(props)
 
     this.state = {
-      authRealm: props.authRequest ? props.authRequest.authRealm : ''
+      authRealm: props.authRequest ? props.authRequest.authRealm : '',
+      hasError: false,
+      isAuthenticating: false
     }
   }
 
@@ -39,20 +43,50 @@ export class AuthorizePage extends React.Component<AuthorizePageProps, Authorize
   }
 
   async onClickResponse (res: boolean) {
-    await this.props.workerProxy.toggleFrame(false)
-    await this.props.workerProxy.respondToAuthorizationRequest(res)
-    this.props.history.push('/wallet')
+    this.setState({
+      isAuthenticating: true
+    })
+
+    if (res) {
+      this.props.workerProxy.finishAuthentication()
+        .then(() => this.props.workerProxy.toggleFrame(false))
+        .then(() => this.props.history.push('/wallet'))
+        .catch(() => this.setState({
+          hasError: true,
+          isAuthenticating: false
+        }))
+    } else {
+      this.props.workerProxy.toggleFrame(false)
+      this.props.history.push('/wallet')
+      this.props.workerProxy.respondToAuthorizationRequest(false)
+    }
   }
 
   render () {
     return (
       <div className={s.walletWrapper}>
         <div className={s.walletRow}>
-          Are you sure you want to authenticate to {this.state.authRealm}?
+          {
+            this.state.hasError ?
+              'An error occurred while authenticating. Please try again.' :
+              `Are you sure you want to authenticate to ${this.state.authRealm}?`
+          }
         </div>
         <div className={s.walletRow}>
-          <Button type="secondary" onClick={() => this.onClickResponse(false)} content="No" isMini />
-          <Button type="primary" onClick={() => this.onClickResponse(true)} content="Yes" isMini />
+          <Button
+            type="secondary"
+            onClick={() => this.onClickResponse(false)}
+            content="No"
+            disabled={this.state.isAuthenticating}
+            isMini
+          />
+          <Button
+            type="primary"
+            onClick={() => this.onClickResponse(true)}
+            content={this.state.isAuthenticating ? 'Authenticating...' : 'Yes'}
+            isMini
+            disabled={this.state.isAuthenticating}
+          />
         </div>
       </div>
     )

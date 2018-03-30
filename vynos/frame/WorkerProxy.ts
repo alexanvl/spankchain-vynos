@@ -4,7 +4,7 @@ import {
   AuthenticateResponse,
   CloseChannelsForCurrentHubRequest, DepositRequest,
   DidStoreMnemonicRequest,
-  FetchHistoryRequest,
+  FetchHistoryRequest, FinishAuthenticationRequest,
   GenKeyringRequest,
   GetSharedStateRequest,
   LockWalletRequest,
@@ -12,7 +12,7 @@ import {
   RememberPageRequest,
   RespondToAuthorizationRequestRequest,
   RestoreWalletRequest,
-  SendRequest,
+  SendRequest, StartAuthenticationRequest,
   StatusRequest,
   ToggleFrameRequest,
   UnlockWalletRequest
@@ -89,6 +89,14 @@ export default class WorkerProxy extends JsonRpcClient {
 
   authenticate (): Promise<AuthenticateResponse> {
     return this.call(AuthenticateRequest.method, window.location.hostname)
+  }
+
+  startAuthentication (): Promise<void> {
+    return this.call(StartAuthenticationRequest.method)
+  }
+
+  finishAuthentication (): Promise<void> {
+    return this.call(FinishAuthenticationRequest.method, window.location.hostname)
   }
 
   respondToAuthorizationRequest (res: boolean): Promise<void> {

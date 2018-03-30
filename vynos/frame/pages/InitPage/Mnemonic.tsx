@@ -72,7 +72,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
           </div>
           <div className={style.seedWords}>
             {mnemonic.split(' ').map((seed, i) => (
-              <div className={style.seedWord} key={seed}>
+              <div className={style.seedWord} key={`${seed}-${i}`}>
                 <span className={style.seedWordIndex}>{i + 1}</span>
                 {seed}
               </div>

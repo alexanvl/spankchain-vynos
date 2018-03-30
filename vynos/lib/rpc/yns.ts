@@ -39,6 +39,12 @@ export interface AuthenticateResponse extends ResponsePayload {
   result: { success: boolean, token?: string }
 }
 
+export const StartAuthenticationRequest = requestFactory<any[]>('startAuthentication')
+export type StartAuthenticationRequest = RequestPayload
+
+export const FinishAuthenticationRequest = requestFactory<any[]>('finishAuthentication')
+export type FinishAuthenticationRequest = RequestPayload
+
 export const InitAccountRequest = requestFactory<any[]>('initAccount')
 export type InitAccountRequest = RequestPayload
 

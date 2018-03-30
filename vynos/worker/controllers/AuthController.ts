@@ -1,4 +1,7 @@
-import {AuthenticateRequest, RespondToAuthorizationRequestRequest} from '../../lib/rpc/yns'
+import {
+  AuthenticateRequest, FinishAuthenticationRequest, RespondToAuthorizationRequestRequest,
+  StartAuthenticationRequest
+} from '../../lib/rpc/yns'
 import {WorkerState} from '../WorkerState'
 import {Store} from 'redux'
 import * as actions from '../actions'
@@ -37,7 +40,12 @@ export default class AuthController extends AbstractController {
     this.store.dispatch(actions.respondToAuthorizationRequest(res))
   }
 
-  async authenticate (origin: string) {
+  async authenticate(origin: string) {
+    await this.startAuthentication()
+    return this.finishAuthentication(origin, true)
+  }
+
+  async startAuthentication() {
     const isLocked = await this.sharedStateView.isLocked()
     const hubUrl = await this.sharedStateView.getHubUrl()
     const authRealm = await this.sharedStateView.getAuthRealm()
@@ -56,14 +64,19 @@ export default class AuthController extends AbstractController {
         hubUrl,
         authRealm
       }))
+    }
+  }
 
+  async finishAuthentication(origin: string, awaitResponse: boolean = false) {
+    if (awaitResponse) {
+      const authRealm = await this.sharedStateView.getAuthRealm()
       const machine = new AuthStateMachine(this.store, authRealm)
       await machine.awaitAuthorization()
     }
 
-    const token = await this.doAuthenticate(origin)
-
+    const token = await this.doChallengeResponse(origin)
     this.store.dispatch(actions.setCurrentAuthToken(token))
+    this.store.dispatch(actions.respondToAuthorizationRequest(true))
 
     return {
       success: true,
@@ -74,9 +87,11 @@ export default class AuthController extends AbstractController {
   registerHandlers (server: JsonRpcServer) {
     this.registerHandler(server, RespondToAuthorizationRequestRequest.method, this.respondToAuthorizationRequest)
     this.registerHandler(server, AuthenticateRequest.method, this.authenticate)
+    this.registerHandler(server, StartAuthenticationRequest.method, this.startAuthentication)
+    this.registerHandler(server, FinishAuthenticationRequest.method, this.finishAuthentication)
   }
 
-  private async doAuthenticate (origin: string): Promise<string> {
+  private async doChallengeResponse (origin: string): Promise<string> {
     const addresses = await this.sharedStateView.getAccounts()
     const res = await requestJson<NonceResponse>(this.authUrl('challenge'), {
       method: 'POST',
