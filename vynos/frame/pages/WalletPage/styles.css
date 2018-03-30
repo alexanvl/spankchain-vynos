@@ -67,7 +67,7 @@
 
 .activityFinneySign {
   border-color: #cccccc;
-} 
+}
 
 .spankCardCtaContent {
   padding: .2rem 1rem !important;
@@ -254,11 +254,26 @@
   padding: 0 2.5rem;
 }
 
+.walletActivityHeaderRow:first-child:last-child {
+  margin-bottom: 0;
+}
+
 .walletActivityHeader {
   font-family: gt-haptik;
   font-size: 1.6rem;
   font-weight: 600;
   color: #797979;
+}
+
+.walletActivityMiniHeader {
+  font-family: CartographMonoCF;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #797979;
+}
+
+.walletActivityErrorHeader {
+  color: #ff3b80;
 }
 
 .walletAmountWrapper {

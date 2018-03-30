@@ -22,6 +22,7 @@ export interface ActivitySubpageProps extends StateProps {
 export interface ActivitySubpageState {
   isLoading: boolean
   detailRows: Set<number>
+  error: string
 }
 
 interface Group {
@@ -37,7 +38,8 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
 
     this.state = {
       isLoading: false,
-      detailRows: new Set<number>()
+      detailRows: new Set<number>(),
+      error: ''
     }
   }
 
@@ -46,7 +48,15 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
       isLoading: true
     })
 
-    await this.props.workerProxy.fetchHistory()
+    try {
+      await this.props.workerProxy.fetchHistory()
+    } catch (err) {
+      this.setState({
+        isLoading: false,
+        error: 'Couldn\'t fetch history. Please try again later.'
+      })
+      return
+    }
 
     this.setState({
       isLoading: false
@@ -68,11 +78,17 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
   }
 
   render () {
-    if (this.state.isLoading) {
+    const { isLoading, error } = this.state
+
+    if (isLoading || error) {
       return (
         <div className={s.walletActivityWrapper}>
           <div className={s.walletActivityHeaderRow}>
-            <div className={s.walletActivityHeader}>Loading...</div>
+            <div className={classnames(s.walletActivityMiniHeader, {
+              [s.walletActivityErrorHeader]: !!error
+            })}>
+              {error ? error : 'Loading...'}
+            </div>
           </div>
         </div>
       )

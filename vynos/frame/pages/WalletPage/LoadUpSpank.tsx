@@ -5,6 +5,7 @@ import Button from '../../components/Button/index'
 import WorkerProxy from '../../WorkerProxy'
 import * as BigNumber from 'bignumber.js';
 import Currency, {CurrencyType} from '../../components/Currency/index'
+import entireBalance from '../../lib/entireBalance'
 
 const s = require('./LoadUpSpank.css')
 
@@ -35,23 +36,8 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
       isLoading: true
     })
 
-    const gasPrice = await this.getGasPrice()
-    const gasCost = new BigNumber.BigNumber(gasPrice).times(300000)
-
-    const amount = new BigNumber.BigNumber(this.props.walletBalance!)
-      .minus(gasCost)
-
-    await this.props.workerProxy.openChannelWithCurrentHub(amount)
-  }
-
-  private async getGasPrice(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.props.workerProxy.web3.eth.getGasPrice((err: any, data: any) => {
-        return err
-          ? reject(err)
-          : resolve(data)
-      })
-    })
+    const amount = await entireBalance(this.props.workerProxy, new BigNumber.BigNumber(this.props.walletBalance!))
+    await this.props.workerProxy.deposit(amount)
   }
 
   render () {

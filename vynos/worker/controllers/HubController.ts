@@ -34,6 +34,11 @@ export default class HubController extends AbstractController {
     const res = await fetch(`${hubUrl}/payments/${address}`, {
       credentials: 'include'
     })
+
+    if (res.status !== 200) {
+      throw new Error('Failed to fetch history.')
+    }
+
     const history = await res.json()
     this.store.dispatch(actions.setHistory(history))
     return history

@@ -8,7 +8,6 @@ import {
   GenKeyringRequest,
   GetSharedStateRequest,
   LockWalletRequest,
-  OpenChannelRequest,
   PopulateChannelsRequest,
   RememberPageRequest,
   RespondToAuthorizationRequestRequest,
@@ -42,10 +41,6 @@ export default class WorkerProxy extends JsonRpcClient {
           })
       }
     })
-  }
-
-  openChannelWithCurrentHub (amount: BigNumber.BigNumber): Promise<string> {
-    return this.call(OpenChannelRequest.method, amount.toNumber())
   }
 
   closeChannelsForCurrentHub (): Promise<void> {

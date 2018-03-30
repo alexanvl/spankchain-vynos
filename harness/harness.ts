@@ -10,7 +10,7 @@ window.addEventListener("load", function () {
   }
 
   let vynos = new Vynos({
-    hubUrl: 'http://localhost:8080',
+    hubUrl: 'http://165.227.202.164:8080',
     authRealm: 'SpankChain',
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
     window: _window
@@ -45,6 +45,11 @@ window.addEventListener("load", function () {
         performerAddress: '0x0108d76118d97b88aa40167064cb242fa391effa'
       })
     }
+  }
+
+  const lockButton = document.getElementById('lock')
+  if (lockButton) {
+    lockButton.onclick = () => vynos.lock()
   }
 
   const eventLog = document.getElementById('event-log')!

@@ -9,6 +9,7 @@ import {cardBalance} from '../../redux/selectors/cardBalance'
 import * as BigNumber from 'bignumber.js';
 import WorkerProxy from '../../WorkerProxy'
 import Currency, {CurrencyType} from '../../components/Currency/index'
+import entireBalance from '../../lib/entireBalance'
 
 const s = require('./styles.css')
 
@@ -64,11 +65,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
       isRefilling: true
     })
 
-    const gasPrice = await this.getGasPrice()
-    const gasCost = new BigNumber.BigNumber(gasPrice).times(300000)
-
-    const amount = new BigNumber.BigNumber(this.props.walletBalance!)
-      .minus(gasCost)
+    const amount = await entireBalance(this.props.workerProxy, new BigNumber.BigNumber(this.props.walletBalance!))
 
     try {
       await this.props.workerProxy.deposit(amount)
@@ -84,17 +81,6 @@ class CardPage extends React.Component<StateProps, CardPageState> {
 
     this.setState({
       isRefilling: false
-    })
-  }
-
-
-  private async getGasPrice(): Promise<any> {
-    return new Promise((resolve, reject) => {
-      this.props.workerProxy.web3.eth.getGasPrice((err: any, data: any) => {
-        return err
-          ? reject(err)
-          : resolve(data)
-      })
     })
   }
 
