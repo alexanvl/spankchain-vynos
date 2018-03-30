@@ -1,15 +1,9 @@
 import * as React from "react"
 import Web3 = require('web3')
 import {connect} from "react-redux"
-// import {Dispatch} from 'redux'
-// import {MouseEvent} from "react"
 import * as classnames from 'classnames'
 import * as copy from 'copy-to-clipboard'
 import * as qr from 'qr-image'
-// import postMessage from "../../lib/postMessage"
-// import {FrameState} from "../../redux/FrameState"
-// import WorkerProxy from "../../WorkerProxy"
-// import * as actions from "../../redux/actions"
 import CTAInput from "../../components/CTAInput/index"
 import Input from "../../components/Input/index"
 import Button from "../../components/Button/index"
@@ -17,7 +11,7 @@ import Button from "../../components/Button/index"
 const s = require('./ReceiveEther.css')
 
 
-export interface MapStateToProps {
+export interface Props {
   address: string|null
   headerText: string
   descriptionLineOne: string
@@ -25,11 +19,9 @@ export interface MapStateToProps {
   linkText: string
 }
 
-export interface MapDispatchToProps {
-  
+export interface State {
+  isCopied: boolean
 }
-
-export type ReceiveEtherProps = MapStateToProps & MapDispatchToProps
 
 function renderQR(address: string|null) {
   if (!address) {
@@ -44,7 +36,33 @@ function renderQR(address: string|null) {
   )
 }
 
-export class ReceiveEther extends React.Component<ReceiveEtherProps, any> {
+export class ReceiveEther extends React.Component<Props, State> {
+  timeout: number
+  
+  state = {
+    isCopied: false,
+  }
+
+  componentWillUnmount() {
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+    }
+  }
+
+  onCopyAddress = () => {
+    const { address } = this.props;
+
+    if (address) {
+      copy(address)
+      this.setState({
+        isCopied: true,
+      })
+
+      this.timeout = setTimeout(() => {
+        this.setState({ isCopied: false })
+      }, 2000)
+    }
+  }
 
   render() {
     const {
@@ -77,9 +95,11 @@ export class ReceiveEther extends React.Component<ReceiveEtherProps, any> {
             ctaInputValueClass={s.ctaInputValue}
             value={address}
             ctaContent={() => (
-              <div className={s.ctaContentWrapper} onClick={() => address && copy(address)}>
+              <div className={s.ctaContentWrapper} onClick={this.onCopyAddress}>
                 <div className={s.ctaIcon} />
-                <span className={s.ctaText}>Copy</span>
+                <span className={s.ctaText}>
+                  {this.state.isCopied ? 'Copied': 'Copy'}
+                </span>
               </div>
             )}
           />
@@ -92,10 +112,5 @@ export class ReceiveEther extends React.Component<ReceiveEtherProps, any> {
     )
   }
 }
-
-// export default connect(
-//   null,
-//   null,
-// )(ReceiveEther)
 
 export default ReceiveEther

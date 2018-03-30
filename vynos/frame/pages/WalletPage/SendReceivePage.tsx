@@ -13,9 +13,39 @@ export interface MapStateToProps {
   pendingAmount: string | null
 }
 
-class SendReceivePage extends React.Component<MapStateToProps>  {
+export interface State {
+  isCopied: boolean
+}
+
+class SendReceivePage extends React.Component<MapStateToProps, State>  {
+  timeout: number
+
+  state = {
+    isCopied: false,
+  }
+
+  componentWillUnmount() {
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+    }
+  }
+
+  onCopyAddress = () => {
+    const { address } = this.props;
+
+    if (address) {
+      copy(address)
+      this.setState({
+        isCopied: true,
+      })
+
+      this.timeout = setTimeout(() => this.setState({ isCopied: false }), 2000)
+    }
+  }
+
   render() {
-    const {balance, address} = this.props
+    const {balance} = this.props
+    const {isCopied} = this.state
 
     return (
       <div className={s.walletCard}>
@@ -36,8 +66,8 @@ class SendReceivePage extends React.Component<MapStateToProps>  {
         <div className={s.walletActions}>
           <Button
             type="secondary"
-            content="Copy Address"
-            onClick={() => address && copy(address)}
+            content={isCopied ? "Copied" : "Copy Address"}
+            onClick={this.onCopyAddress}
             isMini
           />
           <Button
