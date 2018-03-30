@@ -9,6 +9,8 @@ require('dotenv').config({ path: '.env' });
 
 let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
+const NODE_ENV = process.env.NODE_ENV
+
 function resolvePath(dir) {
   return path.resolve.apply(path, [__dirname].concat(dir.split('/')));
 }
@@ -29,7 +31,7 @@ function webpackConfig (entry, hash = true) {
     entry: entry,
     devtool: 'source-map',
     output: {
-      filename: process.env.NODE_ENV === 'production' && hash ? '[name].[chunkhash].js' : '[name].js',
+      filename: (NODE_ENV === 'production' || NODE_ENV === 'staging') && hash ? '[name].[chunkhash].js' : '[name].js',
       path: DIST_PATH
     },
     plugins: [
@@ -37,8 +39,8 @@ function webpackConfig (entry, hash = true) {
         'window.RPC_URL': JSON.stringify(RPC_URL),
         'self.CONTRACT_ADDRESS': JSON.stringify(CONTRACT_ADDRESS),
         'process.env': {
-          'NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'), // This has effect on the react lib size,
-          'DEBUG': process.env.NODE_ENV !== 'production',
+          'NODE_ENV': JSON.stringify(NODE_ENV || 'development'), // This has effect on the react lib size,
+          'DEBUG': NODE_ENV !== 'production',
           'FRAME_URL': JSON.stringify(FRAME_URL)
         }
       })
@@ -139,7 +141,7 @@ function webpackConfig (entry, hash = true) {
     }
   };
 
-  if (process.env.NODE_ENV === 'production') {
+  if (NODE_ENV === 'production') {
     config.plugins.push(new UglifyJSPlugin({
       parallel: true,
       uglifyOptions: {
@@ -170,7 +172,7 @@ function vynosConfig(entry) {
     new webpack.HashedModuleIdsPlugin(),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'commons',
-      filename: process.env.NODE_ENV === 'production' ? 'commons.[chunkhash].js' : 'commons.js'
+      filename: NODE_ENV === 'production' || NODE_ENV === 'staging' ? 'commons.[chunkhash].js' : 'commons.js'
     }),
     new HtmlWebpackPlugin({
       template: resolvePath('vynos/frame.html'),
@@ -181,7 +183,7 @@ function vynosConfig(entry) {
         COMMONS_FILE_REGEX,
         WORKER_FILE_REGEX
       ],
-      filename: process.env.NODE_ENV === 'production' ? 'workerRunner.[hash].js' : 'workerRunner.js',
+      filename: NODE_ENV === 'production' || NODE_ENV === 'staging' ? 'workerRunner.[hash].js' : 'workerRunner.js',
       replaceFilename: 'workerRunner.js',
       replacer: (filename) => filename.match(FRAME_FILE_REGEX)
     })
