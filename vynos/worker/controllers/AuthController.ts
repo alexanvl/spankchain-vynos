@@ -8,6 +8,7 @@ import FrameController from './FrameController'
 import SharedStateView from '../SharedStateView'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
+import requestJson from '../../frame/lib/request'
 
 const util = require('ethereumjs-util')
 
@@ -77,15 +78,14 @@ export default class AuthController extends AbstractController {
 
   private async doAuthenticate (origin: string): Promise<string> {
     const addresses = await this.sharedStateView.getAccounts()
-    const res = await fetch(this.authUrl('challenge'), {
+    const res = await requestJson<NonceResponse>(this.authUrl('challenge'), {
       method: 'POST',
       mode: 'cors'
     })
-    const json: NonceResponse = await res.json()
-    const nonce = json.nonce
+    const nonce = res.nonce
     const signature = await this.signNonce(origin, nonce)
 
-    const responseRes = await fetch(this.authUrl('response'), {
+    const responseRes = await requestJson<{token: string}>(this.authUrl('response'), {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -100,9 +100,7 @@ export default class AuthController extends AbstractController {
       })
     })
 
-    const responseResJson = await responseRes.json()
-
-    return responseResJson.token
+    return responseRes.token
   }
 
   private signNonce (origin: string, nonce: string): Promise<string> {
