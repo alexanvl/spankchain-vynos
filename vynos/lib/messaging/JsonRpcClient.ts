@@ -56,7 +56,7 @@ export default class JsonRpcClient extends EventEmitter {
   }
 
   public call<T>(method: string, ...params: any[]): Promise<T> {
-    return this.callWithTimeout(120000, method, ...params)
+    return this.callWithTimeout(600000, method, ...params)
   }
 
   public callWithTimeout<T>(timeout: number, method: string, ...params: any[]): Promise<T> {

@@ -27,6 +27,8 @@ export default class MicropaymentsController extends AbstractController {
 
   web3: Web3
 
+  lastAddress: string
+
   constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
     super()
     this.web3 = web3
@@ -122,15 +124,20 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async getMachinomy (): Promise<Machinomy> {
-    if (this.machinomy) {
+    const accounts = await this.sharedStateView.getAccounts()
+    const address = accounts[0]
+
+    if (this.machinomy && this.lastAddress === address) {
       return this.machinomy
     }
 
-    const accounts = await this.sharedStateView.getAccounts()
-    this.machinomy = new Machinomy(accounts[0], this.web3, {
-      databaseUrl: 'nedb://vynos',
+    this.machinomy = new Machinomy(address, this.web3, {
+      databaseUrl: `nedb://vynos-${address}`,
       settlementPeriod: Number.MAX_SAFE_INTEGER
     })
+
+    this.lastAddress = address
+
     return this.machinomy
   }
 
