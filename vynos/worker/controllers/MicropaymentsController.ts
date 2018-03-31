@@ -16,6 +16,7 @@ import {
 import AbstractController from './AbstractController'
 import Web3 = require('web3')
 import {request} from '../../frame/lib/request'
+import ChannelContract from 'machinomy/dist/lib/channel_contract'
 
 
 export default class MicropaymentsController extends AbstractController {
