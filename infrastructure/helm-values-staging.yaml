@@ -7,4 +7,4 @@ ingress:
   tls:
     - secretName: spankdev-ssl
       hosts:
-        - ynos-staging.spankdev.com
+        - vynos-staging.spankdev.com
