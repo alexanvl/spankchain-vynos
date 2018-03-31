@@ -15,7 +15,7 @@ ENV NODE_ENV=${NODE_ENV}
 ARG FRAME_URL
 ENV FRAME_URL=${FRAME_URL}
 
-RUN npm run build
+RUN rm -rf ./dist && yarn build
 
 FROM nginx:1.12-alpine
 

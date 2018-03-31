@@ -176,7 +176,8 @@ function vynosConfig(entry) {
     }),
     new HtmlWebpackPlugin({
       template: resolvePath('vynos/frame.html'),
-      filename: 'frame.html'
+      filename: 'frame.html',
+      excludeChunks: ['worker']
     }),
     new WorkerRunnerPlugin({
       contentScripts: [
