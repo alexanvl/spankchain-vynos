@@ -5,6 +5,7 @@ import WorkerProxy from '../../WorkerProxy'
 import {FrameState} from '../../redux/FrameState'
 import WalletCard from "../../components/WalletCard/index"
 import WalletMiniCard from "../../components/WalletMiniCard/index"
+import XButton from '../../components/XButton/index'
 const s = require('./OnboardingContainer.css')
 
 export interface MapStateToProps {
@@ -72,12 +73,7 @@ export class OnboardingContainer extends React.Component<Props> {
         <div className={s.header}>
           {this.renderHeaderText()}
           {this.renderProgressDots()}
-          <WalletMiniCard
-            onClick={this.closeView}
-            isLocked
-            inverse
-            alwaysLarge
-          />
+          <XButton onClick={this.closeView} />
         </div>
         <WalletCard
           width={275}
