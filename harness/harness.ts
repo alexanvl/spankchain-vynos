@@ -10,7 +10,7 @@ window.addEventListener("load", function () {
   }
 
   let vynos = new Vynos({
-    hubUrl: 'http://165.227.202.164:8080',
+    hubUrl: 'https://hub-staging.spankdev.com',
     authRealm: 'SpankChain',
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
     window: _window
@@ -37,7 +37,7 @@ window.addEventListener("load", function () {
   const tipButton = document.getElementById('tip')
   if (tipButton) {
     tipButton.onclick = () => {
-      vynos.buy(new BigNumber.BigNumber(100000000000000000), {
+      vynos.buy(new BigNumber.BigNumber(0), {
         streamId: 'abc-123',
         streamName: 'SpankCam',
         performerId: 'abc-234',

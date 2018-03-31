@@ -16,11 +16,11 @@ const s = require('./styles.css')
 export interface StateProps extends BrandingState {
   walletBalance: string
   cardBalance: BigNumber.BigNumber
+  isWithdrawing: boolean
   workerProxy: WorkerProxy
 }
 
 export interface CardPageState {
-  isWithdrawing: boolean
   isRefilling: boolean
   error: string
 }
@@ -30,7 +30,6 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     super(props)
 
     this.state = {
-      isWithdrawing: false,
       isRefilling: false,
       error: ''
     }
@@ -41,23 +40,13 @@ class CardPage extends React.Component<StateProps, CardPageState> {
   }
 
   async onClickWithdraw () {
-    this.setState({
-      isWithdrawing: true
-    })
-
     try {
       await this.props.workerProxy.closeChannelsForCurrentHub()
     } catch (e) {
       this.setState({
         error: 'Withdrawal failed. Please try again.',
-        isWithdrawing: false
       })
-      return
     }
-
-    this.setState({
-      isWithdrawing: false
-    })
   }
 
   async onClickRefill () {
@@ -138,8 +127,8 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             <div className={s.walletSpankCardActions}>
               <Button
                 type="secondary"
-                content={this.state.isWithdrawing ? 'Withdrawing...' : 'Withdraw to Wallet'}
-                disabled={this.state.isWithdrawing}
+                content={this.props.isWithdrawing ? 'Withdrawing...' : 'Withdraw to Wallet'}
+                disabled={this.props.isWithdrawing}
                 onClick={() => this.onClickWithdraw()}
                 isMini
               />
@@ -169,6 +158,7 @@ function mapStateToProps (state: FrameState, ownProps: any): StateProps {
     ...state.shared.branding,
     walletBalance: state.shared.balance,
     cardBalance: cardBalance(state.shared),
+    isWithdrawing: state.shared.hasActiveWithdrawal,
     workerProxy: state.temp.workerProxy
   }
 }

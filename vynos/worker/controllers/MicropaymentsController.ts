@@ -45,17 +45,23 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   public async closeChannelsForCurrentHub (): Promise<void> {
-    const sharedState = await this.sharedStateView.getSharedState()
-    const hubUrl = await this.sharedStateView.getHubUrl()
+    this.store.dispatch(actions.setHasActiveWithdrawal(true))
 
-    const channels = sharedState.channels[hubUrl]
+    try {
+      const sharedState = await this.sharedStateView.getSharedState()
+      const hubUrl = await this.sharedStateView.getHubUrl()
 
-    if (!channels) {
-      return
+      const channels = sharedState.channels[hubUrl]
+
+      if (!channels) {
+        return
+      }
+
+      await Promise.all(channels.map((ch: SerializedPaymentChannel) => this.closeChannel(hubUrl, ch.channelId)))
+      await this.populateChannels()
+    } finally {
+      this.store.dispatch(actions.setHasActiveWithdrawal(false))
     }
-
-    await Promise.all(channels.map((ch: SerializedPaymentChannel) => this.closeChannel(hubUrl, ch.channelId)))
-    await this.populateChannels()
   }
 
   public async deposit(amount: number): Promise<void> {

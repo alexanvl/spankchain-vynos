@@ -256,3 +256,14 @@ export const reset: ActionCreator<null> = actionCreator<null>('runtime/reset')
 export function resetHandler(): WorkerState {
   return undefined as any
 }
+
+export const setHasActiveWithdrawal: ActionCreator<boolean> = actionCreator<boolean>('runtime/setActiveWithdrawal')
+export function setHasActiveWithdrawalHandler(state: WorkerState, hasActiveWithdrawal: boolean): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      hasActiveWithdrawal
+    }
+  }
+}
