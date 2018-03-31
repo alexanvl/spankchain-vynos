@@ -62,7 +62,7 @@ export default class JsonRpcClient extends EventEmitter {
   public callWithTimeout<T>(timeout: number, method: string, ...params: any[]): Promise<T> {
     return new Promise<T>((resolve, reject) => {
       const channel = new MessageChannel()
-      const timer = setTimeout(() => reject(new Error('Timed out.')), timeout)
+      const timer = setTimeout(() => reject(new Error(`Timed out. Method: ${method}`)), timeout)
       const id = randomId()
 
       const payload = {
