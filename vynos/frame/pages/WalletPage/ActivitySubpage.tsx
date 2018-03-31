@@ -99,6 +99,10 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
     }, new BigNumber.BigNumber(0))
 
     const groups = this.props.history.reduce((acc: Group[], curr: HistoryItem, i: number) => {
+      if (Number(curr.payment.price) === 0) {
+        return acc;
+      }
+
       const date = new Date(Number(curr.createdAt))
 
       const mon = date.getMonth()

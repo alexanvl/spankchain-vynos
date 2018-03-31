@@ -71,6 +71,18 @@ export default class MicropaymentsController extends AbstractController {
       await machinomy.open(receiver, amount)
     }
 
+    /**
+     * This is needed because the smart contracts requires a payment to be provided to the claim
+     * method. Clicking withdraw uses the 'claim' method on the hub since claiming is instant.
+     */
+    await this.buy(0, {
+      streamId: 'probe',
+      streamName: 'Channel Open/Deposit Probe',
+      performerId: 'probe',
+      performerName: 'Channel Open/Deposit Probe',
+      performerAddress: '0x0000000000000000000000000000000000000000'
+    })
+
     await this.populateChannels()
   }
 
