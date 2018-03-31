@@ -70,6 +70,9 @@ export default class AuthController extends AbstractController {
   }
 
   async finishAuthentication(origin: string, awaitResponse: boolean = false) {
+    const state = await this.sharedStateView.getState()
+    const shouldRespond = !!state.runtime.authorizationRequest
+
     if (awaitResponse) {
       const authRealm = await this.sharedStateView.getAuthRealm()
       const machine = new AuthStateMachine(this.store, authRealm)
@@ -78,7 +81,10 @@ export default class AuthController extends AbstractController {
 
     const token = await this.doChallengeResponse(origin)
     this.store.dispatch(actions.setCurrentAuthToken(token))
-    this.store.dispatch(actions.respondToAuthorizationRequest(true))
+
+    if (shouldRespond) {
+      this.store.dispatch(actions.respondToAuthorizationRequest(true))
+    }
 
     return {
       success: true,

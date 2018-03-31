@@ -26,6 +26,10 @@ export default class AuthStateMachine {
 
     this.prevState = state
 
+    if (state.persistent.authorizedHubs[state.runtime.currentHubUrl]) {
+      return
+    }
+
     await new Promise((resolve, reject) => {
       this.resolve = resolve
       this.reject = reject
