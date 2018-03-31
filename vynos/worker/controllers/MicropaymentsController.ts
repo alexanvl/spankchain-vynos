@@ -89,7 +89,7 @@ export default class MicropaymentsController extends AbstractController {
 
     const chan = channels[0]
 
-    if (chan.spent.add(price) > chan.value) {
+    if (chan.spent.add(price).gt(chan.value)) {
       throw new Error('Insufficient funds.')
     }
 
