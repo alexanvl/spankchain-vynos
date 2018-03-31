@@ -25,7 +25,7 @@ steps:
       'helm',
       '--install',
       '-f', 'helm-values-${_ENV}.yaml',
-      '--set', 'image.tag=$COMMIT_SHA'
+      '--set', 'image.tag=$COMMIT_SHA,image.env=${_ENV}'
     ]
     dir: '${_PROJECT}/infrastructure'
     env:  [
