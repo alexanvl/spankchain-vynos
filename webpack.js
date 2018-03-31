@@ -31,7 +31,7 @@ function webpackConfig (entry, hash = true) {
     entry: entry,
     devtool: 'source-map',
     output: {
-      filename: (NODE_ENV === 'production' || NODE_ENV === 'staging') && hash ? '[name].[chunkhash].js' : '[name].js',
+      filename: (NODE_ENV === 'production' || NODE_ENV === 'staging') && hash ? '[name].[hash].js' : '[name].js',
       path: DIST_PATH
     },
     plugins: [
@@ -172,7 +172,7 @@ function vynosConfig(entry) {
     new webpack.HashedModuleIdsPlugin(),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'commons',
-      filename: NODE_ENV === 'production' || NODE_ENV === 'staging' ? 'commons.[chunkhash].js' : 'commons.js'
+      filename: NODE_ENV === 'production' || NODE_ENV === 'staging' ? 'commons.[hash].js' : 'commons.js'
     }),
     new HtmlWebpackPlugin({
       template: resolvePath('vynos/frame.html'),
