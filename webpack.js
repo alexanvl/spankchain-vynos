@@ -3,13 +3,13 @@ const path = require('path'),
   DIST_PATH = path.resolve(__dirname, 'dist'),
   UglifyJSPlugin = require('uglifyjs-webpack-plugin'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
-  WorkerRunnerPlugin = require('./WorkerRunnerPlugin');
+  WorkerRunnerPlugin = require('./WorkerRunnerPlugin')
 
 require('dotenv').config({ path: '.env' });
 
-let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090';
+let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
-const NODE_ENV = process.env.NODE_ENV;
+const NODE_ENV = process.env.NODE_ENV
 
 function resolvePath(dir) {
   return path.resolve.apply(path, [__dirname].concat(dir.split('/')));
