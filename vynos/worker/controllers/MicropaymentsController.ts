@@ -15,7 +15,7 @@ import {
 } from '../../lib/rpc/yns'
 import AbstractController from './AbstractController'
 import Web3 = require('web3')
-import requestJson from '../../frame/lib/request'
+import {request} from '../../frame/lib/request'
 
 
 export default class MicropaymentsController extends AbstractController {
@@ -135,7 +135,7 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async closeChannel (hubUrl: string, channelId: string): Promise<void> {
-    await requestJson(`${hubUrl}/channels/${channelId}/close`, {
+    await request(`${hubUrl}/channels/${channelId}/close`, {
       method: 'POST',
       credentials: 'include'
     })
