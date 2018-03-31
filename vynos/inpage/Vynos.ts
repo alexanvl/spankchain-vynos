@@ -183,7 +183,7 @@ export default class Vynos extends EventEmitter {
     }
 
     if (this.previousState.isLocked !== newState.isLocked) {
-      this.emit(newState.isLocked ? 'didLock' : 'didUnlock', newState.address)
+      this.emit(newState.isLocked ? 'didLock' : 'didUnlock', newState.currentAuthToken)
     }
 
     if (this.previousState.didInit !== newState.didInit && newState.didInit) {
