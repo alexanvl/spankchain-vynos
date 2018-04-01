@@ -34,7 +34,7 @@ export interface DepositDispatchProps {
 
 export class Deposit extends React.Component<DepositProps, DepositStates> {
   timeout: any
-  
+
   state = {
     address: '',
     isAuthenticating: false,
@@ -46,8 +46,14 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
       isAuthenticating: true
     })
 
-    await this.props.didAcknowledgeDeposit()
-    await this.props.workerProxy.authenticate()
+    try {
+      await this.props.workerProxy.authenticate()
+      await this.props.didAcknowledgeDeposit()
+    } catch (e) {
+      this.setState({
+        isAuthenticating: false
+      })
+    }
   }
 
   componentDidMount() {
@@ -119,8 +125,9 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
               isInverse
             />
             <Button
-              content="Next"
+              content={this.state.isAuthenticating ? 'Loading' : 'Next'}
               isInverse
+              disabled={this.state.isAuthenticating}
               onClick={this.handleSubmit}
             />
           </div>

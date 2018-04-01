@@ -47,7 +47,6 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
   componentWillReceiveProps (nextProps: RootStateProps) {
     if (this.props.isUnlockExpected === nextProps.isUnlockExpected &&
       this.props.isWalletExpected === nextProps.isWalletExpected &&
-      this.props.isTransactionPending === nextProps.isTransactionPending &&
       this.props.isFrameDisplayed === nextProps.isFrameDisplayed &&
       this.props.forceRedirect === nextProps.forceRedirect) {
       return
@@ -57,32 +56,32 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
   }
 
   determineRoute (props?: RootStateProps) {
-    props = props || this.props
+    const p = props || this.props
 
-    if (props.isUnlockExpected) {
-      this.props.history.push('/unlock')
-      return
-    }
-
-    if (!props.isWalletExpected) {
-      this.props.history.push('/init')
-      return
-    }
-
-    if (props.isWalletExpected) {
-      if (props.forceRedirect) {
-        this.props.history.push(props.forceRedirect)
+    if (p.isWalletExpected) {
+      if (p.forceRedirect) {
+        this.props.history.push(p.forceRedirect)
         return
       }
       this.props.history.push('/wallet')
       return
     }
 
-    if (!props.isFrameDisplayed) {
-      this.props.history.push('/wallet')
+    if (p.isUnlockExpected) {
+      this.props.history.push('/unlock')
       return
     }
 
+    if (!p.isWalletExpected) {
+      this.props.history.push('/init')
+
+      return
+    }
+
+    if (!p.isFrameDisplayed) {
+      this.props.history.push('/wallet')
+      return
+    }
   }
 
   render () {
@@ -106,8 +105,8 @@ function mapStateToProps (state: FrameState): StateProps {
     workerProxy,
     isFrameDisplayed: state.shared.isFrameDisplayed,
     forceRedirect: state.shared.forceRedirect,
-    isUnlockExpected: state.shared.didInit && state.shared.isLocked,
-    isWalletExpected: state.shared.didInit && !state.shared.isLocked && !state.temp.initPage.showInitialDeposit,
+    isUnlockExpected: (state.shared.didInit && state.shared.isLocked) || (state.shared.didInit && !state.shared.currentAuthToken && !state.temp.initPage.showInitialDeposit),
+    isWalletExpected: state.shared.didInit && !state.shared.isLocked && !state.temp.initPage.showInitialDeposit && !!state.shared.currentAuthToken,
     isTransactionPending: state.shared.didInit && state.shared.isTransactionPending !== 0
   }
 }

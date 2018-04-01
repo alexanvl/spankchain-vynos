@@ -49,7 +49,7 @@ export default class WorkerProxy extends JsonRpcClient {
   }
 
   deposit (amount: BigNumber.BigNumber): Promise<void> {
-    return this.call(DepositRequest.method, amount.toNumber())
+    return this.call(DepositRequest.method, amount.toString())
   }
 
   populateChannels (): Promise<void> {

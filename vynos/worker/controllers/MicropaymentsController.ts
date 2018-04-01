@@ -1,3 +1,4 @@
+import * as BigNumber from 'bignumber.js'
 import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import Machinomy from 'machinomy'
@@ -113,14 +114,15 @@ export default class MicropaymentsController extends AbstractController {
     }
   }
 
-  public async deposit (amount: number): Promise<void> {
+  public async deposit (amount: string): Promise<void> {
     const sharedState = await this.sharedStateView.getSharedState()
     const hubUrl = await this.sharedStateView.getHubUrl()
     const machinomy = await this.getMachinomy()
     const channels = sharedState.channels[hubUrl]
+    const bigAmount = new BigNumber.BigNumber(amount)
 
     if (channels && channels.length) {
-      await machinomy.deposit(channels[0].channelId, amount)
+      await machinomy.deposit(channels[0].channelId, bigAmount)
     } else {
       const receiver = sharedState.branding.address
       // need to use fromascii here since machinomy stores the version of the
@@ -134,19 +136,19 @@ export default class MicropaymentsController extends AbstractController {
       }
 
       try {
-        await machinomy.open(receiver, amount, channelId)
+        await machinomy.open(receiver, bigAmount, channelId)
       } catch (err) {
-        if (typeof err.code !== 'undefined') {
-          this.store.dispatch(actions.removePendingChannel(channelId))
-        }
+        this.store.dispatch(actions.removePendingChannel(channelId))
         throw err
       }
 
-      // Initialize channel with a 0 tip
-      await this.initChannel()
       // Remove channelId from watchers
       this.store.dispatch(actions.removePendingChannel(channelId))
+      // Initialize channel with a 0 tip
+      await this.initChannel()
     }
+
+    await this.populateChannels()
   }
 
   public async buy (price: number, meta: any): Promise<VynosBuyResponse> {

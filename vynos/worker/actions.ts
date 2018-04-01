@@ -9,7 +9,11 @@ const actionCreator = actionCreatorFactory('worker')
 export const setWallet: ActionCreator<Wallet|undefined> = actionCreator<Wallet|undefined>('runtime/setWallet')
 export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): WorkerState {
   return { ...state,
-    runtime: { ...state.runtime, wallet },
+    runtime: {
+      ...state.runtime,
+      currentAuthToken: '',
+      wallet
+    },
   }
 }
 
