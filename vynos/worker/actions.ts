@@ -92,29 +92,6 @@ export function setAuthorizationRequestHandler(state: WorkerState, authorization
   }
 }
 
-export const respondToAuthorizationRequest: ActionCreator<boolean> = actionCreator<boolean>('runtime/respondToAuthorizationRequest')
-export function respondToAuthorizationRequestHandler(state: WorkerState, response: boolean): WorkerState {
-  const newState = {
-    ...state,
-    runtime: {
-      ...state.runtime,
-      authorizationRequest: null
-    }
-  }
-
-  if (response) {
-    newState.persistent = {
-      ...state.persistent,
-      authorizedHubs: {
-        ...state.persistent.authorizedHubs,
-        [state.runtime.authorizationRequest!.hubUrl]: true
-      }
-    }
-  }
-
-  return newState
-}
-
 export const rememberPage: ActionCreator<string> = actionCreator<string>('persistent/rememberPage')
 export function rememberPageHandler(state: WorkerState, path: string): WorkerState {
   return {

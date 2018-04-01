@@ -6,11 +6,9 @@ import InitPage from './InitPage'
 import UnlockPage from './UnlockPage'
 import WalletPage from './WalletPage'
 import {RouteComponentProps} from 'react-router'
-import AuthorizePage from './AuthorizePage'
 import WorkerProxy from '../WorkerProxy'
 
 export interface StateProps {
-  isAuthorizationExpected: boolean
   isWalletExpected: boolean
   isUnlockExpected: boolean
   isTransactionPending: boolean
@@ -50,7 +48,6 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
     if (this.props.isUnlockExpected === nextProps.isUnlockExpected &&
       this.props.isWalletExpected === nextProps.isWalletExpected &&
       this.props.isTransactionPending === nextProps.isTransactionPending &&
-      this.props.isAuthorizationExpected === nextProps.isAuthorizationExpected &&
       this.props.isFrameDisplayed === nextProps.isFrameDisplayed &&
       this.props.forceRedirect === nextProps.forceRedirect) {
       return
@@ -64,11 +61,6 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 
     if (props.isUnlockExpected) {
       this.props.history.push('/unlock')
-      return
-    }
-
-    if (props.isAuthorizationExpected) {
-      this.props.history.push('/authorize')
       return
     }
 
@@ -96,12 +88,9 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
   render () {
     return (
       <Switch>
-        <Route path="/authorize" component={AuthorizePage} />
-
         <Switch>
           <Route path="/(wallet|card)" component={WalletPage} />
-          <Route exact path="/unlock" render={() => <UnlockPage
-            next={this.props.isAuthorizationExpected ? '/authenticate' : '/wallet'} />} />
+          <Route exact path="/unlock" render={() => <UnlockPage next="/wallet" />} />
           <Route path="/init" component={InitPage} />
         </Switch>
 
@@ -117,7 +106,6 @@ function mapStateToProps (state: FrameState): StateProps {
     workerProxy,
     isFrameDisplayed: state.shared.isFrameDisplayed,
     forceRedirect: state.shared.forceRedirect,
-    isAuthorizationExpected: !!state.shared.authorizationRequest,
     isUnlockExpected: state.shared.didInit && state.shared.isLocked,
     isWalletExpected: state.shared.didInit && !state.shared.isLocked && !state.temp.initPage.showInitialDeposit,
     isTransactionPending: state.shared.didInit && state.shared.isTransactionPending !== 0

@@ -2,17 +2,18 @@ import {HistoryItem, SharedState} from '../worker/WorkerState'
 import {
   AuthenticateRequest,
   AuthenticateResponse,
-  CloseChannelsForCurrentHubRequest, DepositRequest,
+  CloseChannelsForCurrentHubRequest,
+  DepositRequest,
   DidStoreMnemonicRequest,
-  FetchHistoryRequest, FinishAuthenticationRequest,
+  FetchHistoryRequest,
   GenKeyringRequest,
   GetSharedStateRequest,
   LockWalletRequest,
   PopulateChannelsRequest,
-  RememberPageRequest, ResetRequest,
-  RespondToAuthorizationRequestRequest,
+  RememberPageRequest,
+  ResetRequest,
   RestoreWalletRequest,
-  SendRequest, StartAuthenticationRequest,
+  SendRequest,
   StatusRequest,
   ToggleFrameRequest,
   UnlockWalletRequest
@@ -21,8 +22,8 @@ import * as BigNumber from 'bignumber.js'
 import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 import {WorkerStatus} from '../lib/rpc/WorkerStatus'
 import {JSONRPCResponsePayload} from 'web3'
-import Web3 = require('web3')
 import {Postable} from '../lib/messaging/Postable'
+import Web3 = require('web3')
 
 export default class WorkerProxy extends JsonRpcClient {
   web3: Web3
@@ -89,18 +90,6 @@ export default class WorkerProxy extends JsonRpcClient {
 
   authenticate (): Promise<AuthenticateResponse> {
     return this.call(AuthenticateRequest.method, window.location.hostname)
-  }
-
-  startAuthentication (): Promise<void> {
-    return this.call(StartAuthenticationRequest.method)
-  }
-
-  finishAuthentication (): Promise<void> {
-    return this.call(FinishAuthenticationRequest.method, window.location.hostname)
-  }
-
-  respondToAuthorizationRequest (res: boolean): Promise<void> {
-    return this.call(RespondToAuthorizationRequestRequest.method, res)
   }
 
   toggleFrame (status: boolean, forceRedirect?: string): Promise<void> {

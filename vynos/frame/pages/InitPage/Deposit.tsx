@@ -46,7 +46,7 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
     })
 
     await this.props.didAcknowledgeDeposit()
-    await this.props.workerProxy.startAuthentication()
+    await this.props.workerProxy.authenticate()
   }
 
   componentDidMount() {

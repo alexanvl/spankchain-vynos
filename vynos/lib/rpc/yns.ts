@@ -40,12 +40,6 @@ export interface AuthenticateResponse extends ResponsePayload {
   token?: string
 }
 
-export const StartAuthenticationRequest = requestFactory<any[]>('startAuthentication')
-export type StartAuthenticationRequest = RequestPayload
-
-export const FinishAuthenticationRequest = requestFactory<any[]>('finishAuthentication')
-export type FinishAuthenticationRequest = RequestPayload
-
 export const InitAccountRequest = requestFactory<any[]>('initAccount')
 export type InitAccountRequest = RequestPayload
 
@@ -87,9 +81,6 @@ export type ListChannelsRequest = RequestPayload
 
 export const PopulateChannelsRequest = requestFactory<any[]>('populateChannels')
 export type PopulateChannelsRequest = RequestPayload
-
-export const RespondToAuthorizationRequestRequest = requestFactory<[boolean]>('respondToAuthorizationRequest')
-export type RespondToAuthorizationRequestRequest = RequestPayload
 
 export const ToggleFrameRequest = requestFactory<[boolean]>('toggleFrame')
 export type ToggleFrameRequest = RequestPayload

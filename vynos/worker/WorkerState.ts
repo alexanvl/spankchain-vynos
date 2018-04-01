@@ -49,7 +49,6 @@ export interface SharedState {
   currentHubUrl: string
   currentAuthToken: string
   currentAuthRealm: string
-  authorizedHubs: AuthorizedHubsState
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
   forceRedirect?: string
@@ -68,7 +67,6 @@ export interface PersistentState {
   didInit: boolean,
   keyring?: string,
   rememberPath: string
-  authorizedHubs: AuthorizedHubsState
   pendingChannelIds: string[]
 }
 
@@ -79,10 +77,6 @@ export interface BrandingState {
   backgroundColor?: string
   textColor?: string
   address: string
-}
-
-export interface AuthorizedHubsState {
-  [hubUrl: string]: true
 }
 
 export interface WorkerState {
@@ -96,7 +90,6 @@ export const INITIAL_SHARED_STATE: SharedState = {
   isTransactionPending: 0,
   rememberPath: '/',
   lastUpdateDb: 0,
-  authorizedHubs: {},
   authorizationRequest: null,
   currentHubUrl: '',
   currentAuthRealm: '',
@@ -119,7 +112,6 @@ export const INITIAL_STATE: WorkerState = {
   persistent: {
     didInit: false,
     rememberPath: '/',
-    authorizedHubs: {},
     pendingChannelIds: []
   },
   runtime: {
@@ -154,7 +146,6 @@ export function buildSharedState(state: WorkerState): SharedState {
     currentAuthRealm: state.runtime.currentAuthRealm,
     currentAuthToken: state.runtime.currentAuthToken,
     authorizationRequest: state.runtime.authorizationRequest,
-    authorizedHubs: state.persistent.authorizedHubs,
     isFrameDisplayed: state.runtime.isFrameDisplayed,
     forceRedirect: state.runtime.forceRedirect,
     isPerformer: state.runtime.isPerformer,

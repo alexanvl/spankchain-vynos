@@ -1,19 +1,13 @@
-import {
-  AuthenticateRequest, FinishAuthenticationRequest, ResetRequest, RespondToAuthorizationRequestRequest,
-  StartAuthenticationRequest
-} from '../../lib/rpc/yns'
+import {AuthenticateRequest} from '../../lib/rpc/yns'
 import {WorkerState} from '../WorkerState'
 import {Store} from 'redux'
 import * as actions from '../actions'
 import {ProviderOpts} from 'web3-provider-engine'
-import AuthStateMachine from '../../lib/AuthStateMachine'
 import FrameController from './FrameController'
 import SharedStateView from '../SharedStateView'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import requestJson from '../../frame/lib/request'
-import localForage = require('localforage')
-
 
 const util = require('ethereumjs-util')
 
@@ -38,53 +32,16 @@ export default class AuthController extends AbstractController {
     this.frame = frame
   }
 
-  respondToAuthorizationRequest (res: boolean) {
-    this.store.dispatch(actions.respondToAuthorizationRequest(res))
-  }
-
-  async authenticate(origin: string) {
-    await this.startAuthentication()
-    return this.finishAuthentication(origin, true)
-  }
-
-  async startAuthentication() {
+  async authenticate (origin: string) {
     const isLocked = await this.sharedStateView.isLocked()
-    const hubUrl = await this.sharedStateView.getHubUrl()
-    const authRealm = await this.sharedStateView.getAuthRealm()
 
     if (isLocked) {
       this.frame.show()
       await this.sharedStateView.awaitUnlock()
     }
 
-    const hasAuthorizedHub = await this.sharedStateView.hasAuthorizedHub(hubUrl)
-
-    if (!hasAuthorizedHub) {
-      this.frame.show()
-
-      this.store.dispatch(actions.setAuthorizationRequest({
-        hubUrl,
-        authRealm
-      }))
-    }
-  }
-
-  async finishAuthentication(origin: string, awaitResponse: boolean = false) {
-    const state = await this.sharedStateView.getState()
-    const shouldRespond = !!state.runtime.authorizationRequest
-
-    if (awaitResponse) {
-      const authRealm = await this.sharedStateView.getAuthRealm()
-      const machine = new AuthStateMachine(this.store, authRealm)
-      await machine.awaitAuthorization()
-    }
-
     const token = await this.doChallengeResponse(origin)
     this.store.dispatch(actions.setCurrentAuthToken(token))
-
-    if (shouldRespond) {
-      this.store.dispatch(actions.respondToAuthorizationRequest(true))
-    }
 
     return {
       success: true,
@@ -93,10 +50,7 @@ export default class AuthController extends AbstractController {
   }
 
   registerHandlers (server: JsonRpcServer) {
-    this.registerHandler(server, RespondToAuthorizationRequestRequest.method, this.respondToAuthorizationRequest)
     this.registerHandler(server, AuthenticateRequest.method, this.authenticate)
-    this.registerHandler(server, StartAuthenticationRequest.method, this.startAuthentication)
-    this.registerHandler(server, FinishAuthenticationRequest.method, this.finishAuthentication)
   }
 
   private async doChallengeResponse (origin: string): Promise<string> {
@@ -108,7 +62,7 @@ export default class AuthController extends AbstractController {
     const nonce = res.nonce
     const signature = await this.signNonce(origin, nonce)
 
-    const responseRes = await requestJson<{token: string}>(this.authUrl('response'), {
+    const responseRes = await requestJson<{ token: string }>(this.authUrl('response'), {
       method: 'POST',
       mode: 'cors',
       headers: {

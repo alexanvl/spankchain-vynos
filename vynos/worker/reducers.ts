@@ -15,8 +15,6 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.setHubBranding, actions.setHubBrandingHandler)
   .case(actions.setCurrentHubUrl, actions.setCurrentHubUrlHandler)
   .case(actions.setCurrentAuthRealm, actions.setCurrentAuthRealmHandler)
-  .case(actions.setAuthorizationRequest, actions.setAuthorizationRequestHandler)
-  .case(actions.respondToAuthorizationRequest, actions.respondToAuthorizationRequestHandler)
   .case(actions.toggleFrame, actions.toggleFrameHandler)
   .case(actions.setChannels, actions.setChannelsHandler)
   .case(actions.setChannel, actions.setChannelHandler)
