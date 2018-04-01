@@ -701,6 +701,7 @@ Channels page
   display: flex;
   flex-flow: row;
   align-items: center;
+  user-select: none;
 }
 
 .passwordInput {
