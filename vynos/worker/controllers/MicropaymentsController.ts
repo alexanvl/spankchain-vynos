@@ -135,11 +135,26 @@ export default class MicropaymentsController extends AbstractController {
         this.startScanningPendingChannelIds()
       }
 
+      let chan
+
       try {
-        await machinomy.open(receiver, bigAmount, channelId)
+        chan = await machinomy.open(receiver, bigAmount, channelId)
       } catch (err) {
         this.store.dispatch(actions.removePendingChannel(channelId))
         throw err
+      }
+
+      let attempts = 0;
+
+      // ensure balances are the same
+      while (++attempts <= 5) {
+        const testChan = await machinomy.channelById(channelId)
+
+        if (testChan && testChan.value.eq(chan.value)) {
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000))
       }
 
       // Remove channelId from watchers
