@@ -96,7 +96,7 @@
     "readable-stream": "^2.3.2",
     "redux": "3.7.2",
     "redux-logger": "^3.0.6",
-    "redux-persist": "^4.8.0",
+    "redux-persist": "5.9.1",
     "redux-thunk": "^2.2.0",
     "semantic-ui-react": "^0.71.5",
     "typescript-fsa": "2.3.1",

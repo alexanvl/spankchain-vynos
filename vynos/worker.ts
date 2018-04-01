@@ -4,7 +4,7 @@ import {Store} from 'redux'
 import {RegisterHubRequest, ResetRequest, StatusRequest} from './lib/rpc/yns'
 import StartupController from './worker/controllers/StartupController'
 import WorkerServer from './lib/rpc/WorkerServer'
-import {autoRehydrate, persistStore} from 'redux-persist'
+import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
 import {INITIAL_STATE, WorkerState} from './worker/WorkerState'
 import {ErrResCallback} from './lib/messaging/JsonRpcServer'
@@ -64,22 +64,20 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const workerWrapper = new WorkerWrapper(self)
     const clientWrapper = new ClientWrapper(self)
 
-    const middleware = redux.compose(autoRehydrate())
-    const store = redux.createStore(reducers, INITIAL_STATE, middleware) as Store<WorkerState>
+    localForage.config({driver: localForage.INDEXEDDB})
+
+    const persistConfig = {
+      key: 'persistent',
+      whitelist: ['persistent'],
+      storage: localForage
+    }
+
+    const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE) as Store<WorkerState>
     const startupController = new StartupController(store)
     const backgroundController = new BackgroundController(store)
     const server = new WorkerServer(backgroundController, workerWrapper, clientWrapper)
 
-    await new Promise((resolve, reject) => {
-      localForage.config({driver: localForage.INDEXEDDB})
-      persistStore(store, {blacklist: ['runtime', 'shared'], storage: localForage}, (error, result) => {
-        if (error) {
-          return reject()
-        }
-
-        return resolve()
-      })
-    })
+    await new Promise((resolve) => persistStore(store, undefined, resolve))
 
     const frameController = new FrameController(store)
     const sharedStateView = new SharedStateView(backgroundController)
