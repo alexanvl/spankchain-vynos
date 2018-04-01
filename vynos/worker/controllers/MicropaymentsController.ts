@@ -52,29 +52,23 @@ export default class MicropaymentsController extends AbstractController {
       return
     }
 
-    try {
-      const channelIds = await this.getChannelsByPublicKey()
+    const channelIds = await this.getChannelsByPublicKey()
 
-      for (let i = 0; i < channelIds.length; i++) {
-        await machinomy.channelById(channelIds[i])
-      }
-
-      const chans = await machinomy.channels()
-
-      if (chans.length) {
-        this.store.dispatch(actions.setChannels(channels.map(
-          (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
-      }
-    } catch (err) {
-      console.log(err)
+    for (let i = 0; i < channelIds.length; i++) {
+      await machinomy.channelById(channelIds[i])
     }
+
+    const chans = await machinomy.channels()
+
+    this.store.dispatch(actions.setChannels(chans.map(
+      (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
   }
 
   public async startScanningPendingChannelIds (): Promise<void> {
     this.timeout = null
     const machinomy = await this.getMachinomy()
     const state = this.store.getState()
-    const { pendingChannelIds, didInit } = state.persistent
+    const {pendingChannelIds, didInit} = state.persistent
     const isLocked = !state.runtime.wallet
 
     if (!pendingChannelIds || !pendingChannelIds.length) {
@@ -119,7 +113,7 @@ export default class MicropaymentsController extends AbstractController {
     }
   }
 
-  public async deposit(amount: number): Promise<void> {
+  public async deposit (amount: number): Promise<void> {
     const sharedState = await this.sharedStateView.getSharedState()
     const hubUrl = await this.sharedStateView.getHubUrl()
     const machinomy = await this.getMachinomy()
@@ -129,7 +123,10 @@ export default class MicropaymentsController extends AbstractController {
       await machinomy.deposit(channels[0].channelId, amount)
     } else {
       const receiver = sharedState.branding.address
-      const channelId = ChannelContract.generateId()
+      // need to use fromascii here since machinomy stores the version of the
+      // channel that goes over the wire to the contract (i.e., converted to hex
+      // from ascii
+      const channelId = this.web3.fromAscii(ChannelContract.generateId())
       this.store.dispatch(actions.openChannel(channelId))
 
       if (!this.timeout) {
@@ -248,7 +245,7 @@ export default class MicropaymentsController extends AbstractController {
     await this.populateChannels()
   }
 
-  private async getChannelsByPublicKey(): Promise<string[]> {
+  private async getChannelsByPublicKey (): Promise<string[]> {
     const hubUrl = await this.sharedStateView.getHubUrl()
     const accounts = await this.sharedStateView.getAccounts()
     const address = accounts[0]
