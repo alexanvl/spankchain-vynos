@@ -71,7 +71,7 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
         <div className={style.content}>
           <div className={style.funnelTitle}>Transfer Funds</div>
           <div className={style.seedPhraseText}>
-            This is your SpankWallet address. You can copy it and send crypto from places like Coinbase.
+            This is your SpankWallet address. You can copy it and send crypto from any exchange.
           </div>
           <CTAInput
             className={style.ctaInput}
