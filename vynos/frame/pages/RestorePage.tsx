@@ -113,6 +113,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     }
 
     this.props.goBack()
+    await this.props.workerProxy.authenticate()
   }
 
   handleChangePassword (ev: ChangeEvent<EventTarget>) {

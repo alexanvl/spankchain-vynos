@@ -15,8 +15,8 @@ import {
 } from '../../lib/rpc/yns'
 import AbstractController from './AbstractController'
 import Web3 = require('web3')
-import {request} from '../../frame/lib/request'
 import ChannelContract from 'machinomy/dist/lib/channel_contract'
+import requestJson, {request} from '../../frame/lib/request'
 
 
 export default class MicropaymentsController extends AbstractController {
@@ -45,8 +45,25 @@ export default class MicropaymentsController extends AbstractController {
     const machinomy = await this.getMachinomy()
     const channels = await machinomy.channels()
 
-    this.store.dispatch(actions.setChannels(channels.map(
-      (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+    if (!channels || !channels.length) {
+      try {
+        const channelIds = await this.getChannelsByPublicKey()
+
+        for (let i = 0; i < channelIds.length; i++) {
+          await machinomy.channelById(channelIds[i])
+        }
+
+        await this.populateChannels()
+
+      } catch (err) {
+        console.log(err)
+      }
+    } else {
+      this.store.dispatch(actions.setChannels(channels.map(
+        (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+    }
+
+
   }
 
   public async startScanningPendingChannelIds (): Promise<void> {
@@ -110,10 +127,19 @@ export default class MicropaymentsController extends AbstractController {
       const receiver = sharedState.branding.address
       const channelId = ChannelContract.generateId()
       this.store.dispatch(actions.openChannel(channelId))
+
       if (!this.timeout) {
         this.startScanningPendingChannelIds()
       }
-      await machinomy.open(receiver, amount, channelId)
+
+      try {
+        await machinomy.open(receiver, amount, channelId)
+      } catch (err) {
+        if (err.code === -32603) {
+          this.store.dispatch(actions.removePendingChannel(channelId))
+        }
+        throw err
+      }
 
       // Initialize channel with a 0 tip
       await this.initChannel()
@@ -211,5 +237,18 @@ export default class MicropaymentsController extends AbstractController {
     })
 
     await this.populateChannels()
+  }
+
+  private async getChannelsByPublicKey(): Promise<string[]> {
+    const hubUrl = await this.sharedStateView.getHubUrl()
+    const accounts = await this.sharedStateView.getAccounts()
+    const address = accounts[0]
+
+    const res = await requestJson(`${hubUrl}/accounts/${address}/channelIds`, {
+      method: 'GET',
+      credentials: 'include'
+    })
+
+    return res as string[]
   }
 }
