@@ -23,6 +23,7 @@ export interface DepositStateProps {
 export interface DepositStates {
   address: string
   isAuthenticating: boolean
+  isCopied: boolean
 }
 
 export type DepositProps = DepositStateProps & DepositDispatchProps
@@ -32,12 +33,12 @@ export interface DepositDispatchProps {
 }
 
 export class Deposit extends React.Component<DepositProps, DepositStates> {
-  constructor(props: DepositProps) {
-    super(props)
-    this.state = {
-      address: '',
-      isAuthenticating: false,
-    }
+  timeout: any
+  
+  state = {
+    address: '',
+    isAuthenticating: false,
+    isCopied: false,
   }
 
   handleSubmit = async () => {
@@ -56,6 +57,27 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
         let address = accounts[0]
         this.setState({ address })
       })
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+    }
+  }
+
+  onCopyAddress = () => {
+    const { address } = this.state;
+
+    if (address) {
+      copy(address)
+      this.setState({
+        isCopied: true,
+      })
+
+      this.timeout = setTimeout(() => {
+        this.setState({ isCopied: false })
+      }, 2000)
     }
   }
 
@@ -79,9 +101,11 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
             ctaContentClass={d.ctaInputContent}
             value={this.state.address}
             ctaContent={() => (
-              <div className={style.ctaContentWrapper} onClick={() => copy(this.state.address)}>
+              <div className={style.ctaContentWrapper} onClick={this.onCopyAddress}>
                 <div className={style.ctaIcon} />
-                <span className={style.ctaText}>Copy</span>
+                <span className={style.ctaText}>
+                  {this.state.isCopied ? 'Copied' : 'Copy'}
+                </span>
               </div>
             )}
           />

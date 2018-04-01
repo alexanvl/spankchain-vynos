@@ -1,5 +1,7 @@
 .ctaInputValue {
   padding: 0 1rem;
+  font-family: CartographMonoCF;
+  line-height: 1rem;
 }
 
 .ctaInputContent {
