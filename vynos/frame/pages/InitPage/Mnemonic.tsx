@@ -6,7 +6,6 @@ import WorkerProxy from '../../WorkerProxy'
 import * as actions from '../../redux/actions'
 import Button from '../../components/Button/index'
 import Checkbox from '../../components/Checkbox/index'
-import WalletCard from '../../components/WalletCard/index'
 import OnboardingContainer from './OnboardingContainer'
 import {withRouter} from 'react-router'
 
@@ -78,13 +77,15 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
               </div>
             ))}
           </div>
-          <div className={style.ackMnemonics}>
-            <Checkbox
-              className={style.ackCheckbox}
-              onChange={(e: any) => this.setState({acknowledged: e.target.checked})}
-            />
-            <div className={style.ackText}>I've copied the backup words somewhere safe and secret.</div>
-          </div>
+          <label>
+            <div className={style.ackMnemonics}>
+              <Checkbox
+                className={style.ackCheckbox}
+                onChange={(e: any) => this.setState({acknowledged: e.target.checked})}
+              />
+              <div className={style.ackText}>I've copied the backup words somewhere safe and secret.</div>
+            </div>
+          </label>
           <div className={style.mnemonicFooter}>
             <Button
               type="secondary"
