@@ -61,6 +61,7 @@ export interface SharedState {
   pendingTransaction: PendingTransaction|null
   address: string|null
   hasActiveWithdrawal: boolean
+  pendingChannelIds: string[]
 }
 
 export interface PersistentState {
@@ -68,6 +69,7 @@ export interface PersistentState {
   keyring?: string,
   rememberPath: string
   authorizedHubs: AuthorizedHubsState
+  pendingChannelIds: string[]
 }
 
 export interface BrandingState {
@@ -109,14 +111,16 @@ export const INITIAL_SHARED_STATE: SharedState = {
   balance: '0',
   pendingTransaction: null,
   address: null,
-  hasActiveWithdrawal: false
+  hasActiveWithdrawal: false,
+  pendingChannelIds: []
 }
 
 export const INITIAL_STATE: WorkerState = {
   persistent: {
     didInit: false,
     rememberPath: '/',
-    authorizedHubs: {}
+    authorizedHubs: {},
+    pendingChannelIds: []
   },
   runtime: {
     isTransactionPending: 0,
@@ -135,7 +139,7 @@ export const INITIAL_STATE: WorkerState = {
     history: [],
     balance: '0',
     pendingTransaction: null,
-    hasActiveWithdrawal: false
+    hasActiveWithdrawal: false,
   },
 }
 
@@ -160,6 +164,7 @@ export function buildSharedState(state: WorkerState): SharedState {
     balance: state.runtime.balance,
     pendingTransaction: state.runtime.pendingTransaction,
     address: state.runtime.wallet ? state.runtime.wallet.getAddressString() : null,
-    hasActiveWithdrawal: state.runtime.hasActiveWithdrawal
+    hasActiveWithdrawal: state.runtime.hasActiveWithdrawal,
+    pendingChannelIds: state.persistent.pendingChannelIds
   }
 }

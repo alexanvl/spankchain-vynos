@@ -41,6 +41,28 @@ export function setDidStoreMnemonicHandler(state: WorkerState): WorkerState {
   }
 }
 
+export const openChannel: ActionCreator<string> = actionCreator<string>('persistent/openChannel')
+export function openChannelHandler(state: WorkerState, channelId: string): WorkerState {
+  return {
+    ...state,
+    persistent: {
+      ...state.persistent,
+      pendingChannelIds: [ ...state.persistent.pendingChannelIds, channelId ],
+    },
+  }
+}
+
+export const removePendingChannel: ActionCreator<string> = actionCreator<string>('persistent/removePendingChannel')
+export function removePendingChannelHandler(state: WorkerState, channelId: string): WorkerState {
+  return {
+    ...state,
+    persistent: {
+      ...state.persistent,
+      pendingChannelIds: state.persistent.pendingChannelIds.filter(id => id !== channelId),
+    },
+  }
+}
+
 export const setTransactionPending: ActionCreator<boolean> = actionCreator<boolean>('runtime/setTransactionPending')
 export function setTransactionPendingHandler(state: WorkerState, pending: boolean): WorkerState {
   let pendingDate = 0
@@ -52,6 +74,7 @@ export function setTransactionPendingHandler(state: WorkerState, pending: boolea
     runtime: { ...state.runtime, isTransactionPending: pendingDate },
   }
 }
+
 
 export interface AuthorizationRequestParam {
   hubUrl: string

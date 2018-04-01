@@ -28,6 +28,8 @@ export default class MicropaymentsController extends AbstractController {
 
   web3: Web3
 
+  timeout: any
+
   lastAddress: string
 
   constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
@@ -35,6 +37,8 @@ export default class MicropaymentsController extends AbstractController {
     this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView
+    this.startScanningPendingChannelIds = this.startScanningPendingChannelIds.bind(this)
+    this.startScanningPendingChannelIds()
   }
 
   public async populateChannels (): Promise<void> {
@@ -43,6 +47,35 @@ export default class MicropaymentsController extends AbstractController {
 
     this.store.dispatch(actions.setChannels(channels.map(
       (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+  }
+
+  public async startScanningPendingChannelIds (): Promise<void> {
+    this.timeout = null
+    const machinomy = await this.getMachinomy()
+    const state = this.store.getState()
+    const { pendingChannelIds, didInit } = state.persistent
+    const isLocked = !state.runtime.wallet
+
+    if (!pendingChannelIds || !pendingChannelIds.length) {
+      return
+    }
+
+    pendingChannelIds.forEach(async channelId => {
+      if (isLocked || !didInit) {
+        return
+      }
+
+      const paymentChannel = await machinomy.channelById(channelId)
+
+      if (paymentChannel) {
+        // Initialize channel with a 0 tip
+        await this.initChannel()
+        // Remove channelId from watchers
+        this.store.dispatch(actions.removePendingChannel(channelId))
+      }
+    })
+
+    this.timeout = setTimeout(this.startScanningPendingChannelIds, 15000)
   }
 
   public async closeChannelsForCurrentHub (): Promise<void> {
@@ -75,22 +108,19 @@ export default class MicropaymentsController extends AbstractController {
       await machinomy.deposit(channels[0].channelId, amount)
     } else {
       const receiver = sharedState.branding.address
-      await machinomy.open(receiver, amount)
+      const channelId = ChannelContract.generateId()
+      this.store.dispatch(actions.openChannel(channelId))
+      if (!this.timeout) {
+        this.startScanningPendingChannelIds()
+      }
+      await machinomy.open(receiver, amount, channelId)
+
+      // Initialize channel with a 0 tip
+      await this.initChannel()
+      // Remove channelId from watchers
+      this.store.dispatch(actions.removePendingChannel(channelId))
     }
 
-    /**
-     * This is needed because the smart contracts requires a payment to be provided to the claim
-     * method. Clicking withdraw uses the 'claim' method on the hub since claiming is instant.
-     */
-    await this.buy(0, {
-      streamId: 'probe',
-      streamName: 'Channel Open/Deposit Probe',
-      performerId: 'probe',
-      performerName: 'Channel Open/Deposit Probe',
-      performerAddress: '0x0000000000000000000000000000000000000000'
-    })
-
-    await this.populateChannels()
   }
 
   public async buy (price: number, meta: any): Promise<VynosBuyResponse> {
@@ -165,5 +195,21 @@ export default class MicropaymentsController extends AbstractController {
       method: 'POST',
       credentials: 'include'
     })
+  }
+
+  private async initChannel () {
+    /**
+     * This is needed because the smart contracts requires a payment to be provided to the claim
+     * method. Clicking withdraw uses the 'claim' method on the hub since claiming is instant.
+     */
+    await this.buy(0, {
+      streamId: 'probe',
+      streamName: 'Channel Open/Deposit Probe',
+      performerId: 'probe',
+      performerName: 'Channel Open/Deposit Probe',
+      performerAddress: '0x0000000000000000000000000000000000000000'
+    })
+
+    await this.populateChannels()
   }
 }

@@ -8,6 +8,8 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.setDidStoreMnemonic, actions.setDidStoreMnemonicHandler)
   .case(actions.restoreWallet, actions.restoreWalletHandler)
   .case(actions.setTransactionPending, actions.setTransactionPendingHandler)
+  .case(actions.openChannel, actions.openChannelHandler)
+  .case(actions.removePendingChannel, actions.removePendingChannelHandler)
   .case(actions.rememberPage, actions.rememberPageHandler)
   .case(actions.setLastUpdateDb, actions.setLastUpdateDbHandler)
   .case(actions.setHubBranding, actions.setHubBrandingHandler)

@@ -15,31 +15,21 @@ export interface MapStateToProps {
   workerProxy: WorkerProxy
   walletBalance: string | null
   cardBalance: BigNumber.BigNumber
+  pendingChannelIds: string[]
 }
 
 export type Props = MapStateToProps
 
-export interface State {
-  isLoading: boolean
-}
-
-
-export class LoadCardCTAButton extends React.Component<Props, State> {
-  state = {
-    isLoading: false,
-  }
-
+export class LoadCardCTAButton extends React.Component<Props> {
   load = async () => {
-    this.setState({
-      isLoading: true
-    })
-
     const amount = await entireBalance(this.props.workerProxy, new BigNumber.BigNumber(this.props.walletBalance!))
     await this.props.workerProxy.deposit(amount)
   }
 
   renderContent () {
-    return this.state.isLoading
+    const { pendingChannelIds } = this.props
+
+    return pendingChannelIds && pendingChannelIds.length > 0
       ? <span className={s.loaderWrapper}><span className={s.spCircle} /> <span>Card is being filled</span></span>
       : () => (
         <span className={s.loadUpWrapper}>
@@ -57,25 +47,27 @@ export class LoadCardCTAButton extends React.Component<Props, State> {
   }
 
   render() {
-    const { walletBalance, cardBalance } = this.props
+    const { walletBalance, cardBalance, pendingChannelIds } = this.props
 
     if (walletBalance === '0' || cardBalance.gt(0)) {
       return <noscript />
     }
 
+    const isLoading = pendingChannelIds && pendingChannelIds.length > 0
     const btnClass = classnames({
-      [s.loading]: this.state.isLoading
+      [s.loading]: isLoading
     })
+
 
     return (
       <div className={s.container}>
         <Button
           className={btnClass}
           content={this.renderContent()}
-          disabled={this.state.isLoading}
+          disabled={isLoading}
           onClick={this.load}
         />
-        {this.state.isLoading ? <span className={s.small}>Estimated time: 30 seconds.</span> : null}
+        {isLoading ? <span className={s.small}>Estimated time: 30 seconds.</span> : null}
       </div>
     )
   }
@@ -85,7 +77,8 @@ function mapStateToProps(state: FrameState): MapStateToProps {
   return {
     walletBalance: state.shared.balance,
     cardBalance: cardBalance(state.shared),
-    workerProxy: state.temp.workerProxy
+    workerProxy: state.temp.workerProxy,
+    pendingChannelIds: state.shared.pendingChannelIds,
   }
 }
 
