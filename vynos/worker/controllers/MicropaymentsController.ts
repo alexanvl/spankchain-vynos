@@ -9,14 +9,15 @@ import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import {
   BuyRequest,
-  CloseChannelsForCurrentHubRequest, DepositRequest,
+  CloseChannelsForCurrentHubRequest,
+  DepositRequest,
   ListChannelsRequest,
   PopulateChannelsRequest
 } from '../../lib/rpc/yns'
 import AbstractController from './AbstractController'
-import Web3 = require('web3')
 import ChannelContract from 'machinomy/dist/lib/channel_contract'
 import requestJson, {request} from '../../frame/lib/request'
+import Web3 = require('web3')
 
 
 export default class MicropaymentsController extends AbstractController {
@@ -45,25 +46,28 @@ export default class MicropaymentsController extends AbstractController {
     const machinomy = await this.getMachinomy()
     const channels = await machinomy.channels()
 
-    if (!channels || !channels.length) {
-      try {
-        const channelIds = await this.getChannelsByPublicKey()
-
-        for (let i = 0; i < channelIds.length; i++) {
-          await machinomy.channelById(channelIds[i])
-        }
-
-        await this.populateChannels()
-
-      } catch (err) {
-        console.log(err)
-      }
-    } else {
+    if (channels.length) {
       this.store.dispatch(actions.setChannels(channels.map(
         (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+      return
     }
 
+    try {
+      const channelIds = await this.getChannelsByPublicKey()
 
+      for (let i = 0; i < channelIds.length; i++) {
+        await machinomy.channelById(channelIds[i])
+      }
+
+      const chans = await machinomy.channels()
+
+      if (chans.length) {
+        this.store.dispatch(actions.setChannels(channels.map(
+          (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+      }
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   public async startScanningPendingChannelIds (): Promise<void> {
@@ -135,7 +139,7 @@ export default class MicropaymentsController extends AbstractController {
       try {
         await machinomy.open(receiver, amount, channelId)
       } catch (err) {
-        if (err.code === -32603) {
+        if (typeof err.code !== 'undefined') {
           this.store.dispatch(actions.removePendingChannel(channelId))
         }
         throw err
