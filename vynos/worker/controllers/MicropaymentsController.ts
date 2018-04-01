@@ -146,10 +146,15 @@ export default class MicropaymentsController extends AbstractController {
       // Remove channelId from watchers
       this.store.dispatch(actions.removePendingChannel(channelId))
     }
-
   }
 
   public async buy (price: number, meta: any): Promise<VynosBuyResponse> {
+    const sharedState = await this.sharedStateView.getState()
+
+    if (sharedState.runtime.hasActiveWithdrawal) {
+      throw new Error('Can\'t tip while a withdrawal is active.')
+    }
+
     const receiver = (await this.sharedStateView.getSharedState()).branding.address
     const hubUrl = await this.sharedStateView.getHubUrl()
     const machinomy = await this.getMachinomy()

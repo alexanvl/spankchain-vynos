@@ -6,7 +6,6 @@ import {SharedState} from '../worker/WorkerState'
 import * as BigNumber from 'bignumber.js';
 import Web3 = require('web3')
 import VynosBuyResponse from '../lib/VynosBuyResponse'
-import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 
 export interface Balance {
   balanceInWei: string
@@ -67,7 +66,15 @@ export default class Vynos extends EventEmitter {
       return null
     }
 
-    const res = await this.client.buy(amount.toNumber(), meta)
+    let res
+
+    try {
+      res = await this.client.buy(amount.toNumber(), meta)
+    } catch (err) {
+      this.emit('error', err)
+      throw err
+    }
+
     this.emit('didBuy', res)
     return res
   }
