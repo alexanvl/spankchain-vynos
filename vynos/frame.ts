@@ -31,8 +31,12 @@ class Client implements ServiceWorkerClient {
   }
 
   unload () {
-    this.stopHeartbeating()
-    this.frameServer.stop().catch(console.error.bind(console))
+    try {
+      this.stopHeartbeating()
+      this.frameServer.stop().catch(console.error.bind(console))
+    } catch (e) {
+      console.error(e)
+    }
   }
 
   startHeartbeating () {
