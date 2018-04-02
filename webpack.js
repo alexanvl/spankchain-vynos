@@ -147,8 +147,8 @@ function webpackConfig (entry, hash = true) {
   if (NODE_ENV === 'production') {
     config.plugins.push(new UglifyJSPlugin({
       parallel: true,
-      mangle: false,
       uglifyOptions: {
+        mangle: false,
         output: {
           comments: false,
           beautify: false
