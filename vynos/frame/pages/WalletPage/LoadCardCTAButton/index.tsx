@@ -11,6 +11,8 @@ import entireBalance from '../../../lib/entireBalance'
 
 const s = require('./index.css')
 
+const finneyInverse = require('../../../components/FinneySign/style.css').finneyInverse
+
 export interface MapStateToProps {
   workerProxy: WorkerProxy
   walletBalance: string | null
@@ -39,6 +41,7 @@ export class LoadCardCTAButton extends React.Component<Props> {
             inputType={CurrencyType.WEI}
             outputType={CurrencyType.FINNEY}
             className={s.loadUpCurrency}
+            unitClassName={`${finneyInverse} ${s.finneyUnitInText}`}
             showUnit
           />
           <span> into SpankCard</span>

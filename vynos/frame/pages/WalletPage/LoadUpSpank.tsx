@@ -9,6 +9,7 @@ import entireBalance from '../../lib/entireBalance'
 
 const s = require('./LoadUpSpank.css')
 
+const finneyInverse = require('../../components/FinneySign/style.css').finneyInverse
 
 export interface StateProps {
   walletBalance: string | null
@@ -60,7 +61,7 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
 
     return (
       <span>
-        Load up <Currency amount={this.props.walletBalance} inputType={CurrencyType.WEI} /> into SpankCard
+        Load up <Currency amount={this.props.walletBalance} inputType={CurrencyType.WEI} unitClassName={finneyInverse} /> into SpankCard
       </span>
     )
   }

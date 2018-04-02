@@ -526,13 +526,12 @@
   flex-flow: row nowrap;
   justify-content: center;
   align-items: center;
+  font-family: CartographMonoCF;
 }
 
 .finneyUnit {
-  margin-left: 0;
-  margin-top: 0;
-  border-color: #b5b5b5;
-  margin-bottom: .05rem;
+  margin: 2px 4px 0 0;
+  display: inline-block;
 }
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {

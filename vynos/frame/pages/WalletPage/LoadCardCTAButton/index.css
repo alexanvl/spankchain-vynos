@@ -64,6 +64,12 @@
   text-align: center;
 }
 
+.finneyUnitInText {
+  margin-left: 4px;
+  margin-right: 3px;
+  height: 14px;
+}
+
 @-webkit-keyframes spCircRot {
   from { -webkit-transform: rotate(0deg); }
   to { -webkit-transform: rotate(359deg); }
