@@ -90,11 +90,6 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
           </label>
           <div className={style.mnemonicFooter}>
             <Button
-              type="secondary"
-              content="Back"
-              isInverse
-            />
-            <Button
               content={this.state.isAuthenticating ? 'Authenticating...' : 'Next'}
               onClick={this.handleSubmit.bind(this)}
               isInverse
