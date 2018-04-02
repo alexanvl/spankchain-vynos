@@ -4,6 +4,7 @@ steps:
             'build',
             '--build-arg', 'NODE_ENV=${_ENV}',
             '--build-arg', 'FRAME_URL=${_FRAME_URL}',
+            '--build-arg', 'NETWORK_NAME=${_NETWORK_NAME}',
             '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:$COMMIT_SHA',
             #'-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:latest',
             '.'
