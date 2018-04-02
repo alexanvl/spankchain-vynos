@@ -16,7 +16,7 @@ export interface Props {
   headerText: string
   descriptionLineOne: string
   descriptionLineTwo: string
-  linkText: string
+  linkText?: string
 }
 
 export interface State {
@@ -83,7 +83,7 @@ export class ReceiveEther extends React.Component<Props, State> {
           <div className={s.description}>
             {descriptionLineTwo}
             <span className={s.seeTutorialText}>
-              {`${linkText} ->`}
+              {linkText && `${linkText} ->`}
             </span>
           </div>
         </div>

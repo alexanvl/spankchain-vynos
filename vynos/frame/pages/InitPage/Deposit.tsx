@@ -97,9 +97,9 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
     return (
       <OnboardingContainer totalSteps={4} currentStep={2}>
         <div className={style.content}>
-          <div className={style.funnelTitle}>Transfer Funds</div>
+          <div className={style.funnelTitle}>Wallet Address</div>
           <div className={style.seedPhraseText}>
-            This is your SpankWallet address. You can copy it and send crypto from any exchange.
+          This is your Wallet address, also known as a Public Key. Copy it. Give to others. Send ETH from an exchange or other wallet you control to this address. You'll then be able load your SpankCard and tip away!
           </div>
           <CTAInput
             className={style.ctaInput}

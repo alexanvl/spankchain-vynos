@@ -119,9 +119,9 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     return (
       <OnboardingContainer totalSteps={0} currentStep={0}>
         <div className={style.content}>
-          <div className={style.funnelTitle}>Login to SpankCard</div>
+          <div className={style.funnelTitle}>Unlock your SpankCard</div>
           <TextBox className={style.passwordTextBox}>
-            We see you already have a SpankWallet, please login.
+            We see that you already have a SpankCard. Enter password to unlock and login.
           </TextBox>
           <Submittable onSubmit={this.handleSubmit}>
             <Input
