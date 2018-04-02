@@ -155,14 +155,14 @@ export default class MicropaymentsController extends AbstractController {
       let attempts = 0;
 
       // ensure balances are the same
-      while (++attempts <= 5) {
+      while (++attempts <= 15) {
         const testChan = await machinomy.channelById(channelId)
 
         if (testChan && testChan.value.eq(chan.value)) {
           break;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 1000))
+        await new Promise((resolve) => setTimeout(resolve, 2000))
       }
 
       // Remove channelId from watchers
