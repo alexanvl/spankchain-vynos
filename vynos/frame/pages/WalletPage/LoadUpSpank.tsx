@@ -60,8 +60,17 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
     }
 
     return (
-      <span>
-        Load up <Currency amount={this.props.walletBalance} inputType={CurrencyType.WEI} unitClassName={finneyInverse} /> into SpankCard
+      <span className={s.loadUpCta}>
+        <span>Load up</span>
+        <Currency
+          className={s.currency}
+          amount={this.props.walletBalance}
+          inputType={CurrencyType.WEI}
+          outputType={CurrencyType.FINNEY}
+          unitClassName={`${finneyInverse} ${s.finney}`}
+          showUnit
+        />
+        <span>into SpankCard</span>
       </span>
     )
   }
