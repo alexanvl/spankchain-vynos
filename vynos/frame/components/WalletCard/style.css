@@ -48,6 +48,14 @@
   z-index: 200;
 }
 
+.bottom span {
+  font-family: CartographMonoCF !important;
+}
+
+.bottom > div {
+  align-items: baseline;
+}
+
 .name {
   flex: 1 1 auto;
   font-family: CartographMonoCF;

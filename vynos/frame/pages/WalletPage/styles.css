@@ -442,14 +442,21 @@
 .walletActivitySubtractAmount .activityFinneySign {
   color: transparent;
   margin: 2px;
+  background-image: url('../../styles/images/fin-duo-red.svg');
+  height: 13px;
 }
 
 .walletActivitySubtractAmount {
   border-radius: 1rem;
   border: 0.5px solid #cccccc;
   font-size: 0.9rem;
-  padding: 0.2rem 0.3rem;
+  padding: 0.2rem 0.6rem 0.2rem 0.3rem;
   margin-left: 0.3rem;
+}
+
+.walletActivitySubtractAmount span,
+.walletAmount span {
+  font-family: CartographMonoCF !important;
 }
 
 .walletActivityReceiveAmount {
