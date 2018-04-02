@@ -11,6 +11,8 @@ let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
 const NODE_ENV = process.env.NODE_ENV
 
+const NETWORK_NAME = process.env.NETWORK_NAME || 'ropsten'
+
 function resolvePath(dir) {
   return path.resolve.apply(path, [__dirname].concat(dir.split('/')));
 }
@@ -41,7 +43,8 @@ function webpackConfig (entry, hash = true) {
         'process.env': {
           'NODE_ENV': JSON.stringify(NODE_ENV || 'development'), // This has effect on the react lib size,
           'DEBUG': NODE_ENV !== 'production',
-          'FRAME_URL': JSON.stringify(FRAME_URL)
+          'FRAME_URL': JSON.stringify(FRAME_URL),
+          'NETWORK_NAME': JSON.stringify(NETWORK_NAME)
         }
       })
     ],
