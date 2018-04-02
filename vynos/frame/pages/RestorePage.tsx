@@ -197,7 +197,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
           Restore Backup Seed
         </div>
         <TextBox className={style.passwordTextBox}>
-          {this.state.seedError ? this.state.seedError : 'Enter your SpankCard backup codes. Use tab to jump to the next field.'}
+          {this.state.seedError ? this.state.seedError : 'Enter your SpankCard backup words. Use tab to jump to the next field.'}
         </TextBox>
         {this.renderFields()}
         <div className={style.funnelFooter}>
