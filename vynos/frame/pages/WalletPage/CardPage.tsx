@@ -8,6 +8,7 @@ import {BrandingState} from '../../../worker/WorkerState'
 import {cardBalance} from '../../redux/selectors/cardBalance'
 import * as BigNumber from 'bignumber.js';
 import WorkerProxy from '../../WorkerProxy'
+import {CLOSE_CHANNEL_ERRORS} from '../../../lib/ChannelClaimStatusResponse'
 import Currency, {CurrencyType} from '../../components/Currency/index'
 import entireBalance from '../../lib/entireBalance'
 
@@ -43,6 +44,10 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     try {
       await this.props.workerProxy.closeChannelsForCurrentHub()
     } catch (e) {
+      if (e.message === CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS) {
+        return this.setState({ error: e.message })
+      } 
+
       this.setState({
         error: 'Withdrawal failed. Please try again.',
       })

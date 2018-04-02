@@ -1,6 +1,10 @@
 import * as BigNumber from 'bignumber.js'
 import {PaymentChannel} from 'machinomy/dist/lib/channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
+import ChannelClaimStatusResponse, {
+  ChannelClaimStatus,
+  CLOSE_CHANNEL_ERRORS
+} from '../../lib/ChannelClaimStatusResponse'
 import Machinomy from 'machinomy'
 import SharedStateView from '../SharedStateView'
 import {WorkerState} from '../WorkerState'
@@ -31,6 +35,8 @@ export default class MicropaymentsController extends AbstractController {
   web3: Web3
 
   timeout: any
+
+  claimStatusTimeout: any
 
   lastAddress: string
 
@@ -107,10 +113,12 @@ export default class MicropaymentsController extends AbstractController {
         return
       }
 
-      await Promise.all(channels.map((ch: SerializedPaymentChannel) => this.closeChannel(hubUrl, ch.channelId)))
-      await this.populateChannels()
-    } finally {
-      this.store.dispatch(actions.setHasActiveWithdrawal(false))
+      await Promise.all(channels.map((ch: SerializedPaymentChannel) => this.checkThenCloseChannel(hubUrl, ch.channelId)))
+    } catch (error) {
+      if (error.message !== CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS) {
+        this.store.dispatch(actions.setHasActiveWithdrawal(false))
+      }
+      throw error
     }
   }
 
@@ -239,6 +247,56 @@ export default class MicropaymentsController extends AbstractController {
     return this.machinomy
   }
 
+  private async checkThenCloseChannel (hubUrl: string, channelId: string): Promise<void> {
+    const claimStatus = await this.getChannelClaimStatus(channelId)
+    const {status} = claimStatus
+
+    switch (status) {
+      case ChannelClaimStatus.FAILED:
+      case null:
+        await this.closeChannel(hubUrl, channelId)
+        return this.pollChannelClaimStatus(channelId)
+      case ChannelClaimStatus.NEW:
+      case ChannelClaimStatus.PENDING:
+        await this.pollChannelClaimStatus(channelId)
+        throw Error(CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS)
+      case ChannelClaimStatus.CONFIRMED:
+        return
+      default:
+        throw Error(CLOSE_CHANNEL_ERRORS.UNKNOWN_STATUS)
+    }
+  }
+
+  private async pollChannelClaimStatus (channelId: string): Promise<any> {
+    const ctx = this
+    clearTimeout(ctx.claimStatusTimeout)
+
+    return new Promise(async (resolve: any, reject: any) => {
+      await poll(resolve, reject)
+    })
+
+    async function poll (resolve: any, reject: any) {
+      try {
+        const claimStatus = await ctx.getChannelClaimStatus(channelId)
+        const {status} = claimStatus
+
+        if (status === ChannelClaimStatus.CONFIRMED) {
+          resolve(claimStatus)
+          await ctx.populateChannels()
+          ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
+        } else if (status === ChannelClaimStatus.FAILED) {
+          ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
+          reject(new Error(CLOSE_CHANNEL_ERRORS.FAILED))
+        } else {
+          ctx.claimStatusTimeout = setTimeout(() => poll(resolve, reject), 15000)
+        }
+      } catch (error) {
+        reject(error)
+      }
+    }
+
+  }
+
   private async closeChannel (hubUrl: string, channelId: string): Promise<void> {
     await request(`${hubUrl}/channels/${channelId}/close`, {
       method: 'POST',
@@ -273,5 +331,15 @@ export default class MicropaymentsController extends AbstractController {
     })
 
     return res as string[]
+  }
+
+  private async getChannelClaimStatus (channelId: string): Promise<ChannelClaimStatusResponse> {
+    const hubUrl = await this.sharedStateView.getHubUrl()
+    const res = await requestJson(`${hubUrl}/channels/${channelId}/claimStatus`, {
+      method: 'GET',
+      credentials: 'include'
+    })
+
+    return res as ChannelClaimStatusResponse
   }
 }
