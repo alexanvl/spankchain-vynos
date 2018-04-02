@@ -145,6 +145,12 @@ function webpackConfig (entry, hash = true) {
     config.plugins.push(new UglifyJSPlugin({
       parallel: true,
       uglifyOptions: {
+        compress: {
+          keep_fnames: true
+        },
+        mangle: {
+          keep_fnames: true
+        },
         output: {
           comments: false,
           beautify: false
