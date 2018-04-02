@@ -40,6 +40,7 @@ class Client implements ServiceWorkerClient {
   }
 
   startHeartbeating () {
+    console.log('Started heartbeating.')
     this.heartbeating = true
     this.beat()
   }
