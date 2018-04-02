@@ -120,11 +120,6 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
           </div>
           <div className={style.mnemonicFooter}>
             <Button
-              type="secondary"
-              content="Back"
-              isInverse
-            />
-            <Button
               content={this.state.isAuthenticating ? 'Loading' : 'Next'}
               isInverse
               disabled={this.state.isAuthenticating}

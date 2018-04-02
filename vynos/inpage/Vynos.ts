@@ -197,7 +197,7 @@ export default class Vynos extends EventEmitter {
       this.emit('didOnboard')
     }
 
-    if (this.previousState.currentAuthToken !== newState.currentAuthToken) {
+    if (this.previousState.currentAuthToken !== newState.currentAuthToken && newState.currentAuthToken) {
       this.emit('didAuthenticate', newState.currentAuthToken)
     }
   }

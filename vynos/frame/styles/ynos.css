@@ -723,7 +723,7 @@ Channels page
 }
 
 .mnemonicFooter {
-  width: 300px;
+  width: 200px;
   display: flex;
   flex-flow: row nowrap;
   padding-bottom: 2rem;
