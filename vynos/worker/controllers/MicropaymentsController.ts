@@ -22,6 +22,7 @@ import {
 import AbstractController from './AbstractController'
 import requestJson, {request} from '../../frame/lib/request'
 import Web3 = require('web3')
+import ChannelId from 'machinomy/dist/lib/ChannelId'
 
 
 export default class MicropaymentsController extends AbstractController {
@@ -135,7 +136,7 @@ export default class MicropaymentsController extends AbstractController {
       // need to use fromascii here since machinomy stores the version of the
       // channel that goes over the wire to the contract (i.e., converted to hex
       // from ascii
-      const channelId = this.web3.fromAscii(ChannelContract.generateId())
+      const channelId = this.web3.fromAscii(ChannelId.random().toString())
       this.store.dispatch(actions.openChannel(channelId))
 
       if (!this.timeout) {
