@@ -19,6 +19,7 @@ export interface StateProps extends BrandingState {
   cardBalance: BigNumber.BigNumber
   isWithdrawing: boolean
   workerProxy: WorkerProxy
+  activeWithdrawalError: string|null
 }
 
 export interface CardPageState {
@@ -146,13 +147,19 @@ class CardPage extends React.Component<StateProps, CardPageState> {
   }
 
   renderError () {
-    if (!this.state.error) {
+    const {activeWithdrawalError} = this.props
+
+    if (!this.state.error && !activeWithdrawalError) {
       return null
     }
 
     return (
       <div className={s.walletSpankCardError}>
-        {this.state.error}
+        {
+          this.state.error
+            ? this.state.error
+            : activeWithdrawalError
+        }
       </div>
     )
   }
@@ -164,6 +171,7 @@ function mapStateToProps (state: FrameState, ownProps: any): StateProps {
     walletBalance: state.shared.balance,
     cardBalance: cardBalance(state.shared),
     isWithdrawing: state.shared.hasActiveWithdrawal,
+    activeWithdrawalError: state.shared.activeWithdrawalError,
     workerProxy: state.temp.workerProxy
   }
 }

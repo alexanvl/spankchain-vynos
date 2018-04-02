@@ -258,8 +258,8 @@ export default class MicropaymentsController extends AbstractController {
         return this.pollChannelClaimStatus(channelId)
       case ChannelClaimStatus.NEW:
       case ChannelClaimStatus.PENDING:
-        await this.pollChannelClaimStatus(channelId)
-        throw Error(CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS)
+        this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS))
+        return this.pollChannelClaimStatus(channelId)
       case ChannelClaimStatus.CONFIRMED:
         return
       default:
@@ -281,11 +281,13 @@ export default class MicropaymentsController extends AbstractController {
         const {status} = claimStatus
 
         if (status === ChannelClaimStatus.CONFIRMED) {
+          ctx.store.dispatch(actions.setActiveWithdrawalError(null))
           resolve(claimStatus)
           await ctx.populateChannels()
           ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
         } else if (status === ChannelClaimStatus.FAILED) {
           ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
+          ctx.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.FAILED))
           reject(new Error(CLOSE_CHANNEL_ERRORS.FAILED))
         } else {
           ctx.claimStatusTimeout = setTimeout(() => poll(resolve, reject), 15000)
