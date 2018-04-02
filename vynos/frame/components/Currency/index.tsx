@@ -56,7 +56,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
         ? amount
         : new BigNumber.BigNumber(this.props.workerProxy.web3.fromWei(amount, 'ether'))
 
-      ret = eth.mul(880).toFixed(decimals).toString()
+      ret = eth.mul(380).toFixed(decimals).toString()
     } else if (outputType === CurrencyType.FINNEY) {
       const finney = new BigNumber.BigNumber(this.props.workerProxy.web3.fromWei(amount, 'finney'))
       ret = finney.toNumber().toFixed(decimals).toString()
