@@ -65,10 +65,12 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
         currentStep={1}
       >
         <div className={style.content}>
-          <div className={style.funnelTitle}>Backup Codes</div>
+          <div className={style.funnelTitle}>Backup Words</div>
           <div className={style.seedPhraseText}>
-            These are your backup words to be able to restore your SpankWallet. Keep them somewhere safe and secret.
-          </div>
+            <p>These are <em><strong>your</strong></em> backup words. They will restore <em><strong>your</strong></em> SpankCard. Keep them secret. Keep them safe. </p>
+            <p>DO NOT LOSE OR SHARE! SPANKCHAIN CANNOT RESTORE THEM FOR YOU!</p>
+            <p>Welcome to Crypto! 😘</p>
+            </div>
           <div className={style.seedWords}>
             {mnemonic.split(' ').map((seed, i) => (
               <div className={style.seedWord} key={`${seed}-${i}`}>
@@ -83,7 +85,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
                 className={style.ackCheckbox}
                 onChange={(e: any) => this.setState({acknowledged: e.target.checked})}
               />
-              <div className={style.ackText}>I've copied the backup words somewhere safe and secret.</div>
+              <div className={style.ackText}>I have copied the backup words. They are secret. They are safe. I promise!</div>
             </div>
           </label>
           <div className={style.mnemonicFooter}>

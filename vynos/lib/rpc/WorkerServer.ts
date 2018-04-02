@@ -12,7 +12,7 @@ import {JSONRPC, randomId} from '../Payload'
 import {Listenable} from '../messaging/Listenable'
 
 const networks = require('../../networks.json')
-const DEFAULT_NETWORK = 'Ropsten'
+const DEFAULT_NETWORK = 'ropsten'
 
 export default class WorkerServer extends JsonRpcServer {
   private provider: Engine
@@ -23,7 +23,7 @@ export default class WorkerServer extends JsonRpcServer {
 
   constructor (backgroundController: BackgroundController, source: Listenable, target: WindowClient) {
     super('WorkerServer', [ process.env.FRAME_URL as string ], source, target)
-    this.providerOpts = new ProviderOptions(backgroundController, networks[DEFAULT_NETWORK]).approving()
+    this.providerOpts = new ProviderOptions(backgroundController, networks[process.env.NETWORK_NAME || DEFAULT_NETWORK]).approving()
     this.provider = ZeroClientProvider(this.providerOpts)
     this.web3 = new Web3(this.provider)
   }

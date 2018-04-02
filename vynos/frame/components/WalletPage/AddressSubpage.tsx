@@ -13,7 +13,9 @@ export interface AddressSubpageState {
 }
 
 function etherscanLink(hexAddress: string): string {
-  return `https://ropsten.etherscan.io/address/${hexAddress}` // FIXME Networks
+  return process.env.NETWORK_NAME === 'main' ?
+    `https://etherscan.io/address/${hexAddress}` :
+    `https://ropsten.etherscan.io/address/${hexAddress}`
 }
 
 const LABEL_COPY_TO_CLIPBOARD = 'Copy to Clipboard'

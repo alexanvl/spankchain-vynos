@@ -271,3 +271,14 @@ export function setHasActiveWithdrawalHandler(state: WorkerState, hasActiveWithd
     }
   }
 }
+
+export const setActiveWithdrawalError: ActionCreator<string|null> = actionCreator<string|null>('runtime/setActiveWithdrawalError')
+export function setActiveWithdrawalErrorHandler(state: WorkerState, activeWithdrawalError: string|null): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      activeWithdrawalError,
+    }
+  }
+}

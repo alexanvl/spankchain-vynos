@@ -2,7 +2,7 @@
 # yarn lockfile v1
 
 
-"@machinomy/contracts@^4.0.5":
+"@machinomy/contracts@4.0.9", "@machinomy/contracts@^4.0.5":
   version "4.0.9"
   resolved "https://registry.yarnpkg.com/@machinomy/contracts/-/contracts-4.0.9.tgz#2cf5bb65ebb7b28b17d79628ac9f926f5e279feb"
   dependencies:

@@ -10,6 +10,7 @@
     "lint": "tslint -t stylish -c ../common/tslint.json --project '.' vynos/**/*.ts"
   },
   "resolutions": {
+    "**/@machinomy/contracts": "4.0.9",
     "**/@types/react": "15.6.0",
     "**/@types/react-router": "4.0.15",
     "**/typescript-fsa": "2.3.1",
@@ -60,6 +61,7 @@
     "webpack-dev-server": "^2.4.5"
   },
   "dependencies": {
+    "@machinomy/contracts": "4.0.9",
     "@types/classnames": "^2.2.3",
     "@types/debug": "^0.0.30",
     "@types/prop-types": "^15.5.2",
