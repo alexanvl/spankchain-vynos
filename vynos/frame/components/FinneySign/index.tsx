@@ -5,11 +5,16 @@ const s = require('./style.css')
 
 export interface Props {
   className?: string
+  reverse?: boolean
 }
 
 const Finney: React.SFC<Props> = function(props) {
   return (
-    <div className={classnames(s.finney, props.className)}>FIN</div>
+    <div
+      className={classnames(s.finney, props.className, {
+        [s.finneyInverse]: props.reverse
+      })}
+    />
   )
 }
 

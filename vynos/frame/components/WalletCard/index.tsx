@@ -85,7 +85,7 @@ function renderCurrencyValue (props: any) {
         lineHeight: props.currencySize + 'px',
         color: props.color
       }}>
-      <FinneySign className={s.finneySign} />
+      <FinneySign className={s.finneySign} reverse/>
       <Currency key="value" amount={props.currencyValue} outputType={CurrencyType.FINNEY}/>
     </div>
   )
