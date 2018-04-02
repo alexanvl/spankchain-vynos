@@ -75,7 +75,7 @@ export default class WalletController extends AbstractController implements Life
         reject(err)
       }
 
-      if (!res.blockNumber) {
+      if (!res || !res.blockNumber) {
         return setTimeout(() => resolve(null), 1000)
       }
 
