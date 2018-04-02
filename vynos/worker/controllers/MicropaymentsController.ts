@@ -20,7 +20,6 @@ import {
   PopulateChannelsRequest
 } from '../../lib/rpc/yns'
 import AbstractController from './AbstractController'
-import ChannelContract from 'machinomy/dist/lib/channel_contract'
 import requestJson, {request} from '../../frame/lib/request'
 import Web3 = require('web3')
 
@@ -168,7 +167,11 @@ export default class MicropaymentsController extends AbstractController {
       // Remove channelId from watchers
       this.store.dispatch(actions.removePendingChannel(channelId))
       // Initialize channel with a 0 tip
-      await this.initChannel()
+      try {
+        await this.initChannel()
+      } catch (e) {
+        console.error('Failed to send initial tip:', e)
+      }
     }
 
     await this.populateChannels()
