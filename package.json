@@ -81,7 +81,7 @@
     "localforage": "^1.5.0",
     "localforage-observable": "^1.3.1",
     "lodash": "^4.17.4",
-    "machinomy": "http://github.com/mslipper/machinomy#fb6ca4ac0d2875df7e5e6dfc37bb49d0ae87c70d",
+    "machinomy": "http://github.com/mslipper/machinomy#52296b5d99c31bf9bcb8963874c4338ac30d50c5",
     "moment": "^2.19.1",
     "mux-demux": "^3.7.9",
     "qr-image": "^3.2.0",
