@@ -136,7 +136,7 @@ export default class MicropaymentsController extends AbstractController {
       // need to use fromascii here since machinomy stores the version of the
       // channel that goes over the wire to the contract (i.e., converted to hex
       // from ascii
-      const channelId = this.web3.fromAscii(ChannelId.random().toString())
+      const channelId = this.web3.fromAscii(ChannelId.random().id.toString('hex'))
       this.store.dispatch(actions.openChannel(channelId))
 
       if (!this.timeout) {
