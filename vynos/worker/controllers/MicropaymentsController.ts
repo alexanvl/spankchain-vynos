@@ -20,9 +20,9 @@ import {
   PopulateChannelsRequest
 } from '../../lib/rpc/yns'
 import AbstractController from './AbstractController'
-import ChannelContract from 'machinomy/dist/lib/channel_contract'
 import requestJson, {request} from '../../frame/lib/request'
 import Web3 = require('web3')
+import ChannelId from 'machinomy/dist/lib/ChannelId'
 
 
 export default class MicropaymentsController extends AbstractController {
@@ -136,7 +136,7 @@ export default class MicropaymentsController extends AbstractController {
       // need to use fromascii here since machinomy stores the version of the
       // channel that goes over the wire to the contract (i.e., converted to hex
       // from ascii
-      const channelId = this.web3.fromAscii(ChannelContract.generateId())
+      const channelId = this.web3.fromAscii(ChannelId.random().id.toString('hex'))
       this.store.dispatch(actions.openChannel(channelId))
 
       if (!this.timeout) {
@@ -168,7 +168,11 @@ export default class MicropaymentsController extends AbstractController {
       // Remove channelId from watchers
       this.store.dispatch(actions.removePendingChannel(channelId))
       // Initialize channel with a 0 tip
-      await this.initChannel()
+      try {
+        await this.initChannel()
+      } catch (e) {
+        console.error('Failed to send initial tip:', e)
+      }
     }
 
     await this.populateChannels()

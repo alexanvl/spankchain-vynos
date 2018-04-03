@@ -57,7 +57,7 @@
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/@types/events/-/events-1.2.0.tgz#81a6731ce4df43619e5c8c945383b3e62a89ea86"
 
-"@types/expect@^1.20.2":
+"@types/expect@^1.20.3":
   version "1.20.3"
   resolved "https://registry.yarnpkg.com/@types/expect/-/expect-1.20.3.tgz#a99d059ace4bd051332faf03f5b4b4266149a501"
 
@@ -5177,9 +5177,9 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@http://github.com/mslipper/machinomy#1698e7e5c4c0a2a46a8135275bccc4994eb28a63":
-  version "1.7.2"
-  resolved "http://github.com/mslipper/machinomy#1698e7e5c4c0a2a46a8135275bccc4994eb28a63"
+"machinomy@http://github.com/mslipper/machinomy#fb6ca4ac0d2875df7e5e6dfc37bb49d0ae87c70d":
+  version "1.7.4"
+  resolved "http://github.com/mslipper/machinomy#fb6ca4ac0d2875df7e5e6dfc37bb49d0ae87c70d"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
     "@machinomy/types-truffle-contract" "https://github.com/machinomy/types-truffle-contract"
@@ -5187,7 +5187,7 @@ macaddress@^0.2.8:
     "@types/body-parser" "^1.16.4"
     "@types/commander" "^2.9.1"
     "@types/debug" "^0.0.30"
-    "@types/expect" "^1.20.2"
+    "@types/expect" "^1.20.3"
     "@types/express" "^4.0.36"
     "@types/nedb" "^1.8.3"
     "@types/request" "^2.0.13"
@@ -6025,6 +6025,8 @@ p-limit@^1.0.0, p-limit@^1.1.0:
 p-locate@^2.0.0:
   version "2.0.0"
   resolved "https://registry.yarnpkg.com/p-locate/-/p-locate-2.0.0.tgz#20a0103b222a70c8fd39cc2e580680f3dde5ec43"
+  dependencies:
+    p-limit "^1.1.0"
 
 p-map@^1.1.1:
   version "1.2.0"
@@ -7467,8 +7469,6 @@ rx-lite@*, rx-lite@^4.0.8:
 rxjs@^5.4.2, rxjs@^5.5.2:
   version "5.5.8"
   resolved "https://registry.yarnpkg.com/rxjs/-/rxjs-5.5.8.tgz#b2b0809a57614ad6254c03d7446dea0d83ca3791"
-  dependencies:
-    symbol-observable "1.0.1"
 
 safe-buffer@5.1.1, safe-buffer@^5.0.1, safe-buffer@^5.1.0, safe-buffer@^5.1.1, safe-buffer@~5.1.0, safe-buffer@~5.1.1:
   version "5.1.1"
