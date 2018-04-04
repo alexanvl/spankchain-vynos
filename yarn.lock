@@ -5177,9 +5177,9 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@http://github.com/mslipper/machinomy#52296b5d99c31bf9bcb8963874c4338ac30d50c5":
+"machinomy@http://github.com/mslipper/machinomy#c711de5b7bc4c51cef35143c977e708d046a3c08":
   version "1.7.4"
-  resolved "http://github.com/mslipper/machinomy#52296b5d99c31bf9bcb8963874c4338ac30d50c5"
+  resolved "http://github.com/mslipper/machinomy#c711de5b7bc4c51cef35143c977e708d046a3c08"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
     "@machinomy/types-truffle-contract" "https://github.com/machinomy/types-truffle-contract"
