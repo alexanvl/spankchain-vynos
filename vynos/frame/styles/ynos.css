@@ -882,6 +882,14 @@ Channels page
     width: 85% !important;
   }
 
+  .backupFields {
+    width: 90% !important;
+  }
+
+  .backupFieldWrapper {
+    width: 150px !important;
+  }
+
   .seedWords {
     width: 80% !important;
   }
