@@ -96,7 +96,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
   }
 
   validateBalance = () => {
-    const {walletBalance} = this.props
+    const walletBalance = new BigNumber.BigNumber(this.props.walletBalance!)
     const {balance, isBalanceDirty} = this.state
 
     if (!isBalanceDirty || !walletBalance) {
@@ -110,14 +110,16 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       return false
     }
 
-    if (!Number(balance)) {
+    const numBalance = new BigNumber.BigNumber(this.props.workerProxy.web3.toWei(balance, 'finney'))
+
+    if (numBalance.eq(0)) {
       this.setState({
         balanceError: 'Balance cannot be 0'
       })
       return false
     }
 
-    if (walletBalance < balance) {
+    if (walletBalance.lessThan(numBalance)) {
       this.setState({
         balanceError: 'You do not have enough ether'
       })
