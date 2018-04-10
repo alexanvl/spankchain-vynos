@@ -40,6 +40,8 @@ export interface SendEtherState {
   disableSend: boolean
   isConfirming: boolean
   isAdjustingGas: boolean
+  gasPrice: string
+  gas: string
 }
 
 export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
@@ -55,6 +57,8 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       disableSend: false,
       isConfirming: false,
       isAdjustingGas: false,
+      gasPrice: '40',
+      gas: '53000',
     }
 
     this.onSendTransaction = this.onSendTransaction.bind(this)
@@ -62,8 +66,37 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
     this.cancel = this.cancel.bind(this)
   }
 
+  componentWillMount() {
+    this.getGas()
+  }
+
+  getGas() {
+    const {
+      eth: { estimateGas, getGasPrice },
+      fromWei,
+    } = this.props.workerProxy.web3
+
+    estimateGas({}, (err, data) => {
+      if (err) {
+        return
+      }
+
+      this.setState({ gas: '' + data })
+    })
+
+    getGasPrice((err, data) => {
+      if (err) {
+        return
+      }
+
+      this.setState({
+        gasPrice: '' + fromWei(data.toNumber(), 'gwei'),
+      })
+    })
+  }
+
   validateBalance = () => {
-    const {walletBalance} = this.props
+    const walletBalance = new BigNumber.BigNumber(this.props.walletBalance!)
     const {balance, isBalanceDirty} = this.state
 
     if (!isBalanceDirty || !walletBalance) {
@@ -77,14 +110,16 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       return false
     }
 
-    if (!Number(balance)) {
+    const numBalance = new BigNumber.BigNumber(this.props.workerProxy.web3.toWei(balance, 'finney'))
+
+    if (numBalance.eq(0)) {
       this.setState({
         balanceError: 'Balance cannot be 0'
       })
       return false
     }
 
-    if (walletBalance < balance) {
+    if (walletBalance.lessThan(numBalance)) {
       this.setState({
         balanceError: 'You do not have enough ether'
       })
@@ -143,15 +178,28 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
     })
   }
 
+  onGasChange = (e: ChangeEvent<EventTarget>) => {
+    this.setState({ gas: (e.target as HTMLInputElement).value })
+  }
+
+  onGasPriceChange = (e: ChangeEvent<EventTarget>) => {
+    this.setState({ gasPrice: (e.target as HTMLInputElement).value })
+  }
+
   async onSendTransaction() {
-    const {address, balance} = this.state
+    const {address, balance, gas, gasPrice} = this.state
 
     this.setState({
       disableSend: true
     })
 
     try {
-      await this.props.workerProxy.send(address, this.props.workerProxy.web3.toWei(balance, 'ether'))
+      await this.props.workerProxy.send(
+        address,
+        this.props.workerProxy.web3.toWei(balance, 'finney'),
+        gas,
+        this.props.workerProxy.web3.toWei(gasPrice, 'gwei')
+      )
     } catch (e) {
       console.error(e)
       return
@@ -190,6 +238,8 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
   }
 
   renderAdjustGas() {
+    const { gas, gasPrice } = this.state
+
     return (
       <div>
         <div className={s.header}>Adjust Gas Price and Gas Limit</div>
@@ -200,6 +250,8 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
               className={s.input}
               type="number"
               placeholder="4"
+              value={gasPrice}
+              onChange={this.onGasPriceChange}
             />
           </div>
         </div>
@@ -210,6 +262,8 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
               className={s.input}
               type="number"
               placeholder="53,000"
+              value={gas}
+              onChange={this.onGasChange}
             />
             <div className={s.gasText}>
               We calculate the suggested gas price/limit based on network success rates.
@@ -221,7 +275,10 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
             type="secondary"
             className={s.adjustGasButton}
             content="Cancel"
-            onClick={() => this.setState({ isAdjustingGas: false })}
+            onClick={() => {
+              this.setState({ isAdjustingGas: false })
+              this.getGas()
+            }}
           />
           <Button
             onClick={() => this.setState({ isAdjustingGas: false })}
@@ -253,7 +310,8 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
   }
 
   renderNormalContent () {
-    const {addressError, balanceError, isConfirming } = this.state
+    const { addressError, balanceError, isConfirming, address, balance } = this.state
+    const { web3 } = this.props.workerProxy
 
     return (
       <div>
@@ -267,12 +325,13 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
               onChange={this.onAddressChange}
               errorMessage={addressError}
               disabled={isConfirming}
+              value={address}
             />
           </div>
         </div>
         <div className={s.contentRow}>
           <div className={s.inputWrapper}>
-            <div className={s.inputLabel}>Ether Amount</div>
+            <div className={s.inputLabel}>Finney Amount</div>
             <Input
               className={s.input}
               type="number"
@@ -280,12 +339,17 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
               onChange={this.onBalanceChange}
               errorMessage={balanceError}
               disabled={isConfirming}
+              value={balance}
             />
           </div>
           <div className={s.inputResult}>
             <div className={s.inputEqual}>=</div>
             <div className={s.inputTotal}>
-              <Currency amount={new BigNumber.BigNumber(this.state.balance || 0)} inputType={CurrencyType.ETH} showUnit={true} />
+              <Currency
+                amount={web3.toWei(new BigNumber.BigNumber(this.state.balance || 0), 'finney')}
+                inputType={CurrencyType.WEI}
+                showUnit={true}
+              />
             </div>
           </div>
         </div>

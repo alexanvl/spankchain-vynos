@@ -1,13 +1,13 @@
-import {AuthenticateRequest, RespondToAuthorizationRequestRequest} from '../../lib/rpc/yns'
+import {AuthenticateRequest} from '../../lib/rpc/yns'
 import {WorkerState} from '../WorkerState'
 import {Store} from 'redux'
 import * as actions from '../actions'
 import {ProviderOpts} from 'web3-provider-engine'
-import AuthStateMachine from '../../lib/AuthStateMachine'
 import FrameController from './FrameController'
 import SharedStateView from '../SharedStateView'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
+import requestJson from '../../frame/lib/request'
 
 const util = require('ethereumjs-util')
 
@@ -32,36 +32,15 @@ export default class AuthController extends AbstractController {
     this.frame = frame
   }
 
-  respondToAuthorizationRequest (res: boolean) {
-    this.store.dispatch(actions.respondToAuthorizationRequest(res))
-  }
-
   async authenticate (origin: string) {
     const isLocked = await this.sharedStateView.isLocked()
-    const hubUrl = await this.sharedStateView.getHubUrl()
-    const authRealm = await this.sharedStateView.getAuthRealm()
 
     if (isLocked) {
       this.frame.show()
       await this.sharedStateView.awaitUnlock()
     }
 
-    const hasAuthorizedHub = await this.sharedStateView.hasAuthorizedHub(hubUrl)
-
-    if (!hasAuthorizedHub) {
-      this.frame.show()
-
-      this.store.dispatch(actions.setAuthorizationRequest({
-        hubUrl,
-        authRealm
-      }))
-
-      const machine = new AuthStateMachine(this.store, authRealm)
-      await machine.awaitAuthorization()
-    }
-
-    const token = await this.doAuthenticate(origin)
-
+    const token = await this.doChallengeResponse(origin)
     this.store.dispatch(actions.setCurrentAuthToken(token))
 
     return {
@@ -71,21 +50,19 @@ export default class AuthController extends AbstractController {
   }
 
   registerHandlers (server: JsonRpcServer) {
-    this.registerHandler(server, RespondToAuthorizationRequestRequest.method, this.respondToAuthorizationRequest)
     this.registerHandler(server, AuthenticateRequest.method, this.authenticate)
   }
 
-  private async doAuthenticate (origin: string): Promise<string> {
+  private async doChallengeResponse (origin: string): Promise<string> {
     const addresses = await this.sharedStateView.getAccounts()
-    const res = await fetch(this.authUrl('challenge'), {
+    const res = await requestJson<NonceResponse>(this.authUrl('challenge'), {
       method: 'POST',
       mode: 'cors'
     })
-    const json: NonceResponse = await res.json()
-    const nonce = json.nonce
+    const nonce = res.nonce
     const signature = await this.signNonce(origin, nonce)
 
-    const responseRes = await fetch(this.authUrl('response'), {
+    const responseRes = await requestJson<{ token: string }>(this.authUrl('response'), {
       method: 'POST',
       mode: 'cors',
       headers: {
@@ -100,9 +77,7 @@ export default class AuthController extends AbstractController {
       })
     })
 
-    const responseResJson = await responseRes.json()
-
-    return responseResJson.token
+    return responseRes.token
   }
 
   private signNonce (origin: string, nonce: string): Promise<string> {

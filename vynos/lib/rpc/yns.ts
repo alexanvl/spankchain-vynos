@@ -36,7 +36,8 @@ export const AuthenticateRequest = requestFactory<[string, string]>('authenticat
 export type AuthenticateRequest = RequestPayload
 
 export interface AuthenticateResponse extends ResponsePayload {
-  result: { success: boolean, token?: string }
+  success: boolean
+  token?: string
 }
 
 export const InitAccountRequest = requestFactory<any[]>('initAccount')
@@ -63,9 +64,6 @@ export type UnlockWalletRequest = RequestPayload
 export const LockWalletRequest = requestFactory<string[]>('lockWallet')
 export type LockWalletRequest = RequestPayload
 
-export const OpenChannelRequest = requestFactory<[number]>('openChannel')
-export type OpenChannelRequest = RequestPayload
-
 export const CloseChannelsForCurrentHubRequest = requestFactory<[string]>('closeChannelsForCurrentHub')
 export type CloseChannelsForCurrentHubRequest = RequestPayload
 
@@ -84,14 +82,14 @@ export type ListChannelsRequest = RequestPayload
 export const PopulateChannelsRequest = requestFactory<any[]>('populateChannels')
 export type PopulateChannelsRequest = RequestPayload
 
-export const RespondToAuthorizationRequestRequest = requestFactory<[boolean]>('respondToAuthorizationRequest')
-export type RespondToAuthorizationRequestRequest = RequestPayload
-
 export const ToggleFrameRequest = requestFactory<[boolean]>('toggleFrame')
 export type ToggleFrameRequest = RequestPayload
 
 export const FetchHistoryRequest = requestFactory<any[]>('fetchHistory')
 export type FetchHistoryRequest = RequestPayload
 
-export const SendRequest = requestFactory<[string, string]>('send')
+export const SendRequest = requestFactory<[string, string, string, string]>('send')
 export type SendRequest = RequestPayload
+
+export const ResetRequest = requestFactory<any[]>('reset')
+export type ResetRequest = RequestPayload

@@ -6,11 +6,9 @@ import InitPage from './InitPage'
 import UnlockPage from './UnlockPage'
 import WalletPage from './WalletPage'
 import {RouteComponentProps} from 'react-router'
-import AuthorizePage from './AuthorizePage'
-import WorkerProxy from "../WorkerProxy"
+import WorkerProxy from '../WorkerProxy'
 
 export interface StateProps {
-  isAuthorizationExpected: boolean
   isWalletExpected: boolean
   isUnlockExpected: boolean
   isTransactionPending: boolean
@@ -25,15 +23,30 @@ export interface RootStateProps extends RouteComponentProps<any>, StateProps {
 export type RootContainerProps = RootStateProps
 
 export class RootContainer extends React.Component<RootContainerProps, any> {
+  constructor(props: RootContainerProps) {
+    super(props)
+
+    this.lock = this.lock.bind(this)
+  }
+
   componentDidMount () {
     this.determineRoute()
+    window.addEventListener('keydown', this.lock)
+  }
+
+  componentWillUnmount () {
+    window.removeEventListener('keydown', this.lock)
+  }
+
+  lock (e: KeyboardEvent) {
+    if (e.ctrlKey && e.which === 76) {
+      this.props.workerProxy.doLock()
+    }
   }
 
   componentWillReceiveProps (nextProps: RootStateProps) {
     if (this.props.isUnlockExpected === nextProps.isUnlockExpected &&
       this.props.isWalletExpected === nextProps.isWalletExpected &&
-      this.props.isTransactionPending === nextProps.isTransactionPending &&
-      this.props.isAuthorizationExpected === nextProps.isAuthorizationExpected &&
       this.props.isFrameDisplayed === nextProps.isFrameDisplayed &&
       this.props.forceRedirect === nextProps.forceRedirect) {
       return
@@ -43,47 +56,40 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
   }
 
   determineRoute (props?: RootStateProps) {
-    props = props || this.props
+    const p = props || this.props
 
-    if (props.isUnlockExpected) {
-      this.props.history.push('/unlock')
-      return
-    }
-
-    if (props.isAuthorizationExpected) {
-      this.props.history.push('/authorize')
-      return
-    }
-
-    if (!props.isWalletExpected) {
-      this.props.history.push('/init')
-      return
-    }
-
-    if (props.isWalletExpected) {
-      if (props.forceRedirect) {
-        this.props.history.push(props.forceRedirect)
+    if (p.isWalletExpected) {
+      if (p.forceRedirect) {
+        this.props.history.push(p.forceRedirect)
         return
       }
       this.props.history.push('/wallet')
       return
     }
 
-    if (!props.isFrameDisplayed) {
-      this.props.history.push('/wallet')
+    if (p.isUnlockExpected) {
+      this.props.history.push('/unlock')
       return
     }
 
+    if (!p.isWalletExpected) {
+      this.props.history.push('/init')
+
+      return
+    }
+
+    if (!p.isFrameDisplayed) {
+      this.props.history.push('/wallet')
+      return
+    }
   }
 
   render () {
     return (
       <Switch>
-        <Route path="/authorize" component={AuthorizePage} />
-
         <Switch>
           <Route path="/(wallet|card)" component={WalletPage} />
-          <Route exact path="/unlock" render={() => <UnlockPage next={this.props.isAuthorizationExpected ? '/authenticate' : '/wallet'}/>} />
+          <Route exact path="/unlock" render={() => <UnlockPage next="/wallet" />} />
           <Route path="/init" component={InitPage} />
         </Switch>
 
@@ -99,9 +105,8 @@ function mapStateToProps (state: FrameState): StateProps {
     workerProxy,
     isFrameDisplayed: state.shared.isFrameDisplayed,
     forceRedirect: state.shared.forceRedirect,
-    isAuthorizationExpected: !!state.shared.authorizationRequest,
-    isUnlockExpected: state.shared.didInit && state.shared.isLocked,
-    isWalletExpected: state.shared.didInit && !state.shared.isLocked && !state.temp.initPage.showInitialDeposit,
+    isUnlockExpected: (state.shared.didInit && state.shared.isLocked) || (state.shared.didInit && !state.shared.currentAuthToken && !state.temp.initPage.showInitialDeposit),
+    isWalletExpected: state.shared.didInit && !state.shared.isLocked && !state.temp.initPage.showInitialDeposit && !!state.shared.currentAuthToken,
     isTransactionPending: state.shared.didInit && state.shared.isTransactionPending !== 0
   }
 }

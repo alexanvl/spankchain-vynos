@@ -2,11 +2,16 @@ const path = require('path'),
   webpack = require('webpack'),
   DIST_PATH = path.resolve(__dirname, 'dist'),
   UglifyJSPlugin = require('uglifyjs-webpack-plugin'),
-  CopyWebpackPlugin = require('copy-webpack-plugin')
+  HtmlWebpackPlugin = require('html-webpack-plugin'),
+  WorkerRunnerPlugin = require('./WorkerRunnerPlugin')
 
 require('dotenv').config({ path: '.env' });
 
 let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
+
+const NODE_ENV = process.env.NODE_ENV
+
+const NETWORK_NAME = process.env.NETWORK_NAME || 'ropsten'
 
 function resolvePath(dir) {
   return path.resolve.apply(path, [__dirname].concat(dir.split('/')));
@@ -23,12 +28,12 @@ function stubDependency(regex) {
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS,
   RPC_URL = process.env.RPC_URL;
 
-function webpackConfig (entry) {
+function webpackConfig (entry, hash = true) {
   const config = {
     entry: entry,
     devtool: 'source-map',
     output: {
-      filename: '[name].js',
+      filename: (NODE_ENV === 'production' || NODE_ENV === 'staging') && hash ? '[name].[hash].js' : '[name].js',
       path: DIST_PATH
     },
     plugins: [
@@ -36,9 +41,10 @@ function webpackConfig (entry) {
         'window.RPC_URL': JSON.stringify(RPC_URL),
         'self.CONTRACT_ADDRESS': JSON.stringify(CONTRACT_ADDRESS),
         'process.env': {
-          'NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'development'), // This has effect on the react lib size,
-          'DEBUG': process.env.NODE_ENV !== 'production',
-          'FRAME_URL': JSON.stringify(FRAME_URL)
+          'NODE_ENV': JSON.stringify(NODE_ENV || 'development'), // This has effect on the react lib size,
+          'DEBUG': NODE_ENV !== 'production',
+          'FRAME_URL': JSON.stringify(FRAME_URL),
+          'NETWORK_NAME': JSON.stringify(NETWORK_NAME)
         }
       })
     ],
@@ -138,10 +144,11 @@ function webpackConfig (entry) {
     }
   };
 
-  if (process.env.NODE_ENV === 'production') {
+  if (NODE_ENV === 'production') {
     config.plugins.push(new UglifyJSPlugin({
       parallel: true,
       uglifyOptions: {
+        mangle: false,
         output: {
           comments: false,
           beautify: false
@@ -153,6 +160,10 @@ function webpackConfig (entry) {
   return config
 }
 
+const WORKER_FILE_REGEX = /^worker(\.)?([\w\d]+)?\.js$/i;
+const COMMONS_FILE_REGEX = /^commons(\.)?([\w\d]+)?\.js$/i;
+const FRAME_FILE_REGEX = /^frame(\.)?([\w\d]+)?\.js$/i;
+
 function vynosConfig(entry) {
   const config = webpackConfig(entry);
 
@@ -162,14 +173,25 @@ function vynosConfig(entry) {
     stubDependency(/^(request|xhr)$/),
     replaceDependency(/^unorm$/, 'stubs/unorm.js'),
     replaceDependency(/Unidirectional\.json$/, 'vendor/@machinomy/contracts/dist/build/contracts/Unidirectional.json'),
+    new webpack.HashedModuleIdsPlugin(),
     new webpack.optimize.CommonsChunkPlugin({
       name: 'commons',
-      filename: 'commons.js'
+      filename: NODE_ENV === 'production' || NODE_ENV === 'staging' ? 'commons.[hash].js' : 'commons.js'
     }),
-    new CopyWebpackPlugin([
-      resolvePath('vynos/frame.html'),
-      resolvePath('vynos/workerRunner.js'),
-    ])
+    new HtmlWebpackPlugin({
+      template: resolvePath('vynos/frame.html'),
+      filename: 'frame.html',
+      excludeChunks: ['worker']
+    }),
+    new WorkerRunnerPlugin({
+      contentScripts: [
+        COMMONS_FILE_REGEX,
+        WORKER_FILE_REGEX
+      ],
+      filename: NODE_ENV === 'production' || NODE_ENV === 'staging' ? 'workerRunner.[hash].js' : 'workerRunner.js',
+      replaceFilename: 'workerRunner.js',
+      replacer: (filename) => filename.match(FRAME_FILE_REGEX)
+    })
   ]);
 
   return config
@@ -186,11 +208,11 @@ const VYNOS_BACKGROUND = vynosConfig({
 
 const VYNOS_SDK = webpackConfig({
   vynos: resolvePath('vynos/vynos.ts')
-});
+}, false);
 
 const HARNESS = webpackConfig({
   harness: resolvePath('harness/harness.ts')
-});
+}, false);
 
 
 module.exports.HARNESS = HARNESS;

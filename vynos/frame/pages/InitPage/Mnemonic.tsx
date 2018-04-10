@@ -6,7 +6,6 @@ import WorkerProxy from '../../WorkerProxy'
 import * as actions from '../../redux/actions'
 import Button from '../../components/Button/index'
 import Checkbox from '../../components/Checkbox/index'
-import WalletCard from '../../components/WalletCard/index'
 import OnboardingContainer from './OnboardingContainer'
 import {withRouter} from 'react-router'
 
@@ -66,31 +65,30 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
         currentStep={1}
       >
         <div className={style.content}>
-          <div className={style.funnelTitle}>Backup Codes</div>
+          <div className={style.funnelTitle}>Backup Words</div>
           <div className={style.seedPhraseText}>
-            These are your backup words to be able to restore your SpankWallet. Keep them somewhere safe and secret.
-          </div>
+            <p>These are <em><strong>your</strong></em> backup words. They will restore <em><strong>your</strong></em> SpankCard. Keep them secret. Keep them safe. </p>
+            <p>DO NOT LOSE OR SHARE! SPANKCHAIN CANNOT RESTORE THEM FOR YOU!</p>
+            <p>Welcome to Crypto! 😘</p>
+            </div>
           <div className={style.seedWords}>
             {mnemonic.split(' ').map((seed, i) => (
-              <div className={style.seedWord} key={seed}>
+              <div className={style.seedWord} key={`${seed}-${i}`}>
                 <span className={style.seedWordIndex}>{i + 1}</span>
                 {seed}
               </div>
             ))}
           </div>
-          <div className={style.ackMnemonics}>
-            <Checkbox
-              className={style.ackCheckbox}
-              onChange={(e: any) => this.setState({acknowledged: e.target.checked})}
-            />
-            <div className={style.ackText}>I've copied the backup words somewhere safe and secret.</div>
-          </div>
+          <label>
+            <div className={style.ackMnemonics}>
+              <Checkbox
+                className={style.ackCheckbox}
+                onChange={(e: any) => this.setState({acknowledged: e.target.checked})}
+              />
+              <div className={style.ackText}>I have copied the backup words. They are secret. They are safe. I promise!</div>
+            </div>
+          </label>
           <div className={style.mnemonicFooter}>
-            <Button
-              type="secondary"
-              content="Back"
-              isInverse
-            />
             <Button
               content={this.state.isAuthenticating ? 'Authenticating...' : 'Next'}
               onClick={this.handleSubmit.bind(this)}

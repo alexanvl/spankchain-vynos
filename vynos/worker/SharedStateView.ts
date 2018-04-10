@@ -33,12 +33,6 @@ export default class SharedStateView {
     return new Promise((resolve) => this.background.awaitUnlock(resolve))
   }
 
-  public async hasAuthorizedHub (hubUrl: string): Promise<boolean> {
-    const sharedState = await this.getSharedState()
-
-    return !!sharedState.authorizedHubs[hubUrl]
-  }
-
   public async getSharedState (): Promise<SharedState> {
     const state = await this.getState()
     return buildSharedState(state)

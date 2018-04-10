@@ -18,6 +18,8 @@ export interface RuntimeState {
   history: HistoryItem[]
   balance: string
   pendingTransaction: PendingTransaction|null
+  hasActiveWithdrawal: boolean
+  activeWithdrawalError: string|null
 }
 
 export interface AuthorizationRequestState {
@@ -48,7 +50,6 @@ export interface SharedState {
   currentHubUrl: string
   currentAuthToken: string
   currentAuthRealm: string
-  authorizedHubs: AuthorizedHubsState
   authorizationRequest: AuthorizationRequestState|null
   isFrameDisplayed: boolean
   forceRedirect?: string
@@ -59,13 +60,16 @@ export interface SharedState {
   balance: string
   pendingTransaction: PendingTransaction|null
   address: string|null
+  hasActiveWithdrawal: boolean
+  pendingChannelIds: string[]
+  activeWithdrawalError: string|null
 }
 
 export interface PersistentState {
   didInit: boolean,
   keyring?: string,
   rememberPath: string
-  authorizedHubs: AuthorizedHubsState
+  pendingChannelIds: string[]
 }
 
 export interface BrandingState {
@@ -75,10 +79,6 @@ export interface BrandingState {
   backgroundColor?: string
   textColor?: string
   address: string
-}
-
-export interface AuthorizedHubsState {
-  [hubUrl: string]: true
 }
 
 export interface WorkerState {
@@ -92,7 +92,6 @@ export const INITIAL_SHARED_STATE: SharedState = {
   isTransactionPending: 0,
   rememberPath: '/',
   lastUpdateDb: 0,
-  authorizedHubs: {},
   authorizationRequest: null,
   currentHubUrl: '',
   currentAuthRealm: '',
@@ -106,14 +105,17 @@ export const INITIAL_SHARED_STATE: SharedState = {
   history: [],
   balance: '0',
   pendingTransaction: null,
-  address: null
+  address: null,
+  hasActiveWithdrawal: false,
+  activeWithdrawalError: null,
+  pendingChannelIds: []
 }
 
 export const INITIAL_STATE: WorkerState = {
   persistent: {
     didInit: false,
     rememberPath: '/',
-    authorizedHubs: {}
+    pendingChannelIds: []
   },
   runtime: {
     isTransactionPending: 0,
@@ -131,7 +133,9 @@ export const INITIAL_STATE: WorkerState = {
     channels: {},
     history: [],
     balance: '0',
-    pendingTransaction: null
+    pendingTransaction: null,
+    hasActiveWithdrawal: false,
+    activeWithdrawalError: null,
   },
 }
 
@@ -146,7 +150,6 @@ export function buildSharedState(state: WorkerState): SharedState {
     currentAuthRealm: state.runtime.currentAuthRealm,
     currentAuthToken: state.runtime.currentAuthToken,
     authorizationRequest: state.runtime.authorizationRequest,
-    authorizedHubs: state.persistent.authorizedHubs,
     isFrameDisplayed: state.runtime.isFrameDisplayed,
     forceRedirect: state.runtime.forceRedirect,
     isPerformer: state.runtime.isPerformer,
@@ -155,6 +158,9 @@ export function buildSharedState(state: WorkerState): SharedState {
     history: state.runtime.history,
     balance: state.runtime.balance,
     pendingTransaction: state.runtime.pendingTransaction,
-    address: state.runtime.wallet ? state.runtime.wallet.getAddressString() : null
+    address: state.runtime.wallet ? state.runtime.wallet.getAddressString() : null,
+    hasActiveWithdrawal: state.runtime.hasActiveWithdrawal,
+    activeWithdrawalError: state.runtime.activeWithdrawalError,
+    pendingChannelIds: state.persistent.pendingChannelIds
   }
 }

@@ -5,7 +5,6 @@ WORKDIR /home/node/app
 ADD package.json .
 ADD yarn.lock .
 
-ADD xhr xhr
 RUN yarn --production=false --frozen-lockfile --cache-folder /root/.yarn
 
 ADD . .
@@ -13,7 +12,13 @@ ADD . .
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
-RUN npm run build
+ARG FRAME_URL
+ENV FRAME_URL=${FRAME_URL}
+
+ARG NETWORK_NAME=ropsten
+ENV NETWORK_NAME=${NETWORK_NAME}
+
+RUN rm -rf ./dist && yarn build
 
 FROM nginx:1.12-alpine
 

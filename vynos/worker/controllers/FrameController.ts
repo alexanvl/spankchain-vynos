@@ -21,8 +21,11 @@ export default class FrameController extends AbstractController {
     this.store.dispatch(actions.toggleFrame({isFrameDisplayed: false}))
   }
 
-  private toggleFrame (isFrameDisplayed: boolean, forceRedirect: string, isPerformer?: boolean) {
+  private toggleFrame (isFrameDisplayed: boolean, forceRedirect: string, isPerformer?: boolean): Promise<void> {
     this.store.dispatch(actions.toggleFrame({isFrameDisplayed, forceRedirect, isPerformer}))
+
+    // wait for the animation to complete
+    return new Promise((resolve) => setTimeout(resolve, 1000))
   }
 
   public registerHandlers (server: JsonRpcServer) {

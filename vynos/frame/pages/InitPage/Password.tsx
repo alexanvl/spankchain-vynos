@@ -10,8 +10,8 @@ import RestorePage from '../RestorePage'
 import Button from '../../components/Button/index'
 import TextBox from '../../components/TextBox/index'
 import Input from '../../components/Input/index'
-import WalletCard from '../../components/WalletCard/index'
 import OnboardingContainer from './OnboardingContainer'
+import Submittable from '../../components/Submittable'
 
 const style = require('../../styles/ynos.css')
 
@@ -91,44 +91,6 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     })
   }
 
-  renderPasswordInput () {
-    let className = this.state.passwordError ? style.inputError : ''
-    return <input type="password"
-                  placeholder="Password"
-                  className={className}
-                  onChange={this.handleChangePassword} />
-  }
-
-  renderPasswordHint () {
-    if (this.state.passwordError) {
-      return <span className={style.errorText}><i className={style.vynosInfo} /> {this.state.passwordError}</span>
-    } else {
-      return <span className={style.passLenText}>At least {MINIMUM_PASSWORD_LENGTH} characters</span>
-    }
-  }
-
-  renderPasswordConfirmationInput () {
-    let className = this.state.passwordConfirmationError ? style.inputError : ''
-    return <input type="password"
-                  placeholder="Password Confirmation"
-                  className={className}
-                  onChange={this.handleChangePasswordConfirmation} />
-  }
-
-  renderPasswordConfirmationHint () {
-    if (this.state.passwordConfirmationError) {
-      return <span className={style.errorText}><i className={style.vynosInfo} /> {this.state.passwordConfirmationError}</span>
-    } else {
-      return <span className={style.errorText}>&nbsp;</span>
-    }
-  }
-
-  doDisplayRestorePage () {
-    this.setState({
-      displayRestore: true
-    })
-  }
-
   doneDisplayRestorePage () {
     this.setState({
       displayRestore: false
@@ -158,30 +120,38 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
           <TextBox className={style.passwordTextBox}>
             {this.getText()}
           </TextBox>
-          <Input
-            placeholder="New Password"
-            type="password"
-            className={style.passwordInput}
-            onChange={this.handleChangePassword}
-          />
-          <Input
-            placeholder="Confirm Password"
-            type="password"
-            className={style.passwordInput}
-            onChange={this.handleChangePasswordConfirmation}
-          />
-          <div className={style.funnelFooter}>
-            <Button
-              type="secondary"
-              content="Restore SpankWallet"
-              isInverse
+          <Submittable onSubmit={this.handleSubmit} className={style.submittable}>
+            <Input
+              placeholder="New Password"
+              type="password"
+              className={style.passwordInput}
+              onChange={this.handleChangePassword}
+              errorMessage={this.state.passwordError}
+              inverse
             />
-            <Button
-              content="Next"
-              onClick={this.handleSubmit}
-              isInverse
+            <Input
+              placeholder="Confirm Password"
+              type="password"
+              className={style.passwordInput}
+              onChange={this.handleChangePasswordConfirmation}
+              errorMessage={this.state.passwordConfirmationError}
+              inverse
             />
-          </div>
+            <div className={style.funnelFooter}>
+              <Button
+                type="secondary"
+                content="Restore SpankWallet"
+                onClick={() => this.setState({ displayRestore: true })}
+                isInverse
+              />
+              <Button
+                content="Next"
+                onClick={this.handleSubmit}
+                isInverse
+                isSubmit
+              />
+            </div>
+          </Submittable>
         </div>
       </OnboardingContainer>
     )

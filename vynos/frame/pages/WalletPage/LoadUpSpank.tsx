@@ -5,9 +5,11 @@ import Button from '../../components/Button/index'
 import WorkerProxy from '../../WorkerProxy'
 import * as BigNumber from 'bignumber.js';
 import Currency, {CurrencyType} from '../../components/Currency/index'
+import entireBalance from '../../lib/entireBalance'
 
 const s = require('./LoadUpSpank.css')
 
+const finneyInverse = require('../../components/FinneySign/style.css').finneyInverse
 
 export interface StateProps {
   walletBalance: string | null
@@ -35,12 +37,8 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
       isLoading: true
     })
 
-    const gasPrice = this.props.workerProxy.web3.toWei('50', 'gwei')
-    const gasCost = new BigNumber.BigNumber(gasPrice).times(300000)
-
-    const amount = new BigNumber.BigNumber(this.props.walletBalance!)
-      .minus(gasCost)
-    await this.props.workerProxy.openChannelWithCurrentHub(amount)
+    const amount = await entireBalance(this.props.workerProxy, new BigNumber.BigNumber(this.props.walletBalance!))
+    await this.props.workerProxy.deposit(amount)
   }
 
   render () {
@@ -62,8 +60,17 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
     }
 
     return (
-      <span>
-        Load up <Currency amount={this.props.walletBalance} inputType={CurrencyType.WEI} /> into SpankCard
+      <span className={s.loadUpCta}>
+        <span>Load up</span>
+        <Currency
+          className={s.currency}
+          amount={this.props.walletBalance}
+          inputType={CurrencyType.WEI}
+          outputType={CurrencyType.FINNEY}
+          unitClassName={`${finneyInverse} ${s.finney}`}
+          showUnit
+        />
+        <span>into SpankCard</span>
       </span>
     )
   }

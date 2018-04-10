@@ -20,3 +20,20 @@
   font-weight: 600;
   font-size: 1.2rem;
 }
+
+.loadUpCta {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: center;
+}
+
+.currency {
+  margin: 0 .5rem;
+}
+
+.finney {
+  margin: 0 .25rem;
+  position: relative;
+  height: 18px;
+}

@@ -1,0 +1,11 @@
+.finney {
+  background: transparent url('../../styles/images/fin-duo.svg') no-repeat center center;
+  width: 29px;
+  height: 17px;
+  text-indent: -999999px;
+  background-size: contain;
+}
+
+.finneyInverse {
+  background-image: url('../../styles/images/fin-duo-white.svg');
+}

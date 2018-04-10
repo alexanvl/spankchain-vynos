@@ -1,15 +1,18 @@
 import * as React from 'react';
-import * as BigNumber from 'bignumber.js';
+import * as BigNumber from 'bignumber.js'
+import * as classnames from 'classnames'
 import WorkerProxy from '../../WorkerProxy'
 import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
+import FinneySign from '../FinneySign/index'
 
 const s = require('./style.css')
 
 export enum CurrencyType {
   USD,
   ETH,
-  WEI
+  WEI,
+  FINNEY
 }
 
 export interface StateProps {
@@ -19,9 +22,11 @@ export interface StateProps {
 export interface CurrencyProps extends StateProps {
   amount: BigNumber.BigNumber
   decimals?: number
-  outputType?: CurrencyType.ETH | CurrencyType.USD
+  outputType?: CurrencyType.ETH | CurrencyType.USD | CurrencyType.FINNEY
   inputType?: CurrencyType.ETH | CurrencyType.WEI
   showUnit?: boolean
+  unitClassName?: string
+  className?: string
 }
 
 export class Currency extends React.Component<CurrencyProps, any> {
@@ -33,27 +38,54 @@ export class Currency extends React.Component<CurrencyProps, any> {
   }
 
   render() {
-    const { amount, decimals, inputType, outputType, showUnit } = this.props
+    const {
+      amount,
+      decimals,
+      inputType,
+      outputType,
+      showUnit,
+      unitClassName,
+      className,
+    } = this.props
 
     let ret
-
     if (inputType === outputType) {
       ret = new BigNumber.BigNumber(amount).toFixed(decimals).toString()
     } else if (outputType === CurrencyType.USD) {
-      const eth = inputType === CurrencyType.ETH ?
-        amount : new BigNumber.BigNumber(this.props.workerProxy.web3.fromWei(amount, 'ether'))
+      const eth = inputType === CurrencyType.ETH
+        ? amount
+        : new BigNumber.BigNumber(this.props.workerProxy.web3.fromWei(amount, 'ether'))
 
-      ret = eth.mul(880).toFixed(decimals).toString()
+      ret = eth.mul(380).toFixed(decimals).toString()
+    } else if (outputType === CurrencyType.FINNEY) {
+      const finney = new BigNumber.BigNumber(this.props.workerProxy.web3.fromWei(amount, 'finney'))
+      ret = finney.toNumber().toFixed(decimals).toString()
     } else {
       ret = this.props.workerProxy.web3.fromWei(amount, 'ether').toFixed(decimals).toString()
     }
 
     return (
-      <span className={s.currency}>
-        {showUnit && outputType === CurrencyType.USD ? '$' : ''} {ret}
+      <span className={classnames(s.currency, className)}>
+        {renderUnit(showUnit, outputType, unitClassName)} {ret}
       </span>
     )
   }
+}
+
+function renderUnit(showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string) {
+  if (!showUnit) {
+    return ''
+  }
+
+  if (outputType === CurrencyType.USD) {
+    return '$'
+  }
+
+  if (outputType === CurrencyType.FINNEY) {
+    return <FinneySign className={unitClassName}/>
+  }
+
+  return ''
 }
 
 function mapStateToProps (state: FrameState, ownProps: any): StateProps {

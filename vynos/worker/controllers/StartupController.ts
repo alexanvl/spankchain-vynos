@@ -2,6 +2,7 @@ import {Store} from 'redux'
 import {WorkerState} from '../WorkerState'
 import * as actions from '../actions'
 import {BrandingResponse} from './HubController'
+import requestJson from '../../frame/lib/request'
 
 export default class StartupController {
   private store: Store<WorkerState>
@@ -25,9 +26,8 @@ export default class StartupController {
   }
 
   private async getHubBranding (hubUrl: string): Promise<null> {
-    const res = await fetch(`${hubUrl}/branding`)
-    const resJson: BrandingResponse = await res.json()
-    this.store.dispatch(actions.setHubBranding(resJson))
+    const res = await requestJson<BrandingResponse>(`${hubUrl}/branding`)
+    this.store.dispatch(actions.setHubBranding(res))
     return null
   }
 }

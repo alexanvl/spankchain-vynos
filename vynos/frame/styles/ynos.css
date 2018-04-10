@@ -665,7 +665,7 @@ Channels page
 
 .seedPhraseText {
   color: #fff;
-  width: 425px;
+  width: 600px;
   text-align: center;
   font-size: 1rem;
 }
@@ -701,6 +701,7 @@ Channels page
   display: flex;
   flex-flow: row;
   align-items: center;
+  user-select: none;
 }
 
 .passwordInput {
@@ -722,7 +723,7 @@ Channels page
 }
 
 .mnemonicFooter {
-  width: 300px;
+  width: 200px;
   display: flex;
   flex-flow: row nowrap;
   padding-bottom: 2rem;
@@ -739,10 +740,10 @@ Channels page
   align-items: center;
   text-align: center;
   margin: 0 auto 2rem;
+  cursor: pointer;
 }
 
 .ackCheckbox {
-  cursor: pointer;
   margin-right: 1rem;
 }
 
@@ -793,6 +794,76 @@ Channels page
   right: 2rem;
 }
 
+.backupFields {
+  display: flex;
+  width: 700px;
+  flex-wrap: wrap;
+  padding: 0;
+  justify-content: center;
+  counter-reset: field-counter;
+}
+
+.backupFieldWrapper {
+  width: 160px;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid white;
+  display: block;
+  margin: 0 5px 10px 5px;
+  position: relative;
+  counter-increment: field-counter;
+  overflow: hidden;
+
+  &:before {
+    content: counter(field-counter);
+    color: white;
+    display: block;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-weight: 300;
+    font-family: CartographMonoCF, monospace;
+    font-size: 0.8rem;
+  }
+}
+
+.backupField {
+  width: 100%;
+}
+
+.backupField input {
+  width: auto;
+  border-bottom: 0 !important;
+  text-transform: uppercase !important;
+  text-align: center;
+  padding: 11px 20px !important;
+  font-weight: 700;
+  font-size: 1.2rem;
+
+  &:focus {
+    background: #ec3979;
+  }
+}
+
+.submittable {
+  flex-direction: column;
+  align-items: center;
+  width: 380px;
+  flex-wrap: wrap;
+  display: flex;
+}
+
+.resetText {
+  color: white;
+  font-size: 0.6rem;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.resetText span {
+  cursor: pointer;
+  font-family: CartographMonoCF;
+}
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
   .passwordTextBox {
@@ -809,6 +880,14 @@ Channels page
 
   .seedPhraseText {
     width: 85% !important;
+  }
+
+  .backupFields {
+    width: 90% !important;
+  }
+
+  .backupFieldWrapper {
+    width: 150px !important;
   }
 
   .seedWords {

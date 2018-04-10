@@ -9,7 +9,11 @@ const actionCreator = actionCreatorFactory('worker')
 export const setWallet: ActionCreator<Wallet|undefined> = actionCreator<Wallet|undefined>('runtime/setWallet')
 export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): WorkerState {
   return { ...state,
-    runtime: { ...state.runtime, wallet },
+    runtime: {
+      ...state.runtime,
+      currentAuthToken: '',
+      wallet
+    },
   }
 }
 
@@ -41,6 +45,28 @@ export function setDidStoreMnemonicHandler(state: WorkerState): WorkerState {
   }
 }
 
+export const openChannel: ActionCreator<string> = actionCreator<string>('persistent/openChannel')
+export function openChannelHandler(state: WorkerState, channelId: string): WorkerState {
+  return {
+    ...state,
+    persistent: {
+      ...state.persistent,
+      pendingChannelIds: [ ...state.persistent.pendingChannelIds, channelId ],
+    },
+  }
+}
+
+export const removePendingChannel: ActionCreator<string> = actionCreator<string>('persistent/removePendingChannel')
+export function removePendingChannelHandler(state: WorkerState, channelId: string): WorkerState {
+  return {
+    ...state,
+    persistent: {
+      ...state.persistent,
+      pendingChannelIds: state.persistent.pendingChannelIds.filter(id => id !== channelId),
+    },
+  }
+}
+
 export const setTransactionPending: ActionCreator<boolean> = actionCreator<boolean>('runtime/setTransactionPending')
 export function setTransactionPendingHandler(state: WorkerState, pending: boolean): WorkerState {
   let pendingDate = 0
@@ -52,6 +78,7 @@ export function setTransactionPendingHandler(state: WorkerState, pending: boolea
     runtime: { ...state.runtime, isTransactionPending: pendingDate },
   }
 }
+
 
 export interface AuthorizationRequestParam {
   hubUrl: string
@@ -67,29 +94,6 @@ export function setAuthorizationRequestHandler(state: WorkerState, authorization
       authorizationRequest
     }
   }
-}
-
-export const respondToAuthorizationRequest: ActionCreator<boolean> = actionCreator<boolean>('runtime/respondToAuthorizationRequest')
-export function respondToAuthorizationRequestHandler(state: WorkerState, response: boolean): WorkerState {
-  const newState = {
-    ...state,
-    runtime: {
-      ...state.runtime,
-      authorizationRequest: null
-    }
-  }
-
-  if (response) {
-    newState.persistent = {
-      ...state.persistent,
-      authorizedHubs: {
-        ...state.persistent.authorizedHubs,
-        [state.runtime.authorizationRequest!.hubUrl]: true
-      }
-    }
-  }
-
-  return newState
 }
 
 export const rememberPage: ActionCreator<string> = actionCreator<string>('persistent/rememberPage')
@@ -248,6 +252,33 @@ export function setPendingTransactionHandler(state: WorkerState, pendingTransact
     runtime: {
       ...state.runtime,
       pendingTransaction
+    }
+  }
+}
+
+export const reset: ActionCreator<null> = actionCreator<null>('runtime/reset')
+export function resetHandler(): WorkerState {
+  return undefined as any
+}
+
+export const setHasActiveWithdrawal: ActionCreator<boolean> = actionCreator<boolean>('runtime/setActiveWithdrawal')
+export function setHasActiveWithdrawalHandler(state: WorkerState, hasActiveWithdrawal: boolean): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      hasActiveWithdrawal
+    }
+  }
+}
+
+export const setActiveWithdrawalError: ActionCreator<string|null> = actionCreator<string|null>('runtime/setActiveWithdrawalError')
+export function setActiveWithdrawalErrorHandler(state: WorkerState, activeWithdrawalError: string|null): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      activeWithdrawalError,
     }
   }
 }

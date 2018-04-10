@@ -2,16 +2,16 @@ import {HistoryItem, SharedState} from '../worker/WorkerState'
 import {
   AuthenticateRequest,
   AuthenticateResponse,
-  CloseChannelsForCurrentHubRequest, DepositRequest,
+  CloseChannelsForCurrentHubRequest,
+  DepositRequest,
   DidStoreMnemonicRequest,
   FetchHistoryRequest,
   GenKeyringRequest,
   GetSharedStateRequest,
   LockWalletRequest,
-  OpenChannelRequest,
   PopulateChannelsRequest,
   RememberPageRequest,
-  RespondToAuthorizationRequestRequest,
+  ResetRequest,
   RestoreWalletRequest,
   SendRequest,
   StatusRequest,
@@ -22,8 +22,8 @@ import * as BigNumber from 'bignumber.js'
 import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 import {WorkerStatus} from '../lib/rpc/WorkerStatus'
 import {JSONRPCResponsePayload} from 'web3'
-import Web3 = require('web3')
 import {Postable} from '../lib/messaging/Postable'
+import Web3 = require('web3')
 
 export default class WorkerProxy extends JsonRpcClient {
   web3: Web3
@@ -44,16 +44,12 @@ export default class WorkerProxy extends JsonRpcClient {
     })
   }
 
-  openChannelWithCurrentHub (amount: BigNumber.BigNumber): Promise<string> {
-    return this.call(OpenChannelRequest.method, amount.toNumber())
-  }
-
   closeChannelsForCurrentHub (): Promise<void> {
     return this.call(CloseChannelsForCurrentHubRequest.method)
   }
 
   deposit (amount: BigNumber.BigNumber): Promise<void> {
-    return this.call(DepositRequest.method, amount.toNumber())
+    return this.call(DepositRequest.method, amount.toString())
   }
 
   populateChannels (): Promise<void> {
@@ -96,10 +92,6 @@ export default class WorkerProxy extends JsonRpcClient {
     return this.call(AuthenticateRequest.method, window.location.hostname)
   }
 
-  respondToAuthorizationRequest (res: boolean): Promise<void> {
-    return this.call(RespondToAuthorizationRequestRequest.method, res)
-  }
-
   toggleFrame (status: boolean, forceRedirect?: string): Promise<void> {
     return this.call(ToggleFrameRequest.method, status, forceRedirect)
   }
@@ -108,11 +100,15 @@ export default class WorkerProxy extends JsonRpcClient {
     return this.call(FetchHistoryRequest.method)
   }
 
-  send (to: string, value: string): Promise<void> {
-    return this.call(SendRequest.method, to, value)
+  send (to: string, value: string, gas?: string, gasPrice?: string): Promise<void> {
+    return this.call(SendRequest.method, to, value, gas, gasPrice)
   }
 
   status (): Promise<WorkerStatus> {
     return this.callWithTimeout(500, StatusRequest.method)
+  }
+
+  reset (): Promise<void> {
+    return this.call(ResetRequest.method)
   }
 }

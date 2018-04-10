@@ -5,6 +5,7 @@ import {
   GetSharedStateRequest,
   InitAccountRequest,
   ListChannelsRequest,
+  LockWalletRequest,
   RegisterHubRequest,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
@@ -15,6 +16,7 @@ import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/
 import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 import {WorkerReadyBroadcastEvent} from '../lib/rpc/WorkerReadyBroadcast'
 import {SharedStateBroadcastEvent} from '../lib/rpc/SharedStateBroadcast'
+import {ResetBroadcastEvent} from '../lib/rpc/ResetBroadcast'
 
 export default class VynosClient extends JsonRpcClient {
   workerReady: boolean = false
@@ -22,11 +24,17 @@ export default class VynosClient extends JsonRpcClient {
   constructor (target: Window, origin: string) {
     super('VynosClient', target, window, origin)
     this.onWorkerReady = this.onWorkerReady.bind(this)
+    this.onReset = this.onReset.bind(this)
     this.once(WorkerReadyBroadcastEvent, this.onWorkerReady)
+    this.on(ResetBroadcastEvent, this.onReset)
   }
 
   onWorkerReady () {
     this.workerReady = true
+  }
+
+  onReset () {
+    window.location.reload()
   }
 
   async initialize (hubUrl: string, authRealm: string): Promise<boolean> {
@@ -64,5 +72,9 @@ export default class VynosClient extends JsonRpcClient {
 
   toggleFrame (state: boolean, forceRedirect?: string, isPerformer?: boolean): Promise<void> {
     return this.call(ToggleFrameRequest.method, state, forceRedirect, isPerformer)
+  }
+
+  lock (): Promise<void> {
+    return this.call(LockWalletRequest.method)
   }
 }

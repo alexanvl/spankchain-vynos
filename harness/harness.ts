@@ -10,7 +10,7 @@ window.addEventListener("load", function () {
   }
 
   let vynos = new Vynos({
-    hubUrl: 'http://165.227.202.164:8080',
+    hubUrl: 'https://hub-staging.spankdev.com',
     authRealm: 'SpankChain',
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
     window: _window
@@ -37,14 +37,19 @@ window.addEventListener("load", function () {
   const tipButton = document.getElementById('tip')
   if (tipButton) {
     tipButton.onclick = () => {
-      vynos.buy(new BigNumber.BigNumber(1000000000000000), {
+      vynos.buy(new BigNumber.BigNumber(81000000000000000), {
         streamId: 'abc-123',
         streamName: 'SpankCam',
         performerId: 'abc-234',
         performerName: 'Butter Bubble',
-        performerAddress: '0xdeadbeef'
+        performerAddress: '0x0108d76118d97b88aa40167064cb242fa391effa'
       })
     }
+  }
+
+  const lockButton = document.getElementById('lock')
+  if (lockButton) {
+    lockButton.onclick = () => vynos.lock()
   }
 
   const eventLog = document.getElementById('event-log')!

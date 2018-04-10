@@ -12,6 +12,8 @@ class Client implements ServiceWorkerClient {
 
   frameServer: FrameServer
 
+  private heartbeating = false
+
   load (serviceWorker: ServiceWorker) {
     this.pollWorker = this.pollWorker.bind(this)
     this.workerProxy = new WorkerProxy(serviceWorker)
@@ -22,11 +24,42 @@ class Client implements ServiceWorkerClient {
 
     this.pollWorker()
 
-    this.workerProxy.once(ReadyBroadcastEvent, () => renderApplication(document, this.workerProxy))
+    this.workerProxy.once(ReadyBroadcastEvent, () => {
+      renderApplication(document, this.workerProxy)
+      this.startHeartbeating()
+    })
   }
 
   unload () {
-    this.frameServer.stop().catch(console.error.bind(console))
+    try {
+      this.stopHeartbeating()
+      this.frameServer.stop().catch(console.error.bind(console))
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  startHeartbeating () {
+    console.log('Started heartbeating.')
+    this.heartbeating = true
+    this.beat()
+  }
+
+  stopHeartbeating () {
+    this.heartbeating = false
+  }
+
+  private async beat() {
+    if (!this.heartbeating) {
+      return
+    }
+
+    try {
+      await this.workerProxy.status()
+    } catch (e) {
+    }
+
+    setTimeout(() => this.beat(), 5000)
   }
 
   private passEvent (name: string) {

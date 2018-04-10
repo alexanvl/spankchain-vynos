@@ -1,10 +1,10 @@
 import {asServiceWorker} from './worker/window'
 import * as redux from 'redux'
 import {Store} from 'redux'
-import {RegisterHubRequest, StatusRequest} from './lib/rpc/yns'
+import {RegisterHubRequest, ResetRequest, StatusRequest} from './lib/rpc/yns'
 import StartupController from './worker/controllers/StartupController'
 import WorkerServer from './lib/rpc/WorkerServer'
-import {autoRehydrate, persistStore} from 'redux-persist'
+import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
 import {INITIAL_STATE, WorkerState} from './worker/WorkerState'
 import {ErrResCallback} from './lib/messaging/JsonRpcServer'
@@ -21,6 +21,7 @@ import WalletController from './worker/controllers/WalletController'
 import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import debug from './lib/debug'
 import localForage = require('localforage')
+import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
 
 export class ClientWrapper implements WindowClient {
   private self: ServiceWorkerGlobalScope
@@ -63,22 +64,20 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const workerWrapper = new WorkerWrapper(self)
     const clientWrapper = new ClientWrapper(self)
 
-    const middleware = redux.compose(autoRehydrate())
-    const store = redux.createStore(reducers, INITIAL_STATE, middleware) as Store<WorkerState>
+    localForage.config({driver: localForage.INDEXEDDB})
+
+    const persistConfig = {
+      key: 'persistent',
+      whitelist: ['persistent'],
+      storage: localForage
+    }
+
+    const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE) as Store<WorkerState>
     const startupController = new StartupController(store)
     const backgroundController = new BackgroundController(store)
     const server = new WorkerServer(backgroundController, workerWrapper, clientWrapper)
 
-    await new Promise((resolve, reject) => {
-      localForage.config({driver: localForage.INDEXEDDB})
-      persistStore(store, {blacklist: ['runtime', 'shared'], storage: localForage}, (error, result) => {
-        if (error) {
-          return reject()
-        }
-
-        return resolve()
-      })
-    })
+    await new Promise((resolve) => persistStore(store, undefined, resolve))
 
     const frameController = new FrameController(store)
     const sharedStateView = new SharedStateView(backgroundController)
@@ -103,6 +102,25 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
         await startupController.registerHub(hubUrl, authRealm)
         server.broadcast(ReadyBroadcastEvent)
         status = WorkerStatus.READY
+        cb(null, null)
+      } catch (e) {
+        cb(e, null)
+      }
+    })
+    server.addHandler(ResetRequest.method, async (cb: ErrResCallback) => {
+      try {
+        await new Promise((resolve, reject) => {
+          const req = indexedDB.deleteDatabase('NeDB')
+          req.onerror = reject
+          // blocked is OK to resolve because we refresh the page
+          // in response to the reset broadcast event
+          req.onblocked = resolve
+          req.onsuccess = resolve
+        })
+
+        await localForage.clear()
+
+        server.broadcast(ResetBroadcastEvent)
         cb(null, null)
       } catch (e) {
         cb(e, null)

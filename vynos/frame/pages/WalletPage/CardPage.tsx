@@ -8,18 +8,21 @@ import {BrandingState} from '../../../worker/WorkerState'
 import {cardBalance} from '../../redux/selectors/cardBalance'
 import * as BigNumber from 'bignumber.js';
 import WorkerProxy from '../../WorkerProxy'
+import {CLOSE_CHANNEL_ERRORS} from '../../../lib/ChannelClaimStatusResponse'
 import Currency, {CurrencyType} from '../../components/Currency/index'
+import entireBalance from '../../lib/entireBalance'
 
 const s = require('./styles.css')
 
 export interface StateProps extends BrandingState {
   walletBalance: string
   cardBalance: BigNumber.BigNumber
+  isWithdrawing: boolean
   workerProxy: WorkerProxy
+  activeWithdrawalError: string|null
 }
 
 export interface CardPageState {
-  isWithdrawing: boolean
   isRefilling: boolean
   error: string
 }
@@ -29,7 +32,6 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     super(props)
 
     this.state = {
-      isWithdrawing: false,
       isRefilling: false,
       error: ''
     }
@@ -40,23 +42,17 @@ class CardPage extends React.Component<StateProps, CardPageState> {
   }
 
   async onClickWithdraw () {
-    this.setState({
-      isWithdrawing: true
-    })
-
     try {
       await this.props.workerProxy.closeChannelsForCurrentHub()
     } catch (e) {
+      if (e.message === CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS) {
+        return this.setState({ error: e.message })
+      } 
+
       this.setState({
         error: 'Withdrawal failed. Please try again.',
-        isWithdrawing: false
       })
-      return
     }
-
-    this.setState({
-      isWithdrawing: false
-    })
   }
 
   async onClickRefill () {
@@ -64,18 +60,16 @@ class CardPage extends React.Component<StateProps, CardPageState> {
       isRefilling: true
     })
 
-    const gasPrice = this.props.workerProxy.web3.toWei('50', 'gwei')
-    const gasCost = new BigNumber.BigNumber(gasPrice).times(300000)
-
-    const amount = new BigNumber.BigNumber(this.props.walletBalance!)
-      .minus(gasCost)
+    const amount = await entireBalance(this.props.workerProxy, new BigNumber.BigNumber(this.props.walletBalance!))
 
     try {
       await this.props.workerProxy.deposit(amount)
     } catch (e) {
       this.setState({
         isRefilling: false,
-        error: e.code === -32603 ? 'Insufficient funds. Please deposit more ETH.' : 'Failed to load up SpankCard. Please try again.'
+        error: e.code === -32603
+          ? 'Insufficient funds. Please deposit more ETH.'
+          : 'Failed to load up SpankCard. Please try again.'
       })
       return
     }
@@ -96,7 +90,16 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             <CTAInput
               isInverse
               isConnected
-              value={<Currency amount={walletBalance} inputType={CurrencyType.WEI} showUnit={true} />}
+              value={(
+                <Currency
+                  amount={walletBalance}
+                  inputType={CurrencyType.WEI}
+                  outputType={CurrencyType.FINNEY}
+                  className={s.sendReceiveCurrency}
+                  unitClassName={s.finneyUnit}
+                  showUnit={true}
+                />
+              )}
               className={s.spankCardCta}
               ctaInputValueClass={s.spankCardCtaInputValue}
               ctaContentClass={s.spankCardCtaContent}
@@ -130,8 +133,8 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             <div className={s.walletSpankCardActions}>
               <Button
                 type="secondary"
-                content={this.state.isWithdrawing ? 'Withdrawing...' : 'Withdraw to Wallet'}
-                disabled={this.state.isWithdrawing}
+                content={this.props.isWithdrawing ? 'Withdrawing...' : 'Withdraw to Wallet'}
+                disabled={this.props.isWithdrawing}
                 onClick={() => this.onClickWithdraw()}
                 isMini
               />
@@ -144,13 +147,19 @@ class CardPage extends React.Component<StateProps, CardPageState> {
   }
 
   renderError () {
-    if (!this.state.error) {
+    const {activeWithdrawalError} = this.props
+
+    if (!this.state.error && !activeWithdrawalError) {
       return null
     }
 
     return (
       <div className={s.walletSpankCardError}>
-        {this.state.error}
+        {
+          this.state.error
+            ? this.state.error
+            : activeWithdrawalError
+        }
       </div>
     )
   }
@@ -161,6 +170,8 @@ function mapStateToProps (state: FrameState, ownProps: any): StateProps {
     ...state.shared.branding,
     walletBalance: state.shared.balance,
     cardBalance: cardBalance(state.shared),
+    isWithdrawing: state.shared.hasActiveWithdrawal,
+    activeWithdrawalError: state.shared.activeWithdrawalError,
     workerProxy: state.temp.workerProxy
   }
 }

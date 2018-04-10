@@ -2,18 +2,13 @@ import * as React from "react"
 import Web3 = require('web3')
 import {connect} from "react-redux"
 import {Dispatch} from 'redux'
-import {MouseEvent} from "react"
 import * as classnames from 'classnames'
 import * as copy from 'copy-to-clipboard'
 import * as qr from 'qr-image'
-import postMessage from "../../lib/postMessage"
 import {FrameState} from "../../redux/FrameState"
 import WorkerProxy from "../../WorkerProxy"
 import * as actions from "../../redux/actions"
 import Button from "../../components/Button/index"
-import TextBox from "../../components/TextBox/index"
-import Input from "../../components/Input/index"
-import WalletCard from "../../components/WalletCard/index"
 import CTAInput from "../../components/CTAInput/index"
 import OnboardingContainer from './OnboardingContainer'
 
@@ -28,6 +23,7 @@ export interface DepositStateProps {
 export interface DepositStates {
   address: string
   isAuthenticating: boolean
+  isCopied: boolean
 }
 
 export type DepositProps = DepositStateProps & DepositDispatchProps
@@ -37,12 +33,12 @@ export interface DepositDispatchProps {
 }
 
 export class Deposit extends React.Component<DepositProps, DepositStates> {
-  constructor(props: DepositProps) {
-    super(props)
-    this.state = {
-      address: '',
-      isAuthenticating: false,
-    }
+  timeout: any
+
+  state = {
+    address: '',
+    isAuthenticating: false,
+    isCopied: false,
   }
 
   handleSubmit = async () => {
@@ -50,9 +46,14 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
       isAuthenticating: true
     })
 
-    await this.props.workerProxy.authenticate()
-
-    this.props.didAcknowledgeDeposit()
+    try {
+      await this.props.workerProxy.authenticate()
+      await this.props.didAcknowledgeDeposit()
+    } catch (e) {
+      this.setState({
+        isAuthenticating: false
+      })
+    }
   }
 
   componentDidMount() {
@@ -62,6 +63,27 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
         let address = accounts[0]
         this.setState({ address })
       })
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+    }
+  }
+
+  onCopyAddress = () => {
+    const { address } = this.state;
+
+    if (address) {
+      copy(address)
+      this.setState({
+        isCopied: true,
+      })
+
+      this.timeout = setTimeout(() => {
+        this.setState({ isCopied: false })
+      }, 2000)
     }
   }
 
@@ -75,9 +97,9 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
     return (
       <OnboardingContainer totalSteps={4} currentStep={2}>
         <div className={style.content}>
-          <div className={style.funnelTitle}>Transfer Funds</div>
+          <div className={style.funnelTitle}>Wallet Address</div>
           <div className={style.seedPhraseText}>
-            This is your SpankWallet address. You can copy it and send crypto from places like Coinbase.
+          This is your Wallet address, also known as a Public Key. Copy it. Give to others. Send ETH from an exchange or other wallet you control to this address. You'll then be able load your SpankCard and tip away!
           </div>
           <CTAInput
             className={style.ctaInput}
@@ -85,9 +107,11 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
             ctaContentClass={d.ctaInputContent}
             value={this.state.address}
             ctaContent={() => (
-              <div className={style.ctaContentWrapper} onClick={() => copy(this.state.address)}>
+              <div className={style.ctaContentWrapper} onClick={this.onCopyAddress}>
                 <div className={style.ctaIcon} />
-                <span className={style.ctaText}>Copy</span>
+                <span className={style.ctaText}>
+                  {this.state.isCopied ? 'Copied' : 'Copy'}
+                </span>
               </div>
             )}
           />
@@ -96,13 +120,9 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
           </div>
           <div className={style.mnemonicFooter}>
             <Button
-              type="secondary"
-              content="Back"
+              content={this.state.isAuthenticating ? 'Loading' : 'Next'}
               isInverse
-            />
-            <Button
-              content="Next"
-              isInverse
+              disabled={this.state.isAuthenticating}
               onClick={this.handleSubmit}
             />
           </div>
@@ -122,12 +142,7 @@ function mapStateToProps(state: FrameState): DepositStateProps {
 
 function mapDispatchToProps(dispatch: Dispatch<FrameState>): DepositDispatchProps {
   return {
-    didAcknowledgeDeposit: () => {
-      dispatch(actions.didAcknowledgeDeposit(''))
-      postMessage(window, {
-        type: 'vynos/parent/signupComplete',
-      })
-    }
+    didAcknowledgeDeposit: () => dispatch(actions.didAcknowledgeDeposit(''))
   }
 }
 

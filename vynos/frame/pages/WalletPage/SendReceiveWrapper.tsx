@@ -15,9 +15,9 @@ export default class SendReceiveWrapper extends React.Component<SendReceiveWrapp
       return (
         <ReceiveEther
           headerText="Not enough funds in your Wallet"
-          descriptionLineOne="If you want to tip them titties you have to send Ether to"
-          descriptionLineTwo="your SpankWallet."
-          linkText="See how to do this on Coinbase"
+          descriptionLineOne="If you want to tip, you'll need to send ETH to your wallet."
+          descriptionLineTwo="Send from any ETH wallet under your control, or from an exchange."
+          linkText=""
           address={this.props.address}
         />
       )
@@ -37,7 +37,7 @@ export default class SendReceiveWrapper extends React.Component<SendReceiveWrapp
             <ReceiveEther
               headerText="Receive Ether / Deposit"
               descriptionLineOne="This is your Wallet address. You can copy it and"
-              descriptionLineTwo="send crypto from places like Coinbase."
+              descriptionLineTwo="send crypto from any exchange."
               linkText="See Tutorial"
               address={this.props.address}
             />

@@ -6,7 +6,17 @@ import {SharedState} from '../worker/WorkerState'
 import * as BigNumber from 'bignumber.js';
 import Web3 = require('web3')
 import VynosBuyResponse from '../lib/VynosBuyResponse'
-import JsonRpcClient from '../lib/messaging/JsonRpcClient'
+
+export interface Balance {
+  balanceInWei: string
+}
+
+export interface GetBalanceResponse {
+  wallet: Balance
+  channels: {
+    [key: string]: Balance
+  }
+}
 
 export default class Vynos extends EventEmitter {
   private options: WalletOptions
@@ -31,6 +41,22 @@ export default class Vynos extends EventEmitter {
     this.handleSharedStateUpdate = this.handleSharedStateUpdate.bind(this)
   }
 
+  public async getBalance(): Promise<GetBalanceResponse> {
+    return this.client.getSharedState()
+      .then(state => {
+        const { balance, channels, currentHubUrl } = state
+        const currentChannels = channels[currentHubUrl] || []
+        return {
+          wallet: { balanceInWei: balance },
+          channels: currentChannels.reduce((acc: any, channel: any) => {
+            const { channelId, spent, value } = channel
+            acc[channel.channelId] = { balanceInWei: `${value - spent}` }
+            return acc
+          }, {}),
+        }
+      })
+  }
+
   public async buy (amount: BigNumber.BigNumber, meta: any): Promise<VynosBuyResponse|null> {
     this.requireReady()
     const { didInit, isLocked } = await this.client.getSharedState()
@@ -40,9 +66,22 @@ export default class Vynos extends EventEmitter {
       return null
     }
 
-    const res = await this.client.buy(amount.toNumber(), meta)
+    let res
+
+    try {
+      res = await this.client.buy(amount.toNumber(), meta)
+    } catch (err) {
+      this.emit('error', err)
+      throw err
+    }
+
     this.emit('didBuy', res)
     return res
+  }
+
+  public async lock() {
+    this.requireReady()
+    return this.client.lock()
   }
 
   public show(forceRedirect?: string, isPerformer?: boolean) {
@@ -84,8 +123,18 @@ export default class Vynos extends EventEmitter {
     this.frame = new Frame(this.options.scriptElement.src)
     this.frame.attach(this.options.window.document)
 
-    this.client = new VynosClient(this.frame.element.contentWindow, 'http://localhost:9090')
-    await this.client.initialize(this.options.hubUrl, this.options.authRealm)
+    const src = this.frame.element.src
+    const parts = src.split('/')
+    const origin = `${parts[0]}//${parts[2]}`
+
+    this.client = new VynosClient(this.frame.element.contentWindow, origin)
+
+    try {
+      await this.client.initialize(this.options.hubUrl, this.options.authRealm)
+    } catch (err) {
+      this.emit('error', err)
+      throw err
+    }
 
     this.previousState = await this.client.getSharedState()
     this.client.onSharedStateUpdate(this.handleSharedStateUpdate)
@@ -99,13 +148,17 @@ export default class Vynos extends EventEmitter {
 
     this.ready = true
     this.emit('ready')
+
+    if (!this.previousState.isLocked) {
+      this.emit('didUnlock', this.previousState.address)
+    }
   }
 
   async setupAndLogin (): Promise<{ token: string }> {
     this.requireReady()
 
     const res = await this.client.authenticate()
-    const token = res.result.token
+    const token = res.token
 
 
     if (!token) {
@@ -144,8 +197,7 @@ export default class Vynos extends EventEmitter {
       this.emit('didOnboard')
     }
 
-    if (this.previousState.currentAuthToken !== newState.currentAuthToken) {
-      this.client.toggleFrame(false)
+    if (this.previousState.currentAuthToken !== newState.currentAuthToken && newState.currentAuthToken) {
       this.emit('didAuthenticate', newState.currentAuthToken)
     }
   }

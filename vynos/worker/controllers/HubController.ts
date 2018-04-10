@@ -5,6 +5,7 @@ import SharedStateView from '../SharedStateView'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import AbstractController from './AbstractController'
 import {FetchHistoryRequest} from '../../lib/rpc/yns'
+import requestJson from '../../frame/lib/request'
 
 export interface BrandingResponse {
   title?: string
@@ -31,10 +32,10 @@ export default class HubController extends AbstractController {
   async fetchHistory (): Promise<HistoryItem[]> {
     const hubUrl = await this.sharedStateView.getHubUrl()
     const address = (await this.sharedStateView.getAccounts())[0]
-    const res = await fetch(`${hubUrl}/payments/${address}`, {
+    const history = await requestJson<HistoryItem[]>(`${hubUrl}/payments/${address}`, {
       credentials: 'include'
     })
-    const history = await res.json()
+
     this.store.dispatch(actions.setHistory(history))
     return history
   }
