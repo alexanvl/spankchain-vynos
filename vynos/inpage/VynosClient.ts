@@ -9,7 +9,7 @@ import {
   RegisterHubRequest,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
-import {PaymentChannel} from 'machinomy/dist/lib/channel'
+import {PaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../lib/VynosBuyResponse'
 import {SharedState} from '../worker/WorkerState'
 import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'

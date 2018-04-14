@@ -11,7 +11,7 @@ let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
 const NODE_ENV = process.env.NODE_ENV
 
-const NETWORK_NAME = process.env.NETWORK_NAME || 'ropsten'
+const NETWORK_NAME = process.env.NETWORK_NAME || 'rinkeby'
 
 function resolvePath(dir) {
   return path.resolve.apply(path, [__dirname].concat(dir.split('/')));
