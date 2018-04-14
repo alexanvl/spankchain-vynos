@@ -1,5 +1,5 @@
 import * as BigNumber from 'bignumber.js'
-import {PaymentChannel} from 'machinomy/dist/lib/payment_channel'
+import {PaymentChannel, PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import ChannelClaimStatusResponse, {
   ChannelClaimStatus,
@@ -10,7 +10,6 @@ import SharedStateView from '../SharedStateView'
 import {WorkerState} from '../WorkerState'
 import {Store} from 'redux'
 import * as actions from '../actions'
-import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import {
   BuyRequest,
@@ -21,9 +20,9 @@ import {
 } from '../../lib/rpc/yns'
 import AbstractController from './AbstractController'
 import requestJson, {request} from '../../frame/lib/request'
-import Web3 = require('web3')
 import ChannelId from 'machinomy/dist/lib/ChannelId'
-
+import * as semaphore from 'semaphore'
+import Web3 = require('web3')
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -40,184 +39,49 @@ export default class MicropaymentsController extends AbstractController {
 
   lastAddress: string
 
+  private sem: semaphore.Semaphore
+
   constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
     super()
     this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView
+    this.sem = semaphore(1)
     this.startScanningPendingChannelIds = this.startScanningPendingChannelIds.bind(this)
     this.startScanningPendingChannelIds()
   }
 
   public async populateChannels (): Promise<void> {
-    const machinomy = await this.getMachinomy()
-    const channels = await machinomy.channels()
-
-    if (channels.length) {
-      this.store.dispatch(actions.setChannels(channels.map(
-        (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
-      return
-    }
-
-    const channelIds = await this.getChannelsByPublicKey()
-    const chans = []
-
-    for (let i = 0; i < channelIds.length; i++) {
-      const chan = await machinomy.channelById(channelIds[i])
-      chans.push(chan)
-    }
-
-    this.store.dispatch(actions.setChannels(chans.map(
-      (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
-  }
-
-  public async startScanningPendingChannelIds (): Promise<void> {
-    this.timeout = null
-    const machinomy = await this.getMachinomy()
-    const state = this.store.getState()
-    const {pendingChannelIds, didInit} = state.persistent
-    const isLocked = !state.runtime.wallet
-
-    if (!pendingChannelIds || !pendingChannelIds.length) {
-      return
-    }
-
-    pendingChannelIds.forEach(async channelId => {
-      if (isLocked || !didInit) {
-        return
-      }
-
-      const paymentChannel = await machinomy.channelById(channelId)
-
-      if (paymentChannel) {
-        // Initialize channel with a 0 tip
-        await this.initChannel()
-        // Remove channelId from watchers
-        this.store.dispatch(actions.removePendingChannel(channelId))
-      }
-    })
-
-    this.timeout = setTimeout(this.startScanningPendingChannelIds, 15000)
+    return this.takeSem<void>(() => this.doPopulateChannels())
   }
 
   public async closeChannelsForCurrentHub (): Promise<void> {
-    this.store.dispatch(actions.setHasActiveWithdrawal(true))
-
-    try {
-      const sharedState = await this.sharedStateView.getSharedState()
-      const hubUrl = await this.sharedStateView.getHubUrl()
-
-      const channels = sharedState.channels[hubUrl]
-
-      if (!channels) {
-        return
-      }
-
-      await Promise.all(channels.map((ch: SerializedPaymentChannel) => this.checkThenCloseChannel(hubUrl, ch.channelId)))
-    } catch (error) {
-      if (error.message !== CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS) {
-        this.store.dispatch(actions.setHasActiveWithdrawal(false))
-      }
-      throw error
+    if (!this.sem.available(1)) {
+      throw new Error('Cannot withdraw. Another operation is in progress.')
     }
+
+    return this.takeSem<void>(() => this.doCloseChannelsForCurrentHub())
   }
 
   public async deposit (amount: string): Promise<void> {
-    const sharedState = await this.sharedStateView.getSharedState()
-    const hubUrl = await this.sharedStateView.getHubUrl()
-    const machinomy = await this.getMachinomy()
-    const channels = sharedState.channels[hubUrl]
-    const bigAmount = new BigNumber.BigNumber(amount)
-
-    if (channels && channels.length) {
-      await machinomy.deposit(channels[0].channelId, bigAmount)
-    } else {
-      const receiver = sharedState.branding.address
-      // need to use fromascii here since machinomy stores the version of the
-      // channel that goes over the wire to the contract (i.e., converted to hex
-      // from ascii
-      const channelId = this.web3.fromAscii(ChannelId.random().id.toString('hex'))
-      this.store.dispatch(actions.openChannel(channelId))
-
-      if (!this.timeout) {
-        this.startScanningPendingChannelIds()
-      }
-
-      let chan
-
-      try {
-        chan = await machinomy.open(receiver, bigAmount, channelId)
-      } catch (err) {
-        this.store.dispatch(actions.removePendingChannel(channelId))
-        throw err
-      }
-
-      let attempts = 0;
-
-      // ensure balances are the same
-      while (++attempts <= 5) {
-        const testChan = await machinomy.channelById(channelId)
-
-        if (testChan && testChan.value.eq(chan.value)) {
-          break;
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-      }
-
-      // Remove channelId from watchers
-      this.store.dispatch(actions.removePendingChannel(channelId))
-      // Initialize channel with a 0 tip
-      try {
-        await this.initChannel()
-      } catch (e) {
-        console.error('Failed to send initial tip:', e)
-      }
+    if (!this.sem.available(1)) {
+      throw new Error('Cannot deposit. Another operation is in progress.')
     }
 
-    await this.populateChannels()
+    return this.takeSem<void>(() => this.doDeposit(amount))
   }
 
   public async buy (price: number, meta: any): Promise<VynosBuyResponse> {
-    const sharedState = await this.sharedStateView.getState()
-
-    if (sharedState.runtime.hasActiveWithdrawal) {
-      throw new Error('Can\'t tip while a withdrawal is active.')
+    if (!this.sem.available(1)) {
+      throw new Error('Cannot tip. Another operation is in progress.')
     }
 
-    const receiver = (await this.sharedStateView.getSharedState()).branding.address
-    const hubUrl = await this.sharedStateView.getHubUrl()
+    return this.takeSem<VynosBuyResponse>(() => this.doBuy(price, meta))
+  }
+
+  public async listChannels (): Promise<PaymentChannel[]> {
     const machinomy = await this.getMachinomy()
-    const channels = await machinomy.channels()
-
-    // machinomy performs the below two checks internally, however
-    // it will open a channel automatically if no suitable existing
-    // channels are found. the wallet needs user interaction to fill it,
-    // so we throw errors if there is no open channel or the channel does
-    // not have sufficient funds.
-    if (!channels.length) {
-      throw new Error('A channel must be open.')
-    }
-
-    const chan = channels[0]
-
-    if (chan.spent.add(price).gt(chan.value)) {
-      throw new Error('Insufficient funds.')
-    }
-
-    const res = await machinomy.buy({
-      gateway: `${hubUrl}/payments`,
-      receiver,
-      price,
-      meta: JSON.stringify(meta)
-    })
-
-    await this.populateChannels()
-
-    return {
-      channelId: res.channelId,
-      token: res.token
-    }
+    return machinomy.channels()
   }
 
   public registerHandlers (server: JsonRpcServer) {
@@ -226,11 +90,6 @@ export default class MicropaymentsController extends AbstractController {
     this.registerHandler(server, DepositRequest.method, this.deposit)
     this.registerHandler(server, ListChannelsRequest.method, this.listChannels)
     this.registerHandler(server, BuyRequest.method, this.buy)
-  }
-
-  public async listChannels (): Promise<PaymentChannel[]> {
-    const machinomy = await this.getMachinomy()
-    return machinomy.channels()
   }
 
   private async getMachinomy (): Promise<Machinomy> {
@@ -287,7 +146,7 @@ export default class MicropaymentsController extends AbstractController {
         if (status === ChannelClaimStatus.CONFIRMED) {
           ctx.store.dispatch(actions.setActiveWithdrawalError(null))
           resolve(claimStatus)
-          await ctx.populateChannels()
+          await ctx.doPopulateChannels()
           ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
         } else if (status === ChannelClaimStatus.FAILED) {
           ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
@@ -315,7 +174,7 @@ export default class MicropaymentsController extends AbstractController {
      * This is needed because the smart contracts requires a payment to be provided to the claim
      * method. Clicking withdraw uses the 'claim' method on the hub since claiming is instant.
      */
-    await this.buy(0, {
+    await this.doBuy(0, {
       streamId: 'probe',
       streamName: 'Channel Open/Deposit Probe',
       performerId: 'probe',
@@ -323,7 +182,7 @@ export default class MicropaymentsController extends AbstractController {
       performerAddress: '0x0000000000000000000000000000000000000000'
     })
 
-    await this.populateChannels()
+    await this.doPopulateChannels()
   }
 
   private async getChannelsByPublicKey (): Promise<string[]> {
@@ -347,5 +206,203 @@ export default class MicropaymentsController extends AbstractController {
     })
 
     return res as ChannelClaimStatusResponse
+  }
+
+  private async doCloseChannelsForCurrentHub(): Promise<void> {
+    this.store.dispatch(actions.setHasActiveWithdrawal(true))
+
+    try {
+      const sharedState = await this.sharedStateView.getSharedState()
+      const hubUrl = await this.sharedStateView.getHubUrl()
+
+      const channels = sharedState.channels[hubUrl]
+
+      if (!channels) {
+        return
+      }
+
+      await Promise.all(channels.map((ch: SerializedPaymentChannel) => this.checkThenCloseChannel(hubUrl, ch.channelId)))
+    } catch (error) {
+      if (error.message !== CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS) {
+        this.store.dispatch(actions.setHasActiveWithdrawal(false))
+      }
+
+      throw error
+    }
+  }
+
+  private async doDeposit(amount: string): Promise<void> {
+    const sharedState = await this.sharedStateView.getSharedState()
+    const hubUrl = await this.sharedStateView.getHubUrl()
+    const machinomy = await this.getMachinomy()
+    const channels = sharedState.channels[hubUrl]
+    const bigAmount = new BigNumber.BigNumber(amount)
+
+    if (channels && channels.length) {
+      await machinomy.deposit(channels[0].channelId, bigAmount)
+    } else {
+      const receiver = sharedState.branding.address
+      // need to use fromascii here since machinomy stores the version of the
+      // channel that goes over the wire to the contract (i.e., converted to hex
+      // from ascii
+      const channelId = this.web3.fromAscii(ChannelId.random().id.toString('hex'))
+      this.store.dispatch(actions.openChannel(channelId))
+
+      if (!this.timeout) {
+        this.startScanningPendingChannelIds()
+      }
+
+      let chan
+
+      try {
+        chan = await machinomy.open(receiver, bigAmount, channelId)
+      } catch (err) {
+        this.store.dispatch(actions.removePendingChannel(channelId))
+        throw err
+      }
+
+      let attempts = 0
+
+      // ensure balances are the same
+      while (++attempts <= 5) {
+        const testChan = await machinomy.channelById(channelId)
+
+        if (testChan && testChan.value.eq(chan.value)) {
+          break
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+
+      // Remove channelId from watchers
+      this.store.dispatch(actions.removePendingChannel(channelId))
+      // Initialize channel with a 0 tip
+      try {
+        await this.initChannel()
+      } catch (e) {
+        console.error('Failed to send initial tip:', e)
+      }
+    }
+
+    await this.doPopulateChannels()
+  }
+
+  private async doPopulateChannels (): Promise<void> {
+    const machinomy = await this.getMachinomy()
+    const channels = await machinomy.channels()
+
+    if (channels.length) {
+      this.store.dispatch(actions.setChannels(channels.map(
+        (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+      return
+    }
+
+    const channelIds = await this.getChannelsByPublicKey()
+    const chans = []
+
+    for (let i = 0; i < channelIds.length; i++) {
+      const chan = await machinomy.channelById(channelIds[i])
+      chans.push(chan)
+    }
+
+    this.store.dispatch(actions.setChannels(chans.map(
+      (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+  }
+
+  private async doBuy(price: number, meta: any): Promise<VynosBuyResponse> {
+    const sharedState = await this.sharedStateView.getState()
+
+    if (sharedState.runtime.hasActiveWithdrawal) {
+      throw new Error('Can\'t tip while a withdrawal is active.')
+    }
+
+    const receiver = (await this.sharedStateView.getSharedState()).branding.address
+    const hubUrl = await this.sharedStateView.getHubUrl()
+    const machinomy = await this.getMachinomy()
+    const channels = await machinomy.channels()
+
+    // machinomy performs the below two checks internally, however
+    // it will open a channel automatically if no suitable existing
+    // channels are found. the wallet needs user interaction to fill it,
+    // so we throw errors if there is no open channel or the channel does
+    // not have sufficient funds.
+    if (!channels.length) {
+      throw new Error('A channel must be open.')
+    }
+
+    const chan = channels[0]
+
+    if (chan.spent.add(price).gt(chan.value)) {
+      throw new Error('Insufficient funds.')
+    }
+
+    const res = await machinomy.buy({
+      gateway: `${hubUrl}/payments`,
+      receiver,
+      price,
+      meta: JSON.stringify(meta)
+    })
+
+    await this.doPopulateChannels()
+
+    return {
+      channelId: res.channelId,
+      token: res.token
+    }
+  }
+
+  private async startScanningPendingChannelIds (): Promise<void> {
+    this.timeout = null
+    const machinomy = await this.getMachinomy()
+    const state = this.store.getState()
+    const {pendingChannelIds, didInit} = state.persistent
+    const isLocked = !state.runtime.wallet
+
+    if (!pendingChannelIds || !pendingChannelIds.length) {
+      return
+    }
+
+    pendingChannelIds.forEach(async channelId => {
+      if (isLocked || !didInit) {
+        return
+      }
+
+      const paymentChannel = await machinomy.channelById(channelId)
+
+      if (paymentChannel) {
+        // Initialize channel with a 0 tip
+        await this.initChannel()
+        // Remove channelId from watchers
+        this.store.dispatch(actions.removePendingChannel(channelId))
+      }
+    })
+
+    this.timeout = setTimeout(this.startScanningPendingChannelIds, 15000)
+  }
+
+  private takeSem<T> (fn: () => T | Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => this.sem.take(async () => {
+      let isFailed = false
+      let res: any
+
+      try {
+        res = fn()
+
+        if (res.then) {
+          res = await res
+        }
+      } catch (e) {
+        res = e
+        isFailed = true
+      }
+
+      this.sem.leave()
+
+      if (isFailed) {
+        return reject(res)
+      }
+
+      resolve(res)
+    }))
   }
 }
