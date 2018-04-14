@@ -1,5 +1,5 @@
 import * as BigNumber from 'bignumber.js'
-import {PaymentChannel} from 'machinomy/dist/lib/channel'
+import {PaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import ChannelClaimStatusResponse, {
   ChannelClaimStatus,
@@ -60,12 +60,12 @@ export default class MicropaymentsController extends AbstractController {
     }
 
     const channelIds = await this.getChannelsByPublicKey()
+    const chans = []
 
     for (let i = 0; i < channelIds.length; i++) {
-      await machinomy.channelById(channelIds[i])
+      const chan = await machinomy.channelById(channelIds[i])
+      chans.push(chan)
     }
-
-    const chans = await machinomy.channels()
 
     this.store.dispatch(actions.setChannels(chans.map(
       (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
