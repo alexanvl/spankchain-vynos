@@ -10,7 +10,7 @@ window.addEventListener("load", function () {
   }
 
   let vynos = new Vynos({
-    hubUrl: 'https://hub-staging.spankdev.com',
+    hubUrl: 'http://localhost:8080',
     authRealm: 'SpankChain',
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
     window: _window
