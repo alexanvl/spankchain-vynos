@@ -102,7 +102,8 @@ export default class MicropaymentsController extends AbstractController {
 
     this.machinomy = new Machinomy(address, this.web3, {
       databaseUrl: `nedb://vynos-${address}`,
-      settlementPeriod: Number.MAX_SAFE_INTEGER
+      settlementPeriod: Number.MAX_SAFE_INTEGER,
+      closeOnInvalidPayment: false
     })
 
     this.lastAddress = address
@@ -146,7 +147,7 @@ export default class MicropaymentsController extends AbstractController {
         if (status === ChannelClaimStatus.CONFIRMED) {
           ctx.store.dispatch(actions.setActiveWithdrawalError(null))
           resolve(claimStatus)
-          await ctx.doPopulateChannels()
+          await ctx.syncMachinomyRedux()
           ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
         } else if (status === ChannelClaimStatus.FAILED) {
           ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
@@ -182,7 +183,7 @@ export default class MicropaymentsController extends AbstractController {
       performerAddress: '0x0000000000000000000000000000000000000000'
     })
 
-    await this.doPopulateChannels()
+    await this.syncMachinomyRedux()
   }
 
   private async getChannelsByPublicKey (): Promise<string[]> {
@@ -208,7 +209,7 @@ export default class MicropaymentsController extends AbstractController {
     return res as ChannelClaimStatusResponse
   }
 
-  private async doCloseChannelsForCurrentHub(): Promise<void> {
+  private async doCloseChannelsForCurrentHub (): Promise<void> {
     this.store.dispatch(actions.setHasActiveWithdrawal(true))
 
     try {
@@ -231,7 +232,7 @@ export default class MicropaymentsController extends AbstractController {
     }
   }
 
-  private async doDeposit(amount: string): Promise<void> {
+  private async doDeposit (amount: string): Promise<void> {
     const sharedState = await this.sharedStateView.getSharedState()
     const hubUrl = await this.sharedStateView.getHubUrl()
     const machinomy = await this.getMachinomy()
@@ -284,32 +285,22 @@ export default class MicropaymentsController extends AbstractController {
       }
     }
 
-    await this.doPopulateChannels()
+    await this.syncMachinomyRedux()
   }
 
   private async doPopulateChannels (): Promise<void> {
     const machinomy = await this.getMachinomy()
-    const channels = await machinomy.channels()
+    let channels = await machinomy.channels()
 
-    if (channels.length) {
-      this.store.dispatch(actions.setChannels(channels.map(
-        (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
-      return
+    if (!channels.length) {
+      channels = await this.fetchChannelsFromHub()
     }
 
-    const channelIds = await this.getChannelsByPublicKey()
-    const chans = []
-
-    for (let i = 0; i < channelIds.length; i++) {
-      const chan = await machinomy.channelById(channelIds[i])
-      chans.push(chan)
-    }
-
-    this.store.dispatch(actions.setChannels(chans.map(
-      (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+    await Promise.all(channels.map(async (chan: PaymentChannel) => await this.syncPaymentsForChannel(chan.channelId)))
+    await this.syncMachinomyRedux()
   }
 
-  private async doBuy(price: number, meta: any): Promise<VynosBuyResponse> {
+  private async doBuy (price: number, meta: any): Promise<VynosBuyResponse> {
     const sharedState = await this.sharedStateView.getState()
 
     if (sharedState.runtime.hasActiveWithdrawal) {
@@ -343,7 +334,7 @@ export default class MicropaymentsController extends AbstractController {
       meta: JSON.stringify(meta)
     })
 
-    await this.doPopulateChannels()
+    await this.syncMachinomyRedux()
 
     return {
       channelId: res.channelId,
@@ -378,6 +369,67 @@ export default class MicropaymentsController extends AbstractController {
     })
 
     this.timeout = setTimeout(this.startScanningPendingChannelIds, 15000)
+  }
+
+  private async syncMachinomyRedux () {
+    const machinomy = await this.getMachinomy()
+    const channels = await machinomy.channels()
+
+    this.store.dispatch(actions.setChannels(channels.map(
+      (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
+  }
+
+  private async syncPaymentsForChannel (channelId: string) {
+    const machinomy = await this.getMachinomy()
+    const hubUrl = await this.sharedStateView.getHubUrl()
+    const receiver = (await this.sharedStateView.getSharedState()).branding.address
+    const localChan = await machinomy.channelById(channelId)
+
+    if (!localChan) {
+      throw new Error('No local channel found.')
+    }
+
+    const remoteChan = PaymentChannelSerde.instance.deserialize(await requestJson<any[]>(`${hubUrl}/channels/${channelId}`, {
+      method: 'GET',
+      credentials: 'include'
+    }))
+
+    if (localChan.spent.equals(remoteChan.spent)) {
+      return
+    }
+
+    const diff = remoteChan.spent.minus(localChan.spent)
+
+    if (diff.lessThan(0)) {
+      throw new Error('Channel value cannot be negative.')
+    }
+
+    if (remoteChan.spent.plus(diff).greaterThan(remoteChan.value)) {
+      throw new Error('Insufficient funds remaining in channel.')
+    }
+
+    await machinomy.payment({
+      receiver,
+      price: diff
+    })
+  }
+
+  private async fetchChannelsFromHub (): Promise<PaymentChannel[]> {
+    const machinomy = await this.getMachinomy()
+    const channelIds = await this.getChannelsByPublicKey()
+    const chans = []
+
+    for (let i = 0; i < channelIds.length; i++) {
+      const chan = await machinomy.channelById(channelIds[i])
+
+      if (!chan) {
+        throw new Error('Channel on hub not found.')
+      }
+
+      chans.push(chan)
+    }
+
+    return chans
   }
 
   private takeSem<T> (fn: () => T | Promise<T>): Promise<T> {
