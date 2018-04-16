@@ -25,5 +25,6 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.reset, actions.resetHandler)
   .case(actions.setHasActiveWithdrawal, actions.setHasActiveWithdrawalHandler)
   .case(actions.setActiveWithdrawalError, actions.setActiveWithdrawalErrorHandler)
+  .case(actions.setExchangeRate, actions.setExchangeRateHandler)
 
 export default reducers

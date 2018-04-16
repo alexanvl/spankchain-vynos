@@ -283,6 +283,17 @@ export function setActiveWithdrawalErrorHandler(state: WorkerState, activeWithdr
   }
 }
 
+export const setExchangeRate: ActionCreator<string> = actionCreator<string>('runtime/setExchangeRate')
+export function setExchangeRateHandler(state: WorkerState, exchangeRate: string): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      exchangeRate
+    }
+  }
+}
+
 function uniqueChannels (channels: SerializedPaymentChannel[]): SerializedPaymentChannel[] {
   const out: SerializedPaymentChannel[] = []
   const ids: { [k: string]: boolean } = {}
