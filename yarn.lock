@@ -12,6 +12,18 @@
     truffle-contract "^3.0.0"
     web3 "^0.20.1"
 
+"@machinomy/types-safe-buffer@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@machinomy/types-safe-buffer/-/types-safe-buffer-0.0.1.tgz#bf80d94a2cc90b9d8438749aa3542dbf7a1f72b0"
+
+"@machinomy/types-truffle-contract@^0.0.3":
+  version "0.0.3"
+  resolved "https://registry.yarnpkg.com/@machinomy/types-truffle-contract/-/types-truffle-contract-0.0.3.tgz#76442f485647382ce8d676af04ebcff35afee68f"
+  dependencies:
+    "@machinomy/types-web3" "^0.0.4"
+    truffle-contract "^3.0.0"
+    web3 "^0.20.2"
+
 "@machinomy/types-truffle-contract@https://github.com/machinomy/types-truffle-contract":
   version "0.0.3"
   resolved "https://github.com/machinomy/types-truffle-contract#49c767da53601b7b3b0a10bbe9649a5f8b636d89"
@@ -186,13 +198,7 @@
   version "15.6.0"
   resolved "https://registry.yarnpkg.com/@types/react/-/react-15.6.0.tgz#3b3e92a60b65045e4df48fda324de84d83addbc4"
 
-"@types/request-promise-native@^1.0.11":
-  version "1.0.14"
-  resolved "https://registry.yarnpkg.com/@types/request-promise-native/-/request-promise-native-1.0.14.tgz#20f2ba136e6f29c2ea745c60767738d434793d31"
-  dependencies:
-    "@types/request" "*"
-
-"@types/request@*", "@types/request@^2.0.13":
+"@types/request@^2.0.13":
   version "2.47.0"
   resolved "https://registry.yarnpkg.com/@types/request/-/request-2.47.0.tgz#76a666cee4cb85dcffea6cd4645227926d9e114e"
   dependencies:
@@ -200,6 +206,10 @@
     "@types/form-data" "*"
     "@types/node" "*"
     "@types/tough-cookie" "*"
+
+"@types/semaphore@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@types/semaphore/-/semaphore-1.1.0.tgz#a2f8db75e6429ae2703bbbe7d288f0edc67894b2"
 
 "@types/serve-static@*":
   version "1.13.1"
@@ -1265,7 +1275,7 @@ big.js@^3.1.3:
   version "3.2.0"
   resolved "https://registry.yarnpkg.com/big.js/-/big.js-3.2.0.tgz#a5fc298b81b9e0dca2e458824784b65c52ba588e"
 
-bignumber.js@4.1.0, bignumber.js@^4.0.2, bignumber.js@^4.1.0, bignumber.js@~4.1.0:
+bignumber.js@4.1.0, bignumber.js@^4.0.2, bignumber.js@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/bignumber.js/-/bignumber.js-4.1.0.tgz#db6f14067c140bd46624815a7916c92d9b6c24b1"
 
@@ -2892,7 +2902,7 @@ ethereumjs-util@^4.0.1, ethereumjs-util@^4.4.0:
     rlp "^2.0.0"
     secp256k1 "^3.0.1"
 
-ethereumjs-util@^5.0.0, ethereumjs-util@^5.1.1, ethereumjs-util@^5.1.2, ethereumjs-util@^5.1.3:
+ethereumjs-util@^5.0.0, ethereumjs-util@^5.1.1, ethereumjs-util@^5.1.2, ethereumjs-util@^5.1.3, ethereumjs-util@^5.1.5:
   version "5.1.5"
   resolved "https://registry.yarnpkg.com/ethereumjs-util/-/ethereumjs-util-5.1.5.tgz#2f02575852627d45622426f25ee4a0b5f377f27a"
   dependencies:
@@ -5190,12 +5200,13 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@http://github.com/mslipper/machinomy#528c8295fe1b1d3520d33902e7169f87511824cf":
-  version "1.7.4"
-  resolved "http://github.com/mslipper/machinomy#528c8295fe1b1d3520d33902e7169f87511824cf"
+"machinomy@http://github.com/mslipper/machinomy#e8caff3e04a1a198141b9fdef992d9430ed7487b":
+  version "1.7.8"
+  resolved "http://github.com/mslipper/machinomy#e8caff3e04a1a198141b9fdef992d9430ed7487b"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
-    "@machinomy/types-truffle-contract" "https://github.com/machinomy/types-truffle-contract"
+    "@machinomy/types-truffle-contract" "^0.0.3"
+    "@machinomy/types-web3" "^0.0.4"
     "@types/bignumber.js" "^4.0.2"
     "@types/body-parser" "^1.16.4"
     "@types/commander" "^2.9.1"
@@ -5204,24 +5215,22 @@ macaddress@^0.2.8:
     "@types/express" "^4.0.36"
     "@types/nedb" "^1.8.3"
     "@types/request" "^2.0.13"
-    "@types/request-promise-native" "^1.0.11"
     "@types/uuid" "^3.4.3"
     bignumber.js "^4.1.0"
     commander "^2.9.0"
     debug "^3.1.0"
-    ethereumjs-util "^5.1.2"
+    ethereumjs-util "^5.1.5"
     fetch-ponyfill "^5.0.1"
     homedir "https://github.com/ukstv/node-homedir"
     nedb "^1.8.0"
     prompt "^1.0.0"
     request "^2.76.0"
-    request-promise-native "^1.0.5"
+    safe-buffer "^5.1.1"
     types-bn "^0.0.1"
-    types-ethereumjs-util "^0.0.6"
+    types-ethereumjs-util "^0.0.8"
     types-rlp "^0.0.1"
     uuid "^3.2.1"
     web3 "^0.20.1"
-    web3-typescript-typings "^0.9.7"
     whatwg-fetch "^2.0.3"
   optionalDependencies:
     mongodb "^2.2.31"
@@ -7245,20 +7254,6 @@ replace-ext@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/replace-ext/-/replace-ext-1.0.0.tgz#de63128373fcbf7c3ccfa4de5a480c45a67958eb"
 
-request-promise-core@1.1.1:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/request-promise-core/-/request-promise-core-1.1.1.tgz#3eee00b2c5aa83239cfb04c5700da36f81cd08b6"
-  dependencies:
-    lodash "^4.13.1"
-
-request-promise-native@^1.0.5:
-  version "1.0.5"
-  resolved "https://registry.yarnpkg.com/request-promise-native/-/request-promise-native-1.0.5.tgz#5281770f68e0c9719e5163fd3fab482215f4fda5"
-  dependencies:
-    request-promise-core "1.1.1"
-    stealthy-require "^1.1.0"
-    tough-cookie ">=2.3.3"
-
 request@2.81.0:
   version "2.81.0"
   resolved "https://registry.yarnpkg.com/request/-/request-2.81.0.tgz#c6928946a0e06c5f8d6f8a9333469ffda46298a0"
@@ -7577,7 +7572,7 @@ semantic-ui-react@^0.71.5:
     lodash "^4.17.4"
     prop-types "^15.5.10"
 
-semaphore@>=1.0.1, semaphore@^1.0.3:
+semaphore@>=1.0.1, semaphore@^1.0.3, semaphore@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/semaphore/-/semaphore-1.1.0.tgz#aaad8b86b20fe8e9b32b16dc2ee682a8cd26a8aa"
 
@@ -7996,10 +7991,6 @@ statuses@~1.4.0:
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/statuses/-/statuses-1.4.0.tgz#bb73d446da2796106efcc1b601a253d6c46bd087"
 
-stealthy-require@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
-
 stream-browserify@^2.0.1:
   version "2.0.1"
   resolved "https://registry.yarnpkg.com/stream-browserify/-/stream-browserify-2.0.1.tgz#66266ee5f9bdb9940a4e4514cafb43bb71e5c9db"
@@ -8389,7 +8380,7 @@ toposort@^1.0.0:
   version "1.0.6"
   resolved "https://registry.yarnpkg.com/toposort/-/toposort-1.0.6.tgz#c31748e55d210effc00fdcdc7d6e68d7d7bb9cec"
 
-tough-cookie@>=2.3.3, tough-cookie@~2.3.0, tough-cookie@~2.3.3:
+tough-cookie@~2.3.0, tough-cookie@~2.3.3:
   version "2.3.4"
   resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-2.3.4.tgz#ec60cee38ac675063ffc97a5c18970578ee83655"
   dependencies:
@@ -8514,12 +8505,12 @@ types-ethereumjs-util@^0.0.5:
     buffer "^5.0.6"
     rlp "^2.0.0"
 
-types-ethereumjs-util@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/types-ethereumjs-util/-/types-ethereumjs-util-0.0.6.tgz#41f4c9f6416748572b9fcb9ddcd83f0f749600d8"
+types-ethereumjs-util@^0.0.8:
+  version "0.0.8"
+  resolved "https://registry.yarnpkg.com/types-ethereumjs-util/-/types-ethereumjs-util-0.0.8.tgz#4530c4fe069da3ea93748baa3e18ea70133e4560"
   dependencies:
+    "@machinomy/types-safe-buffer" "^0.0.1"
     bn.js "^4.11.7"
-    buffer "^5.0.6"
     rlp "^2.0.0"
     types-bn "https://github.com/machinomy/types-bn.git"
 
@@ -8977,12 +8968,6 @@ web3-provider-engine@^13.2.8:
     tape "^4.4.0"
     xhr "^2.2.0"
     xtend "^4.0.1"
-
-web3-typescript-typings@^0.9.7:
-  version "0.9.11"
-  resolved "https://registry.yarnpkg.com/web3-typescript-typings/-/web3-typescript-typings-0.9.11.tgz#2f5464e572843b0853f47a1a0801029d6dfb5793"
-  dependencies:
-    bignumber.js "~4.1.0"
 
 "web3-typescript-typings@https://github.com/machinomy/web3-typescript-typings":
   version "0.6.2"

@@ -192,7 +192,7 @@ export function setChannelsHandler(state: WorkerState, channels: SerializedPayme
       ...state.runtime,
       channels: {
         ...state.runtime.channels,
-        [state.runtime.currentHubUrl]: channels
+        [state.runtime.currentHubUrl]: uniqueChannels(channels)
       }
     }
   }
@@ -281,4 +281,31 @@ export function setActiveWithdrawalErrorHandler(state: WorkerState, activeWithdr
       activeWithdrawalError,
     }
   }
+}
+
+export const setExchangeRate: ActionCreator<string> = actionCreator<string>('runtime/setExchangeRate')
+export function setExchangeRateHandler(state: WorkerState, exchangeRate: string): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      exchangeRate
+    }
+  }
+}
+
+function uniqueChannels (channels: SerializedPaymentChannel[]): SerializedPaymentChannel[] {
+  const out: SerializedPaymentChannel[] = []
+  const ids: { [k: string]: boolean } = {}
+
+  channels.forEach((c: SerializedPaymentChannel) => {
+    if (ids[c.channelId]) {
+      return
+    }
+
+    ids[c.channelId] = true
+    out.push(c)
+  })
+
+  return out
 }
