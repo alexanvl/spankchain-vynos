@@ -5,13 +5,18 @@
 
 .input {
   border: none;
-  border-bottom: 1px solid #fff !important;
+  color: #797979;
+  border-bottom: 1px solid #dedede !important;
   background-color: transparent;
-  color: #fff;
   padding: .7rem 0;
   outline: none;
   font-size: .9rem;
   font-family: monospace;
+}
+
+.inverse {
+  color: #fff;
+  border-bottom-color: white !important;
 }
 
 .input.error {
@@ -34,6 +39,10 @@
 }
 
 .input::placeholder {
+  color: rgba(#797979, 0.7);
+}
+
+.inverse::placeholder {
   color: rgba(255, 255, 255, .7);
 }
 

@@ -208,7 +208,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             isInverse
           />
           <Button
-            content={<div className={style.loginButton} />}
+            content={<div className={style.restoreButton} />}
             onClick={this.handleSubmitSeed}
             isInverse
           />
@@ -227,6 +227,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             autoFocus={i === 0}
             className={style.backupField}
             {...this.setSeed(i)}
+            inverse
           />
         </li>
       )
