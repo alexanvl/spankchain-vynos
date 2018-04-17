@@ -207,6 +207,10 @@
     "@types/node" "*"
     "@types/tough-cookie" "*"
 
+"@types/semaphore@^1.1.0":
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/@types/semaphore/-/semaphore-1.1.0.tgz#a2f8db75e6429ae2703bbbe7d288f0edc67894b2"
+
 "@types/serve-static@*":
   version "1.13.1"
   resolved "https://registry.yarnpkg.com/@types/serve-static/-/serve-static-1.13.1.tgz#1d2801fa635d274cd97d4ec07e26b21b44127492"
@@ -5196,9 +5200,9 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@http://github.com/mslipper/machinomy#ca491969f64b942d6ae0af1a481949705418909c":
-  version "1.7.7"
-  resolved "http://github.com/mslipper/machinomy#ca491969f64b942d6ae0af1a481949705418909c"
+"machinomy@http://github.com/mslipper/machinomy#e8caff3e04a1a198141b9fdef992d9430ed7487b":
+  version "1.7.8"
+  resolved "http://github.com/mslipper/machinomy#e8caff3e04a1a198141b9fdef992d9430ed7487b"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
     "@machinomy/types-truffle-contract" "^0.0.3"
@@ -7573,7 +7577,7 @@ semantic-ui-react@^0.71.5:
     lodash "^4.17.4"
     prop-types "^15.5.10"
 
-semaphore@>=1.0.1, semaphore@^1.0.3:
+semaphore@>=1.0.1, semaphore@^1.0.3, semaphore@^1.1.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/semaphore/-/semaphore-1.1.0.tgz#aaad8b86b20fe8e9b32b16dc2ee682a8cd26a8aa"
 
