@@ -294,6 +294,17 @@ export function setExchangeRateHandler(state: WorkerState, exchangeRate: string)
   }
 }
 
+export const setUsername: ActionCreator<string> = actionCreator<string>('runtime/setUsername')
+export function setUsernameHandler(state: WorkerState, username: string): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      username
+    }
+  }
+}
+
 function uniqueChannels (channels: SerializedPaymentChannel[]): SerializedPaymentChannel[] {
   const out: SerializedPaymentChannel[] = []
   const ids: { [k: string]: boolean } = {}

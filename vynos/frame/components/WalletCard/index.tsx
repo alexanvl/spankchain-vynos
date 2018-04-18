@@ -1,9 +1,29 @@
 import * as React from 'react'
+import { BigNumber } from 'bignumber.js';
 import * as classnames from 'classnames'
 import Currency, { CurrencyType } from '../Currency/index'
 import FinneySign from '../FinneySign/index'
+import {FrameState} from '../../redux/FrameState'
+import {connect} from 'react-redux'
 
 const s = require('./style.css')
+
+export interface StateProps {
+  name: string
+}
+
+export interface WalletCardProps {
+  cardTitle?: string
+  companyName?: string
+  name?: string
+  imageUrl?: string
+  backgroundColor?: string
+  color?: string
+  className?: string
+  width?: number
+  currency?: string
+  currencyValue?: BigNumber
+}
 
 const WalletCard: React.SFC<any> = function (props) {
   const {
@@ -15,14 +35,12 @@ const WalletCard: React.SFC<any> = function (props) {
     color,
     className,
     width,
-    currency,
     currencyValue
   } = props
 
   const height = width * (18 / 30)
   const titleSize = height * .1333
   const companyNameSize = titleSize * .6
-  const currencySize = titleSize * 2
 
   return (
     <div
@@ -99,4 +117,11 @@ WalletCard.defaultProps = {
   currency: '$'
 }
 
-export default WalletCard
+
+function mapStateToProps (state: FrameState, ownProps: WalletCardProps): StateProps {
+  return {
+    name: ownProps.name || (state.shared.username || '')
+  }
+}
+
+export default connect(mapStateToProps)(WalletCard)

@@ -10,7 +10,7 @@ window.addEventListener("load", function () {
   }
 
   let vynos = new Vynos({
-    hubUrl: 'http://localhost:8080',
+    hubUrl: 'https://hub-staging.spankdev.com',
     authRealm: 'SpankChain',
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
     window: _window
@@ -44,6 +44,13 @@ window.addEventListener("load", function () {
         performerName: 'Butter Bubble',
         performerAddress: '0x0108d76118d97b88aa40167064cb242fa391effa'
       })
+    }
+  }
+
+  const setNameButton = document.getElementById('set-name')
+  if (setNameButton) {
+    setNameButton.onclick = () => {
+      vynos.setUsername('falafel')
     }
   }
 
