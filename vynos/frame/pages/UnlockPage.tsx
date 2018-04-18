@@ -125,7 +125,6 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
             <WalletCard
               cardTitle={this.props.title}
               companyName={this.props.companyName}
-              name={this.props.username}
               backgroundColor={this.props.backgroundColor}
               color={this.props.textColor}
               className={walletStyle.walletSpankCard}
