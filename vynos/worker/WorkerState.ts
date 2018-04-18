@@ -21,6 +21,7 @@ export interface RuntimeState {
   hasActiveWithdrawal: boolean
   activeWithdrawalError: string|null
   exchangeRate: string|null
+  username: string|null
 }
 
 export interface AuthorizationRequestState {
@@ -65,6 +66,7 @@ export interface SharedState {
   pendingChannelIds: string[]
   activeWithdrawalError: string|null
   exchangeRate: string|null
+  username: string|null
 }
 
 export interface PersistentState {
@@ -77,7 +79,6 @@ export interface PersistentState {
 export interface BrandingState {
   title?: string
   companyName?: string
-  username?: string
   backgroundColor?: string
   textColor?: string
   address: string
@@ -111,7 +112,8 @@ export const INITIAL_SHARED_STATE: SharedState = {
   hasActiveWithdrawal: false,
   activeWithdrawalError: null,
   pendingChannelIds: [],
-  exchangeRate: null
+  exchangeRate: null,
+  username: null
 }
 
 export const INITIAL_STATE: WorkerState = {
@@ -139,7 +141,8 @@ export const INITIAL_STATE: WorkerState = {
     pendingTransaction: null,
     hasActiveWithdrawal: false,
     activeWithdrawalError: null,
-    exchangeRate: null
+    exchangeRate: null,
+    username: null
   },
 }
 
@@ -166,6 +169,7 @@ export function buildSharedState(state: WorkerState): SharedState {
     hasActiveWithdrawal: state.runtime.hasActiveWithdrawal,
     activeWithdrawalError: state.runtime.activeWithdrawalError,
     pendingChannelIds: state.persistent.pendingChannelIds,
-    exchangeRate: state.runtime.exchangeRate
+    exchangeRate: state.runtime.exchangeRate,
+    username: state.runtime.username
   }
 }
