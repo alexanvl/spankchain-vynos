@@ -4,7 +4,7 @@ import * as classnames from 'classnames'
 import WorkerProxy from '../../WorkerProxy'
 import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
-import FinneySign from '../FinneySign/index'
+import CurrencyIcon from '../CurrencyIcon/index'
 
 const s = require('./style.css')
 
@@ -83,7 +83,7 @@ function renderUnit(showUnit?: boolean, outputType?: CurrencyType, unitClassName
   }
 
   if (outputType === CurrencyType.FINNEY) {
-    return <FinneySign className={unitClassName}/>
+    return <CurrencyIcon className={unitClassName} />
   }
 
   return ''

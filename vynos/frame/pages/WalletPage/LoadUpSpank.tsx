@@ -9,7 +9,7 @@ import entireBalance from '../../lib/entireBalance'
 
 const s = require('./LoadUpSpank.css')
 
-const finneyInverse = require('../../components/FinneySign/style.css').finneyInverse
+const finneyInverse = require('../../components/CurrencyIcon/style.css').finneyInverse
 
 export interface StateProps {
   walletBalance: string | null
