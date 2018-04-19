@@ -2,9 +2,9 @@ import SharedStateView from '../SharedStateView'
 import {WorkerState} from '../WorkerState'
 import {Store} from 'redux'
 import {LifecycleAware} from './LifecycleAware'
-import {setBalance, setPendingTransaction} from '../actions'
+import {setBalance, setPendingTransaction, setUsername} from '../actions'
 import * as BigNumber from 'bignumber.js'
-import {SendRequest} from '../../lib/rpc/yns'
+import {SendRequest, SetUsernameRequest} from '../../lib/rpc/yns'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import AbstractController from './AbstractController'
 import Web3 = require('web3')
@@ -101,8 +101,13 @@ export default class WalletController extends AbstractController implements Life
     throw new Error('Transaction timed out.')
   }
 
+  public async setUsername(username: string) {
+    this.store.dispatch(setUsername(username))
+  }
+
   public registerHandlers (server: JsonRpcServer) {
     this.registerHandler(server, SendRequest.method, this.send)
+    this.registerHandler(server, SetUsernameRequest.method, this.setUsername)
   }
 
   private async awaitBalanceChange (originalBalance: string) {

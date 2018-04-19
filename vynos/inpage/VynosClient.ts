@@ -6,7 +6,7 @@ import {
   InitAccountRequest,
   ListChannelsRequest,
   LockWalletRequest,
-  RegisterHubRequest,
+  RegisterHubRequest, SetUsernameRequest,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
 import {PaymentChannel} from 'machinomy/dist/lib/payment_channel'
@@ -76,5 +76,9 @@ export default class VynosClient extends JsonRpcClient {
 
   lock (): Promise<void> {
     return this.call(LockWalletRequest.method)
+  }
+
+  setUsername (username: string): Promise<void> {
+    return this.call(SetUsernameRequest.method, username)
   }
 }

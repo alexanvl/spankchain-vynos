@@ -24,6 +24,7 @@ const Input: React.SFC<any> = function(props) {
         type={type}
         className={classnames(s.input, {
           [s.error]: errorMessage,
+          [s.inverse]: inverse
         })}
         placeholder={placeholder}
         disabled={disabled}
