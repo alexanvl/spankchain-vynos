@@ -101,6 +101,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       try {
         await startupController.registerHub(hubUrl, authRealm)
         server.broadcast(ReadyBroadcastEvent)
+        hubController.start()
         status = WorkerStatus.READY
         cb(null, null)
       } catch (e) {

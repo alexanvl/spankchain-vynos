@@ -47,6 +47,13 @@ window.addEventListener("load", function () {
     }
   }
 
+  const setNameButton = document.getElementById('set-name')
+  if (setNameButton) {
+    setNameButton.onclick = () => {
+      vynos.setUsername('falafel')
+    }
+  }
+
   const lockButton = document.getElementById('lock')
   if (lockButton) {
     lockButton.onclick = () => vynos.lock()

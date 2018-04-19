@@ -1,0 +1,45 @@
+.loaderRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loaderText {
+  margin-left: 0.5rem;
+  margin-top: -4px;
+}
+
+.spinnerWrapper {
+  width: 32px;
+  height: 32px;
+  text-transform: uppercase;
+  color: #B5B5B5;
+  line-height: 32px;
+  margin: 0 auto;
+  position: relative;
+  text-align: center;
+  font-weight: 300;
+}
+
+.spinner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 2px solid #dfdfdf;
+  border-top: 2px solid #9F9F9F;
+  border-radius: 50%;
+  animation: spCircRot .6s infinite linear;
+  width: 26px;
+  height: 26px;
+  display: block;
+}
+
+@-webkit-keyframes spCircRot {
+  from { -webkit-transform: rotate(0deg); }
+  to { -webkit-transform: rotate(359deg); }
+}
+
+@keyframes spCircRot {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(359deg); }
+}
