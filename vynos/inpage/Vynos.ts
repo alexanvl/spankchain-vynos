@@ -90,6 +90,10 @@ export default class Vynos extends EventEmitter {
       .catch((e: any) => this.emit('error', e))
   }
 
+  public setUsername(username: string): Promise<void> {
+    return this.client.setUsername(username)
+  }
+
   public hide() {
     this.requireReady()
     this.client.toggleFrame(false)

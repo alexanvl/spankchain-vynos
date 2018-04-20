@@ -47,7 +47,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     } catch (e) {
       if (e.message === CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS) {
         return this.setState({ error: e.message })
-      } 
+      }
 
       this.setState({
         error: 'Withdrawal failed. Please try again.',
@@ -123,7 +123,6 @@ class CardPage extends React.Component<StateProps, CardPageState> {
                 width={275}
                 cardTitle={this.props.title}
                 companyName={this.props.companyName}
-                name={this.props.username}
                 backgroundColor={this.props.backgroundColor}
                 color={this.props.textColor}
                 currencyValue={cardBalance}
