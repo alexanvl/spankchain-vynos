@@ -404,7 +404,7 @@ export default class MicropaymentsController extends AbstractController {
       throw new Error('Channel value cannot be negative.')
     }
 
-    if (remoteChan.spent.plus(diff).greaterThan(remoteChan.value)) {
+    if (localChan.spent.plus(diff).greaterThan(remoteChan.value)) {
       throw new Error('Insufficient funds remaining in channel.')
     }
 
