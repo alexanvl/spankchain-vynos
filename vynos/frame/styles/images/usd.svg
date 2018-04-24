@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="34px" height="20px" viewBox="0 0 34 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <title>FIN</title>
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="post-launch-updated-" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="FIN-flow-2" transform="translate(-619.000000, -322.000000)">
+            <g id="FIN" transform="translate(618.318396, 321.599999)">
+                <g>
+                    <text id="USD" font-family="CartographMonoCF-Heavy, Cartograph Mono CF" font-size="11.9792908" font-weight="600" line-spacing="13.1339214" fill="#797979">
+                        <tspan x="6.43271858" y="14.7248109">USD</tspan>
+                    </text>
+                    <rect id="Rectangle" stroke="#b5b5b5" stroke-width="1.70400002" opacity="0.75" x="1.63482297" y="1.36827406" width="31.4639469" height="17.9621425" rx="2.62415996"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
