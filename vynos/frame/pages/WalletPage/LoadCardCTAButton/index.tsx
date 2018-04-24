@@ -70,7 +70,7 @@ export class LoadCardCTAButton extends React.Component<Props> {
           disabled={isLoading}
           onClick={this.load}
         />
-        {isLoading ? <span className={s.small}>Estimated time: 30 seconds.</span> : null}
+        {isLoading ? <span className={s.small}>Estimated time: Up to 4 minutes.</span> : null}
       </div>
     )
   }

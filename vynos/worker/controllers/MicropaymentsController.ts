@@ -1,4 +1,4 @@
-import * as BigNumber from 'bignumber.js'
+import { BigNumber } from 'bignumber.js'
 import {PaymentChannel, PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import ChannelClaimStatusResponse, {
@@ -23,6 +23,7 @@ import requestJson, {request} from '../../frame/lib/request'
 import ChannelId from 'machinomy/dist/lib/ChannelId'
 import * as semaphore from 'semaphore'
 import Web3 = require('web3')
+import wait from '../../lib/wait'
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -237,7 +238,7 @@ export default class MicropaymentsController extends AbstractController {
     const hubUrl = await this.sharedStateView.getHubUrl()
     const machinomy = await this.getMachinomy()
     const channels = sharedState.channels[hubUrl]
-    const bigAmount = new BigNumber.BigNumber(amount)
+    const bigAmount = new BigNumber(amount)
 
     if (channels && channels.length) {
       await machinomy.deposit(channels[0].channelId, bigAmount)
@@ -253,30 +254,13 @@ export default class MicropaymentsController extends AbstractController {
         this.startScanningPendingChannelIds()
       }
 
-      let chan
-
       try {
-        chan = await machinomy.open(receiver, bigAmount, channelId)
-      } catch (err) {
+        await this.openChannel(receiver, bigAmount, channelId)
+      } finally {
+        // Remove channelId from watchers
         this.store.dispatch(actions.removePendingChannel(channelId))
-        throw err
       }
 
-      let attempts = 0
-
-      // ensure balances are the same
-      while (++attempts <= 15) {
-        const testChan = await machinomy.channelById(channelId)
-
-        if (testChan && testChan.value.eq(chan.value)) {
-          break
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 2000))
-      }
-
-      // Remove channelId from watchers
-      this.store.dispatch(actions.removePendingChannel(channelId))
       // Initialize channel with a 0 tip
       try {
         await this.initChannel()
@@ -430,6 +414,83 @@ export default class MicropaymentsController extends AbstractController {
     }
 
     return chans
+  }
+
+  /**
+   * Opens a channel. Does quite a bit of polling. Here's why:
+   *
+   * 1. truffle-contract has a hardcoded time limit of 4 minutes. When Infura has to handle
+   * a large number of pending transactions, it can take longer than that for a transaction
+   * to be broadcast to the blockchain. Thus, Truffle will throw an exception when the
+   * transaction actually succeeded, which can lead to locked up funds.
+   *
+   * We get around this buy polling for the channel's state for up to six minutes after
+   * truffle-contract throws a timed-out exception.
+   *
+   * 2. Different contract calls can be cached and thus return different values. To make
+   * sure that the channel's value is what we expect it to be, we poll the channelById
+   * method to make sure.
+   *
+   * @param {string} receiver
+   * @param {BigNumber} amount
+   * @param {string} channelId
+   * @returns {Promise<PaymentChannel>}
+   */
+  private async openChannel(receiver: string, amount: BigNumber, channelId: string): Promise<PaymentChannel> {
+    const machinomy = await this.getMachinomy()
+
+    let chan: PaymentChannel
+
+    // try to open channel
+    try {
+      chan = await machinomy.open(receiver, amount, channelId)
+    } catch (err) {
+      if (!err.message.match(/wasn't processed in \d+ seconds/i)) {
+        throw err
+      }
+
+      // poll if it times out
+      chan = await this.pollForOpenChannel(channelId);
+    }
+
+    let attempts = 5;
+
+    // ensure that the value is correct
+    while (--attempts >= 0) {
+      const testChan = await machinomy.channelById(channelId)
+
+      if (testChan && testChan.value.eq(chan.value)) {
+        break
+      }
+
+      await wait(1000);
+    }
+
+    return chan
+  }
+
+  /**
+   * Performs polling for the opening channel's status after Truffle
+   * throws its timeout error.
+   *
+   * @param {string} channelId
+   * @returns {Promise<PaymentChannel>}
+   */
+  private async pollForOpenChannel(channelId: string): Promise<PaymentChannel> {
+    const machinomy = await this.getMachinomy();
+    let attempts = 72;
+
+    while (--attempts >= 0) {
+      const chan = await machinomy.channelById(channelId)
+
+      if (chan) {
+        return chan
+      }
+
+      await wait(5000)
+    }
+
+    throw new Error('Timed out.')
   }
 
   private takeSem<T> (fn: () => T | Promise<T>): Promise<T> {
