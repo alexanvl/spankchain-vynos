@@ -1,5 +1,5 @@
 {
   "ropsten": "https://ropsten.infura.io/T1S8a0bkyrGD7jxJBgeH",
   "rinkeby": "https://public-geth-rinkeby.spankdev.com",
-  "main": "https://mainnet.infura.io/T1S8a0bkyrGD7jxJBgeH"
+  "main": "https://public-geth-mainnet.spankchain.com"
 }
