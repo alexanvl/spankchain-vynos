@@ -242,6 +242,7 @@ export default class MicropaymentsController extends AbstractController {
 
     if (channels && channels.length) {
       await machinomy.deposit(channels[0].channelId, bigAmount)
+      await this.syncMachinomyRedux()
     } else {
       const receiver = sharedState.branding.address
       // need to use fromascii here since machinomy stores the version of the
@@ -268,8 +269,6 @@ export default class MicropaymentsController extends AbstractController {
         console.error('Failed to send initial tip:', e)
       }
     }
-
-    await this.syncMachinomyRedux()
   }
 
   private async doPopulateChannels (): Promise<void> {
