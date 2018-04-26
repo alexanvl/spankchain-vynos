@@ -11,7 +11,7 @@ import entireBalance from '../../../lib/entireBalance'
 
 const s = require('./index.css')
 
-const finneyInverse = require('../../../components/CurrencyIcon/style.css').finneyInverse
+const finneyInverse = require('../../../components/CurrencyIcon/style.css').inverse
 
 export interface MapStateToProps {
   workerProxy: WorkerProxy

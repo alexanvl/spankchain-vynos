@@ -1,4 +1,4 @@
-import { BigNumber } from 'bignumber.js'
+import {BigNumber} from 'bignumber.js'
 import {PaymentChannel, PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import ChannelClaimStatusResponse, {
@@ -23,8 +23,8 @@ import AbstractController from './AbstractController'
 import requestJson, {request} from '../../frame/lib/request'
 import ChannelId from 'machinomy/dist/lib/ChannelId'
 import * as semaphore from 'semaphore'
-import Web3 = require('web3')
 import wait from '../../lib/wait'
+import Web3 = require('web3')
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -378,6 +378,19 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async startScanningPendingChannelIds (): Promise<void> {
+    if (!this.sem.available(1)) {
+      this.timeout = setTimeout(this.startScanningPendingChannelIds, 1000)
+      return
+    }
+
+    try {
+      await this.takeSem<void>(() => this.doScanPendingChannelIds())
+    } catch (e) {
+      console.error(e)
+    }
+  }
+
+  private async doScanPendingChannelIds () {
     this.timeout = null
     const machinomy = await this.getMachinomy()
     const state = this.store.getState()
@@ -388,7 +401,7 @@ export default class MicropaymentsController extends AbstractController {
       return
     }
 
-    pendingChannelIds.forEach(async channelId => {
+    const promises = pendingChannelIds.map(async (channelId) => {
       if (isLocked || !didInit) {
         return
       }
@@ -403,6 +416,7 @@ export default class MicropaymentsController extends AbstractController {
       }
     })
 
+    await Promise.all(promises)
     this.timeout = setTimeout(this.startScanningPendingChannelIds, 15000)
   }
 
@@ -487,7 +501,7 @@ export default class MicropaymentsController extends AbstractController {
    * @param {string} channelId
    * @returns {Promise<PaymentChannel>}
    */
-  private async openChannel(receiver: string, amount: BigNumber, channelId: string): Promise<PaymentChannel> {
+  private async openChannel (receiver: string, amount: BigNumber, channelId: string): Promise<PaymentChannel> {
     const machinomy = await this.getMachinomy()
 
     let chan: PaymentChannel
@@ -527,7 +541,7 @@ export default class MicropaymentsController extends AbstractController {
    * @param {string} channelId
    * @returns {Promise<PaymentChannel>}
    */
-  private async pollForOpenChannel(channelId: string): Promise<PaymentChannel> {
+  private async pollForOpenChannel (channelId: string): Promise<PaymentChannel> {
     const machinomy = await this.getMachinomy()
     let attempts = 72
 

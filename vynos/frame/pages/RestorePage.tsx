@@ -157,22 +157,24 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
         <TextBox className={style.passwordTextBox}>
           Enter a new password to encrypt your wallet.
         </TextBox>
-        <Input
-          placeholder="New Password"
-          type="password"
-          className={style.passwordInput}
-          onChange={this.handleChangePassword}
-          errorMessage={this.state.passwordError}
-          inverse
-        />
-        <Input
-          placeholder="Confirm Password"
-          type="password"
-          className={style.passwordInput}
-          onChange={this.handleChangePasswordConfirmation}
-          errorMessage={this.state.passwordConfirmationError}
-          inverse
-        />
+        <div className={style.restorePasswordWrapper}>
+          <Input
+            placeholder="New Password"
+            type="password"
+            className={style.passwordInput}
+            onChange={this.handleChangePassword}
+            errorMessage={this.state.passwordError}
+            inverse
+          />
+          <Input
+            placeholder="Confirm Password"
+            type="password"
+            className={style.passwordInput}
+            onChange={this.handleChangePasswordConfirmation}
+            errorMessage={this.state.passwordConfirmationError}
+            inverse
+          />
+        </div>
         <div className={style.funnelFooter}>
           <Button
             type="secondary"

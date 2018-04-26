@@ -201,7 +201,18 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
         this.props.workerProxy.web3.toWei(gasPrice, 'gwei')
       )
     } catch (e) {
-      console.error(e)
+      let balanceError = 'Failed to send Ether. Please try again.'
+
+      if (e.message.match(/insufficient funds/i)) {
+        balanceError = 'Not enough money to cover network fees. Please reduce the amount and try again.'
+      }
+
+      this.setState({
+        balanceError,
+        disableSend: false,
+        isConfirming: false
+      })
+
       return
     }
 
