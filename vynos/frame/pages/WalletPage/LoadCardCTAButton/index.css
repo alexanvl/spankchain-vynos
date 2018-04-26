@@ -65,9 +65,10 @@
 }
 
 .finneyUnitInText {
-  margin-left: 4px;
+  margin-left: 5px;
   margin-right: 3px;
-  height: 14px;
+  height: 17px;
+  margin-bottom: -2px;
 }
 
 @-webkit-keyframes spCircRot {
