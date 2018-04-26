@@ -10,6 +10,7 @@ import {
   GetSharedStateRequest,
   LockWalletRequest,
   PopulateChannelsRequest,
+  RecoverChannelRequest,
   RememberPageRequest,
   ResetRequest,
   RestoreWalletRequest,
@@ -115,5 +116,9 @@ export default class WorkerProxy extends JsonRpcClient {
 
   reset (): Promise<void> {
     return this.call(ResetRequest.method)
+  }
+
+  recoverChannel (channelId: string): Promise<void> {
+    return this.call(RecoverChannelRequest.method, channelId)
   }
 }

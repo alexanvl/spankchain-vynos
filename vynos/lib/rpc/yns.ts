@@ -96,3 +96,6 @@ export type SetUsernameRequest = RequestPayload
 
 export const ResetRequest = requestFactory<any[]>('reset')
 export type ResetRequest = RequestPayload
+
+export const RecoverChannelRequest = requestFactory<[string]>('recoverChannel')
+export type RecoverChannelRequest = RequestPayload
