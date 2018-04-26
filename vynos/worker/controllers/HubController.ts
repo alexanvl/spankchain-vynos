@@ -56,7 +56,7 @@ export default class HubController extends AbstractController implements Lifecyc
   async fetchHistory (): Promise<HistoryItem[]> {
     const hubUrl = await this.sharedStateView.getHubUrl()
     const address = (await this.sharedStateView.getAccounts())[0]
-    const history = await requestJson<HistoryItem[]>(`${hubUrl}/accounts/${address}/payments`, {
+    const history = await requestJson<HistoryItem[]>(`${hubUrl}/payments/${address}`, {
       credentials: 'include'
     })
 
