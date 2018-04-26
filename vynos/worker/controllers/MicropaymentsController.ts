@@ -177,11 +177,14 @@ export default class MicropaymentsController extends AbstractController {
      * method. Clicking withdraw uses the 'claim' method on the hub since claiming is instant.
      */
     await this.doBuy(0, {
-      streamId: 'probe',
-      streamName: 'Channel Open/Deposit Probe',
-      performerId: 'probe',
-      performerName: 'Channel Open/Deposit Probe',
-      performerAddress: '0x0000000000000000000000000000000000000000'
+      type: 'TIP',
+      fields: {
+        streamId: 'probe',
+        streamName: 'Channel Open/Deposit Probe',
+        performerId: 'probe',
+        performerName: 'Channel Open/Deposit Probe',
+      },
+      receiver: '0x0000000000000000000000000000000000000000'
     })
 
     await this.syncMachinomyRedux()
@@ -314,7 +317,8 @@ export default class MicropaymentsController extends AbstractController {
       gateway: `${hubUrl}/payments`,
       receiver,
       price,
-      meta: JSON.stringify(meta)
+      meta: '',
+      purchaseMeta: meta
     })
 
     await this.syncMachinomyRedux()

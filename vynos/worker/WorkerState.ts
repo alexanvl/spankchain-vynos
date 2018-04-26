@@ -34,7 +34,8 @@ export interface ChannelsState {
 }
 
 export interface HistoryItem {
-  payment: { channelId: string, sender: string, price: string }
+  payment: { channelId: string, sender: string, price: string, token: string }
+  type: string
   [key: string]: any
 }
 
