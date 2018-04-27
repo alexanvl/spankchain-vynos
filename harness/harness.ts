@@ -45,7 +45,7 @@ window.addEventListener('load', function () {
           performerId: 'abc-234',
           performerName: 'Butter Bubble'
         },
-        receiver: '0xbb1699d16368ebc13bdc29e6a1aad50a21be45eb'
+        receiver: '0x783111ea0a46518bc14fe45b38f5d34b280d5046'
       })
     }
   }
@@ -66,7 +66,7 @@ window.addEventListener('load', function () {
           productName: 'Widget',
           productSku: 'WIDG-123'
         },
-        receiver: '0xbb1699d16368ebc13bdc29e6a1aad50a21be45eb'
+        receiver: '0x783111ea0a46518bc14fe45b38f5d34b280d5046'
       })
     }
   }
