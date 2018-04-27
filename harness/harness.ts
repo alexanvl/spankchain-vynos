@@ -1,16 +1,16 @@
 import {VynosWindow} from '../vynos/window'
-import * as BigNumber from 'bignumber.js';
+import * as BigNumber from 'bignumber.js'
 import Vynos from '../vynos/inpage/Vynos'
 
-let _window = (window as VynosWindow);
+let _window = (window as VynosWindow)
 
-window.addEventListener("load", function () {
+window.addEventListener('load', function () {
   if (!document.getElementById('vynos-script')) {
     throw new Error('no script found.')
   }
 
   let vynos = new Vynos({
-    hubUrl: 'https://hub-staging.spankdev.com',
+    hubUrl: 'http://localhost:8080',
     authRealm: 'SpankChain',
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
     window: _window
@@ -38,11 +38,14 @@ window.addEventListener("load", function () {
   if (tipButton) {
     tipButton.onclick = () => {
       vynos.buy(new BigNumber.BigNumber(810000000000), {
-        streamId: 'abc-123',
-        streamName: 'SpankCam',
-        performerId: 'abc-234',
-        performerName: 'Butter Bubble',
-        performerAddress: '0x0108d76118d97b88aa40167064cb242fa391effa'
+        type: 'TIP',
+        fields: {
+          streamId: 'abc-123',
+          streamName: 'SpankCam',
+          performerId: 'abc-234',
+          performerName: 'Butter Bubble'
+        },
+        receiver: '0x0108d76118d97b88aa40167064cb242fa391effa'
       })
     }
   }
@@ -51,6 +54,20 @@ window.addEventListener("load", function () {
   if (setNameButton) {
     setNameButton.onclick = () => {
       vynos.setUsername('falafel')
+    }
+  }
+
+  const buyButton = document.getElementById('buy')
+  if (buyButton) {
+    buyButton.onclick = () => {
+      vynos.buy(new BigNumber.BigNumber(8100000000000), {
+        type: 'PURCHASE',
+        fields: {
+          productName: 'Widget',
+          productSku: 'WIDG-123'
+        },
+        receiver: '0x0108d76118d97b88aa40167064cb242fa391effa'
+      })
     }
   }
 
