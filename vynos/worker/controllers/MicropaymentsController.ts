@@ -260,16 +260,13 @@ export default class MicropaymentsController extends AbstractController {
 
       try {
         await this.openChannel(receiver, bigAmount, channelId)
+        await this.initChannel()
+      } catch (e) {
+        console.error('Failed to open channel:', e)
+        throw e
       } finally {
         // Remove channelId from watchers
         this.store.dispatch(actions.removePendingChannel(channelId))
-      }
-
-      // Initialize channel with a 0 tip
-      try {
-        await this.initChannel()
-      } catch (e) {
-        console.error('Failed to send initial tip:', e)
       }
     }
   }
@@ -480,7 +477,21 @@ export default class MicropaymentsController extends AbstractController {
         break
       }
 
-      await wait(1000)
+      await wait(250)
+    }
+
+    attempts = 5
+
+    // ensure that the channel exists in the channels array
+    while (--attempts >= 0) {
+      const chans = await machinomy.channels()
+      const chanExists = chans.find((c: PaymentChannel) => c.channelId === channelId)
+
+      if (chanExists) {
+        break
+      }
+
+      await wait(250)
     }
 
     return chan
