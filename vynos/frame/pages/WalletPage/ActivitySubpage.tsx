@@ -258,14 +258,16 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
             <div className={s.walletActivityItem}>{item.fields.streamName}</div>
           </T.TableCell>
           <T.TableCell className={s.walletActivityPrice}>
-            <div className={s.walletActivitySubtract}>-</div>
-            <div className={s.walletActivitySubtractAmount}>
-              <Currency
-                amount={item.payment.price}
-                outputType={CurrencyType.FINNEY}
-                unitClassName={s.activityFinneySign}
-                showUnit
-              />
+            <div clasName={s.walletActivitySubtractWrapper}>
+              <div className={s.walletActivitySubtract}>-</div>
+              <div className={s.walletActivitySubtractAmount}>
+                <Currency
+                  amount={item.payment.price}
+                  outputType={CurrencyType.FINNEY}
+                  unitClassName={s.activityFinneySign}
+                  showUnit
+                />
+              </div>
             </div>
           </T.TableCell>
           <T.TableCell />
