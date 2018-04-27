@@ -175,14 +175,16 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
           <div className={s.walletActivityDescription}>{item.fields.productSku}</div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityPrice}>
-          <div className={s.walletActivitySubtract}>-</div>
-          <div className={s.walletActivitySubtractAmount}>
-            <Currency
-              amount={item.payment.price}
-              outputType={CurrencyType.FINNEY}
-              unitClassName={s.activityFinneySign}
-              showUnit
-            />
+          <div className={s.walletActivitySubtractWrapper}>
+            <div className={s.walletActivitySubtract}>-</div>
+            <div className={s.walletActivitySubtractAmount}>
+              <Currency
+                amount={item.payment.price}
+                outputType={CurrencyType.FINNEY}
+                unitClassName={s.activityFinneySign}
+                showUnit
+              />
+            </div>
           </div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityAction} />
@@ -224,14 +226,16 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
           <div className={s.walletActivityDescription}>{firstInGroup.fields.performerName}</div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityPrice}>
-          <div className={s.walletActivitySubtract}>-</div>
-          <div className={s.walletActivitySubtractAmount}>
-            <Currency
-              amount={total}
-              outputType={CurrencyType.FINNEY}
-              unitClassName={s.activityFinneySign}
-              showUnit
-            />
+          <div className={s.walletActivitySubtractWrapper}>
+            <div className={s.walletActivitySubtract}>-</div>
+            <div className={s.walletActivitySubtractAmount}>
+              <Currency
+                amount={total}
+                outputType={CurrencyType.FINNEY}
+                unitClassName={s.activityFinneySign}
+                showUnit
+              />
+            </div>
           </div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityAction}>
