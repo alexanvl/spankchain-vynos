@@ -476,7 +476,8 @@
   color: transparent;
   margin: 2px;
   background-image: url('../../styles/images/fin-duo-pink.svg');
-  height: 13px;
+  height: 14px;
+  background-size: contain;
 }
 
 .walletActivitySubtractAmount {
