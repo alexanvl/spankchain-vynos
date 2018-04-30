@@ -5200,9 +5200,9 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@http://github.com/mslipper/machinomy#36b9c1e956e6ca71da5876fe0bd20f1cd9b26773":
-  version "1.7.8"
-  resolved "http://github.com/mslipper/machinomy#36b9c1e956e6ca71da5876fe0bd20f1cd9b26773"
+"machinomy@http://github.com/mslipper/machinomy#57ce8d18b8174e17898cc3d153076030785b2b39":
+  version "1.7.11"
+  resolved "http://github.com/mslipper/machinomy#57ce8d18b8174e17898cc3d153076030785b2b39"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
     "@machinomy/types-safe-buffer" "^0.0.1"
@@ -6622,6 +6622,24 @@ postcss@^6.0.0, postcss@^6.0.1, postcss@^6.0.11, postcss@^6.0.17, postcss@^6.0.1
     chalk "^2.3.2"
     source-map "^0.6.1"
     supports-color "^5.3.0"
+
+postgres-array@~1.0.0:
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/postgres-array/-/postgres-array-1.0.2.tgz#8e0b32eb03bf77a5c0a7851e0441c169a256a238"
+
+postgres-bytea@~1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/postgres-bytea/-/postgres-bytea-1.0.0.tgz#027b533c0aa890e26d172d47cf9ccecc521acd35"
+
+postgres-date@~1.0.0:
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/postgres-date/-/postgres-date-1.0.3.tgz#e2d89702efdb258ff9d9cee0fe91bd06975257a8"
+
+postgres-interval@^1.1.0:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/postgres-interval/-/postgres-interval-1.1.1.tgz#acdb0f897b4b1c6e496d9d4e0a853e1c428f06f0"
+  dependencies:
+    xtend "^4.0.0"
 
 prefix-style@2.0.1:
   version "2.0.1"
