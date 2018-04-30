@@ -7,6 +7,7 @@ import * as qr from 'qr-image'
 import CTAInput from "../../components/CTAInput/index"
 import Input from "../../components/Input/index"
 import Button from "../../components/Button/index"
+import {Link} from 'react-router-dom'
 
 const s = require('./ReceiveEther.css')
 
@@ -38,7 +39,7 @@ function renderQR(address: string|null) {
 
 export class ReceiveEther extends React.Component<Props, State> {
   timeout: any
-  
+
   state = {
     isCopied: false,
   }
@@ -107,6 +108,13 @@ export class ReceiveEther extends React.Component<Props, State> {
         <div className={s.qrWrapper}>
           <div className={s.qrDescription}>Only send Ether (ETH) to this address.</div>
           {renderQR(address)}
+        </div>
+        <div className={s.recoverText}>
+          <Link
+            to="/wallet/recoverChannels"
+          >
+            Recover Channels (Advanced)
+          </Link>
         </div>
       </div>
     )

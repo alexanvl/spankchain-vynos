@@ -476,7 +476,8 @@
   color: transparent;
   margin: 2px;
   background-image: url('../../styles/images/fin-duo-pink.svg');
-  height: 13px;
+  height: 14px;
+  background-size: contain;
 }
 
 .walletActivitySubtractAmount {
@@ -578,6 +579,11 @@
 .finneyUnit {
   margin: 2px 4px 0 0;
   display: inline-block;
+}
+
+.walletActivitySubtractWrapper {
+  display: flex;
+  flex-wrap: nowrap;
 }
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {

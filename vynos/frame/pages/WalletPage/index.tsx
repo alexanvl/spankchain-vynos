@@ -135,6 +135,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
           render={() => <SendReceiveWrapper address={address!} balance={this.props.walletBalance} />}
         />
         <Route
+          exact
           path="/wallet"
           render={() => {
             if (this.state.isPopulatingChannels || this.state.channelPopulationError) {
