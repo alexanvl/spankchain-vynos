@@ -17,6 +17,7 @@ import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 import {WorkerReadyBroadcastEvent} from '../lib/rpc/WorkerReadyBroadcast'
 import {SharedStateBroadcastEvent} from '../lib/rpc/SharedStateBroadcast'
 import {ResetBroadcastEvent} from '../lib/rpc/ResetBroadcast'
+import * as metrics from './metrics'
 
 export default class VynosClient extends JsonRpcClient {
   workerReady: boolean = false
@@ -27,6 +28,7 @@ export default class VynosClient extends JsonRpcClient {
     this.onReset = this.onReset.bind(this)
     this.once(WorkerReadyBroadcastEvent, this.onWorkerReady)
     this.on(ResetBroadcastEvent, this.onReset)
+    this.on('__METRICS__', metrics.logMetrics)
   }
 
   onWorkerReady () {
