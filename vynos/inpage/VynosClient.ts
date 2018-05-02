@@ -6,10 +6,10 @@ import {
   InitAccountRequest,
   ListChannelsRequest,
   LockWalletRequest,
-  RegisterHubRequest,
+  RegisterHubRequest, SetUsernameRequest,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
-import {PaymentChannel} from 'machinomy/dist/lib/channel'
+import {PaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../lib/VynosBuyResponse'
 import {SharedState} from '../worker/WorkerState'
 import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
@@ -17,6 +17,7 @@ import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 import {WorkerReadyBroadcastEvent} from '../lib/rpc/WorkerReadyBroadcast'
 import {SharedStateBroadcastEvent} from '../lib/rpc/SharedStateBroadcast'
 import {ResetBroadcastEvent} from '../lib/rpc/ResetBroadcast'
+import {logMetrics} from './metrics'
 
 export default class VynosClient extends JsonRpcClient {
   workerReady: boolean = false
@@ -27,6 +28,7 @@ export default class VynosClient extends JsonRpcClient {
     this.onReset = this.onReset.bind(this)
     this.once(WorkerReadyBroadcastEvent, this.onWorkerReady)
     this.on(ResetBroadcastEvent, this.onReset)
+    this.on('__METRICS__', logMetrics)
   }
 
   onWorkerReady () {
@@ -76,5 +78,9 @@ export default class VynosClient extends JsonRpcClient {
 
   lock (): Promise<void> {
     return this.call(LockWalletRequest.method)
+  }
+
+  setUsername (username: string): Promise<void> {
+    return this.call(SetUsernameRequest.method, username)
   }
 }

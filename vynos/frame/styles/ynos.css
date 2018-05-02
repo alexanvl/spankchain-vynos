@@ -632,11 +632,18 @@ Channels page
   display: inline-flex !important;
 }
 
-.loginButton {
-  background-image: url(./images/arrow-right-pink.svg);
+.loginButton, .restoreButton {
   height: 1rem;
   background-repeat: no-repeat;
   background-size: 100% 1rem;
+}
+
+.loginButton {
+  background-image: url(./images/arrow-right-white.svg)
+}
+
+.restoreButton {
+  background-image: url(./images/arrow-right-pink.svg);
 }
 
 .content {
@@ -705,7 +712,7 @@ Channels page
 }
 
 .passwordInput {
-  width: 350px;
+  width: 100%;
 }
 
 .funnelFooter {
@@ -854,7 +861,7 @@ Channels page
 }
 
 .resetText {
-  color: white;
+  color: #797979;
   font-size: 0.6rem;
   text-align: center;
   margin-top: 1rem;
@@ -863,6 +870,10 @@ Channels page
 .resetText span {
   cursor: pointer;
   font-family: CartographMonoCF;
+}
+
+.restorePasswordWrapper {
+  width: 320px;
 }
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {

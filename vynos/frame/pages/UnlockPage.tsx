@@ -2,22 +2,23 @@ import * as React from 'react'
 import {ChangeEvent, FormEvent} from 'react'
 import {connect} from 'react-redux'
 import WorkerProxy from '../WorkerProxy'
-import postMessage from '../lib/postMessage'
 import {FrameState} from '../redux/FrameState'
 import RestorePage from './RestorePage'
 import Button from '../components/Button/index'
 import TextBox from '../components/TextBox/index'
 import Input from '../components/Input/index'
-import WalletCard from '../components/WalletCard/index'
-import WalletMiniCard from '../components/WalletMiniCard/index'
-import OnboardingContainer from '../pages/InitPage/OnboardingContainer'
 import {RouteComponentProps, withRouter} from 'react-router'
-import _ = require('lodash')
 import Submittable from '../components/Submittable'
+import _ = require('lodash')
+import WalletCard from '../components/WalletCard'
+import * as classnames from 'classnames';
+import {BrandingState} from '../../worker/WorkerState'
 
 const style = require('../styles/ynos.css')
+const walletStyle = require('./WalletPage/styles.css')
+const pageStyle = require('./UnlockPage.css')
 
-export interface StateProps {
+export interface StateProps extends BrandingState {
   workerProxy: WorkerProxy
 }
 
@@ -117,56 +118,68 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     }
 
     return (
-      <OnboardingContainer totalSteps={0} currentStep={0}>
-        <div className={style.content}>
-          <div className={style.funnelTitle}>Unlock your SpankCard</div>
-          <TextBox className={style.passwordTextBox}>
-            We see that you already have a SpankCard. Enter password to unlock and login.
-          </TextBox>
-          <Submittable onSubmit={this.handleSubmit}>
-            <Input
-              placeholder="Password"
-              type="password"
-              className={style.passwordInput}
-              onChange={this.handleChangePassword}
-              errorMessage={this.state.passwordError}
-              autoFocus
-              inverse
+      <div className={walletStyle.walletWrapper}>
+        <div className={classnames(walletStyle.walletRow, pageStyle.walletCardWrapper)}>
+          <div className={pageStyle.close} onClick={this.closeView} />
+          <div className={pageStyle.walletCard}>
+            <WalletCard
+              cardTitle={this.props.title}
+              companyName={this.props.companyName}
+              backgroundColor={this.props.backgroundColor}
+              color={this.props.textColor}
+              className={walletStyle.walletSpankCard}
             />
-            <div className={style.funnelFooter}>
-              <Button
-                type="secondary"
-                content="Restore SpankWallet"
-                onClick={this.doDisplayRestore}
-                isInverse
-                isMini
+          </div>
+        </div>
+        <div className={classnames(walletStyle.walletRow, pageStyle.afterWalletCardWrapper)}>
+          <div className={style.content}>
+            <div className={pageStyle.header}>Unlock your SpankCard</div>
+            <TextBox className={style.passwordTextBox} isInverse>
+              We see that you already have a SpankCard. Enter your password to unlock and login.
+            </TextBox>
+            <Submittable onSubmit={this.handleSubmit}>
+              <Input
+                placeholder="Password"
+                type="password"
+                className={style.passwordInput}
+                onChange={this.handleChangePassword}
+                errorMessage={this.state.passwordError}
+                autoFocus
               />
-              <Button
-                content={() => (
-                  this.state.loading ? 'Unlocking...' : <div className={style.loginButton} />
-                )}
-                onClick={this.handleSubmit}
-                disabled={this.state.loading}
-                isInverse
-                isMini
-                isSubmit
-              />
-            </div>
-            <div className={style.resetText}>
+              <div className={style.funnelFooter}>
+                <Button
+                  type="secondary"
+                  content="Restore SpankWallet"
+                  onClick={this.doDisplayRestore}
+                  isMini
+                />
+                <Button
+                  content={() => (
+                    this.state.loading ? 'Unlocking...' : <div className={style.loginButton} />
+                  )}
+                  onClick={this.handleSubmit}
+                  disabled={this.state.loading}
+                  isMini
+                  isSubmit
+                />
+              </div>
+              <div className={style.resetText}>
               <span onClick={this.onClickReset}>
                 {this.state.isResetting ? 'Are you sure? This will permanently erase your wallet.' : 'Reset'}
               </span>
-            </div>
-          </Submittable>
+              </div>
+            </Submittable>
+          </div>
         </div>
-      </OnboardingContainer>
+      </div>
     )
   }
 }
 
 function mapStateToProps (state: FrameState): StateProps {
   return {
-    workerProxy: state.temp.workerProxy
+    workerProxy: state.temp.workerProxy,
+    ...state.shared.branding
   }
 }
 

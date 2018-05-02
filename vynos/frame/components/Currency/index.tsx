@@ -4,7 +4,7 @@ import * as classnames from 'classnames'
 import WorkerProxy from '../../WorkerProxy'
 import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
-import FinneySign from '../FinneySign/index'
+import CurrencyIcon from '../CurrencyIcon/index'
 
 const s = require('./style.css')
 
@@ -17,6 +17,7 @@ export enum CurrencyType {
 
 export interface StateProps {
   workerProxy: WorkerProxy
+  exchangeRate: BigNumber.BigNumber|null
 }
 
 export interface CurrencyProps extends StateProps {
@@ -56,7 +57,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
         ? amount
         : new BigNumber.BigNumber(this.props.workerProxy.web3.fromWei(amount, 'ether'))
 
-      ret = eth.mul(380).toFixed(decimals).toString()
+      ret = this.props.exchangeRate ? eth.mul(this.props.exchangeRate).toFixed(decimals).toString() : '--'
     } else if (outputType === CurrencyType.FINNEY) {
       const finney = new BigNumber.BigNumber(this.props.workerProxy.web3.fromWei(amount, 'finney'))
       ret = finney.toNumber().toFixed(decimals).toString()
@@ -82,7 +83,7 @@ function renderUnit(showUnit?: boolean, outputType?: CurrencyType, unitClassName
   }
 
   if (outputType === CurrencyType.FINNEY) {
-    return <FinneySign className={unitClassName}/>
+    return <CurrencyIcon className={unitClassName} />
   }
 
   return ''
@@ -90,7 +91,8 @@ function renderUnit(showUnit?: boolean, outputType?: CurrencyType, unitClassName
 
 function mapStateToProps (state: FrameState, ownProps: any): StateProps {
   return {
-    workerProxy: state.temp.workerProxy
+    workerProxy: state.temp.workerProxy,
+    exchangeRate: state.shared.exchangeRate ? new BigNumber.BigNumber(state.shared.exchangeRate) : null
   }
 }
 

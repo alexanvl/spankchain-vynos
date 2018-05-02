@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { BigNumber } from 'bignumber.js';
 import CTAInput from '../../components/CTAInput/index'
 import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
@@ -6,17 +7,17 @@ import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
 import {BrandingState} from '../../../worker/WorkerState'
 import {cardBalance} from '../../redux/selectors/cardBalance'
-import * as BigNumber from 'bignumber.js';
 import WorkerProxy from '../../WorkerProxy'
 import {CLOSE_CHANNEL_ERRORS} from '../../../lib/ChannelClaimStatusResponse'
 import Currency, {CurrencyType} from '../../components/Currency/index'
 import entireBalance from '../../lib/entireBalance'
+import CurrencyIcon from '../../components/CurrencyIcon/index'
 
 const s = require('./styles.css')
 
 export interface StateProps extends BrandingState {
   walletBalance: string
-  cardBalance: BigNumber.BigNumber
+  cardBalance: BigNumber
   isWithdrawing: boolean
   workerProxy: WorkerProxy
   activeWithdrawalError: string|null
@@ -25,6 +26,7 @@ export interface StateProps extends BrandingState {
 export interface CardPageState {
   isRefilling: boolean
   error: string
+  showFinUsdConversionRate: boolean
 }
 
 class CardPage extends React.Component<StateProps, CardPageState> {
@@ -33,8 +35,11 @@ class CardPage extends React.Component<StateProps, CardPageState> {
 
     this.state = {
       isRefilling: false,
-      error: ''
+      error: '',
+      showFinUsdConversionRate: false
     }
+
+    this.toggleShowFinConversionRate = this.toggleShowFinConversionRate.bind(this)
   }
 
   async componentDidMount() {
@@ -47,7 +52,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     } catch (e) {
       if (e.message === CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS) {
         return this.setState({ error: e.message })
-      } 
+      }
 
       this.setState({
         error: 'Withdrawal failed. Please try again.',
@@ -60,7 +65,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
       isRefilling: true
     })
 
-    const amount = await entireBalance(this.props.workerProxy, new BigNumber.BigNumber(this.props.walletBalance!))
+    const amount = await entireBalance(this.props.workerProxy, new BigNumber(this.props.walletBalance!))
 
     try {
       await this.props.workerProxy.deposit(amount)
@@ -76,6 +81,12 @@ class CardPage extends React.Component<StateProps, CardPageState> {
 
     this.setState({
       isRefilling: false
+    })
+  }
+
+  toggleShowFinConversionRate (showFinUsdConversionRate: boolean) {
+    this.setState({
+      showFinUsdConversionRate
     })
   }
 
@@ -123,11 +134,11 @@ class CardPage extends React.Component<StateProps, CardPageState> {
                 width={275}
                 cardTitle={this.props.title}
                 companyName={this.props.companyName}
-                name={this.props.username}
                 backgroundColor={this.props.backgroundColor}
                 color={this.props.textColor}
                 currencyValue={cardBalance}
                 className={s.walletSpankCard}
+                onToggleUsdFinney={this.toggleShowFinConversionRate}
               />
             </div>
             <div className={s.walletSpankCardActions}>
@@ -139,6 +150,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
                 isMini
               />
               <Button to="/wallet/activity" type="secondary" content="Activity" isMini />
+              {this.renderFinUsdConversionRate()}
             </div>
           </div>
         </div>
@@ -160,6 +172,30 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             ? this.state.error
             : activeWithdrawalError
         }
+      </div>
+    )
+  }
+
+  renderFinUsdConversionRate () {
+    if (!this.state.showFinUsdConversionRate) {
+      return
+    }
+
+    const fin = new BigNumber(this.props.workerProxy.web3.toWei(1, 'finney'))
+
+    return (
+      <div className={s.walletSpankCardConversionRate}>
+        <div className={s.walletSpankCardConversionRateFinTag}>
+          <CurrencyIcon alt /> 1
+        </div>
+        =
+        <Currency
+        amount={fin}
+        inputType={CurrencyType.WEI}
+        outputType={CurrencyType.USD}
+        className={s.walletSpankCardConversionRateAmount}
+        showUnit
+      />
       </div>
     )
   }

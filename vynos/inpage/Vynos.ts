@@ -6,6 +6,7 @@ import {SharedState} from '../worker/WorkerState'
 import * as BigNumber from 'bignumber.js';
 import Web3 = require('web3')
 import VynosBuyResponse from '../lib/VynosBuyResponse'
+import * as metrics from './metrics'
 
 export interface Balance {
   balanceInWei: string
@@ -90,6 +91,10 @@ export default class Vynos extends EventEmitter {
       .catch((e: any) => this.emit('error', e))
   }
 
+  public setUsername(username: string): Promise<void> {
+    return this.client.setUsername(username)
+  }
+
   public hide() {
     this.requireReady()
     this.client.toggleFrame(false)
@@ -115,6 +120,10 @@ export default class Vynos extends EventEmitter {
 
     this.initializing = this.doInit()
     return this.initializing
+  }
+
+  public setMetricLogFunc(func: (metrics: metrics.Metric[]) => void) {
+    metrics.setLogFunc(func)
   }
 
   private async doInit() {

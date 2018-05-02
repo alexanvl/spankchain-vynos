@@ -11,7 +11,7 @@ import entireBalance from '../../../lib/entireBalance'
 
 const s = require('./index.css')
 
-const finneyInverse = require('../../../components/FinneySign/style.css').finneyInverse
+const finneyInverse = require('../../../components/CurrencyIcon/style.css').inverse
 
 export interface MapStateToProps {
   workerProxy: WorkerProxy
@@ -70,7 +70,7 @@ export class LoadCardCTAButton extends React.Component<Props> {
           disabled={isLoading}
           onClick={this.load}
         />
-        {isLoading ? <span className={s.small}>Estimated time: 30 seconds.</span> : null}
+        {isLoading ? <span className={s.small}>Estimated time: Up to 4 minutes.</span> : null}
       </div>
     )
   }

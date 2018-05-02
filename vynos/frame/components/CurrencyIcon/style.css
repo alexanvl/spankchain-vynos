@@ -1,0 +1,26 @@
+.currency {
+  width: 29px;
+  height: 17px;
+  text-indent: -999999px;
+  background-size: contain;
+}
+
+.finney {
+  background: transparent url('../../styles/images/fin-duo.svg') no-repeat center center;
+}
+
+.usd {
+  background: transparent url('../../styles/images/usd.svg') no-repeat center center;
+}
+
+.finney.inverse {
+  background: transparent url('../../styles/images/fin-duo-white.svg') no-repeat center center;
+}
+
+.finney.alt {
+  background: transparent url('../../styles/images/fin-duo-pink.svg') no-repeat center center;
+}
+
+.usd.inverse {
+  background: transparent url('../../styles/images/usd-white.svg') no-repeat center center;
+}

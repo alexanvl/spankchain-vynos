@@ -6,3 +6,8 @@
   border-radius: 8px;
   font-size: .9rem;
 }
+
+.inverse {
+  border: 1px solid #dedede;
+  color: #797979
+}

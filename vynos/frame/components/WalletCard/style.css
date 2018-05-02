@@ -21,6 +21,12 @@
   background-repeat: no-repeat;
   background-size: 140px;
   background-position: center;
+  animation: spin 30s infinite linear;
+}
+
+@keyframes spin {
+  0% { transform:rotate(0deg); }
+  100% { transform:rotate(360deg); }
 }
 
 .top {
@@ -61,8 +67,27 @@
   font-family: CartographMonoCF;
 }
 
-.finneySign {
+.currencyIcon {
   margin: .35rem;
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.initial, .initial.animating {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.animating {
+  animation: slideDown 200ms;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideDown {
+  100% {
+    opacity: 1;
+    transform: translateY(0)
+  }
 }
 
 .currency {

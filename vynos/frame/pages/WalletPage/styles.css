@@ -41,6 +41,38 @@
   z-index: 200;
 }
 
+.walletSpankCardConversionRate {
+  width: 100%;
+  margin-top: auto;
+  display: flex;
+  color: #797979;
+  align-items: center;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.walletSpankCardConversionRateFinTag {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  width: 60px;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  padding: 3px 0;
+  margin-right: 10px;
+}
+
+.walletSpankCardConversionRateFinTag > div {
+  margin-right: 4px;
+}
+
+.walletSpankCardConversionRateAmount {
+  font-family: CartographMonoCF, monospace;
+  font-size: 1.2rem !important;
+  margin-left: 10px;
+}
+
 .walletRow {
   display: flex;
   align-items: stretch;
@@ -443,8 +475,9 @@
 .walletActivitySubtractAmount .activityFinneySign {
   color: transparent;
   margin: 2px;
-  background-image: url('../../styles/images/fin-duo-red.svg');
-  height: 13px;
+  background-image: url('../../styles/images/fin-duo-pink.svg');
+  height: 14px;
+  background-size: contain;
 }
 
 .walletActivitySubtractAmount {
@@ -546,6 +579,11 @@
 .finneyUnit {
   margin: 2px 4px 0 0;
   display: inline-block;
+}
+
+.walletActivitySubtractWrapper {
+  display: flex;
+  flex-wrap: nowrap;
 }
 
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {

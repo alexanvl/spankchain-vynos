@@ -96,7 +96,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
   }
 
   validateBalance = () => {
-    const {walletBalance} = this.props
+    const walletBalance = new BigNumber.BigNumber(this.props.walletBalance!)
     const {balance, isBalanceDirty} = this.state
 
     if (!isBalanceDirty || !walletBalance) {
@@ -110,14 +110,16 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
       return false
     }
 
-    if (!Number(balance)) {
+    const numBalance = new BigNumber.BigNumber(this.props.workerProxy.web3.toWei(balance, 'finney'))
+
+    if (numBalance.eq(0)) {
       this.setState({
         balanceError: 'Balance cannot be 0'
       })
       return false
     }
 
-    if (walletBalance < balance) {
+    if (walletBalance.lessThan(numBalance)) {
       this.setState({
         balanceError: 'You do not have enough ether'
       })
@@ -199,7 +201,18 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
         this.props.workerProxy.web3.toWei(gasPrice, 'gwei')
       )
     } catch (e) {
-      console.error(e)
+      let balanceError = 'Failed to send Ether. Please try again.'
+
+      if (e.message.match(/insufficient funds/i)) {
+        balanceError = 'Not enough money to cover network fees. Please reduce the amount and try again.'
+      }
+
+      this.setState({
+        balanceError,
+        disableSend: false,
+        isConfirming: false
+      })
+
       return
     }
 

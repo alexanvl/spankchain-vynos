@@ -1,10 +1,10 @@
 import {VynosWindow} from '../vynos/window'
-import * as BigNumber from 'bignumber.js';
+import * as BigNumber from 'bignumber.js'
 import Vynos from '../vynos/inpage/Vynos'
 
-let _window = (window as VynosWindow);
+let _window = (window as VynosWindow)
 
-window.addEventListener("load", function () {
+window.addEventListener('load', function () {
   if (!document.getElementById('vynos-script')) {
     throw new Error('no script found.')
   }
@@ -37,12 +37,50 @@ window.addEventListener("load", function () {
   const tipButton = document.getElementById('tip')
   if (tipButton) {
     tipButton.onclick = () => {
-      vynos.buy(new BigNumber.BigNumber(81000000000000000), {
-        streamId: 'abc-123',
-        streamName: 'SpankCam',
-        performerId: 'abc-234',
-        performerName: 'Butter Bubble',
-        performerAddress: '0x0108d76118d97b88aa40167064cb242fa391effa'
+      vynos.buy(new BigNumber.BigNumber(810000000000), {
+        type: 'TIP',
+        fields: {
+          streamId: 'abc-123',
+          streamName: 'SpankCam',
+          performerId: 'abc-234',
+          performerName: 'Butter Bubble'
+        },
+        receiver: '0x783111ea0a46518bc14fe45b38f5d34b280d5046'
+      })
+    }
+  }
+
+  const setNameButton = document.getElementById('set-name')
+  if (setNameButton) {
+    setNameButton.onclick = () => {
+      vynos.setUsername('falafel')
+    }
+  }
+
+  const buyButton = document.getElementById('buy')
+  if (buyButton) {
+    buyButton.onclick = () => {
+      vynos.buy(new BigNumber.BigNumber(8100000000000), {
+        type: 'PURCHASE',
+        fields: {
+          productName: 'Widget',
+          productSku: 'WIDG-123'
+        },
+        receiver: '0x783111ea0a46518bc14fe45b38f5d34b280d5046'
+      })
+    }
+  }
+
+  const buyVideoButton = document.getElementById('buy-video')
+  if (buyVideoButton) {
+    buyVideoButton.onclick = () => {
+      vynos.buy(new BigNumber.BigNumber(8100000000000), {
+        type: 'PURCHASE',
+        fields: {
+          productName: 'Pop Music Video',
+          productSku: 'NA-123-POP'
+        },
+        receiver: '0xBB1699d16368EBC13BDc29e6A1aaD50A21BE45EB'
       })
     }
   }

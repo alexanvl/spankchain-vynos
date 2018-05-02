@@ -18,6 +18,7 @@ import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 
 const s = require('./styles.css')
+const st = require('./index.css')
 
 export interface WalletPageStateProps {
   name: string
@@ -29,7 +30,36 @@ export interface WalletPageStateProps {
   cardBalance: BigNumber.BigNumber
 }
 
-export class WalletPage extends React.Component<WalletPageStateProps> {
+export interface WalletPageState {
+  isPopulatingChannels: boolean
+  channelPopulationError: string
+}
+
+export class WalletPage extends React.Component<WalletPageStateProps, WalletPageState> {
+  constructor(props: WalletPageStateProps) {
+    super(props)
+
+    this.state = {
+      isPopulatingChannels: true,
+      channelPopulationError: ''
+    }
+  }
+
+  async componentDidMount() {
+    let channelPopulationError = ''
+
+    try {
+      await this.props.workerProxy.populateChannels()
+    } catch (e) {
+      channelPopulationError = 'Failed to load wallet. Please check your internet connection and refresh your browser.'
+    }
+
+    this.setState({
+      isPopulatingChannels: false,
+      channelPopulationError
+    })
+  }
+
   closeFrame = () => {
     const { workerProxy } = this.props
     workerProxy.toggleFrame(false)
@@ -60,7 +90,13 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
         />
         <Route
           path="/wallet"
-          component={MainEntry}
+          render={() => {
+            if (this.state.isPopulatingChannels || this.state.channelPopulationError) {
+              return this.renderLoadingOrError()
+            }
+
+            return <MainEntry />
+          }}
         />
       </Switch>
     )
@@ -99,8 +135,15 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
           render={() => <SendReceiveWrapper address={address!} balance={this.props.walletBalance} />}
         />
         <Route
+          exact
           path="/wallet"
-          component={LoadCardCTAButton}
+          render={() => {
+            if (this.state.isPopulatingChannels || this.state.channelPopulationError) {
+              return null
+            }
+
+            return <LoadCardCTAButton />
+          }}
         />
       </Switch>
     )
@@ -117,6 +160,29 @@ export class WalletPage extends React.Component<WalletPageStateProps> {
         <div className={s.walletContentContainer}>
           {this.renderMainPage()}
           {this.renderSubPage()}
+        </div>
+      </div>
+    )
+  }
+
+  renderLoadingOrError () {
+    if (this.state.channelPopulationError) {
+      return (
+        <div className={s.walletRow}>
+          {this.state.channelPopulationError}
+        </div>
+      )
+    }
+
+    return (
+      <div className={s.walletRow}>
+        <div className={st.loaderRow}>
+          <div className={st.spinnerWrapper}>
+            <div className={st.spinner} />
+          </div>
+          <div className={st.loaderText}>
+            Loading...
+          </div>
         </div>
       </div>
     )

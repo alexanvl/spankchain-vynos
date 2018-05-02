@@ -4,10 +4,12 @@ import * as classnames from 'classnames'
 const s = require('./style.css')
 
 const TextBox: React.SFC<any> = function(props) {
-  const { children, className } = props
+  const { children, className, isInverse } = props
 
   return (
-    <div className={classnames(s.textbox, className)}>
+    <div className={classnames(s.textbox, className, {
+      [s.inverse]: isInverse
+    })}>
       {children}
     </div>
   )

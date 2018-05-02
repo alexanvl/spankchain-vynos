@@ -10,10 +10,12 @@ import {
   GetSharedStateRequest,
   LockWalletRequest,
   PopulateChannelsRequest,
+  RecoverChannelRequest,
   RememberPageRequest,
   ResetRequest,
   RestoreWalletRequest,
   SendRequest,
+  SetUsernameRequest,
   StatusRequest,
   ToggleFrameRequest,
   UnlockWalletRequest
@@ -24,6 +26,23 @@ import {WorkerStatus} from '../lib/rpc/WorkerStatus'
 import {JSONRPCResponsePayload} from 'web3'
 import {Postable} from '../lib/messaging/Postable'
 import Web3 = require('web3')
+
+import * as metrics from '../inpage/metrics'
+import { getRpcUrl } from '../lib/rpc/WorkerServer'
+
+function timed(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+  let oldFunc = descriptor.value
+
+  descriptor.value = function() {
+    let res = oldFunc.apply(this, arguments)
+    return metrics.timed('vynos:' + propertyKey, res, {
+      rpcUrl: getRpcUrl(),
+      arguments: Array.prototype.slice.call(arguments),
+    })
+  }
+
+  return descriptor
+}
 
 export default class WorkerProxy extends JsonRpcClient {
   web3: Web3
@@ -44,14 +63,17 @@ export default class WorkerProxy extends JsonRpcClient {
     })
   }
 
+  @timed
   closeChannelsForCurrentHub (): Promise<void> {
     return this.call(CloseChannelsForCurrentHubRequest.method)
   }
 
+  @timed
   deposit (amount: BigNumber.BigNumber): Promise<void> {
     return this.call(DepositRequest.method, amount.toString())
   }
 
+  @timed
   populateChannels (): Promise<void> {
     return this.call(PopulateChannelsRequest.method)
   }
@@ -100,8 +122,13 @@ export default class WorkerProxy extends JsonRpcClient {
     return this.call(FetchHistoryRequest.method)
   }
 
+  @timed
   send (to: string, value: string, gas?: string, gasPrice?: string): Promise<void> {
     return this.call(SendRequest.method, to, value, gas, gasPrice)
+  }
+
+  setUsername(username: string): Promise<void> {
+    return this.call(SetUsernameRequest.method, username)
   }
 
   status (): Promise<WorkerStatus> {
@@ -110,5 +137,9 @@ export default class WorkerProxy extends JsonRpcClient {
 
   reset (): Promise<void> {
     return this.call(ResetRequest.method)
+  }
+
+  recoverChannel (channelId: string): Promise<void> {
+    return this.call(RecoverChannelRequest.method, channelId)
   }
 }
