@@ -6,6 +6,7 @@ import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
 import {WorkerReadyBroadcastEvent} from './lib/rpc/WorkerReadyBroadcast'
 import renderApplication from './frame/renderApplication'
+import * as metrics from './inpage/metrics'
 
 class Client implements ServiceWorkerClient {
   workerProxy: WorkerProxy
@@ -28,6 +29,8 @@ class Client implements ServiceWorkerClient {
       renderApplication(document, this.workerProxy)
       this.startHeartbeating()
     })
+
+    metrics.setLogFunc(metrics => this.frameServer.broadcast('__METRICS__', metrics))
   }
 
   unload () {

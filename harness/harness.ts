@@ -10,7 +10,7 @@ window.addEventListener('load', function () {
   }
 
   let vynos = new Vynos({
-    hubUrl: 'http://localhost:8080',
+    hubUrl: 'https://hub-staging.spankdev.com',
     authRealm: 'SpankChain',
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
     window: _window
@@ -45,7 +45,7 @@ window.addEventListener('load', function () {
           performerId: 'abc-234',
           performerName: 'Butter Bubble'
         },
-        receiver: '0x0108d76118d97b88aa40167064cb242fa391effa'
+        receiver: '0x783111ea0a46518bc14fe45b38f5d34b280d5046'
       })
     }
   }
@@ -66,7 +66,21 @@ window.addEventListener('load', function () {
           productName: 'Widget',
           productSku: 'WIDG-123'
         },
-        receiver: '0x0108d76118d97b88aa40167064cb242fa391effa'
+        receiver: '0x783111ea0a46518bc14fe45b38f5d34b280d5046'
+      })
+    }
+  }
+
+  const buyVideoButton = document.getElementById('buy-video')
+  if (buyVideoButton) {
+    buyVideoButton.onclick = () => {
+      vynos.buy(new BigNumber.BigNumber(8100000000000), {
+        type: 'PURCHASE',
+        fields: {
+          productName: 'Pop Music Video',
+          productSku: 'NA-123-POP'
+        },
+        receiver: '0xBB1699d16368EBC13BDc29e6A1aaD50A21BE45EB'
       })
     }
   }

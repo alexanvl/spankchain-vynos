@@ -16,7 +16,8 @@ import {
   CloseChannelsForCurrentHubRequest,
   DepositRequest,
   ListChannelsRequest,
-  PopulateChannelsRequest
+  PopulateChannelsRequest,
+  RecoverChannelRequest
 } from '../../lib/rpc/yns'
 import AbstractController from './AbstractController'
 import requestJson, {request} from '../../frame/lib/request'
@@ -80,6 +81,14 @@ export default class MicropaymentsController extends AbstractController {
     return this.takeSem<VynosBuyResponse>(() => this.doBuy(price, meta))
   }
 
+  public async recoverChannel(channelId: string): Promise<void> {
+    if (!this.sem.available(1)) {
+      throw new Error('Cannot recover. Another operation is in progress.')
+    }
+
+    return this.takeSem<void>(() => this.doRecover(channelId))
+  }
+
   public async listChannels (): Promise<PaymentChannel[]> {
     const machinomy = await this.getMachinomy()
     return machinomy.channels()
@@ -91,6 +100,7 @@ export default class MicropaymentsController extends AbstractController {
     this.registerHandler(server, DepositRequest.method, this.deposit)
     this.registerHandler(server, ListChannelsRequest.method, this.listChannels)
     this.registerHandler(server, BuyRequest.method, this.buy)
+    this.registerHandler(server, RecoverChannelRequest.method, this.recoverChannel)
   }
 
   private async getMachinomy (): Promise<Machinomy> {
@@ -171,7 +181,9 @@ export default class MicropaymentsController extends AbstractController {
     })
   }
 
-  private async initChannel () {
+  private async initChannel (isRecovery: boolean = false) {
+    const name = isRecovery ? 'Channel Recovery Probe' : 'Channel Open/Deposit Probe'
+
     /**
      * This is needed because the smart contracts requires a payment to be provided to the claim
      * method. Clicking withdraw uses the 'claim' method on the hub since claiming is instant.
@@ -180,9 +192,9 @@ export default class MicropaymentsController extends AbstractController {
       type: 'TIP',
       fields: {
         streamId: 'probe',
-        streamName: 'Channel Open/Deposit Probe',
+        streamName: name,
         performerId: 'probe',
-        performerName: 'Channel Open/Deposit Probe',
+        performerName: name,
       },
       receiver: '0x0000000000000000000000000000000000000000'
     })
@@ -214,18 +226,17 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async doCloseChannelsForCurrentHub (): Promise<void> {
-    this.store.dispatch(actions.setHasActiveWithdrawal(true))
-
     try {
       const sharedState = await this.sharedStateView.getSharedState()
       const hubUrl = await this.sharedStateView.getHubUrl()
 
       const channels = sharedState.channels[hubUrl]
 
-      if (!channels) {
+      if (!channels || !channels.length) {
         return
       }
 
+      this.store.dispatch(actions.setHasActiveWithdrawal(true))
       await Promise.all(channels.map((ch: SerializedPaymentChannel) => this.checkThenCloseChannel(hubUrl, ch.channelId)))
     } catch (error) {
       if (error.message !== CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS) {
@@ -260,16 +271,13 @@ export default class MicropaymentsController extends AbstractController {
 
       try {
         await this.openChannel(receiver, bigAmount, channelId)
+        await this.initChannel()
+      } catch (e) {
+        console.error('Failed to open channel:', e)
+        throw e
       } finally {
         // Remove channelId from watchers
         this.store.dispatch(actions.removePendingChannel(channelId))
-      }
-
-      // Initialize channel with a 0 tip
-      try {
-        await this.initChannel()
-      } catch (e) {
-        console.error('Failed to send initial tip:', e)
       }
     }
   }
@@ -326,6 +334,47 @@ export default class MicropaymentsController extends AbstractController {
     return {
       channelId: res.channelId,
       token: res.token
+    }
+  }
+
+  private async doRecover(channelId: string): Promise<void> {
+    const machinomy = await this.getMachinomy()
+    const channels = await machinomy.channels()
+    const hasChannel = channels.find((chan: PaymentChannel) => chan.channelId === channelId)
+
+    if (hasChannel) {
+      throw new Error('This channel does not need to be recovered. Please withdraw this channel ' +
+        'using the SpankCard UI.')
+    }
+
+    try {
+      await this.doCloseChannelsForCurrentHub()
+    } catch (e) {
+      throw new Error(`Failed to close existing channel: ${e.message}`)
+    }
+
+    const chan = await machinomy.channelById(channelId)
+
+    if (!chan) {
+      throw new Error(`Channel not found or not recoverable.`)
+    }
+
+    try {
+      await this.initChannel(true)
+    } catch (e) {
+      throw new Error(`Failed to initialize channel: ${e.message}`)
+    }
+
+    try {
+      await this.doCloseChannelsForCurrentHub()
+    } catch (e) {
+      throw new Error(`Failed to close recovering channel: ${e.message}`)
+    }
+
+    try {
+      await this.syncMachinomyRedux()
+    } catch (e) {
+      throw new Error(`Failed to resync after closing recovered channel. ${e.message}`)
     }
   }
 
@@ -480,7 +529,21 @@ export default class MicropaymentsController extends AbstractController {
         break
       }
 
-      await wait(1000)
+      await wait(250)
+    }
+
+    attempts = 5
+
+    // ensure that the channel exists in the channels array
+    while (--attempts >= 0) {
+      const chans = await machinomy.channels()
+      const chanExists = chans.find((c: PaymentChannel) => c.channelId === channelId)
+
+      if (chanExists) {
+        break
+      }
+
+      await wait(250)
     }
 
     return chan
