@@ -12,6 +12,10 @@ import {Listenable} from '../messaging/Listenable'
 const networks = require('../../networks.json')
 const DEFAULT_NETWORK = 'ropsten'
 
+export function getRpcUrl() {
+  return networks[process.env.NETWORK_NAME || DEFAULT_NETWORK]
+}
+
 import ClientProvider from '../web3/ClientProvider';
 
 export default class WorkerServer extends JsonRpcServer {
@@ -23,7 +27,7 @@ export default class WorkerServer extends JsonRpcServer {
 
   constructor (backgroundController: BackgroundController, source: Listenable, target: WindowClient) {
     super('WorkerServer', [ process.env.FRAME_URL as string ], source, target)
-    this.providerOpts = new ProviderOptions(backgroundController, networks[process.env.NETWORK_NAME || DEFAULT_NETWORK]).approving()
+    this.providerOpts = new ProviderOptions(backgroundController, getRpcUrl()).approving()
     this.provider = ClientProvider(this.providerOpts)
     this.web3 = new Web3(this.provider)
   }

@@ -71,6 +71,20 @@ window.addEventListener('load', function () {
     }
   }
 
+  const buyVideoButton = document.getElementById('buy-video')
+  if (buyVideoButton) {
+    buyVideoButton.onclick = () => {
+      vynos.buy(new BigNumber.BigNumber(8100000000000), {
+        type: 'PURCHASE',
+        fields: {
+          productName: 'Pop Music Video',
+          productSku: 'NA-123-POP'
+        },
+        receiver: '0xBB1699d16368EBC13BDc29e6A1aaD50A21BE45EB'
+      })
+    }
+  }
+
   const lockButton = document.getElementById('lock')
   if (lockButton) {
     lockButton.onclick = () => vynos.lock()
