@@ -48,7 +48,12 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
 
     try {
       await this.props.workerProxy.authenticate()
-      await this.props.didAcknowledgeDeposit()
+
+      this.props.workerProxy.toggleFrame(false)
+
+      setTimeout(async () => {
+        await this.props.didAcknowledgeDeposit()
+      }, 500)
     } catch (e) {
       this.setState({
         isAuthenticating: false
