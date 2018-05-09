@@ -85,9 +85,10 @@ export default class Vynos extends EventEmitter {
     return this.client.lock()
   }
 
-  public show(forceRedirect?: string, isPerformer?: boolean) {
+  public show(opts?:{ forceRedirect?: string, isPerformer?: boolean }) {
+    opts = opts || {}
     this.requireReady()
-    this.client.toggleFrame(true, forceRedirect, isPerformer)
+    this.client.toggleFrame(true, opts.forceRedirect, opts.isPerformer)
       .catch((e: any) => this.emit('error', e))
   }
 
