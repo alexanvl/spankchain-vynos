@@ -37,12 +37,12 @@ export function timed<T>(name: string, p: Promise<T>, meta?: any): Promise<T> {
   p
     .then(() => logMetric(name, {
       ...meta,
-      duration: +(new Date()) - +start,
+      duration: (+(new Date()) - +start) / 1000,
       success: true,
     }))
     .catch(e => logMetric(name, {
       ...meta,
-      duration: +(new Date()) - +start,
+      duration: (+(new Date()) - +start) / 1000,
       error: '' + e,
     }))
   return p
