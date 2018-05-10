@@ -93,7 +93,7 @@ class SendReceivePage extends React.Component<MapStateToProps, State>  {
     }
 
     return (
-      <span className={s.pendingAmount}>
+      <div className={s.pendingAmount}>
         -
         <Currency
           amount={this.props.pendingAmount}
@@ -103,7 +103,7 @@ class SendReceivePage extends React.Component<MapStateToProps, State>  {
           unitClassName={s.finneyUnit}
           showUnit
         />
-      </span>
+      </div>
     )
   }
 }
