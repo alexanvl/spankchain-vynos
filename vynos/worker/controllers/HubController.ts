@@ -8,7 +8,7 @@ import {FetchHistoryRequest} from '../../lib/rpc/yns'
 import requestJson from '../../frame/lib/request'
 import {LifecycleAware} from './LifecycleAware'
 import debug from '../../lib/debug'
-
+import log from '../../lib/log'
 
 export interface BrandingResponse {
   title?: string

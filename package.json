@@ -62,6 +62,7 @@
   },
   "dependencies": {
     "@machinomy/contracts": "4.0.9",
+    "@spankchain/common": "../common",
     "@types/classnames": "^2.2.3",
     "@types/debug": "^0.0.30",
     "@types/prop-types": "^15.5.2",

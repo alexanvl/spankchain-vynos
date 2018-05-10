@@ -5,9 +5,10 @@ import WorkerProxy from '../../../WorkerProxy'
 import {cardBalance} from '../../../redux/selectors/cardBalance'
 import Button from '../../../components/Button/index'
 import Currency, {CurrencyType} from '../../../components/Currency/index'
-import * as BigNumber from 'bignumber.js';
-import * as classnames from 'classnames';
+import {BigNumber} from 'bignumber.js'
+import * as classnames from 'classnames'
 import entireBalance from '../../../lib/entireBalance'
+import {FIVE_FINNEY} from '../../../../lib/constants'
 
 const s = require('./index.css')
 
@@ -15,8 +16,8 @@ const finneyInverse = require('../../../components/CurrencyIcon/style.css').inve
 
 export interface MapStateToProps {
   workerProxy: WorkerProxy
-  walletBalance: string | null
-  cardBalance: BigNumber.BigNumber
+  walletBalance: BigNumber
+  cardBalance: BigNumber
   pendingChannelIds: string[]
 }
 
@@ -24,12 +25,12 @@ export type Props = MapStateToProps
 
 export class LoadCardCTAButton extends React.Component<Props> {
   load = async () => {
-    const amount = await entireBalance(this.props.workerProxy, new BigNumber.BigNumber(this.props.walletBalance!))
+    const amount = await entireBalance(this.props.workerProxy, this.props.walletBalance)
     await this.props.workerProxy.deposit(amount)
   }
 
-  renderContent () {
-    const { pendingChannelIds } = this.props
+  renderLoadContent () {
+    const {pendingChannelIds} = this.props
 
     return pendingChannelIds && pendingChannelIds.length > 0
       ? <span className={s.loaderWrapper}><span className={s.spCircle} /> <span>Card is being filled</span></span>
@@ -49,25 +50,42 @@ export class LoadCardCTAButton extends React.Component<Props> {
       )
   }
 
-  render() {
-    const { walletBalance, cardBalance, pendingChannelIds } = this.props
+  renderDepositMoreContent () {
+    return (
+      <span className={s.loadUpWrapper}>
+        <span>Minimum SpankCard refill is </span>
+        <Currency
+          amount={FIVE_FINNEY}
+          inputType={CurrencyType.WEI}
+          outputType={CurrencyType.FINNEY}
+          className={s.loadUpCurrency}
+          unitClassName={`${finneyInverse} ${s.finneyUnitInText}`}
+          showUnit
+        />
+      </span>
+    )
+  }
 
-    if (walletBalance === '0' || cardBalance.gt(0)) {
+  render () {
+    const {walletBalance, cardBalance, pendingChannelIds} = this.props
+
+    if (walletBalance.eq(0) || cardBalance.gt(0)) {
       return <noscript />
     }
 
+    const tooLow = walletBalance.lt(FIVE_FINNEY)
     const isLoading = pendingChannelIds && pendingChannelIds.length > 0
     const btnClass = classnames({
-      [s.loading]: isLoading
+      [s.loading]: isLoading,
+      [s.tooLow]: tooLow
     })
-
 
     return (
       <div className={s.container}>
         <Button
           className={btnClass}
-          content={this.renderContent()}
-          disabled={isLoading}
+          content={tooLow ? this.renderDepositMoreContent() : this.renderLoadContent()}
+          disabled={isLoading || tooLow}
           onClick={this.load}
         />
         {isLoading ? <span className={s.small}>Estimated time: Up to 4 minutes.</span> : null}
@@ -76,12 +94,12 @@ export class LoadCardCTAButton extends React.Component<Props> {
   }
 }
 
-function mapStateToProps(state: FrameState): MapStateToProps {
+function mapStateToProps (state: FrameState): MapStateToProps {
   return {
-    walletBalance: state.shared.balance,
+    walletBalance: new BigNumber(state.shared.balance || 0),
     cardBalance: cardBalance(state.shared),
     workerProxy: state.temp.workerProxy,
-    pendingChannelIds: state.shared.pendingChannelIds,
+    pendingChannelIds: state.shared.pendingChannelIds
   }
 }
 
