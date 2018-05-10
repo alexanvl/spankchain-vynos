@@ -19,6 +19,7 @@ import SharedStateView from './worker/SharedStateView'
 import AuthController from './worker/controllers/AuthController'
 import WalletController from './worker/controllers/WalletController'
 import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
+import debug from './lib/debug'
 import localForage = require('localforage')
 import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
 
@@ -28,6 +29,8 @@ export class ClientWrapper implements WindowClient {
   constructor (self: ServiceWorkerGlobalScope) {
     this.self = self
   }
+
+  log = debug('ClientWrapper')
 
   isWrapper = true
 
