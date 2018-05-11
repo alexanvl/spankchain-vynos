@@ -5200,9 +5200,9 @@ macaddress@^0.2.8:
   version "0.2.8"
   resolved "https://registry.yarnpkg.com/macaddress/-/macaddress-0.2.8.tgz#5904dc537c39ec6dbefeae902327135fa8511f12"
 
-"machinomy@http://github.com/mslipper/machinomy#57ce8d18b8174e17898cc3d153076030785b2b39":
+"machinomy@http://github.com/mslipper/machinomy#a11952271329d795d4b7c7d9de959681a7dc3a52":
   version "1.7.11"
-  resolved "http://github.com/mslipper/machinomy#57ce8d18b8174e17898cc3d153076030785b2b39"
+  resolved "http://github.com/mslipper/machinomy#a11952271329d795d4b7c7d9de959681a7dc3a52"
   dependencies:
     "@machinomy/contracts" "^4.0.5"
     "@machinomy/types-safe-buffer" "^0.0.1"
