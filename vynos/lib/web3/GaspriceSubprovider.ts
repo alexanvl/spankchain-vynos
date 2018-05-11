@@ -40,6 +40,10 @@ export default class GaspriceSubprovider extends Subprovider {
         return reject(err)
       }
 
+      if (!res.result) {
+        return resolve([])
+      }
+
       resolve(res.result.transactions)
     }))
   }
