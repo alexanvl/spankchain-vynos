@@ -1,15 +1,13 @@
 FROM node:9.3.0 as builder
 
-WORKDIR /home/node/app/common
-ADD common .
+WORKDIR /home/node/app
 
-WORKDIR /home/node/app/vynos
-ADD vynos/package.json .
-ADD vynos/yarn.lock .
+ADD package.json .
+ADD yarn.lock .
 
 RUN yarn --production=false --frozen-lockfile --cache-folder /root/.yarn
 
-ADD vynos .
+ADD . .
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
@@ -24,4 +22,4 @@ RUN rm -rf ./dist && yarn build
 
 FROM nginx:1.12-alpine
 
-COPY --from=builder /home/node/app/vynos/dist/ /usr/share/nginx/html
+COPY --from=builder /home/node/app/dist/ /usr/share/nginx/html
