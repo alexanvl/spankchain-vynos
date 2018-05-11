@@ -1,5 +1,8 @@
 import {BigNumber} from 'bignumber.js'
-import {PaymentChannel, PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
+import {
+  PaymentChannel, PaymentChannelJSON, PaymentChannelSerde,
+  SerializedPaymentChannel
+} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import ChannelClaimStatusResponse, {
   ChannelClaimStatus,
@@ -431,7 +434,6 @@ export default class MicropaymentsController extends AbstractController {
 
   private async syncPaymentsForChannel (channelId: string) {
     const machinomy = await this.getMachinomy()
-    const hubUrl = await this.sharedStateView.getHubUrl()
     const receiver = (await this.sharedStateView.getSharedState()).branding.address
     const localChan = await machinomy.channelById(channelId)
 
@@ -439,10 +441,7 @@ export default class MicropaymentsController extends AbstractController {
       throw new Error('No local channel found.')
     }
 
-    const remoteChan = PaymentChannelSerde.instance.deserialize(await requestJson<any[]>(`${hubUrl}/channels/${channelId}`, {
-      method: 'GET',
-      credentials: 'include'
-    }))
+    const remoteChan = PaymentChannelSerde.instance.deserialize(await this.pollForRemoteChannel(channelId))
 
     if (localChan.spent.equals(remoteChan.spent)) {
       return
@@ -568,6 +567,27 @@ export default class MicropaymentsController extends AbstractController {
       }
 
       await wait(5000)
+    }
+
+    throw new Error('Timed out.')
+  }
+
+  private async pollForRemoteChannel(channelId: string): Promise<any> {
+    const hubUrl = await this.sharedStateView.getHubUrl()
+
+    let attempts = 5
+
+    while (--attempts >= 0) {
+      const chan = await requestJson<any>(`${hubUrl}/channels/${channelId}`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      if (chan && chan.channelId) {
+        return chan
+      }
+
+      await wait(1000)
     }
 
     throw new Error('Timed out.')
