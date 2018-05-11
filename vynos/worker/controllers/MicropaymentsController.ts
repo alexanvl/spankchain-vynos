@@ -1,5 +1,8 @@
 import {BigNumber} from 'bignumber.js'
-import {PaymentChannel, PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
+import {
+  PaymentChannel, PaymentChannelJSON, PaymentChannelSerde,
+  SerializedPaymentChannel
+} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import ChannelClaimStatusResponse, {
   ChannelClaimStatus,
@@ -25,6 +28,7 @@ import ChannelId from 'machinomy/dist/lib/ChannelId'
 import * as semaphore from 'semaphore'
 import wait from '../../lib/wait'
 import Web3 = require('web3')
+import Logger from '../../lib/Logger';
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -44,7 +48,7 @@ export default class MicropaymentsController extends AbstractController {
   private sem: semaphore.Semaphore
 
   constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
-    super()
+    super(new Logger('MicropaymentsController', sharedStateView))
     this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView
@@ -431,7 +435,6 @@ export default class MicropaymentsController extends AbstractController {
 
   private async syncPaymentsForChannel (channelId: string) {
     const machinomy = await this.getMachinomy()
-    const hubUrl = await this.sharedStateView.getHubUrl()
     const receiver = (await this.sharedStateView.getSharedState()).branding.address
     const localChan = await machinomy.channelById(channelId)
 
@@ -439,10 +442,7 @@ export default class MicropaymentsController extends AbstractController {
       throw new Error('No local channel found.')
     }
 
-    const remoteChan = PaymentChannelSerde.instance.deserialize(await requestJson<any[]>(`${hubUrl}/channels/${channelId}`, {
-      method: 'GET',
-      credentials: 'include'
-    }))
+    const remoteChan = PaymentChannelSerde.instance.deserialize(await this.pollForRemoteChannel(channelId))
 
     if (localChan.spent.equals(remoteChan.spent)) {
       return
@@ -568,6 +568,27 @@ export default class MicropaymentsController extends AbstractController {
       }
 
       await wait(5000)
+    }
+
+    throw new Error('Timed out.')
+  }
+
+  private async pollForRemoteChannel(channelId: string): Promise<any> {
+    const hubUrl = await this.sharedStateView.getHubUrl()
+
+    let attempts = 5
+
+    while (--attempts >= 0) {
+      const chan = await requestJson<any>(`${hubUrl}/channels/${channelId}`, {
+        method: 'GET',
+        credentials: 'include'
+      })
+
+      if (chan && chan.channelId) {
+        return chan
+      }
+
+      await wait(1000)
     }
 
     throw new Error('Timed out.')

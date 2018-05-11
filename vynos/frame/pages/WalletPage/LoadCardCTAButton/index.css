@@ -49,7 +49,7 @@
   padding-right: .25rem;
 }
 
-.loading {
+.loading, .tooLow {
   background: #4A4A4A !important;
   color: white !important;
   opacity: 1 !important;
@@ -79,4 +79,10 @@
 @keyframes spCircRot {
   from { transform: rotate(0deg); }
   to { transform: rotate(359deg); }
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  .ctaDivider {
+    right: 1rem !important;
+  }
 }
