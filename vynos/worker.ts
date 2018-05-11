@@ -11,6 +11,7 @@ import {ErrResCallback} from './lib/messaging/JsonRpcServer'
 import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
 import WorkerWrapper from './worker/OnMessageWrapper'
+import Logger from './lib/Logger'
 import BackgroundController from './worker/controllers/BackgroundController'
 import FrameController from './worker/controllers/FrameController'
 import HubController from './worker/controllers/HubController'
@@ -79,8 +80,8 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
 
     await new Promise((resolve) => persistStore(store, undefined, resolve))
 
-    const frameController = new FrameController(store)
     const sharedStateView = new SharedStateView(backgroundController)
+    const frameController = new FrameController(store, sharedStateView)
     const hubController = new HubController(store, sharedStateView)
     const micropaymentsController = new MicropaymentsController(server.web3, store, sharedStateView)
     const authController = new AuthController(store, sharedStateView, server.providerOpts, frameController)

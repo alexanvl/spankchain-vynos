@@ -28,6 +28,7 @@ import ChannelId from 'machinomy/dist/lib/ChannelId'
 import * as semaphore from 'semaphore'
 import wait from '../../lib/wait'
 import Web3 = require('web3')
+import Logger from '../../lib/Logger';
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -47,7 +48,7 @@ export default class MicropaymentsController extends AbstractController {
   private sem: semaphore.Semaphore
 
   constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
-    super()
+    super(new Logger('MicropaymentsController', sharedStateView))
     this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView
