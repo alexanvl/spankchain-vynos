@@ -576,7 +576,7 @@ export default class MicropaymentsController extends AbstractController {
   private async pollForRemoteChannel(channelId: string): Promise<any> {
     const hubUrl = await this.sharedStateView.getHubUrl()
 
-    let attempts = 5
+    let attempts = 15
 
     while (--attempts >= 0) {
       const chan = await requestJson<any>(`${hubUrl}/channels/${channelId}`, {
