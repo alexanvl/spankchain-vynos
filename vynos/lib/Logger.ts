@@ -20,9 +20,11 @@ export default class Logger {
     const addresses = await this.sharedStateView.getAccounts()
     const address = addresses[0]
 
+    const {message, type, stack} = data
+
     // Format message if none is set
-    const message = (data.message && data.message.length) ?
-      `[Worker][${this.method}] - ${data.message}` :
+    const formattedMessage = (message && message.length) ?
+      `[Worker][${this.method}] - ${message}` :
       `[Worker][${this.method}] - No message defined`;
 
     const res = await requestJson(`${hubUrl}/log/`, {
@@ -32,10 +34,11 @@ export default class Logger {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        type: data.type || 'info',
-        message,
+        type: type || 'info',
+        message: formattedMessage,
         address,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        ...((stack && stack.length) && { stack })
       })
     })
 
