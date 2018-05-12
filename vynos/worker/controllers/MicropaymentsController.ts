@@ -29,6 +29,7 @@ import * as semaphore from 'semaphore'
 import wait from '../../lib/wait'
 import Web3 = require('web3')
 import Logger from '../../lib/Logger';
+import {logMetricWorker} from '../../lib/metrics'
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -47,12 +48,15 @@ export default class MicropaymentsController extends AbstractController {
 
   private sem: semaphore.Semaphore
 
-  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
+  private server: JsonRpcServer
+
+  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView, server: JsonRpcServer) {
     super(new Logger('MicropaymentsController', sharedStateView))
     this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView
     this.sem = semaphore(1)
+    this.server = server
     this.startScanningPendingChannelIds = this.startScanningPendingChannelIds.bind(this)
     this.startScanningPendingChannelIds()
   }
@@ -519,34 +523,25 @@ export default class MicropaymentsController extends AbstractController {
       chan = await this.pollForOpenChannel(channelId)
     }
 
-    let attempts = 5
-
-    // ensure that the value is correct
-    while (--attempts >= 0) {
-      const testChan = await machinomy.channelById(channelId)
-
-      if (testChan && testChan.value.eq(chan.value)) {
-        break
-      }
-
-      await wait(250)
-    }
-
-    attempts = 5
+    let maxAttempts = 240
 
     // ensure that the channel exists in the channels array
-    while (--attempts >= 0) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const chans = await machinomy.channels()
       const chanExists = chans.find((c: PaymentChannel) => c.channelId === channelId)
 
       if (chanExists) {
-        break
+        logMetricWorker(this.server, 'machinomyTxReceiptConvergenceAttempts', {
+          count: attempt,
+          channelId
+        })
+        return chan
       }
 
       await wait(250)
     }
 
-    return chan
+    throw new Error('Transaction receipt and contract failed to converge.')
   }
 
   /**
@@ -558,40 +553,49 @@ export default class MicropaymentsController extends AbstractController {
    */
   private async pollForOpenChannel (channelId: string): Promise<PaymentChannel> {
     const machinomy = await this.getMachinomy()
-    let attempts = 72
+    let maxAttempts = 72
 
-    while (--attempts >= 0) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const chan = await machinomy.channelById(channelId)
 
       if (chan) {
+        logMetricWorker(this.server, 'backupPollAttempts', {
+          count: attempt,
+          channelId
+        })
+
         return chan
       }
 
       await wait(5000)
     }
 
-    throw new Error('Timed out.')
+    throw new Error('Opening channel timed out.')
   }
 
   private async pollForRemoteChannel(channelId: string): Promise<any> {
     const hubUrl = await this.sharedStateView.getHubUrl()
 
-    let attempts = 15
+    let maxAttempts = 15
 
-    while (--attempts >= 0) {
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const chan = await requestJson<any>(`${hubUrl}/channels/${channelId}`, {
         method: 'GET',
         credentials: 'include'
       })
 
       if (chan && chan.channelId) {
+        logMetricWorker(this.server, 'chainsawContractConvergenceAttempts', {
+          count: attempt,
+          channelId
+        })
         return chan
       }
 
       await wait(1000)
     }
 
-    throw new Error('Timed out.')
+    throw new Error('Chainsaw and contract failed to converge.')
   }
 
   private takeSem<T> (fn: () => T | Promise<T>): Promise<T> {
