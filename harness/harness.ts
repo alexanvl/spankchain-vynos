@@ -16,6 +16,8 @@ window.addEventListener('load', function () {
     window: _window
   })
 
+  vynos.setMetricLogFunc((m) => console.log(`Logged metric: ${m[0].name}`, m))
+
   vynos.init().catch(console.error.bind(console))
 
   let displayButton = document.getElementById('display')
