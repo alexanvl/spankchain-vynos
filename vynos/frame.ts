@@ -6,7 +6,7 @@ import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
 import {WorkerReadyBroadcastEvent} from './lib/rpc/WorkerReadyBroadcast'
 import renderApplication from './frame/renderApplication'
-import * as metrics from './inpage/metrics'
+import * as metrics from './lib/metrics'
 
 class Client implements ServiceWorkerClient {
   workerProxy: WorkerProxy

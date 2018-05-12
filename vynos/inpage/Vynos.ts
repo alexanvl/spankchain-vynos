@@ -6,7 +6,7 @@ import {SharedState} from '../worker/WorkerState'
 import * as BigNumber from 'bignumber.js';
 import Web3 = require('web3')
 import VynosBuyResponse from '../lib/VynosBuyResponse'
-import * as metrics from './metrics'
+import * as metrics from '../lib/metrics'
 
 export interface Balance {
   balanceInWei: string

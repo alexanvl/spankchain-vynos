@@ -8,6 +8,7 @@ import {SendRequest, SetUsernameRequest} from '../../lib/rpc/yns'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import AbstractController from './AbstractController'
 import Web3 = require('web3')
+import Logger from '../../lib/Logger'
 
 const utils = require('web3-utils')
 
@@ -21,7 +22,7 @@ export default class WalletController extends AbstractController implements Life
   isWatching: boolean = false
 
   constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
-    super()
+    super(new Logger('WalletController', sharedStateView))
     this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView

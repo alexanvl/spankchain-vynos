@@ -4,13 +4,18 @@ import {Store} from 'redux'
 import * as actions from '../actions'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
+import Logger from '../../lib/Logger'
+import SharedStateView from '../SharedStateView'
 
 export default class FrameController extends AbstractController {
   private store: Store<WorkerState>
 
-  constructor (store: Store<WorkerState>) {
-    super()
+  private sharedStateView: SharedStateView
+
+  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView) {
+    super(new Logger('FrameController', sharedStateView))
     this.store = store
+    this.sharedStateView = sharedStateView
   }
 
   public show () {

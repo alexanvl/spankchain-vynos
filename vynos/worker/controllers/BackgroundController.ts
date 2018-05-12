@@ -19,6 +19,7 @@ import {
 import bip39 =require('bip39')
 import hdkey = require('ethereumjs-wallet/hdkey')
 import Wallet = require('ethereumjs-wallet')
+import Logger from '../../lib/Logger';
 
 const STATE_UPDATED_EVENT = 'stateUpdated'
 

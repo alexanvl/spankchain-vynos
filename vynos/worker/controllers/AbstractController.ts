@@ -1,6 +1,13 @@
 import JsonRpcServer, {ErrResCallback} from '../../lib/messaging/JsonRpcServer'
+import Logger from '../../lib/Logger'
 
 export default class AbstractController {
+  logger: any
+
+  constructor (logger?: Logger) {
+    this.logger = logger
+  }
+
   protected registerHandler(server: JsonRpcServer, method: string, func: (...args: any[]) => any) {
     server.addHandler(method, async (cb: ErrResCallback, ...args: any[]) => {
       let res
@@ -12,6 +19,13 @@ export default class AbstractController {
           res = await res
         }
       } catch (e) {
+        if (this.logger) {
+          this.logger.logToHub({
+            message: `Error has occurred in ${method}: ${e.message}`,
+            type: 'error',
+            stack: e.stack
+          })
+        }
         return cb(e, null)
       }
 

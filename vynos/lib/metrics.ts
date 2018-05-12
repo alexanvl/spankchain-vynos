@@ -1,3 +1,5 @@
+import JsonRpcServer from './messaging/JsonRpcServer'
+
 export interface Metric {
   name: string
   ts: Date
@@ -21,7 +23,6 @@ export function logMetrics(metrics: Metric[]) {
   } else {
     pendingMetrics.push.apply(pendingMetrics, metrics)
   }
-
 }
 
 function logMetric(name: string, data: any) {
@@ -46,4 +47,12 @@ export function timed<T>(name: string, p: Promise<T>, meta?: any): Promise<T> {
       error: '' + e,
     }))
   return p
+}
+
+export function logMetricWorker(server: JsonRpcServer, name: string, data: any) {
+  server.broadcast('__METRICS__', [{
+    name: `vynos:${name}`,
+    ts: new Date(),
+    data
+  }])
 }
