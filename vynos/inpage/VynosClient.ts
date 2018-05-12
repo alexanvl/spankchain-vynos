@@ -17,7 +17,7 @@ import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 import {WorkerReadyBroadcastEvent} from '../lib/rpc/WorkerReadyBroadcast'
 import {SharedStateBroadcastEvent} from '../lib/rpc/SharedStateBroadcast'
 import {ResetBroadcastEvent} from '../lib/rpc/ResetBroadcast'
-import {logMetrics} from './metrics'
+import {logMetrics} from '../lib/metrics'
 
 export default class VynosClient extends JsonRpcClient {
   workerReady: boolean = false

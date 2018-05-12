@@ -83,7 +83,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const sharedStateView = new SharedStateView(backgroundController)
     const frameController = new FrameController(store, sharedStateView)
     const hubController = new HubController(store, sharedStateView)
-    const micropaymentsController = new MicropaymentsController(server.web3, store, sharedStateView)
+    const micropaymentsController = new MicropaymentsController(server.web3, store, sharedStateView, server)
     const authController = new AuthController(store, sharedStateView, server.providerOpts, frameController)
     const walletController = new WalletController(server.web3, store, sharedStateView)
 

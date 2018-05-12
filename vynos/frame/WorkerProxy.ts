@@ -27,7 +27,7 @@ import {JSONRPCResponsePayload} from 'web3'
 import {Postable} from '../lib/messaging/Postable'
 import Web3 = require('web3')
 
-import * as metrics from '../inpage/metrics'
+import * as metrics from '../lib/metrics'
 import { getRpcUrl } from '../lib/rpc/WorkerServer'
 
 function timed(target: any, propertyKey: string, descriptor: PropertyDescriptor) {

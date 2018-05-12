@@ -27,21 +27,24 @@ export default class Logger {
       `[Worker][${this.method}] - ${message}` :
       `[Worker][${this.method}] - No message defined`;
 
-    const res = await requestJson(`${hubUrl}/log/`, {
+    const body = {
+      type: type || 'info',
+      message: formattedMessage,
+      address,
+      timestamp: new Date().toISOString()
+    } as any
+
+    if (stack && stack.length) {
+      body.stack = stack
+    }
+
+    return requestJson(`${hubUrl}/log/`, {
       method: 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({
-        type: type || 'info',
-        message: formattedMessage,
-        address,
-        timestamp: new Date().toISOString(),
-        ...((stack && stack.length) && { stack })
-      })
+      body: JSON.stringify(body)
     })
-
-    return res
   }
 }
