@@ -8,7 +8,7 @@ import {FetchHistoryRequest} from '../../lib/rpc/yns'
 import requestJson from '../../frame/lib/request'
 import {LifecycleAware} from './LifecycleAware'
 import debug from '../../lib/debug'
-
+import Logger from '../../lib/Logger'
 
 export interface BrandingResponse {
   title?: string
@@ -39,7 +39,7 @@ export default class HubController extends AbstractController implements Lifecyc
   private isPolling: boolean = false
 
   constructor (store: Store<WorkerState>, sharedStateView: SharedStateView) {
-    super()
+    super(new Logger('HubController', sharedStateView))
     this.store = store
     this.sharedStateView = sharedStateView
   }

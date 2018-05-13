@@ -45,8 +45,8 @@ export default class Frame {
       this.setWalletCard()
       this.hide()
     }
-    let frameSrc = this.vynosScriptAddress.replace(/vynos.js/, 'frame.html')
-    this.element.src = window.location.href.match(/dev=true/) ? frameSrc + '?dev=true' : frameSrc
+    let frameSrc = this.vynosScriptAddress.replace(/vynos.js/, 'frame.html?cachebust=' + Date.now())
+    this.element.src = frameSrc
     this.element.setAttribute('sandbox', 'allow-scripts allow-modals allow-same-origin allow-popups allow-forms')
   }
 

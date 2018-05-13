@@ -12,11 +12,13 @@ import {CLOSE_CHANNEL_ERRORS} from '../../../lib/ChannelClaimStatusResponse'
 import Currency, {CurrencyType} from '../../components/Currency/index'
 import entireBalance from '../../lib/entireBalance'
 import CurrencyIcon from '../../components/CurrencyIcon/index'
+import RefillButton from '../../components/RefillButton/index'
+import {FIVE_FINNEY} from '../../../lib/constants'
 
 const s = require('./styles.css')
 
 export interface StateProps extends BrandingState {
-  walletBalance: string
+  walletBalance: BigNumber
   cardBalance: BigNumber
   isWithdrawing: boolean
   workerProxy: WorkerProxy
@@ -40,6 +42,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     }
 
     this.toggleShowFinConversionRate = this.toggleShowFinConversionRate.bind(this)
+    this.onClickRefill = this.onClickRefill.bind(this)
   }
 
   async componentDidMount() {
@@ -92,6 +95,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
 
   render() {
     const { walletBalance, cardBalance } = this.props;
+    const isTooLow = walletBalance.lt(FIVE_FINNEY)
 
     return (
       <div className={s.walletSpankCardWrapper}>
@@ -114,12 +118,14 @@ class CardPage extends React.Component<StateProps, CardPageState> {
               className={s.spankCardCta}
               ctaInputValueClass={s.spankCardCtaInputValue}
               ctaContentClass={s.spankCardCtaContent}
-              ctaContent={() => (
-                <div className={s.ctaContentWrapper} onClick={() => this.onClickRefill()}>
-                  <div className={s.ctaDivider} />
-                  <span className={s.ctaText}>{this.state.isRefilling ? 'Refilling...' : 'Load Up SpankCard' }</span>
-                </div>
-              )}
+              isDisabled={this.state.isRefilling || isTooLow}
+              ctaContent={() =>
+                <RefillButton
+                  isRefilling={this.state.isRefilling}
+                  isTooLow={isTooLow}
+                  onClick={this.onClickRefill}
+                />
+              }
             />
           </div>
           <div className={s.walletRowAction}>
@@ -204,7 +210,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
 function mapStateToProps (state: FrameState, ownProps: any): StateProps {
   return {
     ...state.shared.branding,
-    walletBalance: state.shared.balance,
+    walletBalance: new BigNumber(state.shared.balance),
     cardBalance: cardBalance(state.shared),
     isWithdrawing: state.shared.hasActiveWithdrawal,
     activeWithdrawalError: state.shared.activeWithdrawalError,
