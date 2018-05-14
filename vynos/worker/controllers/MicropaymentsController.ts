@@ -138,11 +138,11 @@ export default class MicropaymentsController extends AbstractController {
       case ChannelClaimStatus.FAILED:
       case null:
         await this.closeChannel(hubUrl, channelId)
-        return this.pollChannelClaimStatus(channelId)
+        return await this.pollChannelClaimStatus(channelId)
       case ChannelClaimStatus.NEW:
       case ChannelClaimStatus.PENDING:
         this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS))
-        return this.pollChannelClaimStatus(channelId)
+        return await this.pollChannelClaimStatus(channelId)
       case ChannelClaimStatus.CONFIRMED:
         return
       default:
