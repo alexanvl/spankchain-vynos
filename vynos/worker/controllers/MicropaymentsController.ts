@@ -151,35 +151,43 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async pollChannelClaimStatus (channelId: string): Promise<any> {
+    const maxAttempts = 50
     const ctx = this
-    clearTimeout(ctx.claimStatusTimeout)
 
-    return new Promise(async (resolve: any, reject: any) => {
-      await poll(resolve, reject)
-    })
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const claimStatus = await ctx.getChannelClaimStatus(channelId)
+      const machinomy = await ctx.getMachinomy()
+      const channel = await machinomy.channelById(channelId)
+      const {status} = claimStatus
 
-    async function poll (resolve: any, reject: any) {
-      try {
-        const claimStatus = await ctx.getChannelClaimStatus(channelId)
-        const {status} = claimStatus
+      // If we have a channel on the blockchain, it is still opened so poll again
+      if (channel) {
+        logMetric(attempt, channelId)
+        await wait(15000)
+        continue
+      }
 
-        if (status === ChannelClaimStatus.CONFIRMED) {
-          ctx.store.dispatch(actions.setActiveWithdrawalError(null))
-          resolve(claimStatus)
-          await ctx.syncMachinomyRedux()
-          ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
-        } else if (status === ChannelClaimStatus.FAILED) {
-          ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
-          ctx.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.FAILED))
-          reject(new Error(CLOSE_CHANNEL_ERRORS.FAILED))
-        } else {
-          ctx.claimStatusTimeout = setTimeout(() => poll(resolve, reject), 15000)
-        }
-      } catch (error) {
-        reject(error)
+      if (status === ChannelClaimStatus.CONFIRMED) {
+        ctx.store.dispatch(actions.setActiveWithdrawalError(null))
+        await ctx.syncMachinomyRedux()
+        ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
+        return claimStatus
+      } else if (status === ChannelClaimStatus.FAILED) {
+        ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
+        ctx.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.FAILED))
+        throw new Error(CLOSE_CHANNEL_ERRORS.FAILED)
+      } else {
+        logMetric(attempt, channelId)
+        await wait(15000)
       }
     }
 
+    function logMetric (numAttempt: any, cId: any) {
+      logMetricWorker(ctx.server, 'channelClaimStatusAttempts', {
+        count: numAttempt,
+        channelId: cId
+      })
+    }
   }
 
   private async closeChannel (hubUrl: string, channelId: string): Promise<void> {
