@@ -1,36 +1,54 @@
-import SharedStateView from '../worker/SharedStateView'
 import JsonRpcServer from './messaging/JsonRpcServer'
 import requestJson from '../frame/lib/request'
-import {LogToHubRequest} from './rpc/yns'
 import {LoggerPayload} from './LoggerPayload'
+import SharedStateView from '../worker/SharedStateView';
 
 export default class Logger {
 
-  private sharedStateView: any
-
   private method: string
 
-  constructor(method: string, sharedStateView?: SharedStateView) {
+  private source: string
+
+  private hubUrl?: string
+
+  private address?: string
+
+  private sharedStateView?: SharedStateView
+
+  constructor({ source, method, hubUrl, address, sharedStateView } :
+    { source: string, method: string, hubUrl?: string, address?: string, sharedStateView?: SharedStateView }) {
+    this.source = source || 'Not set'
+    this.method = method || 'Not set'
+    this.hubUrl = hubUrl
+    this.address = address
     this.sharedStateView = sharedStateView
-    this.method = method
   }
 
   async logToHub (data: LoggerPayload) {
-    const hubUrl = await this.sharedStateView.getHubUrl()
-    const addresses = await this.sharedStateView.getAccounts()
-    const address = addresses[0]
+    if (!this.hubUrl && !this.sharedStateView) {
+      return
+    }
 
     const {message, type, stack} = data
 
+    if ((!this.hubUrl || !this.hubUrl.length) && this.sharedStateView) {
+      this.hubUrl = await this.sharedStateView.getHubUrl()
+    }
+
+    if ((!this.address || !this.address.length) && this.sharedStateView) {
+      const addresses = await this.sharedStateView.getAccounts()
+      this.address = addresses[0]
+    }
+
     // Format message if none is set
     const formattedMessage = (message && message.length) ?
-      `[Worker][${this.method}] - ${message}` :
-      `[Worker][${this.method}] - No message defined`;
+      `[${this.source}][${this.method}] - ${message}` :
+      `[${this.source}][${this.method}] - No message defined`;
 
     const body = {
       type: type || 'info',
       message: formattedMessage,
-      address,
+      address: this.address,
       timestamp: new Date().toISOString()
     } as any
 
@@ -38,7 +56,7 @@ export default class Logger {
       body.stack = stack
     }
 
-    return requestJson(`${hubUrl}/log/`, {
+    return requestJson(`${this.hubUrl}/log/`, {
       method: 'POST',
       credentials: 'include',
       headers: {

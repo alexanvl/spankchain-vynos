@@ -50,8 +50,8 @@ export default class MicropaymentsController extends AbstractController {
 
   private server: JsonRpcServer
 
-  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView, server: JsonRpcServer) {
-    super(new Logger('MicropaymentsController', sharedStateView))
+  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView, server: JsonRpcServer, logger: Logger) {
+    super(logger)
     this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView

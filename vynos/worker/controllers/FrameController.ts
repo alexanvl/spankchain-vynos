@@ -5,17 +5,13 @@ import * as actions from '../actions'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import Logger from '../../lib/Logger'
-import SharedStateView from '../SharedStateView'
 
 export default class FrameController extends AbstractController {
   private store: Store<WorkerState>
 
-  private sharedStateView: SharedStateView
-
-  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView) {
-    super(new Logger('FrameController', sharedStateView))
+  constructor (store: Store<WorkerState>, logger: Logger) {
+    super(logger)
     this.store = store
-    this.sharedStateView = sharedStateView
   }
 
   public show () {

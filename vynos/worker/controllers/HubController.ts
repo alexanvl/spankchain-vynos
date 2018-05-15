@@ -38,8 +38,8 @@ export default class HubController extends AbstractController implements Lifecyc
 
   private isPolling: boolean = false
 
-  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView) {
-    super(new Logger('HubController', sharedStateView))
+  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView, logger: Logger) {
+    super(logger)
     this.store = store
     this.sharedStateView = sharedStateView
   }

@@ -21,8 +21,8 @@ export default class WalletController extends AbstractController implements Life
 
   isWatching: boolean = false
 
-  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView) {
-    super(new Logger('WalletController', sharedStateView))
+  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView, logger: Logger) {
+    super(logger)
     this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView
