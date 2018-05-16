@@ -8,6 +8,7 @@ import SharedStateView from '../SharedStateView'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import requestJson from '../../frame/lib/request'
+import Logger from '../../lib/Logger';
 
 const util = require('ethereumjs-util')
 
@@ -24,8 +25,9 @@ export default class AuthController extends AbstractController {
 
   private frame: FrameController
 
-  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView, providerOpts: ProviderOpts, frame: FrameController) {
-    super()
+  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView, providerOpts: ProviderOpts, frame: FrameController, logger: Logger) {
+    super(logger)
+
     this.store = store
     this.sharedStateView = sharedStateView
     this.providerOpts = providerOpts

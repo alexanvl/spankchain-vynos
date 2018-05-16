@@ -7,12 +7,15 @@ import UnlockPage from './UnlockPage'
 import WalletPage from './WalletPage'
 import {RouteComponentProps} from 'react-router'
 import WorkerProxy from '../WorkerProxy'
+import Logger from '../../lib/Logger'
 
 export interface StateProps {
   isWalletExpected: boolean
   isUnlockExpected: boolean
   isTransactionPending: boolean
   isFrameDisplayed: boolean
+  currentHubUrl: string
+  walletAddress: string | null
   forceRedirect?: string
   workerProxy: WorkerProxy
 }
@@ -31,11 +34,36 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 
   componentDidMount () {
     this.determineRoute()
+    this.logErrors()
     window.addEventListener('keydown', this.lock)
   }
 
   componentWillUnmount () {
     window.removeEventListener('keydown', this.lock)
+  }
+
+  logErrors() {
+    window.onerror = (message, file, line, column, error) => {
+      const {currentHubUrl, walletAddress} = this.props
+      const logger = new Logger({
+        source: 'Frame',
+        method: 'logErrors',
+        hubUrl: currentHubUrl,
+        address: walletAddress || ''
+      })
+
+      const body = {
+        message: `Runtime error in ${file}:${line}: ${message}`,
+        type: 'error'
+      } as any
+
+      // Error object doesn't exist in older browsers
+      (error && error.stack)
+        ? body.stack = error.stack
+        : body.stack = `${file}:${line}:${column}`
+
+      logger.logToHub(body)
+    }
   }
 
   lock (e: KeyboardEvent) {
@@ -107,7 +135,9 @@ function mapStateToProps (state: FrameState): StateProps {
     forceRedirect: state.shared.forceRedirect,
     isUnlockExpected: (state.shared.didInit && state.shared.isLocked) || (state.shared.didInit && !state.shared.currentAuthToken && !state.temp.initPage.showInitialDeposit),
     isWalletExpected: state.shared.didInit && !state.shared.isLocked && !state.temp.initPage.showInitialDeposit && !!state.shared.currentAuthToken,
-    isTransactionPending: state.shared.didInit && state.shared.isTransactionPending !== 0
+    isTransactionPending: state.shared.didInit && state.shared.isTransactionPending !== 0,
+    currentHubUrl: state.shared.currentHubUrl,
+    walletAddress: state.shared.address,
   }
 }
 

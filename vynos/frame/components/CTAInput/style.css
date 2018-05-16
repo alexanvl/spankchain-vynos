@@ -78,15 +78,35 @@
   padding-bottom: 0.3rem;
 }
 
-.ctaInput.connected .ctaInputText:hover {
+.ctaInputText.disabled {
+  cursor: not-allowed !important;
+  box-shadow: none !important;
+}
+
+.ctaInput.connected .ctaInputText:hover:not(.disabled) {
   transition: 200ms ease-in-out;
   background-color: #ff3b81;
   color: #fff;
   border-radius: 2rem;
 }
 
+.ctaInputText:hover:not(.disabled) .ctaDivider {
+  opacity: 0 !important;
+}
+
 .ctaInput.connected .ctaInputText span {
   font-size: 1rem;
   display: flex;
   align-items: center;
+}
+
+.ctaDivider {
+  transition: opacity 200ms ease-in-out;
+  width: 1px;
+  border-left: 1px solid rgba(181, 181, 181, 0.4);
+  height: 1rem;
+  position: relative;
+  right: 1rem;
+  opacity: 1;
+  top: 1px;
 }

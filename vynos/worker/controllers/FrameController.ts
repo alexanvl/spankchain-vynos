@@ -4,12 +4,13 @@ import {Store} from 'redux'
 import * as actions from '../actions'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
+import Logger from '../../lib/Logger'
 
 export default class FrameController extends AbstractController {
   private store: Store<WorkerState>
 
-  constructor (store: Store<WorkerState>) {
-    super()
+  constructor (store: Store<WorkerState>, logger: Logger) {
+    super(logger)
     this.store = store
   }
 

@@ -8,7 +8,7 @@ import {
   ListChannelsRequest,
   ToggleFrameRequest,
   LockWalletRequest,
-  SetUsernameRequest
+  SetUsernameRequest,
 } from './yns'
 import WorkerProxy from '../../frame/WorkerProxy'
 import {AllowedOrigins} from '../messaging/OriginValidator'
@@ -36,6 +36,7 @@ export default class FrameServer extends JsonRpcServer {
     this.passThroughEvent(ReadyBroadcastEvent)
     this.passThroughEvent(WorkerReadyBroadcastEvent)
     this.passThroughEvent(ResetBroadcastEvent)
+    this.passThroughEvent('__METRICS__')
   }
 
   private passThroughHandler (method: string) {

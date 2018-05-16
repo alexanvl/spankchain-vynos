@@ -8,12 +8,11 @@ const CTAInput: React.SFC<any> = function(props) {
     className,
     ctaInputValueClass,
     ctaContentClass,
-    checked,
-    onChange,
     value,
     ctaContent,
     isInverse,
     isConnected,
+    isDisabled
   } = props
 
   return (
@@ -24,7 +23,9 @@ const CTAInput: React.SFC<any> = function(props) {
       <div className={classnames(s.ctaInputValue, ctaInputValueClass)}>
         {value}
       </div>
-      <div className={classnames(s.ctaInputText, ctaContentClass)}>
+      <div className={classnames(s.ctaInputText, ctaContentClass, {
+        [s.disabled]: isDisabled
+      })}>
         {ctaContent()}
       </div>
     </div>
@@ -38,6 +39,7 @@ CTAInput.defaultProps = {
   checked: null,
   onChange() {},
   isInverse: false,
+  isDisabled: false
 }
 
 export default CTAInput

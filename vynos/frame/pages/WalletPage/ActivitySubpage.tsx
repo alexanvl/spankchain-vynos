@@ -222,7 +222,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
           <div className={s.walletActivityStart}>{mStart.format('h:mmA')} - <br /> {mEnd.format('h:mmA')}</div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityItemDescription}>
-          <div className={s.walletActivityItem}>{firstInGroup.fields.streamName}</div>
+          <div className={s.walletActivityItem}>{firstInGroup.fields.streamName || firstInGroup.fields.performerName}</div>
           <div className={s.walletActivityDescription}>{firstInGroup.fields.performerName}</div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityPrice}>
@@ -259,7 +259,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
             <div className={s.walletActivityStart}>{moment(new Date(item.createdAt)).format('h:mmA')}</div>
           </T.TableCell>
           <T.TableCell className={s.walletActivityItemDescription}>
-            <div className={s.walletActivityItem}>{item.fields.streamName}</div>
+            <div className={s.walletActivityItem}>{item.fields.streamName || item.fields.performerName}</div>
           </T.TableCell>
           <T.TableCell className={s.walletActivityPrice}>
             <div className={s.walletActivitySubtractWrapper}>
