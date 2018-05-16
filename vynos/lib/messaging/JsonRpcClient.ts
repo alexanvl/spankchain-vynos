@@ -42,7 +42,7 @@ export default class JsonRpcClient extends EventEmitter {
     const data = e.data
 
     if (e.origin !== this.origin) {
-      this.log('Received message from invalid origin %s.', e.origin)
+      this.log('Received message from invalid origin %s (expected: %s)', e.origin, this.origin)
       return
     }
 
