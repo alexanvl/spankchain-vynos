@@ -21,9 +21,9 @@ export default class AbstractController {
       } catch (e) {
         if (this.logger) {
           this.logger.logToHub({
-            message: `Error has occurred in ${method}: ${e.message}`,
+            message: `Error has occurred in ${method}: ${e.message || e}`,
             type: 'error',
-            stack: e.stack
+            stack: e.stack || e
           })
         }
         return cb(e, null)

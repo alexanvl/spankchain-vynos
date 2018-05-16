@@ -99,6 +99,3 @@ export type ResetRequest = RequestPayload
 
 export const RecoverChannelRequest = requestFactory<[string]>('recoverChannel')
 export type RecoverChannelRequest = RequestPayload
-
-export const LogToHubRequest = requestFactory<any[]>('logToHub')
-export type LogToHubRequest = RequestPayload
