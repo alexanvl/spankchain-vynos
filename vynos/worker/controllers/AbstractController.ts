@@ -8,7 +8,7 @@ export default class AbstractController {
     this.logger = logger
   }
 
-  protected registerHandler(server: JsonRpcServer, method: string, func: (...args: any[]) => any) {
+  protected registerHandler (server: JsonRpcServer, method: string, func: (...args: any[]) => any) {
     server.addHandler(method, async (cb: ErrResCallback, ...args: any[]) => {
       let res
 
@@ -21,30 +21,26 @@ export default class AbstractController {
 
         // FOR STRESS TEST ONLY
         if (this.logger) {
-          this.logger.logToApi({
-            metrics: [{
-              name: `${this.logger.source}:${method}`,
-              ts: new Date(),
-              data: {
-                message: `Attempting ${method}`,
-                type: 'info',
-              }
-            }]
-          })
+          this.logger.logToApi([{
+            name: `${this.logger.source}:${method}`,
+            ts: new Date(),
+            data: {
+              message: `Attempting ${method}`,
+              type: 'info'
+            }
+          }])
         }
       } catch (e) {
         if (this.logger) {
-          this.logger.logToApi({
-            metrics: [{
-              name: `${this.logger.source}:${method}`,
-              ts: new Date(),
-              data: {
-                message: `Error has occurred in ${method}: ${e.message || e}`,
-                type: 'error',
-                stack: e.stack || e,
-              }
-            }]
-          })
+          this.logger.logToApi([{
+            name: `${this.logger.source}:${method}`,
+            ts: new Date(),
+            data: {
+              message: `Error has occurred in ${method}: ${e.message || e}`,
+              type: 'error',
+              stack: e.stack || e
+            }
+          }])
         }
         return cb(e, null)
       }
