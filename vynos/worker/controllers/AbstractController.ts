@@ -21,31 +21,31 @@ export default class AbstractController {
 
         // FOR STRESS TEST ONLY
         if (this.logger) {
-          this.logger.logToApi([{
-            name: `${this.logger.source}:${method}`,
-            ts: new Date(),
-            data: {
-              message: `Attempting ${method}`,
-              type: 'info'
-            }
-          }])
+          this.logToApi(method, {
+            message: `Attempting ${method}`,
+            type: 'info'
+          })
         }
       } catch (e) {
         if (this.logger) {
-          this.logger.logToApi([{
-            name: `${this.logger.source}:${method}`,
-            ts: new Date(),
-            data: {
-              message: `Error has occurred in ${method}: ${e.message || e}`,
-              type: 'error',
-              stack: e.stack || e
-            }
-          }])
+          this.logToApi(method,{
+            message: `Error has occurred in ${method}: ${e.message || e}`,
+            type: 'error',
+            stack: e.stack || e
+          })
         }
         return cb(e, null)
       }
 
       cb(null, typeof res === 'undefined' ? null : res)
     })
+  }
+
+  protected logToApi(method: string, data: any) {
+    this.logger.logToApi([{
+      name: `${this.logger.source}:${method}`,
+      ts: new Date(),
+      data
+    }])
   }
 }
