@@ -10,6 +10,12 @@ export interface LoggerOptions {
   sharedStateView?: SharedStateView
 }
 
+export interface Metric {
+  name: string
+  ts: Date
+  data: any
+}
+
 export default class Logger {
   source: string
 
@@ -30,7 +36,7 @@ export default class Logger {
     this.method = method
   }
 
-  async logToApi (metrics: Array<{ name: string, ts: Date, data: any }>) {
+  async logToApi (metrics: Array<Metric>) {
     if (!API_URL || !this.sharedStateView) {
       return
     }
@@ -40,8 +46,11 @@ export default class Logger {
       this.address = addresses[0]
     }
 
+    const clonedMetrics = JSON.parse(JSON.stringify(metrics))
+    clonedMetrics.forEach((m: Metric) => m.data.address = this.address)
+
     const body = JSON.stringify({
-      metrics
+      metrics: clonedMetrics
     })
 
     return requestJson(`${API_URL}/metrics/store`, {
