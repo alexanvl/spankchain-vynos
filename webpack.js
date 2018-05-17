@@ -9,6 +9,8 @@ require('dotenv').config({ path: '.env' });
 
 let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
+let API_URL = process.env.API_URL || 'http://localhost:6960'
+
 const NODE_ENV = process.env.NODE_ENV
 
 const NETWORK_NAME = process.env.NETWORK_NAME || 'rinkeby'
@@ -44,6 +46,7 @@ function webpackConfig (entry, hash = true) {
           'NODE_ENV': JSON.stringify(NODE_ENV || 'development'), // This has effect on the react lib size,
           'DEBUG': NODE_ENV !== 'production',
           'FRAME_URL': JSON.stringify(FRAME_URL),
+          'API_URL': JSON.stringify(API_URL),
           'NETWORK_NAME': JSON.stringify(NETWORK_NAME)
         }
       })
