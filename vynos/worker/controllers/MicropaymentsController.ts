@@ -151,33 +151,38 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async pollChannelClaimStatus (channelId: string): Promise<any> {
-    const maxAttempts = 200
+    const maxAttempts = 120
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
       const claimStatus = await this.getChannelClaimStatus(channelId)
       const machinomy = await this.getMachinomy()
       const channel = await machinomy.channelById(channelId)
       const {status} = claimStatus
+      const isConverged = (
+        channel &&
+        channel.state === ChannelClaimStatus.CONVERGED &&
+        status === ChannelClaimStatus.CONFIRMED
+      )
 
-      if (channel && channel.state === ChannelClaimStatus.CONVERGED) {
+      if (isConverged) {
         logMetricWorker(this.server, 'channelClaimStatusConvergenceAttempts', {
           count: attempt,
           channelId
         })
 
-        if (status === ChannelClaimStatus.CONFIRMED) {
-          this.store.dispatch(actions.setActiveWithdrawalError(null))
-          await this.syncMachinomyRedux()
-          this.store.dispatch(actions.setHasActiveWithdrawal(false))
-          return claimStatus
-        } else if (status === ChannelClaimStatus.FAILED) {
-          this.store.dispatch(actions.setHasActiveWithdrawal(false))
-          this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.FAILED))
-          throw new Error(CLOSE_CHANNEL_ERRORS.FAILED)
-        }
+        this.store.dispatch(actions.setActiveWithdrawalError(null))
+        await this.syncMachinomyRedux()
+        this.store.dispatch(actions.setHasActiveWithdrawal(false))
+        return claimStatus
       }
 
-      await wait(250)
+      if (status === ChannelClaimStatus.FAILED) {
+        this.store.dispatch(actions.setHasActiveWithdrawal(false))
+        this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.FAILED))
+        throw new Error(CLOSE_CHANNEL_ERRORS.FAILED)
+      }
+
+      await wait(5000)
     }
 
     this.store.dispatch(actions.setHasActiveWithdrawal(false))
