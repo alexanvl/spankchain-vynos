@@ -18,12 +18,32 @@ export default class AbstractController {
         if (typeof res !== 'undefined' && res.then) {
           res = await res
         }
+
+        // FOR STRESS TEST ONLY
+        if (this.logger) {
+          this.logger.logToApi({
+            metrics: [{
+              name: `${this.logger.source}:${method}`,
+              ts: new Date(),
+              data: {
+                message: `Attempting ${method}`,
+                type: 'info',
+              }
+            }]
+          })
+        }
       } catch (e) {
         if (this.logger) {
-          this.logger.logToHub({
-            message: `Error has occurred in ${method}: ${e.message || e}`,
-            type: 'error',
-            stack: e.stack || e
+          this.logger.logToApi({
+            metrics: [{
+              name: `${this.logger.source}:${method}`,
+              ts: new Date(),
+              data: {
+                message: `Error has occurred in ${method}: ${e.message || e}`,
+                type: 'error',
+                stack: e.stack || e,
+              }
+            }]
           })
         }
         return cb(e, null)
