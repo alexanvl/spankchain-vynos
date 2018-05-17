@@ -50,8 +50,8 @@ export default class MicropaymentsController extends AbstractController {
 
   private server: JsonRpcServer
 
-  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView, server: JsonRpcServer) {
-    super(new Logger('MicropaymentsController', sharedStateView))
+  constructor (web3: Web3, store: Store<WorkerState>, sharedStateView: SharedStateView, server: JsonRpcServer, logger: Logger) {
+    super(logger)
     this.web3 = web3
     this.store = store
     this.sharedStateView = sharedStateView
@@ -138,11 +138,11 @@ export default class MicropaymentsController extends AbstractController {
       case ChannelClaimStatus.FAILED:
       case null:
         await this.closeChannel(hubUrl, channelId)
-        return this.pollChannelClaimStatus(channelId)
+        await this.pollChannelClaimStatus(channelId)
       case ChannelClaimStatus.NEW:
       case ChannelClaimStatus.PENDING:
         this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS))
-        return this.pollChannelClaimStatus(channelId)
+        await this.pollChannelClaimStatus(channelId)
       case ChannelClaimStatus.CONFIRMED:
         return
       default:
@@ -151,35 +151,38 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async pollChannelClaimStatus (channelId: string): Promise<any> {
-    const ctx = this
-    clearTimeout(ctx.claimStatusTimeout)
+    const maxAttempts = 200
 
-    return new Promise(async (resolve: any, reject: any) => {
-      await poll(resolve, reject)
-    })
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const claimStatus = await this.getChannelClaimStatus(channelId)
+      const machinomy = await this.getMachinomy()
+      const channel = await machinomy.channelById(channelId)
+      const {status} = claimStatus
 
-    async function poll (resolve: any, reject: any) {
-      try {
-        const claimStatus = await ctx.getChannelClaimStatus(channelId)
-        const {status} = claimStatus
+      if (channel && channel.state === ChannelClaimStatus.CONVERGED) {
+        logMetricWorker(this.server, 'channelClaimStatusConvergenceAttempts', {
+          count: attempt,
+          channelId
+        })
 
         if (status === ChannelClaimStatus.CONFIRMED) {
-          ctx.store.dispatch(actions.setActiveWithdrawalError(null))
-          resolve(claimStatus)
-          await ctx.syncMachinomyRedux()
-          ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
+          this.store.dispatch(actions.setActiveWithdrawalError(null))
+          await this.syncMachinomyRedux()
+          this.store.dispatch(actions.setHasActiveWithdrawal(false))
+          return claimStatus
         } else if (status === ChannelClaimStatus.FAILED) {
-          ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
-          ctx.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.FAILED))
-          reject(new Error(CLOSE_CHANNEL_ERRORS.FAILED))
-        } else {
-          ctx.claimStatusTimeout = setTimeout(() => poll(resolve, reject), 15000)
+          this.store.dispatch(actions.setHasActiveWithdrawal(false))
+          this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.FAILED))
+          throw new Error(CLOSE_CHANNEL_ERRORS.FAILED)
         }
-      } catch (error) {
-        reject(error)
       }
+
+      await wait(250)
     }
 
+    this.store.dispatch(actions.setHasActiveWithdrawal(false))
+    this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.CONVERGENCE_FAILED))
+    throw new Error(CLOSE_CHANNEL_ERRORS.CONVERGENCE_FAILED)
   }
 
   private async closeChannel (hubUrl: string, channelId: string): Promise<void> {

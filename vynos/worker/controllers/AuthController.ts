@@ -25,8 +25,8 @@ export default class AuthController extends AbstractController {
 
   private frame: FrameController
 
-  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView, providerOpts: ProviderOpts, frame: FrameController) {
-    super(new Logger('AuthController', sharedStateView))
+  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView, providerOpts: ProviderOpts, frame: FrameController, logger: Logger) {
+    super(logger)
 
     this.store = store
     this.sharedStateView = sharedStateView
