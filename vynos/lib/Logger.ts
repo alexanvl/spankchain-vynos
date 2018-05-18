@@ -37,7 +37,7 @@ export default class Logger {
   }
 
   async logToApi (metrics: Array<Metric>) {
-    if (!API_URL || !this.sharedStateView) {
+    if (!API_URL) {
       return
     }
 
