@@ -8,7 +8,7 @@ import {
   ListChannelsRequest,
   ToggleFrameRequest,
   LockWalletRequest,
-  SetUsernameRequest
+  SetUsernameRequest,
 } from './yns'
 import WorkerProxy from '../../frame/WorkerProxy'
 import {AllowedOrigins} from '../messaging/OriginValidator'
