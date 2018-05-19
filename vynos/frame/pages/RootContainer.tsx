@@ -46,12 +46,11 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
       const { walletAddress } = this.props
       const logger = new Logger({
         source: 'frame',
-        method: 'logErrors',
-        address: walletAddress || ''
+        getAddress: async () => (walletAddress || '')
       })
 
       logger.logToApi([{
-        name: `${logger.source}:${logger.method}`,
+        name: `${logger.source}:logErrors`,
         ts: new Date(),
         data: {
           message: `Runtime error in ${file}:${line}: ${message}`,

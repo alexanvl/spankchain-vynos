@@ -81,11 +81,17 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     await new Promise((resolve) => persistStore(store, undefined, resolve))
 
     const sharedStateView = new SharedStateView(backgroundController)
-    const frameController = new FrameController(store, new Logger({source: 'worker', method: 'FrameController', sharedStateView}))
-    const hubController = new HubController(store, sharedStateView, new Logger({source: 'worker', method: 'HubController', sharedStateView}))
-    const micropaymentsController = new MicropaymentsController(server.web3, store, sharedStateView, server, new Logger({source: 'worker', method: 'MicropaymentsController', sharedStateView}))
-    const authController = new AuthController(store, sharedStateView, server.providerOpts, frameController, new Logger({source: 'worker', method: 'AuthController', sharedStateView}))
-    const walletController = new WalletController(server.web3, store, sharedStateView, new Logger({source: 'worker', method: 'WalletController', sharedStateView}))
+
+    const getAddress = async () => {
+      const addresses = await sharedStateView.getAccounts()
+      return addresses[0]
+    }
+
+    const frameController = new FrameController(store, new Logger({source: 'worker', getAddress}))
+    const hubController = new HubController(store, sharedStateView, new Logger({source: 'worker', getAddress}))
+    const micropaymentsController = new MicropaymentsController(server.web3, store, sharedStateView, server, new Logger({source: 'worker', getAddress}))
+    const authController = new AuthController(store, sharedStateView, server.providerOpts, frameController, new Logger({source: 'worker', getAddress}))
+    const walletController = new WalletController(server.web3, store, sharedStateView, new Logger({source: 'worker', getAddress}))
 
     walletController.start()
 

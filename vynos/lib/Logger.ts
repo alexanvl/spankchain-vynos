@@ -6,8 +6,7 @@ const API_URL = process.env.API_URL
 export interface LoggerOptions {
   source: string
   method?: string
-  address?: string
-  sharedStateView?: SharedStateView
+  getAddress: () => Promise<string>
 }
 
 export interface Metric {
@@ -19,21 +18,11 @@ export interface Metric {
 export default class Logger {
   source: string
 
-  method?: string
+  private getAddress: () => Promise<string>
 
-  private address?: string
-
-  private sharedStateView?: SharedStateView
-
-  constructor ({source, method, address, sharedStateView}: LoggerOptions) {
+  constructor ({source, method, getAddress}: LoggerOptions) {
     this.source = source || 'Not set'
-    this.method = method || 'Not set'
-    this.address = address
-    this.sharedStateView = sharedStateView
-  }
-
-  setMethod (method: string): void {
-    this.method = method
+    this.getAddress = getAddress
   }
 
   async logToApi (metrics: Array<Metric>) {
@@ -41,13 +30,10 @@ export default class Logger {
       return
     }
 
-    if ((!this.address || !this.address.length) && this.sharedStateView) {
-      const addresses = await this.sharedStateView.getAccounts()
-      this.address = addresses[0]
-    }
+    const address = await this.getAddress()
 
     const clonedMetrics = JSON.parse(JSON.stringify(metrics))
-    clonedMetrics.forEach((m: Metric) => m.data.address = this.address)
+    clonedMetrics.forEach((m: Metric) => m.data.address = address)
 
     const body = JSON.stringify({
       metrics: clonedMetrics
