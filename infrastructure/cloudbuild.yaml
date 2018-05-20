@@ -7,7 +7,7 @@ steps:
             '--build-arg', 'API_URL=${_API_URL}',
             '--build-arg', 'NETWORK_NAME=${_NETWORK_NAME}',
             '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:$COMMIT_SHA',
-            '-f', '${_PROJECT}/infrastructure/Dockerfile',
+            '-f', 'infrastructure/Dockerfile',
             '.'
           ]
     dir: '${_PROJECT}'
