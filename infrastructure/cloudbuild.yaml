@@ -11,6 +11,15 @@ steps:
             '.'
           ]
     dir: '${_PROJECT}'
+
+  - name: 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:$COMMIT_SHA'
+    args: [ 'cp', '-r', '/usr/share/nginx/html/', 'dist']
+    dir: '${_PROJECT}'
+
+  - name: 'gcr.io/cloud-builders/gsutil'
+    args: ["-m", "rsync", "-r", "-c", "-d", "./dist/", "gs://vynos-staging.spankdev.com"]
+    dir: '${_PROJECT}'
+
   - name: 'gcr.io/cloud-builders/docker'
     args: ["push", "gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:$COMMIT_SHA"]
   - name: 'gcr.io/$PROJECT_ID/cloud-build-helm:2.8.2'
