@@ -1,4 +1,7 @@
-FROM node:9.3.0 as builder
+# Note: intended to be run with:
+#  $ cd vynos
+#  $ docker build -f infrastructure/Dockerfile .
+FROM node:9.3.0
 
 WORKDIR /home/node/app
 
