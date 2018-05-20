@@ -2,7 +2,7 @@ import { BROWSER_NOT_SUPPORTED_TEXT } from '../frame/constants'
 
 export interface ServiceWorkerClient {
   load: (serviceWorker: ServiceWorker) => void
-  unload: () => void
+  unload: () => Promise<void>
 }
 
 function activate(client: ServiceWorkerClient, serviceWorker: ServiceWorker) {
@@ -12,21 +12,14 @@ function activate(client: ServiceWorkerClient, serviceWorker: ServiceWorker) {
 }
 
 function install(client: ServiceWorkerClient, registration: ServiceWorkerRegistration) {
-  registration.onupdatefound = () => {
-    registration.update().then(() => {
-      registration.unregister().then(() => {
-        // Do Nothing
-      })
-    })
-  }
-
   let serviceWorker = (registration.active || registration.installing)!
 
   serviceWorker.onstatechange = () => {
     if (serviceWorker.state === 'redundant') {
-      client.unload()
-      register(client)
+      client.unload().catch(console.error.bind(console))
+      return
     }
+
     activate(client, serviceWorker)
   }
 

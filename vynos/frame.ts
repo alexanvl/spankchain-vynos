@@ -33,10 +33,10 @@ class Client implements ServiceWorkerClient {
     metrics.setLogFunc(metrics => this.frameServer.broadcast('__METRICS__', metrics))
   }
 
-  unload () {
+  async unload () {
     try {
       this.stopHeartbeating()
-      this.frameServer.stop().catch(console.error.bind(console))
+      await this.frameServer.stop()
     } catch (e) {
       console.error(e)
     }
