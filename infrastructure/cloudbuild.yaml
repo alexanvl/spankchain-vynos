@@ -13,7 +13,7 @@ steps:
     dir: '${_PROJECT}'
 
   - name: gcr.io/cloud-builders/gsutil
-    args: ["-m", "rsync", "-r", "-c", "-d", "${_PROJECT}/dist/", "gs://vynos-staging.spankdev.com"]
+    args: ["-m", "rsync", "-r", "-c", "-d", "./${_PROJECT}/dist/", "gs://vynos-staging.spankdev.com"]
 
   - name: 'gcr.io/cloud-builders/docker'
     args: ["push", "gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:$COMMIT_SHA"]
