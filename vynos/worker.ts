@@ -60,7 +60,6 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
   }
 
   async function install () {
-    console.log('dummy log to kick build')
     let status = WorkerStatus.INITIALIZING
 
     const workerWrapper = new WorkerWrapper(self)
