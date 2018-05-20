@@ -22,7 +22,3 @@ ARG NETWORK_NAME=ropsten
 ENV NETWORK_NAME=${NETWORK_NAME}
 
 RUN rm -rf ./dist && yarn build
-
-FROM nginx:1.12-alpine
-
-COPY --from=builder /home/node/app/dist/ /usr/share/nginx/html
