@@ -2,9 +2,9 @@ import {EventEmitter} from 'events'
 import {JSONRPC} from '../Payload'
 import OriginValidator, {AllowedOrigins} from './OriginValidator'
 import {Postable} from './Postable'
+import {IDebugger} from 'debug'
 import debug from '../debug'
 import {Listenable} from './Listenable'
-import Logger from '../Logger'
 
 const METHOD_NOT_FOUND = -32601
 
@@ -34,19 +34,14 @@ export default class JsonRpcServer extends EventEmitter {
 
   private target: Postable
 
-  private name: string
-
-  private log: Logger
+  private log: IDebugger
 
   constructor (name: string, allowedOrigins: AllowedOrigins, source: Listenable, target: Postable) {
     super()
+    this.log = debug(`JsonRpcServer:${name}`)
     this.originValidator = new OriginValidator(allowedOrigins)
     this.source = source
     this.target = target
-    this.log = new Logger({
-      source: 'JsonRpcServer'
-    })
-    this.name = `JsonRpcServer:${name}`
     this.onMessage = this.onMessage.bind(this)
     this.source.addEventListener('message', this.onMessage)
   }
@@ -56,11 +51,7 @@ export default class JsonRpcServer extends EventEmitter {
   }
 
   public broadcast(type: string, ...data: any[]) {
-    this.log.setMethod('broadcast')
-    this.sendLogToApi({
-      message: `Broadcasting type: ${type}`,
-      type: 'info',
-    })
+    this.log('Broadcasting %s', type)
 
     if ('WindowClient' in window && (this.target as any).isWrapper) {
       this.target.postMessage({
@@ -88,7 +79,6 @@ export default class JsonRpcServer extends EventEmitter {
   }
 
   private onMessage (e: any) {
-    this.log.setMethod('onMessage')
     const data = e.data
 
     let origin = e.origin
@@ -101,48 +91,32 @@ export default class JsonRpcServer extends EventEmitter {
     }
 
     if (!this.originValidator.isAllowed(origin)) {
-      this.sendLogToApi({
-        message: `Received message from non-whitelisted origin ${origin}`,
-        type: 'error',
-      })
+
+      this.log('Received message from non-whitelisted origin %s.', origin)
       return
     }
 
     if (!this.validateRpcPayload(data)) {
-      this.sendLogToApi({
-        message: `Received invalid RPC payload: ${JSON.stringify(data)}`,
-        type: 'error',
-      })
+      this.log('Received invalid RPC payload: %O', data)
       return
     }
 
-    this.sendLogToApi({
-      message: `Received message: ${JSON.stringify(data)}`,
-      type: 'error',
-    })
+    this.log('Received message: %o', data)
+
     const handler = this.findHandler(data.method)
 
     if (!handler) {
-      this.sendLogToApi({
-        message: `No handler found for method ${data.method}`,
-        type: 'error',
-      })
+      this.log('No handler found for method %s.', data.method)
       return this.sendErrorResponse(e, METHOD_NOT_FOUND, `Method ${data.method} not found.`)
     }
 
     handler((err: any, res: any) => {
       if (err) {
-        this.sendLogToApi({
-          message: `Handler returned an error for method ${data.method}: ${data.err}`,
-          type: 'error',
-        })
+        this.log('Handler returned an error for method %s: %O', data.method, err)
         return this.sendErrorResponse(e, err.code || -1, err.message || 'An error occurred.')
       }
 
-      this.sendLogToApi({
-          message: `Returning response for method ${data.method}`,
-          type: 'info',
-        })
+      this.log('Returning response for method %s.', data.method)
       return this.sendResponse(e, res)
     }, ...data.params)
   }
@@ -182,13 +156,5 @@ export default class JsonRpcServer extends EventEmitter {
     }
 
     return true
-  }
-
-  private sendLogToApi (data: any) {
-    this.log.logToApi([{
-      name: `${this.log.source}:${this.log.method}`,
-      ts: new Date(),
-      data,
-    }])
   }
 }

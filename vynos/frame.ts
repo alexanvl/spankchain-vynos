@@ -15,6 +15,8 @@ class Client implements ServiceWorkerClient {
 
   private heartbeating = false
 
+  private loaded = false
+
   load (serviceWorker: ServiceWorker) {
     this.pollWorker = this.pollWorker.bind(this)
     this.workerProxy = new WorkerProxy(serviceWorker)
@@ -31,12 +33,17 @@ class Client implements ServiceWorkerClient {
     })
 
     metrics.setLogFunc(metrics => this.frameServer.broadcast('__METRICS__', metrics))
+    this.loaded = true
   }
 
-  unload () {
+  async unload () {
+    if (!this.loaded) {
+      return
+    }
+
     try {
       this.stopHeartbeating()
-      this.frameServer.stop().catch(console.error.bind(console))
+      await this.frameServer.stop()
     } catch (e) {
       console.error(e)
     }

@@ -9,7 +9,7 @@ require('dotenv').config({ path: '.env' });
 
 let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
-let API_URL = process.env.API_URL || 'http://localhost:6960'
+let API_URL = process.env.API_URL || 'https://camsite-staging.spankdev.com/api'
 
 const NODE_ENV = process.env.NODE_ENV
 

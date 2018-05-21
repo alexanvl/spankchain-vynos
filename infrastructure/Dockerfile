@@ -1,4 +1,7 @@
-FROM node:9.3.0 as builder
+# Note: intended to be run with:
+#  $ cd vynos
+#  $ docker build -f infrastructure/Dockerfile .
+FROM node:9.3.0
 
 WORKDIR /home/node/app
 
@@ -22,7 +25,3 @@ ARG NETWORK_NAME=ropsten
 ENV NETWORK_NAME=${NETWORK_NAME}
 
 RUN rm -rf ./dist && yarn build
-
-FROM nginx:1.12-alpine
-
-COPY --from=builder /home/node/app/dist/ /usr/share/nginx/html
