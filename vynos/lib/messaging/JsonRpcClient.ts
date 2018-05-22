@@ -2,9 +2,9 @@ import {EventEmitter} from 'events'
 import {JSONRPC, randomId} from '../Payload'
 import JsonRpcError from './JsonRpcError'
 import {Listenable} from './Listenable'
+import {IDebugger} from 'debug'
 import debug from '../debug'
 import {Postable} from './Postable'
-import Logger from '../Logger'
 
 interface Validator {
   [k: string]: (f: any) => boolean
@@ -25,13 +25,11 @@ export default class JsonRpcClient extends EventEmitter {
 
   private origin: string
 
-  private log: Logger
+  private log: IDebugger
 
   constructor (name: string, target: Postable, receiver: Listenable, origin: string) {
     super()
-    this.log = new Logger({
-      source: 'JsonRpcClient'
-    })
+    this.log = debug(`JsonRpcClient:${name}`)
     this.target = target
     this.receiver = receiver
     this.origin = origin
@@ -41,29 +39,19 @@ export default class JsonRpcClient extends EventEmitter {
   }
 
   public onMessage (e: any) {
-    this.log.setMethod('onMessage')
     const data = e.data
 
     if (e.origin !== this.origin) {
-      this.sendLogToApi({
-        message: `Received message from invalid origin ${e.origin}`,
-        type: 'error',
-      })
+      this.log('Received message from invalid origin %s.', e.origin)
       return
     }
 
     if (!this.validateBroadcastPayload(data)) {
-      this.sendLogToApi({
-        message: `Received invalid broadcast payload: ${JSON.stringify(data)}`,
-        type: 'error',
-      })
+      this.log('Received invalid broadcast payload: %O', data)
       return
     }
 
-    this.sendLogToApi({
-      message: `Received broadcast: ${JSON.stringify(data)}`,
-      type: 'info',
-    })
+    this.log('Received broadcast: %o', data)
     this.emit(data.type.replace('broadcast/', ''), ...data.data)
   }
 
@@ -72,7 +60,6 @@ export default class JsonRpcClient extends EventEmitter {
   }
 
   public callWithTimeout<T>(timeout: number, method: string, ...params: any[]): Promise<T> {
-    this.log.setMethod('callWithTimeout')
     return new Promise<T>((resolve, reject) => {
       const channel = new MessageChannel()
       const timer = setTimeout(() => reject(new Error(`Timed out. Method: ${method}`)), timeout)
@@ -85,10 +72,7 @@ export default class JsonRpcClient extends EventEmitter {
         params
       }
 
-      this.sendLogToApi({
-        message: `Sending method call: ${JSON.stringify(payload)}`,
-        type: 'info',
-      })
+      this.log('Sending method call: %o', payload)
 
       if (this.target instanceof ServiceWorker) {
         this.target.postMessage(payload, [channel.port2])
@@ -99,10 +83,7 @@ export default class JsonRpcClient extends EventEmitter {
       channel.port1.onmessage = (e: any) => {
         const data = e.data
 
-        this.sendLogToApi({
-          message: `Received method call response: ${JSON.stringify(data)}`,
-          type: 'info',
-        })
+        this.log('Received method call response: %o', data)
 
         if (!this.validateRpcPayload(data)) {
           return
@@ -145,13 +126,5 @@ export default class JsonRpcClient extends EventEmitter {
     return typeof data.type === 'string' &&
       data.type.indexOf('broadcast/') === 0 &&
       Array.isArray(data.data)
-  }
-
-  private sendLogToApi (data: any) {
-    this.log.logToApi([{
-      name: `${this.log.source}:${this.log.method}`,
-      ts: new Date(),
-      data,
-    }])
   }
 }

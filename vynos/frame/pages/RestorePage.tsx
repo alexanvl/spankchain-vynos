@@ -132,6 +132,10 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     })
   }
 
+  isAndroid () {
+    return navigator.userAgent.match(/android/i)
+  }
+
   render () {
     return (
       <OnboardingContainer totalSteps={0} currentStep={0}>
@@ -175,7 +179,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             inverse
           />
         </div>
-        <div className={style.funnelFooter}>
+        <div className={`${style.funnelFooter} ${this.isAndroid() ? style.androidFooter : ''}`}>
           <Button
             type="secondary"
             content="Go Back"
@@ -202,7 +206,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
           {this.state.seedError ? this.state.seedError : 'Enter your SpankCard backup words. Use tab to jump to the next field.'}
         </TextBox>
         {this.renderFields()}
-        <div className={style.funnelFooter}>
+        <div className={`${style.funnelFooter} ${this.isAndroid() ? style.androidFooter : ''}`}>
           <Button
             type="secondary"
             content="Go Back"

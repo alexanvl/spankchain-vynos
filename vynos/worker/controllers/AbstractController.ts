@@ -18,14 +18,6 @@ export default class AbstractController {
         if (typeof res !== 'undefined' && res.then) {
           res = await res
         }
-
-        // FOR STRESS TEST ONLY
-        if (this.logger) {
-          this.logToApi(method, {
-            message: `Attempting ${method}`,
-            type: 'info'
-          })
-        }
       } catch (e) {
         if (this.logger) {
           this.logToApi(method,{
