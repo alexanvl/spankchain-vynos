@@ -887,6 +887,10 @@ Channels page
 
   .funnelFooter {
     width: 90% !important;
+
+    &.androidFooter {
+      padding-bottom: 70px;
+    }
   }
 
   .seedPhraseText {
