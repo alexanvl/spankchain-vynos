@@ -1,3 +1,9 @@
+const Raven = require('raven-js')
+
+if (process.env.DEBUG) {
+  Raven.config('https://84ca54d0f2324353bb2c26c600860bb5@sentry.io/1212475').install()
+}
+
 import * as React from 'react'
 import * as DOM from 'react-dom'
 import WorkerProxy from './WorkerProxy'
@@ -10,7 +16,6 @@ import reducers from './redux/reducers'
 import RootContainer from './pages/RootContainer'
 import {BrowserRouter} from 'react-router-dom'
 
-const Raven = require('raven-js')
 
 const MOUNT_POINT_ID = 'mount-point'
 
@@ -52,12 +57,7 @@ async function renderToMountPoint (mountPoint: HTMLElement, workerProxy: WorkerP
 export default function renderApplication (document: HTMLDocument, workerProxy: WorkerProxy) {
   let mountPoint = document.getElementById(MOUNT_POINT_ID)
   if (mountPoint) {
-    if (!process.env.DEBUG) {
-      Raven.config('https://84ca54d0f2324353bb2c26c600860bb5@sentry.io/1212475').install()
-    }
-    
-    renderToMountPoint((mountPoint as HTMLElement), workerProxy)
-
+    renderToMountPoint(mountPoint, workerProxy)
   } else {
     console.error(`Can not find mount point element #${MOUNT_POINT_ID}`)
   }
