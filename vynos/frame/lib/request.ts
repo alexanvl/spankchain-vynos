@@ -8,7 +8,7 @@ export async function request (url: RequestInfo, options?: RequestInit): Promise
   const res = await fetch(url, options)
 
   if (res.status < 200 || res.status > 299) {
-    throw new Error('Failed to fetch.')
+    throw new Error(`Failed to fetch URL: ${url}. Got status: ${res.status}`)
   }
 
   return res

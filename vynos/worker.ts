@@ -1,3 +1,9 @@
+const Raven = require('raven-js')
+
+if (!process.env.DEBUG) {
+  Raven.config('https://8199bca0aab84a5da6293737634dcc88@sentry.io/1212501').install()
+}
+
 import {asServiceWorker} from './worker/window'
 import * as redux from 'redux'
 import {Store} from 'redux'
@@ -23,6 +29,7 @@ import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import debug from './lib/debug'
 import localForage = require('localforage')
 import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
+
 
 export class ClientWrapper implements WindowClient {
   private self: ServiceWorkerGlobalScope
@@ -138,5 +145,10 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     status = WorkerStatus.AWAITING_HUB
   }
 
-  install().catch(console.error.bind(console))
+  install()
+    .catch(error => {
+      Raven.captureException(error)
+      console.error(error)
+    })
+
 })
