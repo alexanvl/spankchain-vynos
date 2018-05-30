@@ -1,3 +1,9 @@
+const Raven = require('raven-js')
+
+if (process.env.DEBUG) {
+  Raven.config('https://84ca54d0f2324353bb2c26c600860bb5@sentry.io/1212475').install()
+}
+
 import * as React from 'react'
 import * as DOM from 'react-dom'
 import WorkerProxy from './WorkerProxy'
@@ -9,6 +15,7 @@ import RemoteStoreUpdater from './lib/RemoteStoreUpdater'
 import reducers from './redux/reducers'
 import RootContainer from './pages/RootContainer'
 import {BrowserRouter} from 'react-router-dom'
+
 
 const MOUNT_POINT_ID = 'mount-point'
 
