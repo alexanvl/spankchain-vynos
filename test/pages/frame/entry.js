@@ -8,7 +8,7 @@ const entryCommands = {
     return this
       .waitForElementVisible('@consentButton', 5000)
       .click('@consentButton')
-      .waitForElementVisible('@frameButton')
+      .waitForElementVisible('@frameButton', 0)
       .pause(5000)
       .click('@frameButton')
       .pause(2000)
@@ -31,7 +31,7 @@ const entryCommands = {
     return this
       .waitForElementVisible('@consentButton', 5000)
       .click('@consentButton')
-      .waitForElementVisible('@frameButton', 5000)
+      .waitForElementVisible('@frameButton', 0)
       .pause(5000)
       .click('@frameButton')
       .pause(2000)
