@@ -119,7 +119,7 @@ export default class Vynos extends EventEmitter {
       return this.initializing
     }
 
-    this.initializing = this.doInit()
+      this.initializing = this.doInit()
     return this.initializing
   }
 
@@ -138,14 +138,7 @@ export default class Vynos extends EventEmitter {
     const origin = `${parts[0]}//${parts[2]}`
 
     this.client = new VynosClient(this.frame.element.contentWindow, origin)
-
-    try {
-      await this.client.initialize(this.options.hubUrl, this.options.authRealm)
-    } catch (err) {
-      this.emit('error', err)
-      throw err
-    }
-
+    await this.client.initialize(this.options.hubUrl, this.options.authRealm)
     this.previousState = await this.client.getSharedState()
     this.client.onSharedStateUpdate(this.handleSharedStateUpdate)
     this.emit('update', this.previousState)
