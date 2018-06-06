@@ -5,7 +5,7 @@ const PASSWORD = 'asdfjkl;'
 const PROFILE_USERNAME = Math.random().toString(36).substr(2, 5)
 const PROFILE_EMAIL = `${Math.random().toString(36).substr(2, 5)}@email.com`
 
-const entryCommands = {
+const signupCommands = {
   testFrameButton() {
     return this
       .waitForElementVisible('@frameConsentButton', 5000)
@@ -70,7 +70,7 @@ const entryCommands = {
 
 module.exports = {
   url: PAGE_URL,
-  commands: [pause, frame, entryCommands],
+  commands: [pause, frame, signupCommands],
   elements: {
     // Frame elements
     frame: {

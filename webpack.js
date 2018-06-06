@@ -17,6 +17,10 @@ const NODE_ENV = process.env.NODE_ENV
 
 const NETWORK_NAME = process.env.NETWORK_NAME || 'rinkeby'
 
+const SELENIUM_TEST_ADDRESS = process.env.SELENIUM_TEST_ADDRESS || '0xb4982698ae455eb3081af8a081ac0a6f407f74f9'
+
+const SELENIUM_TEST_BACKUP_WORDS = process.env.SELENIUM_TEST_BACKUP_WORDS || 'WRAP TUNA ASTHMA SILK LONG SCRAP WARM HEDGEHOG ROOKIE FINGER LEGAL ENTIRE'
+
 function resolvePath(dir) {
   return path.resolve.apply(path, [__dirname].concat(dir.split('/')));
 }

@@ -145,6 +145,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
                 content="Restore SpankWallet"
                 onClick={() => this.setState({ displayRestore: true })}
                 isInverse
+                name="restoreWalletButton"
               />
               <Button
                 content="Next"
