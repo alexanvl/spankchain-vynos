@@ -4,7 +4,6 @@ import FrameServer from './lib/rpc/FrameServer'
 import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
 import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
-import {WorkerReadyBroadcastEvent} from './lib/rpc/WorkerReadyBroadcast'
 import renderApplication from './frame/renderApplication'
 import * as metrics from './lib/metrics'
 
@@ -26,11 +25,6 @@ class Client implements ServiceWorkerClient {
     this.passEvent(SharedStateBroadcastEvent)
 
     this.pollWorker()
-
-    this.workerProxy.once(ReadyBroadcastEvent, () => {
-      renderApplication(document, this.workerProxy)
-      this.startHeartbeating()
-    })
 
     metrics.setLogFunc(metrics => this.frameServer.broadcast('__METRICS__', metrics))
     this.loaded = true
@@ -59,7 +53,7 @@ class Client implements ServiceWorkerClient {
     this.heartbeating = false
   }
 
-  private async beat() {
+  private async beat () {
     if (!this.heartbeating) {
       return
     }
@@ -76,31 +70,15 @@ class Client implements ServiceWorkerClient {
     this.workerProxy.addListener(name, (...args: any[]) => this.frameServer.broadcast(name, ...args))
   }
 
-  private pollWorker () {
-    const poll = async () => {
-      const maxAttempts = 10
-      let attempt = 0
-      let status = WorkerStatus.INITIALIZING
+  private async pollWorker () {
+    const status = await this.workerProxy.status()
 
-      while (status === WorkerStatus.INITIALIZING) {
-        if (attempt === maxAttempts) {
-          throw new Error('Timed out.')
-        }
-
-        await new Promise((resolve) => setTimeout(resolve, 1000))
-
-        try {
-          status = await this.workerProxy.status()
-        } catch (e) {
-        }
-
-        attempt++
-      }
-
-      this.frameServer.broadcast(WorkerReadyBroadcastEvent)
+    if (status !== WorkerStatus.READY) {
+      await new Promise((resolve) => this.workerProxy.once(ReadyBroadcastEvent, resolve))
     }
 
-    poll().catch(console.error.bind(console))
+    renderApplication(document, this.workerProxy)
+    this.startHeartbeating()
   }
 }
 

@@ -46,6 +46,7 @@ export default class HubController extends AbstractController implements Lifecyc
 
   async start (): Promise<void> {
     this.isPolling = true
+    await this.getHubBranding()
     this.pollExchangeRate()
   }
 
@@ -90,6 +91,13 @@ export default class HubController extends AbstractController implements Lifecyc
 
     this.isPolling = true
     poll()
+  }
+
+  private async getHubBranding (): Promise<null> {
+    const hubUrl = await this.sharedStateView.getHubUrl()
+    const res = await requestJson<BrandingResponse>(`${hubUrl}/branding`)
+    this.store.dispatch(actions.setHubBranding(res))
+    return null
   }
 
   registerHandlers (server: JsonRpcServer) {
