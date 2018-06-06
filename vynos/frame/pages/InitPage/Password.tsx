@@ -128,6 +128,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
               onChange={this.handleChangePassword}
               errorMessage={this.state.passwordError}
               inverse
+              name="signupNewPasswordInput"
             />
             <Input
               placeholder="Confirm Password"
@@ -136,6 +137,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
               onChange={this.handleChangePasswordConfirmation}
               errorMessage={this.state.passwordConfirmationError}
               inverse
+              name="signupConfirmPasswordInput"
             />
             <div className={style.funnelFooter}>
               <Button
@@ -149,6 +151,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
                 onClick={this.handleSubmit}
                 isInverse
                 isSubmit
+                name="signupSetPasswordButton"
               />
             </div>
           </Submittable>

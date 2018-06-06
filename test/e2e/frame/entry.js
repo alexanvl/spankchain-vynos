@@ -6,6 +6,9 @@ module.exports = {
       .navigate()
       .testFrameButton()
       .testValidPassword()
+      .testAcknowledgeWords()
+      .testWalletAddress()
+      .testProfile()
 
     client.end()
   }
