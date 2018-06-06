@@ -33,7 +33,7 @@ export default class VynosClient extends JsonRpcClient {
   }
 
   async initialize (): Promise<boolean> {
-    const status = await this.callWithTimeout<WorkerStatus>(5000, StatusRequest.method)
+    const status = await this.statusWithRetry()
 
     if (status !== WorkerStatus.READY) {
       await new Promise((resolve) => this.once(ReadyBroadcastEvent, resolve))
@@ -77,5 +77,20 @@ export default class VynosClient extends JsonRpcClient {
 
   setUsername (username: string): Promise<void> {
     return this.call(SetUsernameRequest.method, username)
+  }
+
+  private async statusWithRetry (): Promise<WorkerStatus> {
+    let retryCount = 3
+    let retry = 0
+
+    while (retry < retryCount) {
+      try {
+        return this.callWithTimeout<WorkerStatus>(5000, StatusRequest.method)
+      } catch (e) {
+        retry++
+      }
+    }
+
+    throw new Error('Status call timed out.')
   }
 }
