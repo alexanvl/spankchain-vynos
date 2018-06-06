@@ -11,6 +11,8 @@ let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
 let API_URL = process.env.API_URL || 'https://camsite-staging.spankdev.com/api'
 
+let HUB_URL = process.env.HUB_URL || 'https://hub-staging.spankdev.com'
+
 const NODE_ENV = process.env.NODE_ENV
 
 const NETWORK_NAME = process.env.NETWORK_NAME || 'rinkeby'
@@ -47,7 +49,8 @@ function webpackConfig (entry, hash = true) {
           'DEBUG': NODE_ENV !== 'production',
           'FRAME_URL': JSON.stringify(FRAME_URL),
           'API_URL': JSON.stringify(API_URL),
-          'NETWORK_NAME': JSON.stringify(NETWORK_NAME)
+          'NETWORK_NAME': JSON.stringify(NETWORK_NAME),
+          'HUB_URL': JSON.stringify(HUB_URL)
         }
       })
     ],
