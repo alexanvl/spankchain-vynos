@@ -14,7 +14,6 @@ export interface StateProps {
   isUnlockExpected: boolean
   isTransactionPending: boolean
   isFrameDisplayed: boolean
-  currentHubUrl: string
   walletAddress: string | null
   forceRedirect?: string
   workerProxy: WorkerProxy
@@ -44,25 +43,21 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
 
   logErrors() {
     window.onerror = (message, file, line, column, error) => {
-      const {currentHubUrl, walletAddress} = this.props
+      const { walletAddress } = this.props
       const logger = new Logger({
-        source: 'Frame',
-        method: 'logErrors',
-        hubUrl: currentHubUrl,
-        address: walletAddress || ''
+        source: 'frame',
+        getAddress: async () => (walletAddress || '')
       })
 
-      const body = {
-        message: `Runtime error in ${file}:${line}: ${message}`,
-        type: 'error'
-      } as any
-
-      // Error object doesn't exist in older browsers
-      (error && error.stack)
-        ? body.stack = error.stack
-        : body.stack = `${file}:${line}:${column}`
-
-      logger.logToHub(body)
+      logger.logToApi([{
+        name: `${logger.source}:logErrors`,
+        ts: new Date(),
+        data: {
+          message: `Runtime error in ${file}:${line}: ${message}`,
+          type: 'error',
+          stack: (error && error.stack) ? error.stack : `No stack available - ${file}:${line}:${column}`,
+        }
+      }])
     }
   }
 
@@ -136,7 +131,6 @@ function mapStateToProps (state: FrameState): StateProps {
     isUnlockExpected: (state.shared.didInit && state.shared.isLocked) || (state.shared.didInit && !state.shared.currentAuthToken && !state.temp.initPage.showInitialDeposit),
     isWalletExpected: state.shared.didInit && !state.shared.isLocked && !state.temp.initPage.showInitialDeposit && !!state.shared.currentAuthToken,
     isTransactionPending: state.shared.didInit && state.shared.isTransactionPending !== 0,
-    currentHubUrl: state.shared.currentHubUrl,
     walletAddress: state.shared.address,
   }
 }

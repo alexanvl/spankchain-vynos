@@ -8,7 +8,7 @@ export default class AbstractController {
     this.logger = logger
   }
 
-  protected registerHandler(server: JsonRpcServer, method: string, func: (...args: any[]) => any) {
+  protected registerHandler (server: JsonRpcServer, method: string, func: (...args: any[]) => any) {
     server.addHandler(method, async (cb: ErrResCallback, ...args: any[]) => {
       let res
 
@@ -20,7 +20,7 @@ export default class AbstractController {
         }
       } catch (e) {
         if (this.logger) {
-          this.logger.logToHub({
+          this.logToApi(method,{
             message: `Error has occurred in ${method}: ${e.message || e}`,
             type: 'error',
             stack: e.stack || e
@@ -31,5 +31,13 @@ export default class AbstractController {
 
       cb(null, typeof res === 'undefined' ? null : res)
     })
+  }
+
+  protected logToApi(method: string, data: any) {
+    this.logger.logToApi([{
+      name: `${this.logger.source}:${method}`,
+      ts: new Date(),
+      data
+    }])
   }
 }

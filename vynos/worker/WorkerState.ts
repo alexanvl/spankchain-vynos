@@ -97,7 +97,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   rememberPath: '/',
   lastUpdateDb: 0,
   authorizationRequest: null,
-  currentHubUrl: '',
+  currentHubUrl: process.env.HUB_URL!,
   currentAuthRealm: '',
   currentAuthToken: '',
   isFrameDisplayed: false,
@@ -126,7 +126,7 @@ export const INITIAL_STATE: WorkerState = {
   runtime: {
     isTransactionPending: 0,
     lastUpdateDb: 0,
-    currentHubUrl: '',
+    currentHubUrl: process.env.HUB_URL!,
     currentAuthRealm: '',
     currentAuthToken: '',
     authorizationRequest: null,

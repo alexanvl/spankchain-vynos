@@ -1,8 +1,13 @@
+const Raven = require('raven-js')
+
+if (!process.env.DEBUG) {
+  Raven.config('https://8199bca0aab84a5da6293737634dcc88@sentry.io/1212501').install()
+}
+
 import {asServiceWorker} from './worker/window'
 import * as redux from 'redux'
 import {Store} from 'redux'
-import {RegisterHubRequest, ResetRequest, StatusRequest} from './lib/rpc/yns'
-import StartupController from './worker/controllers/StartupController'
+import {ResetRequest, StatusRequest} from './lib/rpc/yns'
 import WorkerServer from './lib/rpc/WorkerServer'
 import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
@@ -21,8 +26,9 @@ import AuthController from './worker/controllers/AuthController'
 import WalletController from './worker/controllers/WalletController'
 import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import debug from './lib/debug'
-import localForage = require('localforage')
 import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
+import localForage = require('localforage')
+
 
 export class ClientWrapper implements WindowClient {
   private self: ServiceWorkerGlobalScope
@@ -74,20 +80,30 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     }
 
     const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE) as Store<WorkerState>
-    const startupController = new StartupController(store)
     const backgroundController = new BackgroundController(store)
     const server = new WorkerServer(backgroundController, workerWrapper, clientWrapper)
 
     await new Promise((resolve) => persistStore(store, undefined, resolve))
 
     const sharedStateView = new SharedStateView(backgroundController)
-    const frameController = new FrameController(store, new Logger({source: 'Worker', method: 'FrameController', sharedStateView}))
-    const hubController = new HubController(store, sharedStateView, new Logger({source: 'Worker', method: 'HubController', sharedStateView}))
-    const micropaymentsController = new MicropaymentsController(server.web3, store, sharedStateView, server, new Logger({source: 'Worker', method: 'MicropaymentsController', sharedStateView}))
-    const authController = new AuthController(store, sharedStateView, server.providerOpts, frameController, new Logger({source: 'Worker', method: 'AuthController', sharedStateView}))
-    const walletController = new WalletController(server.web3, store, sharedStateView, new Logger({source: 'Worker', method: 'WalletController', sharedStateView}))
 
-    walletController.start()
+    const getAddress = async () => {
+      const addresses = await sharedStateView.getAccounts()
+      return addresses[0]
+    }
+
+    const logger = new Logger({
+      source: 'worker',
+      getAddress
+    })
+
+    const frameController = new FrameController(store, logger)
+    const hubController = new HubController(store, sharedStateView, logger)
+    const micropaymentsController = new MicropaymentsController(server.web3, store, sharedStateView, server, logger)
+    const authController = new AuthController(store, sharedStateView, server.providerOpts, frameController, logger)
+    const walletController = new WalletController(server.web3, store, sharedStateView, logger)
+
+    await walletController.start()
 
     hubController.registerHandlers(server)
     micropaymentsController.registerHandlers(server)
@@ -98,17 +114,6 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     backgroundController.didChangeSharedState(sharedState => server.broadcast(SharedStateBroadcastEvent, sharedState))
 
     server.addHandler(StatusRequest.method, (cb: ErrResCallback) => cb(null, status))
-    server.addHandler(RegisterHubRequest.method, async (cb: ErrResCallback, hubUrl: string, authRealm: string) => {
-      try {
-        await startupController.registerHub(hubUrl, authRealm)
-        server.broadcast(ReadyBroadcastEvent)
-        hubController.start()
-        status = WorkerStatus.READY
-        cb(null, null)
-      } catch (e) {
-        cb(e, null)
-      }
-    })
     server.addHandler(ResetRequest.method, async (cb: ErrResCallback) => {
       try {
         await new Promise((resolve, reject) => {
@@ -129,8 +134,16 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       }
     })
 
-    status = WorkerStatus.AWAITING_HUB
+    await hubController.start()
+
+    status = WorkerStatus.READY
+    server.broadcast(ReadyBroadcastEvent)
   }
 
-  install().catch(console.error.bind(console))
+  install()
+    .catch(error => {
+      Raven.captureException(error)
+      console.error(error)
+    })
+
 })

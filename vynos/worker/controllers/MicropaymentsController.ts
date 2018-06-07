@@ -42,8 +42,6 @@ export default class MicropaymentsController extends AbstractController {
 
   timeout: any
 
-  claimStatusTimeout: any
-
   lastAddress: string
 
   private sem: semaphore.Semaphore
@@ -138,11 +136,11 @@ export default class MicropaymentsController extends AbstractController {
       case ChannelClaimStatus.FAILED:
       case null:
         await this.closeChannel(hubUrl, channelId)
-        return this.pollChannelClaimStatus(channelId)
+        await this.pollChannelClaimStatus(channelId)
       case ChannelClaimStatus.NEW:
       case ChannelClaimStatus.PENDING:
         this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS))
-        return this.pollChannelClaimStatus(channelId)
+        await this.pollChannelClaimStatus(channelId)
       case ChannelClaimStatus.CONFIRMED:
         return
       default:
@@ -151,38 +149,50 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async pollChannelClaimStatus (channelId: string): Promise<any> {
-    const ctx = this
-    clearTimeout(ctx.claimStatusTimeout)
+    const maxAttempts = 120
 
-    return new Promise(async (resolve: any, reject: any) => {
-      await poll(resolve, reject)
-    })
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      const claimStatus = await this.getChannelClaimStatus(channelId)
+      const machinomy = await this.getMachinomy()
+      const channel = await machinomy.channelById(channelId)
+      const {status} = claimStatus
+      const isConverged = (
+        channel &&
+        channel.state === ChannelClaimStatus.CONVERGED &&
+        status === ChannelClaimStatus.CONFIRMED
+      )
 
-    async function poll (resolve: any, reject: any) {
-      try {
-        const claimStatus = await ctx.getChannelClaimStatus(channelId)
-        const {status} = claimStatus
+      if (isConverged) {
+        this.logToApi('channelClaimStatusConvergenceAttempts', {
+          count: attempt,
+          channelId
+        })
 
-        if (status === ChannelClaimStatus.CONFIRMED) {
-          ctx.store.dispatch(actions.setActiveWithdrawalError(null))
-          resolve(claimStatus)
-          await ctx.syncMachinomyRedux()
-          ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
-        } else if (status === ChannelClaimStatus.FAILED) {
-          ctx.store.dispatch(actions.setHasActiveWithdrawal(false))
-          ctx.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.FAILED))
-          reject(new Error(CLOSE_CHANNEL_ERRORS.FAILED))
-        } else {
-          ctx.claimStatusTimeout = setTimeout(() => poll(resolve, reject), 15000)
-        }
-      } catch (error) {
-        reject(error)
+        this.store.dispatch(actions.setActiveWithdrawalError(null))
+        await this.syncMachinomyRedux()
+        this.store.dispatch(actions.setHasActiveWithdrawal(false))
+        return claimStatus
       }
+
+      if (status === ChannelClaimStatus.FAILED) {
+        this.store.dispatch(actions.setHasActiveWithdrawal(false))
+        this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.FAILED))
+        throw new Error(CLOSE_CHANNEL_ERRORS.FAILED)
+      }
+
+      await wait(5000)
     }
 
+    this.store.dispatch(actions.setHasActiveWithdrawal(false))
+    this.store.dispatch(actions.setActiveWithdrawalError(CLOSE_CHANNEL_ERRORS.CONVERGENCE_FAILED))
+    throw new Error(CLOSE_CHANNEL_ERRORS.CONVERGENCE_FAILED)
   }
 
   private async closeChannel (hubUrl: string, channelId: string): Promise<void> {
+    this.logToApi('closeChannel', {
+      channelId
+    })
+
     await request(`${hubUrl}/channels/${channelId}/close`, {
       method: 'POST',
       credentials: 'include'
@@ -191,6 +201,10 @@ export default class MicropaymentsController extends AbstractController {
 
   private async initChannel (isRecovery: boolean = false) {
     const name = isRecovery ? 'Channel Recovery Probe' : 'Channel Open/Deposit Probe'
+
+    this.logToApi('initChannel', {
+      isRecovery
+    })
 
     /**
      * This is needed because the smart contracts requires a payment to be provided to the claim
@@ -215,6 +229,10 @@ export default class MicropaymentsController extends AbstractController {
     const accounts = await this.sharedStateView.getAccounts()
     const address = accounts[0]
 
+    this.logToApi('getChannelsByPublicKey', {
+      requestedAddress: address
+    })
+
     const res = await requestJson(`${hubUrl}/accounts/${address}/channelIds`, {
       method: 'GET',
       credentials: 'include'
@@ -224,6 +242,10 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async getChannelClaimStatus (channelId: string): Promise<ChannelClaimStatusResponse> {
+    this.logToApi('getChannelClaimStatus', {
+      channelId
+    })
+
     const hubUrl = await this.sharedStateView.getHubUrl()
     const res = await requestJson(`${hubUrl}/channels/${channelId}/claimStatus`, {
       method: 'GET',
@@ -234,11 +256,18 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async doCloseChannelsForCurrentHub (): Promise<void> {
+    this.logToApi('doCloseChannelsForCurrentHub', {})
+
     try {
       const sharedState = await this.sharedStateView.getSharedState()
       const hubUrl = await this.sharedStateView.getHubUrl()
 
       const channels = sharedState.channels[hubUrl]
+
+      this.logToApi('doCloseChannelsForCurrentHub', {
+        channelCount: channels ? channels.length : 0,
+        hasChannels: !!channels
+      })
 
       if (!channels || !channels.length) {
         return
@@ -256,6 +285,10 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async doDeposit (amount: string): Promise<void> {
+    this.logToApi('doDeposit', {
+      amount
+    })
+
     const sharedState = await this.sharedStateView.getSharedState()
     const hubUrl = await this.sharedStateView.getHubUrl()
     const machinomy = await this.getMachinomy()
@@ -263,6 +296,10 @@ export default class MicropaymentsController extends AbstractController {
     const bigAmount = new BigNumber(amount)
 
     if (channels && channels.length) {
+      this.logToApi('doDeposit:existingChannel', {
+        channelId: channels[0].channelId
+      })
+
       await machinomy.deposit(channels[0].channelId, bigAmount)
       await this.syncMachinomyRedux()
     } else {
@@ -272,6 +309,10 @@ export default class MicropaymentsController extends AbstractController {
       // from ascii
       const channelId = this.web3.fromAscii(ChannelId.random().id.toString('hex'))
       this.store.dispatch(actions.openChannel(channelId))
+
+      this.logToApi('doDeposit:newChannel', {
+        channelId
+      })
 
       if (!this.timeout) {
         this.startScanningPendingChannelIds()
@@ -303,6 +344,11 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async doBuy (price: number, meta: any): Promise<VynosBuyResponse> {
+    this.logToApi('doBuy', {
+      price,
+      meta
+    })
+
     const sharedState = await this.sharedStateView.getState()
 
     if (sharedState.runtime.hasActiveWithdrawal) {
@@ -320,12 +366,23 @@ export default class MicropaymentsController extends AbstractController {
     // so we throw errors if there is no open channel or the channel does
     // not have sufficient funds.
     if (!channels.length) {
+      this.logToApi('doBuy:noOpenChannels', {
+        price,
+        meta
+      })
+
       throw new Error('A channel must be open.')
     }
 
     const chan = channels[0]
 
     if (chan.spent.add(price).gt(chan.value)) {
+      this.logToApi('doBuy:insufficientFunds', {
+        spent: chan.spent.toString(),
+        value: chan.value.toString(),
+        price: price
+      })
+
       throw new Error('Insufficient funds.')
     }
 
@@ -349,6 +406,10 @@ export default class MicropaymentsController extends AbstractController {
     const machinomy = await this.getMachinomy()
     const channels = await machinomy.channels()
     const hasChannel = channels.find((chan: PaymentChannel) => chan.channelId === channelId)
+
+    this.logToApi('doRecover', {
+      channelId
+    })
 
     if (hasChannel) {
       throw new Error('This channel does not need to be recovered. Please withdraw this channel ' +
@@ -417,6 +478,11 @@ export default class MicropaymentsController extends AbstractController {
 
       const paymentChannel = await machinomy.channelById(channelId)
 
+      this.logToApi('doScanPendingChannelIds:gotChannel', {
+        channelCount: paymentChannel ? 1 : 0,
+        channelId: paymentChannel ? paymentChannel.channelId : null
+      })
+
       if (paymentChannel) {
         // Initialize channel with a 0 tip
         await this.initChannel()
@@ -433,6 +499,10 @@ export default class MicropaymentsController extends AbstractController {
     const machinomy = await this.getMachinomy()
     const channels = await machinomy.channels()
 
+    this.logToApi('syncMachinomyRedux', {
+      channelCount: channels.length
+    })
+
     this.store.dispatch(actions.setChannels(channels.map(
       (ch: PaymentChannel) => PaymentChannelSerde.instance.serialize(ch))))
   }
@@ -443,24 +513,48 @@ export default class MicropaymentsController extends AbstractController {
     const localChan = await machinomy.channelById(channelId)
 
     if (!localChan) {
+      this.logToApi('syncPaymentsForChannel:noLocalChannel', {
+        channelId
+      })
+
       throw new Error('No local channel found.')
     }
 
     const remoteChan = PaymentChannelSerde.instance.deserialize(await this.pollForRemoteChannel(channelId))
 
     if (localChan.spent.equals(remoteChan.spent)) {
+      this.logToApi('syncPaymentsForChannel:equalAmounts', {
+        channelId
+      })
+
       return
     }
 
     const diff = remoteChan.spent.minus(localChan.spent)
 
     if (diff.lessThan(0)) {
+      this.logToApi('syncPaymentsForChannel:negativeValue', {
+        channelId
+      })
+
       throw new Error('Channel value cannot be negative.')
     }
 
     if (localChan.spent.plus(diff).greaterThan(remoteChan.value)) {
+      this.logToApi('syncPaymentsForChannel:channelTooLow', {
+        localSpent: localChan.spent.toString(),
+        remoteValue: remoteChan.value.toString(),
+        diff: diff.toString(),
+        channelId
+      })
+
       throw new Error('Insufficient funds remaining in channel.')
     }
+
+    this.logToApi('syncPaymentsForChannel:gotPriceDiff', {
+      priceDiff: diff.toString(),
+      channelId
+    })
 
     await machinomy.payment({
       receiver,
@@ -515,6 +609,8 @@ export default class MicropaymentsController extends AbstractController {
     try {
       chan = await machinomy.open(receiver, amount, channelId)
     } catch (err) {
+      this.logToApi('openChannel:truffleTimeout', {})
+
       if (!err.message.match(/wasn't processed in \d+ seconds/i)) {
         throw err
       }
@@ -531,7 +627,7 @@ export default class MicropaymentsController extends AbstractController {
       const chanExists = chans.find((c: PaymentChannel) => c.channelId === channelId)
 
       if (chanExists) {
-        logMetricWorker(this.server, 'machinomyTxReceiptConvergenceAttempts', {
+        this.logToApi('openChannel:machinomyConverged', {
           count: attempt,
           channelId
         })
@@ -540,6 +636,10 @@ export default class MicropaymentsController extends AbstractController {
 
       await wait(250)
     }
+
+    this.logToApi('openChannel:machinomyConvergenceFailure', {
+      channelId
+    })
 
     throw new Error('Transaction receipt and contract failed to converge.')
   }
@@ -559,7 +659,7 @@ export default class MicropaymentsController extends AbstractController {
       const chan = await machinomy.channelById(channelId)
 
       if (chan) {
-        logMetricWorker(this.server, 'backupPollAttempts', {
+        this.logToApi('pollForOpenChannel:pollingFinished', {
           count: attempt,
           channelId
         })
@@ -569,6 +669,10 @@ export default class MicropaymentsController extends AbstractController {
 
       await wait(5000)
     }
+
+    this.logToApi('pollForOpenChannel:pollingFailure', {
+      channelId
+    })
 
     throw new Error('Opening channel timed out.')
   }
@@ -585,7 +689,7 @@ export default class MicropaymentsController extends AbstractController {
       })
 
       if (chan && chan.channelId) {
-        logMetricWorker(this.server, 'chainsawContractConvergenceAttempts', {
+        this.logToApi('pollForRemoteChannel:chainsawConverged', {
           count: attempt,
           channelId
         })
@@ -594,6 +698,10 @@ export default class MicropaymentsController extends AbstractController {
 
       await wait(1000)
     }
+
+    this.logToApi('pollForRemoteChannel:chainsawConvergenceFailure', {
+      channelId
+    })
 
     throw new Error('Chainsaw and contract failed to converge.')
   }

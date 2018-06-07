@@ -85,9 +85,10 @@ export default class Vynos extends EventEmitter {
     return this.client.lock()
   }
 
-  public show(forceRedirect?: string, isPerformer?: boolean) {
+  public show(opts?:{ forceRedirect?: string, isPerformer?: boolean }) {
+    opts = opts || {}
     this.requireReady()
-    this.client.toggleFrame(true, forceRedirect, isPerformer)
+    this.client.toggleFrame(true, opts.forceRedirect, opts.isPerformer)
       .catch((e: any) => this.emit('error', e))
   }
 
@@ -118,7 +119,7 @@ export default class Vynos extends EventEmitter {
       return this.initializing
     }
 
-    this.initializing = this.doInit()
+      this.initializing = this.doInit()
     return this.initializing
   }
 
@@ -130,21 +131,14 @@ export default class Vynos extends EventEmitter {
     await this.domReady()
 
     this.frame = new Frame(this.options.scriptElement.src)
-    this.frame.attach(this.options.window.document)
+      await this.frame.attach(this.options.window.document)
 
     const src = this.frame.element.src
     const parts = src.split('/')
     const origin = `${parts[0]}//${parts[2]}`
 
     this.client = new VynosClient(this.frame.element.contentWindow, origin)
-
-    try {
-      await this.client.initialize(this.options.hubUrl, this.options.authRealm)
-    } catch (err) {
-      this.emit('error', err)
-      throw err
-    }
-
+    await this.client.initialize()
     this.previousState = await this.client.getSharedState()
     this.client.onSharedStateUpdate(this.handleSharedStateUpdate)
     this.emit('update', this.previousState)

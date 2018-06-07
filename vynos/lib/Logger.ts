@@ -1,68 +1,51 @@
-import JsonRpcServer from './messaging/JsonRpcServer'
 import requestJson from '../frame/lib/request'
-import {LoggerPayload} from './LoggerPayload'
-import SharedStateView from '../worker/SharedStateView';
+import SharedStateView from '../worker/SharedStateView'
+
+const API_URL = process.env.API_URL
+
+export interface LoggerOptions {
+  source: string
+  method?: string
+  getAddress: () => Promise<string>
+}
+
+export interface Metric {
+  name: string
+  ts: Date
+  data: any
+}
 
 export default class Logger {
+  source: string
 
-  private method: string
+  private getAddress: () => Promise<string>
 
-  private source: string
-
-  private hubUrl?: string
-
-  private address?: string
-
-  private sharedStateView?: SharedStateView
-
-  constructor({ source, method, hubUrl, address, sharedStateView } :
-    { source: string, method: string, hubUrl?: string, address?: string, sharedStateView?: SharedStateView }) {
+  constructor ({source, method, getAddress}: LoggerOptions) {
     this.source = source || 'Not set'
-    this.method = method || 'Not set'
-    this.hubUrl = hubUrl
-    this.address = address
-    this.sharedStateView = sharedStateView
+    this.getAddress = getAddress
   }
 
-  async logToHub (data: LoggerPayload) {
-    if (!this.hubUrl && !this.sharedStateView) {
+  async logToApi (metrics: Array<Metric>) {
+    if (!API_URL) {
       return
     }
 
-    const {message, type, stack} = data
+    const address = await this.getAddress()
 
-    if ((!this.hubUrl || !this.hubUrl.length) && this.sharedStateView) {
-      this.hubUrl = await this.sharedStateView.getHubUrl()
-    }
+    const clonedMetrics = JSON.parse(JSON.stringify(metrics))
+    clonedMetrics.forEach((m: Metric) => m.data.address = address)
 
-    if ((!this.address || !this.address.length) && this.sharedStateView) {
-      const addresses = await this.sharedStateView.getAccounts()
-      this.address = addresses[0]
-    }
+    const body = JSON.stringify({
+      metrics: clonedMetrics
+    })
 
-    // Format message if none is set
-    const formattedMessage = (message && message.length) ?
-      `[${this.source}][${this.method}] - ${message}` :
-      `[${this.source}][${this.method}] - No message defined`;
-
-    const body = {
-      type: type || 'info',
-      message: formattedMessage,
-      address: this.address,
-      timestamp: new Date().toISOString()
-    } as any
-
-    if (stack && stack.length) {
-      body.stack = stack
-    }
-
-    return requestJson(`${this.hubUrl}/log/`, {
+    return requestJson(`${API_URL}/metrics/store`, {
       method: 'POST',
       credentials: 'include',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify(body)
+      body
     })
   }
 }
