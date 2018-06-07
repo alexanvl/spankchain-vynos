@@ -85,7 +85,7 @@ export default class VynosClient extends JsonRpcClient {
 
     while (retry < retryCount) {
       try {
-        return this.callWithTimeout<WorkerStatus>(5000, StatusRequest.method)
+        return await this.callWithTimeout<WorkerStatus>(5000, StatusRequest.method)
       } catch (e) {
         retry++
       }
