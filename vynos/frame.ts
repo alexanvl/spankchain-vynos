@@ -6,6 +6,8 @@ import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
 import renderApplication from './frame/renderApplication'
 import * as metrics from './lib/metrics'
+import {StatusRequest} from './lib/rpc/yns'
+import wait from './lib/wait'
 
 class Client implements ServiceWorkerClient {
   workerProxy: WorkerProxy
@@ -71,7 +73,17 @@ class Client implements ServiceWorkerClient {
   }
 
   private async pollWorker () {
-    const status = await this.workerProxy.status()
+    let status
+
+    try {
+      status = await this.statusWithRetry()
+    } catch (e) {
+      metrics.logMetrics([{
+        name: 'vynos:failed',
+        ts: new Date(),
+        data: {}
+      }])
+    }
 
     if (status !== WorkerStatus.READY) {
       await new Promise((resolve) => this.workerProxy.once(ReadyBroadcastEvent, resolve))
@@ -79,6 +91,39 @@ class Client implements ServiceWorkerClient {
 
     renderApplication(document, this.workerProxy)
     this.startHeartbeating()
+  }
+
+  private async statusWithRetry (): Promise<WorkerStatus> {
+    let retryCount = 5
+    let retry = 0
+
+    while (retry < retryCount) {
+      const start = Date.now()
+
+      try {
+        const res = await this.workerProxy.status()
+
+        metrics.logMetrics([{
+          name: 'vynos:frameStatusRetryCount',
+          ts: new Date(),
+          data: {
+            retryCount: retry
+          }
+        }])
+
+        return res
+      } catch (e) {
+        const elapsed = Date.now() - start
+
+        if (elapsed < 5000) {
+          await wait(5000 - elapsed)
+        }
+
+        retry++
+      }
+    }
+
+    throw new Error('Status call timed out.')
   }
 }
 
