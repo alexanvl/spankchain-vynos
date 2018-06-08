@@ -132,7 +132,7 @@ export default class WorkerProxy extends JsonRpcClient {
   }
 
   status (): Promise<WorkerStatus> {
-    return this.callWithTimeout(500, StatusRequest.method)
+    return this.callWithTimeout(5000, StatusRequest.method)
   }
 
   reset (): Promise<void> {

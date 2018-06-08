@@ -19,6 +19,7 @@ import {ResetBroadcastEvent} from '../lib/rpc/ResetBroadcast'
 import {logMetrics} from '../lib/metrics'
 import {WorkerStatus} from '../lib/rpc/WorkerStatus'
 import {ReadyBroadcastEvent} from '../lib/rpc/ReadyBroadcast'
+import wait from '../lib/wait'
 
 export default class VynosClient extends JsonRpcClient {
   constructor (target: Window, origin: string) {
@@ -80,13 +81,31 @@ export default class VynosClient extends JsonRpcClient {
   }
 
   private async statusWithRetry (): Promise<WorkerStatus> {
-    let retryCount = 3
+    let retryCount = 5
     let retry = 0
 
     while (retry < retryCount) {
+      const start = Date.now()
+
       try {
-        return await this.callWithTimeout<WorkerStatus>(5000, StatusRequest.method)
+        const res = await this.callWithTimeout<WorkerStatus>(5000, StatusRequest.method)
+
+        logMetrics([{
+          name: 'vynos:clientStatusRetryCount',
+          ts: new Date(),
+          data: {
+            retryCount: retry
+          }
+        }])
+
+        return res
       } catch (e) {
+        const elapsed = Date.now() - start
+
+        if (elapsed < 5000) {
+          await wait(5000 - elapsed)
+        }
+
         retry++
       }
     }
