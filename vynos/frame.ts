@@ -6,9 +6,7 @@ import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
 import renderApplication from './frame/renderApplication'
 import * as metrics from './lib/metrics'
-import {StatusRequest} from './lib/rpc/yns'
 import wait from './lib/wait'
-import {Postable} from './lib/messaging/Postable'
 
 class Client implements ServiceWorkerClient {
   workerProxy: WorkerProxy
@@ -23,7 +21,7 @@ class Client implements ServiceWorkerClient {
     console.log('inside load function')
 
     this.pollWorker = this.pollWorker.bind(this)
-    this.workerProxy = new WorkerProxy((serviceWorker as any).controller as Postable)
+    this.workerProxy = new WorkerProxy(serviceWorker)
     this.frameServer = new FrameServer('*', this.workerProxy)
 
     this.passEvent(ReadyBroadcastEvent)
