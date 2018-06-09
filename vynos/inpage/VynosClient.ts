@@ -100,7 +100,7 @@ export default class VynosClient extends JsonRpcClient {
 
         return res
       } catch (e) {
-        console.log('retrying');
+        console.log('retrying 2');
         const elapsed = Date.now() - start
 
         if (elapsed < 5000) {
