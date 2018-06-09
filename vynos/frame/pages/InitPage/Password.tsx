@@ -99,7 +99,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
 
   getText() {
     return this.props.isPerformer
-      ? 'This is how you’ll get paid, payouts as often as you like, no chargebacks. SpankCard is a very safe and secure payment method based on crypto currencies.'
+      ? 'This is how you’ll get paid. SpankCard is a very safe and secure payment method based on crypto currencies.'
       : 'Your SpankWallet allows you to tip without any delay and to save you crypto fees by bundling payments.'
   }
 
