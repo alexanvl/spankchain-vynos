@@ -6,6 +6,8 @@ export interface ServiceWorkerClient {
 }
 
 function activate(client: ServiceWorkerClient, serviceWorker: ServiceWorker) {
+  console.log('my state is', serviceWorker.state);
+
   if (serviceWorker.state === 'activated') {
     client.load(serviceWorker)
   }

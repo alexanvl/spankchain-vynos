@@ -8,6 +8,7 @@ import renderApplication from './frame/renderApplication'
 import * as metrics from './lib/metrics'
 import {StatusRequest} from './lib/rpc/yns'
 import wait from './lib/wait'
+import {Postable} from './lib/messaging/Postable'
 
 class Client implements ServiceWorkerClient {
   workerProxy: WorkerProxy
@@ -20,7 +21,7 @@ class Client implements ServiceWorkerClient {
 
   load (serviceWorker: ServiceWorker) {
     this.pollWorker = this.pollWorker.bind(this)
-    this.workerProxy = new WorkerProxy(serviceWorker)
+    this.workerProxy = new WorkerProxy((serviceWorker as any).controller as Postable)
     this.frameServer = new FrameServer('*', this.workerProxy)
 
     this.passEvent(ReadyBroadcastEvent)
