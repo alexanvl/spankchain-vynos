@@ -66,8 +66,6 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
   }
 
   async function install () {
-    console.log('in install function')
-
     let status = WorkerStatus.INITIALIZING
 
     const workerWrapper = new WorkerWrapper(self)

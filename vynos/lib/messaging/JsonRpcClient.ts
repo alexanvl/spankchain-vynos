@@ -27,11 +27,8 @@ export default class JsonRpcClient extends EventEmitter {
 
   private log: IDebugger
 
-  private name: string
-
   constructor (name: string, target: Postable, receiver: Listenable, origin: string) {
     super()
-    this.name = name
     this.log = debug(`JsonRpcClient:${name}`)
     this.target = target
     this.receiver = receiver
@@ -46,8 +43,6 @@ export default class JsonRpcClient extends EventEmitter {
 
     if (e.origin !== this.origin) {
       this.log('Received message from invalid origin %s.', e.origin)
-      console.log(this.name, 'their origin', e.origin)
-      console.log(this.name, 'my origin', this.origin)
       return
     }
 

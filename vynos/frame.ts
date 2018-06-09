@@ -18,8 +18,6 @@ class Client implements ServiceWorkerClient {
   private loaded = false
 
   load (serviceWorker: ServiceWorker) {
-    console.log('inside load function')
-
     this.pollWorker = this.pollWorker.bind(this)
     this.workerProxy = new WorkerProxy(serviceWorker)
     this.frameServer = new FrameServer('*', this.workerProxy)

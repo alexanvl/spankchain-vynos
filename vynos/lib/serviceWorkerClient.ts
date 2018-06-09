@@ -30,7 +30,7 @@ function install(client: ServiceWorkerClient, registration: ServiceWorkerRegistr
 
 export function register(client: ServiceWorkerClient) {
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/workerRunner.js?cachebust=' + Date.now(), {scope: './'})
+    navigator.serviceWorker.register('/workerRunner.js', {scope: './'})
       .then((registration) => registration.update().then(() => registration))
       .then((registration) => install(client, registration))
       .catch((error) => console.error(error))
