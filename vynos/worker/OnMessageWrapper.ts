@@ -8,6 +8,7 @@ export default class OnMessageWrapper extends EventEmitter {
   }
 
   public onMessage(e: any) {
+    console.log('in worker got message', e);
     this.emit('message', e)
   }
 
