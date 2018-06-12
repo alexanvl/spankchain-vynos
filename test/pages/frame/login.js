@@ -1,7 +1,67 @@
+/*
+ * We will need to periodically fill up this account with ETH on staging
+ * to make sure the tests run successfully.
+ *
+ * TEST ACCOUNT DETAILS:
+ * WALLET ADDRESS: 0x1a51a470457495b0a3cc8b4ce9dc45e516c49e07
+ * SEED PHRASES: HEDGEHOG BLAST FOREST SHOE SESSION PRESENT SUCCESS TYPE SAVE READY FEEL LOAN
+ */
+
 const pause = require('../helpers/pause')
 const frame = require('../helpers/frame')
 const PAGE_URL = 'http://localhost:6969'
 const PASSWORD = 'asdfjkl;'
+
+const loginElements = {
+  // Frame elements
+  frame: {
+    selector: '#ynos_frame',
+  },
+  frameButton: {
+    selector: 'div.container.locked.noAccount'
+  },
+  frameConsentButton: {
+    selector: '//button[@data-sel="initialConsentButton"]',
+    locateStrategy: 'xpath'
+  },
+
+  // Restore
+  restoreWalletButton: {
+    selector: '//button[@data-sel="restoreWalletButton"]',
+    locateStrategy: 'xpath'
+  },
+  passwordTextBox: {
+    selector: '//div[@data-sel="passwordTextBox"]',
+    locateStrategy: 'xpath'
+  },
+  submitSeedWordsButton: {
+    selector: '//button[@data-sel="submitSeedWordsButton"]',
+    locateStrategy: 'xpath'
+  },
+  // Password
+  restoreNewPasswordInput: {
+    selector: '//input[@data-sel="restoreNewPasswordInput"]',
+    locateStrategy: 'xpath'
+  },
+  restoreConfirmPasswordInput: {
+    selector: '//input[@data-sel="restoreConfirmPasswordInput"]',
+    locateStrategy: 'xpath'
+  },
+  submitRestorePasswordButton: {
+    selector: '//button[@data-sel="submitRestorePasswordButton"]',
+    locateStrategy: 'xpath'
+  }
+}
+
+function createRestoreElements() {
+  for (let i = 0; i < 12; ++i) {
+    loginElements[`restoreWordsInput${i}`] = {
+      selector: `//input[@data-sel="restoreWordsInput${i}"]`,
+      locateStrategy: 'xpath'
+    }
+  }
+}
+createRestoreElements()
 
 const loginCommands = {
   testFrameButton() {
@@ -60,93 +120,5 @@ const loginCommands = {
 module.exports = {
   url: PAGE_URL,
   commands: [pause, frame, loginCommands],
-  elements: {
-    // Frame elements
-    frame: {
-      selector: '#ynos_frame',
-    },
-    frameButton: {
-      selector: 'div.container.locked.noAccount'
-    },
-    frameConsentButton: {
-      selector: '//button[@data-sel="initialConsentButton"]',
-      locateStrategy: 'xpath'
-    },
-
-    // Restore
-    restoreWalletButton: {
-      selector: '//button[@data-sel="restoreWalletButton"]',
-      locateStrategy: 'xpath'
-    },
-    passwordTextBox: {
-      selector: '//div[@data-sel="passwordTextBox"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput0: {
-      selector: '//input[@data-sel="restoreWordsInput0"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput1: {
-      selector: '//input[@data-sel="restoreWordsInput1"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput2: {
-      selector: '//input[@data-sel="restoreWordsInput2"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput3: {
-      selector: '//input[@data-sel="restoreWordsInput3"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput4: {
-      selector: '//input[@data-sel="restoreWordsInput4"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput5: {
-      selector: '//input[@data-sel="restoreWordsInput5"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput6: {
-      selector: '//input[@data-sel="restoreWordsInput6"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput7: {
-      selector: '//input[@data-sel="restoreWordsInput7"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput8: {
-      selector: '//input[@data-sel="restoreWordsInput8"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput9: {
-      selector: '//input[@data-sel="restoreWordsInput9"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput10: {
-      selector: '//input[@data-sel="restoreWordsInput10"]',
-      locateStrategy: 'xpath'
-    },
-    restoreWordsInput11: {
-      selector: '//input[@data-sel="restoreWordsInput11"]',
-      locateStrategy: 'xpath'
-    },
-    submitSeedWordsButton: {
-      selector: '//button[@data-sel="submitSeedWordsButton"]',
-      locateStrategy: 'xpath'
-    },
-
-    // Password
-    restoreNewPasswordInput: {
-      selector: '//input[@data-sel="restoreNewPasswordInput"]',
-      locateStrategy: 'xpath'
-    },
-    restoreConfirmPasswordInput: {
-      selector: '//input[@data-sel="restoreConfirmPasswordInput"]',
-      locateStrategy: 'xpath'
-    },
-    submitRestorePasswordButton: {
-      selector: '//button[@data-sel="submitRestorePasswordButton"]',
-      locateStrategy: 'xpath'
-    }
-  }
+  elements: loginElements
 }

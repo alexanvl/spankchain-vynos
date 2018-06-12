@@ -3,7 +3,7 @@ const frame = require('../helpers/frame')
 const PAGE_URL = 'http://localhost:6969'
 const PASSWORD = 'asdfjkl;'
 const PROFILE_USERNAME = Math.random().toString(36).substr(2, 5)
-const PROFILE_EMAIL = `${Math.random().toString(36).substr(2, 5)}@email.com`
+const PROFILE_EMAIL = `${Math.random().toString(36).substr(2, 5)}@spankchain+test.com`
 
 const signupCommands = {
   testFrameButton() {
