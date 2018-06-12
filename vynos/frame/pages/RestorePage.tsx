@@ -34,6 +34,8 @@ export interface RestorePageState {
 const alpha = /^[a-z]*$/i
 
 class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
+  backupFieldInputRefs: any = {}
+
   constructor (props: RestorePageProps) {
     super(props)
 
@@ -50,17 +52,29 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
   }
 
   updateSeed (i: number, e: any) {
-    const value = e.target.value.toLowerCase()
+    const value = e.target.value
+    this.setSeedWordForIndex(i, value)
+  }
 
+  _pendingSeeds: string[] | null = null
+
+  setSeedWordForIndex (i: number, value: string) {
     if (!value.match(alpha)) {
       return
     }
 
-    const seeds = [].concat(this.state.seeds as any) as string[]
-    seeds[i] = value
+    const seeds = this._pendingSeeds || [].concat(this.state.seeds as any) as string[]
+    seeds[i] = value.toLowerCase()
+
+    // Because `setSeedWordForIndex` may be called multiple times before the
+    // state is updated, store the pending seed words in `this._pendingSeeds`,
+    // then clear that after the state is applied
+    this._pendingSeeds = seeds
 
     this.setState({
       seeds
+    }, () => {
+      this._pendingSeeds = null
     })
   }
 
@@ -152,6 +166,24 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     return this.renderSeedPhrase()
   }
 
+  onBackupFieldPaste = (event: any, inputIdx: number) => {
+    // from: https://stackoverflow.com/a/30496488
+    var clipboardData = event.clipboardData || event.originalEvent.clipboardData || (window as any).clipboardData
+    var pastedData = clipboardData.getData('text')
+    let bits = pastedData.split(/\s+/)
+    bits.forEach((bit: string, bitIdx: number) => {
+      let idx = inputIdx + bitIdx
+      let input = this.backupFieldInputRefs[idx]
+      if (!input)
+        return
+      let value = bit.replace(/[^a-z]/gi, '')
+      input.value = value
+      this.setSeedWordForIndex(idx, value)
+    })
+    event.preventDefault()
+    return false
+  }
+
   renderPassword (): ReactNode {
     return (
       <div className={style.content}>
@@ -232,6 +264,8 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
           <Input
             autoFocus={i === 0}
             className={style.backupField}
+            inputRef={(ref: any) => this.backupFieldInputRefs[i] = ref}
+            onPaste={(event: any) => this.onBackupFieldPaste(event, i)}
             {...this.setSeed(i)}
             inverse
           />
