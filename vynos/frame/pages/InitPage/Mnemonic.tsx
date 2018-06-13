@@ -67,8 +67,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
         <div className={style.content}>
           <div className={style.funnelTitle}>Backup Words</div>
           <div className={style.seedPhraseText}>
-            <p>These are <em><strong>your</strong></em> backup words. They will restore <em><strong>your</strong></em> SpankCard. Keep them secret. Keep them safe. </p>
-            <p>DO NOT LOSE OR SHARE! SPANKCHAIN CANNOT RESTORE THEM FOR YOU!</p>
+            <p>These are <em><strong>your</strong></em> backup words. They will restore <em><strong>your</strong></em> SpankCard. Keep them secret. Keep them safe. DO NOT LOSE OR SHARE! SPANKCHAIN CANNOT RESTORE THEM FOR YOU!</p>
             <p>Welcome to Crypto! 😘</p>
             </div>
           <div className={style.seedWords}>

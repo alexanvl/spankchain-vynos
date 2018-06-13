@@ -6,7 +6,6 @@ import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
 import renderApplication from './frame/renderApplication'
 import * as metrics from './lib/metrics'
-import {StatusRequest} from './lib/rpc/yns'
 import wait from './lib/wait'
 
 class Client implements ServiceWorkerClient {
