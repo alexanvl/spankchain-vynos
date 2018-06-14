@@ -9,6 +9,7 @@ const CTAInput: React.SFC<any> = function(props) {
     ctaInputValueClass,
     ctaContentClass,
     value,
+    name,
     ctaContent,
     isInverse,
     isConnected,
@@ -20,7 +21,7 @@ const CTAInput: React.SFC<any> = function(props) {
       [s.inverse]: isInverse,
       [s.connected]: isConnected,
     })}>
-      <div className={classnames(s.ctaInputValue, ctaInputValueClass)}>
+      <div data-sel={name} className={classnames(s.ctaInputValue, ctaInputValueClass)}>
         {value}
       </div>
       <div className={classnames(s.ctaInputText, ctaContentClass, {

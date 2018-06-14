@@ -16,6 +16,7 @@ const Input: React.SFC<any> = function(props) {
     onKeyDown,
     autoFocus,
     inverse,
+    name,
   } = props
 
   return (
@@ -33,6 +34,8 @@ const Input: React.SFC<any> = function(props) {
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         autoFocus={autoFocus}
+        data-sel={name}
+        name={name}
       />
       <div className={classnames(s.errorMessage, {
         [s.inverse]: inverse
