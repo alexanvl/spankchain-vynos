@@ -69,12 +69,21 @@ export default class Frame {
     this.containerElement.style.transition = 'margin-top 0.7s'
   }
 
-  attach(document: HTMLDocument) {
-    if (this.containerElement && !this.containerElement.parentElement) {
-      document.body.insertBefore(this.containerElement, document.body.firstChild)
-    } else if (!this.element.parentElement) {
-      document.body.insertBefore(this.containerElement, document.body.firstChild)
-    }
+  attach(document: HTMLDocument): Promise<void> {
+    return new Promise<void>((resolve) => {
+      const listener = () => {
+        resolve()
+        this.element.removeEventListener('load', listener)
+      }
+
+      this.element.addEventListener('load', listener)
+
+      if (this.containerElement && !this.containerElement.parentElement) {
+        document.body.insertBefore(this.containerElement, document.body.firstChild)
+      } else if (!this.element.parentElement) {
+        document.body.insertBefore(this.containerElement, document.body.firstChild)
+      }
+    })
   }
 
   setContainerStyle(containerStyle: CSSStyleDeclaration) {

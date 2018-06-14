@@ -91,7 +91,6 @@ export default class JsonRpcServer extends EventEmitter {
     }
 
     if (!this.originValidator.isAllowed(origin)) {
-
       this.log('Received message from non-whitelisted origin %s.', origin)
       return
     }

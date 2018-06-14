@@ -6,6 +6,7 @@ steps:
             '--build-arg', 'FRAME_URL=https://${_FRAME_DOMAIN}',
             '--build-arg', 'API_URL=${_API_URL}',
             '--build-arg', 'NETWORK_NAME=${_NETWORK_NAME}',
+            '--build-arg', 'HUB_URL=${_HUB_URL}',
             '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:$COMMIT_SHA',
             '-f', 'infrastructure/Dockerfile',
             '.'

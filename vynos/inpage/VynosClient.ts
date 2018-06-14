@@ -6,45 +6,41 @@ import {
   InitAccountRequest,
   ListChannelsRequest,
   LockWalletRequest,
-  RegisterHubRequest, SetUsernameRequest,
+  SetUsernameRequest,
+  StatusRequest,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
-import {PaymentChannel} from 'machinomy/dist/lib/payment_channel'
+import {PaymentChannel, PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../lib/VynosBuyResponse'
 import {SharedState} from '../worker/WorkerState'
-import {PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import JsonRpcClient from '../lib/messaging/JsonRpcClient'
-import {WorkerReadyBroadcastEvent} from '../lib/rpc/WorkerReadyBroadcast'
 import {SharedStateBroadcastEvent} from '../lib/rpc/SharedStateBroadcast'
 import {ResetBroadcastEvent} from '../lib/rpc/ResetBroadcast'
 import {logMetrics} from '../lib/metrics'
+import {WorkerStatus} from '../lib/rpc/WorkerStatus'
+import {ReadyBroadcastEvent} from '../lib/rpc/ReadyBroadcast'
+import wait from '../lib/wait'
 
 export default class VynosClient extends JsonRpcClient {
-  workerReady: boolean = false
-
   constructor (target: Window, origin: string) {
     super('VynosClient', target, window, origin)
-    this.onWorkerReady = this.onWorkerReady.bind(this)
     this.onReset = this.onReset.bind(this)
-    this.once(WorkerReadyBroadcastEvent, this.onWorkerReady)
     this.on(ResetBroadcastEvent, this.onReset)
     this.on('__METRICS__', logMetrics)
-  }
-
-  onWorkerReady () {
-    this.workerReady = true
   }
 
   onReset () {
     window.location.reload()
   }
 
-  async initialize (hubUrl: string, authRealm: string): Promise<boolean> {
-    if (!this.workerReady) {
-      await new Promise((resolve) => this.once(WorkerReadyBroadcastEvent, resolve))
+  async initialize (): Promise<boolean> {
+    const status = await this.statusWithRetry()
+
+    if (status !== WorkerStatus.READY) {
+      await new Promise((resolve) => this.once(ReadyBroadcastEvent, resolve))
     }
 
-    return this.call<boolean>(RegisterHubRequest.method, hubUrl, authRealm)
+    return true
   }
 
   initAccount (): Promise<void> {
@@ -82,5 +78,38 @@ export default class VynosClient extends JsonRpcClient {
 
   setUsername (username: string): Promise<void> {
     return this.call(SetUsernameRequest.method, username)
+  }
+
+  private async statusWithRetry (): Promise<WorkerStatus> {
+    let retryCount = 5
+    let retry = 0
+
+    while (retry < retryCount) {
+      const start = Date.now()
+
+      try {
+        const res = await this.callWithTimeout<WorkerStatus>(5000, StatusRequest.method)
+
+        logMetrics([{
+          name: 'vynos:clientStatusRetryCount',
+          ts: new Date(),
+          data: {
+            retryCount: retry
+          }
+        }])
+
+        return res
+      } catch (e) {
+        const elapsed = Date.now() - start
+
+        if (elapsed < 5000) {
+          await wait(5000 - elapsed)
+        }
+
+        retry++
+      }
+    }
+
+    throw new Error('Status call timed out.')
   }
 }
