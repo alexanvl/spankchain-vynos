@@ -9,6 +9,7 @@ import {
   GenKeyringRequest,
   GetSharedStateRequest,
   LockWalletRequest,
+  RevealPrivateKeyRequest,
   PopulateChannelsRequest,
   RecoverChannelRequest,
   RememberPageRequest,
@@ -141,5 +142,9 @@ export default class WorkerProxy extends JsonRpcClient {
 
   recoverChannel (channelId: string): Promise<void> {
     return this.call(RecoverChannelRequest.method, channelId)
+  }
+
+  revealPrivateKey (mnemonic: string): Promise<void> {
+    return this.call(RevealPrivateKeyRequest.method, mnemonic)
   }
 }

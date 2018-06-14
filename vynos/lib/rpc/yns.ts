@@ -99,3 +99,6 @@ export type ResetRequest = RequestPayload
 
 export const RecoverChannelRequest = requestFactory<[string]>('recoverChannel')
 export type RecoverChannelRequest = RequestPayload
+
+export const RevealPrivateKeyRequest = requestFactory<any[]>('revealPrivateKey')
+export type RevealPrivateKeyRequest = RequestPayload

@@ -4,6 +4,7 @@ declare module "ethereumjs-wallet" {
   class Wallet {
     static fromPrivateKey(key: Buffer): Wallet;
     getPrivateKey(): Buffer;
+    getPrivateKeyString(): string;
     getAddressString(): string;
   }
 

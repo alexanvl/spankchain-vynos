@@ -14,7 +14,8 @@ import {
   RememberPageRequest,
   RestoreWalletRequest,
   TransactionResolved,
-  UnlockWalletRequest
+  UnlockWalletRequest,
+  RevealPrivateKeyRequest
 } from '../../lib/rpc/yns'
 import bip39 =require('bip39')
 import hdkey = require('ethereumjs-wallet/hdkey')
@@ -71,14 +72,27 @@ export default class BackgroundController extends AbstractController {
 
   genKeyring (password: string): Promise<string> {
     let mnemonic = bip39.generateMnemonic()
-    let keyring = this._generateKeyring(password, mnemonic)
+    let keyring = this._generateKeyring(mnemonic)
     return Keyring.serialize(keyring, password).then(serialized => {
       this.store.dispatch(actions.setKeyring(serialized))
       return mnemonic
     })
   }
 
-  _generateKeyring (password: string, mnemonic: string): Keyring {
+  async revealPrivateKey (mnemonic: string): Promise<string> {
+    let wallet = hdkey.fromMasterSeed(mnemonic).getWallet()
+    let privateKey = wallet.getPrivateKey()
+    let walletAddressFromMnemonic = wallet.getAddressString()
+    let walletAddress = await this.getAddressString()
+
+    if (walletAddressFromMnemonic === walletAddress) {
+      return wallet.getPrivateKeyString()
+    }
+
+    return new Error('Wallet address does not match')
+  }
+
+  _generateKeyring (mnemonic: string): Keyring {
     let wallet = hdkey.fromMasterSeed(mnemonic).getWallet()
     this.store.dispatch(actions.setWallet(wallet))
     let privateKey = wallet.getPrivateKey()
@@ -86,7 +100,7 @@ export default class BackgroundController extends AbstractController {
   }
 
   restoreWallet (password: string, mnemonic: string): Promise<void> {
-    let keyring = this._generateKeyring(password, mnemonic)
+    let keyring = this._generateKeyring(mnemonic)
     let wallet = keyring.wallet
     return Keyring.serialize(keyring, password).then(serialized => {
       this.store.dispatch(actions.restoreWallet({keyring: serialized, wallet: wallet}))
@@ -116,6 +130,12 @@ export default class BackgroundController extends AbstractController {
   getPrivateKey (): Promise<Buffer> {
     return this.getWallet().then(wallet => {
       return wallet.getPrivateKey()
+    })
+  }
+
+  getAddressString (): Promise<string> {
+    return this.getWallet().then(wallet => {
+      return wallet.getAddressString()
     })
   }
 
@@ -161,5 +181,6 @@ export default class BackgroundController extends AbstractController {
     this.registerHandler(server, InitAccountRequest.method, this.awaitUnlock)
     this.registerHandler(server, RememberPageRequest.method, this.rememberPage)
     this.registerHandler(server, TransactionResolved.method, this.getSharedState)
+    this.registerHandler(server, RevealPrivateKeyRequest.method, this.revealPrivateKey)
   }
 }

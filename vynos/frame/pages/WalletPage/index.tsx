@@ -10,6 +10,7 @@ import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './CardPage'
 import MainEntry from './MainEntry/index'
 import SendReceiveWrapper from './SendReceiveWrapper'
+import RevealPrivateKey from './RevealPrivateKey'
 import WalletCTAButton from './WalletCTAButton/index'
 import LoadCardCTAButton from './LoadCardCTAButton/index'
 import LoadUpSpank from './LoadUpSpank'
@@ -133,6 +134,10 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         <Route
           path="/wallet/(send|receive)"
           render={() => <SendReceiveWrapper address={address!} balance={this.props.walletBalance} />}
+        />
+        <Route
+          path="/wallet/reveal"
+          render={() => <RevealPrivateKey  />}
         />
         <Route
           exact
