@@ -169,7 +169,6 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             onChange={this.handleChangePassword}
             errorMessage={this.state.passwordError}
             inverse
-            name="restoreNewPasswordInput"
           />
           <Input
             placeholder="Confirm Password"
@@ -178,7 +177,6 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             onChange={this.handleChangePasswordConfirmation}
             errorMessage={this.state.passwordConfirmationError}
             inverse
-            name="restoreConfirmPasswordInput"
           />
         </div>
         <div className={`${style.funnelFooter} ${this.isAndroid() ? style.androidFooter : ''}`}>
@@ -192,7 +190,6 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             content="Next"
             onClick={this.handleSubmitPassword}
             isInverse
-            name="submitRestorePasswordButton"
           />
         </div>
       </div>
@@ -205,7 +202,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
         <div className={style.funnelTitle}>
           Restore Backup Seed
         </div>
-        <TextBox name="passwordTextBox" className={style.passwordTextBox}>
+        <TextBox className={style.passwordTextBox}>
           {this.state.seedError ? this.state.seedError : 'Enter your SpankCard backup words. Use tab to jump to the next field.'}
         </TextBox>
         {this.renderFields()}
@@ -220,7 +217,6 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             content={<div className={style.restoreButton} />}
             onClick={this.handleSubmitSeed}
             isInverse
-            name="submitSeedWordsButton"
           />
         </div>
       </div>
@@ -238,7 +234,6 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             className={style.backupField}
             {...this.setSeed(i)}
             inverse
-            name={`restoreWordsInput${i}`}
           />
         </li>
       )

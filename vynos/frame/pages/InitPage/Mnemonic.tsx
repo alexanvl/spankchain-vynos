@@ -65,7 +65,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
         currentStep={1}
       >
         <div className={style.content}>
-          <div className={style.funnelTitle} data-sel="signupPasswordHeader">Backup Words</div>
+          <div className={style.funnelTitle}>Backup Words</div>
           <div className={style.seedPhraseText}>
             <p>These are <em><strong>your</strong></em> backup words. They will restore <em><strong>your</strong></em> SpankCard. Keep them secret. Keep them safe. DO NOT LOSE OR SHARE! SPANKCHAIN CANNOT RESTORE THEM FOR YOU!</p>
             <p>Welcome to Crypto! 😘</p>
@@ -83,7 +83,6 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
               <Checkbox
                 className={style.ackCheckbox}
                 onChange={(e: any) => this.setState({acknowledged: e.target.checked})}
-                name="signupAckCheckbox"
               />
               <div className={style.ackText}>I have copied the backup words. They are secret. They are safe. I promise!</div>
             </div>
@@ -94,7 +93,6 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
               onClick={this.handleSubmit.bind(this)}
               isInverse
               disabled={!this.state.acknowledged && !this.state.isAuthenticating}
-              name="signupAckWordsButton"
             />
           </div>
         </div>

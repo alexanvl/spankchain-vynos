@@ -102,7 +102,7 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
     return (
       <OnboardingContainer totalSteps={4} currentStep={2}>
         <div className={style.content}>
-          <div className={style.funnelTitle} data-sel="signupDepositHeader">Wallet Address</div>
+          <div className={style.funnelTitle}>Wallet Address</div>
           <div className={style.seedPhraseText}>
           This is your Wallet address, also known as a Public Key. Copy it. Give to others. Send ETH from an exchange or other wallet you control to this address. You'll then be able load your SpankCard and tip away!
           </div>
@@ -111,11 +111,10 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
             ctaInputValueClass={d.ctaInputValue}
             ctaContentClass={d.ctaInputContent}
             value={this.state.address}
-            name="signupWalletAddress"
             ctaContent={() => (
-              <div data-sel="signupCopyAddress" className={style.ctaContentWrapper} onClick={this.onCopyAddress}>
+              <div className={style.ctaContentWrapper} onClick={this.onCopyAddress}>
                 <div className={style.ctaIcon} />
-                <span className={style.ctaText} data-sel="signupCopyText">
+                <span className={style.ctaText}>
                   {this.state.isCopied ? 'Copied' : 'Copy'}
                 </span>
               </div>
@@ -130,7 +129,6 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
               isInverse
               disabled={this.state.isAuthenticating}
               onClick={this.handleSubmit}
-              name="signupCompleteButton"
             />
           </div>
         </div>
