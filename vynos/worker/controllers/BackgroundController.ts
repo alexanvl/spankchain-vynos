@@ -89,7 +89,7 @@ export default class BackgroundController extends AbstractController {
       return wallet.getPrivateKeyString()
     }
 
-    return new Error('Wallet address does not match')
+    throw new Error('Wallet address does not match')
   }
 
   _generateKeyring (mnemonic: string): Keyring {

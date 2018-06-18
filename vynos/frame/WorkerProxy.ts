@@ -144,7 +144,7 @@ export default class WorkerProxy extends JsonRpcClient {
     return this.call(RecoverChannelRequest.method, channelId)
   }
 
-  revealPrivateKey (mnemonic: string): Promise<void> {
+  revealPrivateKey (mnemonic: string): Promise<string> {
     return this.call(RevealPrivateKeyRequest.method, mnemonic)
   }
 }
