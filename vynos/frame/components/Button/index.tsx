@@ -23,7 +23,7 @@ export interface ButtonProps {
   onClick?: (e: any) => void
   to?: string
   isSubmit?: boolean
-  name: string
+  name?: string
 }
 
 class Button extends React.Component<ButtonProps> {
