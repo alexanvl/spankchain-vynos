@@ -1,19 +1,22 @@
-import { BROWSER_NOT_SUPPORTED_TEXT } from '../frame/constants'
+import {BROWSER_NOT_SUPPORTED_TEXT} from '../frame/constants'
+
+// the below string gets replaced with the real workerRunner filename via webpack
+const WORKER_FILENAME = '/workerRunner.js'
+
+const WORKER_FILENAME_LS_KEY = 'workerFilename'
 
 export interface ServiceWorkerClient {
   load: (serviceWorker: ServiceWorker) => void
   unload: () => Promise<void>
 }
 
-function activate(client: ServiceWorkerClient, serviceWorker: ServiceWorker) {
-  console.log('my state is', serviceWorker.state);
-
+function activate (client: ServiceWorkerClient, serviceWorker: ServiceWorker) {
   if (serviceWorker.state === 'activated') {
     client.load(serviceWorker)
   }
 }
 
-function install(client: ServiceWorkerClient, registration: ServiceWorkerRegistration) {
+function install (client: ServiceWorkerClient, registration: ServiceWorkerRegistration) {
   let serviceWorker = (registration.active || registration.installing)!
 
   serviceWorker.onstatechange = () => {
@@ -28,13 +31,24 @@ function install(client: ServiceWorkerClient, registration: ServiceWorkerRegistr
   activate(client, serviceWorker)
 }
 
-export function register(client: ServiceWorkerClient) {
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/workerRunner.js', {scope: './'})
-      .then((registration) => registration.update().then(() => registration))
-      .then((registration) => install(client, registration))
-      .catch((error) => console.error(error))
-  } else {
+async function handleRegistration (client: ServiceWorkerClient, registration: ServiceWorkerRegistration) {
+  const lastWorkerFilename = localStorage.getItem(WORKER_FILENAME_LS_KEY)
+
+  if (lastWorkerFilename !== WORKER_FILENAME) {
+    await registration.update()
+  }
+
+  await install(client, registration)
+  localStorage.setItem(WORKER_FILENAME_LS_KEY, WORKER_FILENAME)
+}
+
+export function register (client: ServiceWorkerClient) {
+  if (!navigator.serviceWorker) {
     throw new Error(BROWSER_NOT_SUPPORTED_TEXT)
   }
+
+  navigator.serviceWorker.register(WORKER_FILENAME, {scope: './'})
+    .then((registration) => handleRegistration(client, registration))
+    .catch((error) => console.error(error))
+
 }

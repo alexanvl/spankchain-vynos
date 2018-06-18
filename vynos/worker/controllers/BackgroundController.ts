@@ -81,7 +81,6 @@ export default class BackgroundController extends AbstractController {
 
   async revealPrivateKey (mnemonic: string): Promise<string> {
     let wallet = hdkey.fromMasterSeed(mnemonic).getWallet()
-    let privateKey = wallet.getPrivateKey()
     let walletAddressFromMnemonic = wallet.getAddressString()
     let walletAddress = await this.getAddressString()
 
