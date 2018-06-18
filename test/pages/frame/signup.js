@@ -17,7 +17,7 @@ const signupCommands = {
       .getCssProperty('@frame', 'opacity', (result) => {
         this.assert.equal(result.value, 1)
       })
-      .frame(0)
+      .frame('ynos_frame')
       .pause(1000)
   },
 
@@ -59,12 +59,6 @@ const signupCommands = {
       .assert.containsText('@signupProfileHeader', 'Profile')
       .setValue('@signupProfileUsername', PROFILE_USERNAME)
       .setValue('@signupProfileEmailAddress', PROFILE_EMAIL)
-      .pause(1500)
-      .click('@signupProfileAck', _ => {
-        this.click('@signupProfileCompleteButton')
-      })
-      .pause(2500)
-      .assert.containsText('@frameBalanceText', 'F0')
   }
 }
 

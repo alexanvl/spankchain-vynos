@@ -75,7 +75,7 @@ const loginCommands = {
       .getCssProperty('@frame', 'opacity', (result) => {
         this.assert.equal(result.value, 1)
       })
-      .frame(0)
+      .frame('ynos_frame')
       .pause(1000)
   },
 
