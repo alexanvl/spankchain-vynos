@@ -16,12 +16,16 @@ const Input: React.SFC<any> = function(props) {
     onKeyDown,
     autoFocus,
     inverse,
+    onPaste,
+    inputRef,
+    name,
   } = props
 
   return (
     <div className={classnames(s.wrapper, className)}>
       <input
         type={type}
+        ref={inputRef}
         className={classnames(s.input, {
           [s.error]: errorMessage,
           [s.inverse]: inverse
@@ -33,6 +37,9 @@ const Input: React.SFC<any> = function(props) {
         onBlur={onBlur}
         onKeyDown={onKeyDown}
         autoFocus={autoFocus}
+        onPaste={onPaste}
+        data-sel={name}
+        name={name}
       />
       <div className={classnames(s.errorMessage, {
         [s.inverse]: inverse

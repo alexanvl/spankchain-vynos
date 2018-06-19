@@ -50,18 +50,15 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
   }
 
   updateSeed (i: number, e: any) {
-    const value = e.target.value.toLowerCase()
+    const value = e.target.value
 
     if (!value.match(alpha)) {
       return
     }
 
     const seeds = [].concat(this.state.seeds as any) as string[]
-    seeds[i] = value
-
-    this.setState({
-      seeds
-    })
+    seeds[i] = value.toLowerCase()
+    this.setState({ seeds })
   }
 
   setSeed (i: number) {
@@ -152,6 +149,24 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     return this.renderSeedPhrase()
   }
 
+  onBackupFieldPaste = (event: any, inputIdx: number) => {
+    if (!process.env.DEBUG)
+      return
+
+    // from: https://stackoverflow.com/a/30496488
+    var clipboardData = event.clipboardData || event.originalEvent.clipboardData || (window as any).clipboardData
+    var pastedData = clipboardData.getData('text')
+    let bits = pastedData.split(/\s+/)
+    let seeds = this.state.seeds.concat()
+    bits.forEach((bit: string, bitIdx: number) => {
+      seeds[inputIdx + bitIdx] = bit.replace(/[^a-z]/gi, '')
+    })
+    this.setState({ seeds })
+
+    event.preventDefault()
+    return false
+  }
+
   renderPassword (): ReactNode {
     return (
       <div className={style.content}>
@@ -169,6 +184,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             onChange={this.handleChangePassword}
             errorMessage={this.state.passwordError}
             inverse
+            name="restoreNewPasswordInput"
           />
           <Input
             placeholder="Confirm Password"
@@ -177,6 +193,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             onChange={this.handleChangePasswordConfirmation}
             errorMessage={this.state.passwordConfirmationError}
             inverse
+            name="restoreConfirmPasswordInput"
           />
         </div>
         <div className={`${style.funnelFooter} ${this.isAndroid() ? style.androidFooter : ''}`}>
@@ -190,6 +207,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             content="Next"
             onClick={this.handleSubmitPassword}
             isInverse
+            name="submitRestorePasswordButton"
           />
         </div>
       </div>
@@ -202,7 +220,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
         <div className={style.funnelTitle}>
           Restore Backup Seed
         </div>
-        <TextBox className={style.passwordTextBox}>
+        <TextBox name="passwordTextBox" className={style.passwordTextBox}>
           {this.state.seedError ? this.state.seedError : 'Enter your SpankCard backup words. Use tab to jump to the next field.'}
         </TextBox>
         {this.renderFields()}
@@ -217,6 +235,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
             content={<div className={style.restoreButton} />}
             onClick={this.handleSubmitSeed}
             isInverse
+            name="submitSeedWordsButton"
           />
         </div>
       </div>
@@ -232,8 +251,10 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
           <Input
             autoFocus={i === 0}
             className={style.backupField}
+            onPaste={(event: any) => this.onBackupFieldPaste(event, i)}
             {...this.setSeed(i)}
             inverse
+            name={`restoreWordsInput${i}`}
           />
         </li>
       )

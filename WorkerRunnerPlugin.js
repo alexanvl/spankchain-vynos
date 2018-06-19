@@ -52,7 +52,7 @@ class WorkerRunnerPlugin {
         }
 
         const file = compilation.assets[key];
-        const source = file.source().replace(this.options.replaceFilename, name);
+        const source = file.source().replace(new RegExp(this.options.replaceFilename, 'g'), name);
         file.source = () => source;
         file.length = () => source.length;
       });
