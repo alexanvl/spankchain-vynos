@@ -21,8 +21,9 @@ export interface ButtonProps {
   isMini?: boolean
   content: any
   onClick?: (e: any) => void
-  to?: string,
+  to?: string
   isSubmit?: boolean
+  name?: string
 }
 
 class Button extends React.Component<ButtonProps> {
@@ -47,7 +48,8 @@ class Button extends React.Component<ButtonProps> {
       disabled,
       isMini,
       content,
-      isSubmit
+      isSubmit,
+      name,
     } = this.props
 
     const cn = classnames(s.btn, className, {
@@ -65,6 +67,8 @@ class Button extends React.Component<ButtonProps> {
         onClick={(e: any) => this.onClick(e)}
         disabled={disabled}
         type={isSubmit ? 'submit' : 'button'}
+        name={name}
+        data-sel={name}
       >
         {typeof content === 'function' ? content() : content }
       </button>

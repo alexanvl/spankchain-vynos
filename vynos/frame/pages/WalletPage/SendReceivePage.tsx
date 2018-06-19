@@ -82,6 +82,12 @@ class SendReceivePage extends React.Component<MapStateToProps, State>  {
             content="Send Ether"
             isMini
           />
+          <Button
+            to="/wallet/reveal"
+            type="secondary"
+            content="Reveal Private Key"
+            isMini
+          />
         </div>
       </div>
     )

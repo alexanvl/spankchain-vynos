@@ -18,6 +18,7 @@ const Input: React.SFC<any> = function(props) {
     inverse,
     onPaste,
     inputRef,
+    name,
   } = props
 
   return (
@@ -37,6 +38,8 @@ const Input: React.SFC<any> = function(props) {
         onKeyDown={onKeyDown}
         autoFocus={autoFocus}
         onPaste={onPaste}
+        data-sel={name}
+        name={name}
       />
       <div className={classnames(s.errorMessage, {
         [s.inverse]: inverse

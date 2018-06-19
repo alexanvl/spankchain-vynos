@@ -1,0 +1,150 @@
+.container {
+  background-color: #f0f0f0;
+}
+
+.header {
+  padding: 2rem 3rem;
+  font-family: gt-haptik;
+  font-size: 1.8rem;
+  font-weight: 500;
+  color: #797979;
+}
+
+.descriptionWrapper {
+  padding: 0 3rem;
+}
+
+.description {
+  font-size: 1.1rem;
+  color: #797979;
+  font-weight: 500;
+}
+
+.backupFields {
+  display: flex;
+  width: auto;
+  flex-wrap: wrap;
+  padding: 0;
+  justify-content: center;
+  counter-reset: field-counter;
+  margin-top: 2rem;
+  margin-bottom: 0;
+}
+
+.backupFieldWrapper {
+  width: 160px;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid #797979;
+  display: block;
+  margin: 0 5px 10px 5px;
+  position: relative;
+  counter-increment: field-counter;
+  overflow: hidden;
+
+  &:before {
+    content: counter(field-counter);
+    color: #797979;
+    display: block;
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    font-weight: 300;
+    font-family: CartographMonoCF, monospace;
+    font-size: 0.8rem;
+  }
+}
+
+.backupField {
+  width: 100%;
+}
+
+.backupField input {
+  width: auto;
+  border-bottom: 0 !important;
+  text-transform: uppercase !important;
+  text-align: center;
+  padding: 11px 20px !important;
+  font-weight: 700;
+  font-size: 1.2rem;
+  background: #e4e4e4;
+  color: #797979;
+}
+
+.error {
+  margin-top: 10px;
+}
+
+.buttonWrapper {
+  padding: 1rem 3rem;
+  text-align: center;
+}
+
+.ctaInput {
+  border: 0 !important;
+  box-shadow: 0 0 0px 2px #e4e4e4;
+}
+
+.ctaInputValue {
+  flex: initial;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  display: block;
+  line-height: 2rem;
+  font-size: 1rem;
+  font-family: CartographMonoCF;
+  font-weight: 500;
+}
+
+.ctaInputContent {
+  margin: 0;
+  box-shadow: 0 0 0 2px #ff3b81;
+  padding: 0.5rem 1rem !important;
+}
+
+.ctaInputContent:hover {
+  background-color: rgba(255, 59, 129, 0.9) !important;
+}
+
+.ctaInputContent:active {
+  background-color: rgb(255, 59, 129) !important;
+}
+
+.ctaContentWrapper {
+  display: flex;
+  flex-flow: row nowrap;
+  text-align: center;
+  justify-content: center;
+}
+
+.ctaIcon {
+  background-image: url(../../styles/images/copy-white.svg);
+  height: 1rem;
+  width: 1rem;
+  background-repeat: no-repeat;
+  background-size: 90%;
+  background-position: center 2px;
+  margin: 0 4px;
+}
+
+.ctaText {
+  font-weight: 600;
+  position: relative;
+  top: 1px;
+}
+
+.contentWrapper {
+  padding: 2rem 3rem;
+}
+
+@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+  .ctaInputValue {
+    flex: 1 1 auto;
+  }
+
+  .ctaInputContent {
+    padding: .5rem 2rem !important;
+  }
+}
