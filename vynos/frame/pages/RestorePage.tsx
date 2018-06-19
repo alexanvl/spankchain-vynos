@@ -34,8 +34,6 @@ export interface RestorePageState {
 const alpha = /^[a-z]*$/i
 
 class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
-  backupFieldInputRefs: any = {}
-
   constructor (props: RestorePageProps) {
     super(props)
 
@@ -53,29 +51,14 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
 
   updateSeed (i: number, e: any) {
     const value = e.target.value
-    this.setSeedWordForIndex(i, value)
-  }
 
-  _pendingSeeds: string[] | null = null
-
-  setSeedWordForIndex (i: number, value: string) {
     if (!value.match(alpha)) {
       return
     }
 
-    const seeds = this._pendingSeeds || [].concat(this.state.seeds as any) as string[]
+    const seeds = [].concat(this.state.seeds as any) as string[]
     seeds[i] = value.toLowerCase()
-
-    // Because `setSeedWordForIndex` may be called multiple times before the
-    // state is updated, store the pending seed words in `this._pendingSeeds`,
-    // then clear that after the state is applied
-    this._pendingSeeds = seeds
-
-    this.setState({
-      seeds
-    }, () => {
-      this._pendingSeeds = null
-    })
+    this.setState({ seeds })
   }
 
   setSeed (i: number) {
@@ -167,19 +150,19 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
   }
 
   onBackupFieldPaste = (event: any, inputIdx: number) => {
+    if (!process.env.DEBUG)
+      return
+
     // from: https://stackoverflow.com/a/30496488
     var clipboardData = event.clipboardData || event.originalEvent.clipboardData || (window as any).clipboardData
     var pastedData = clipboardData.getData('text')
     let bits = pastedData.split(/\s+/)
+    let seeds = this.state.seeds.concat()
     bits.forEach((bit: string, bitIdx: number) => {
-      let idx = inputIdx + bitIdx
-      let input = this.backupFieldInputRefs[idx]
-      if (!input)
-        return
-      let value = bit.replace(/[^a-z]/gi, '')
-      input.value = value
-      this.setSeedWordForIndex(idx, value)
+      seeds[inputIdx + bitIdx] = bit.replace(/[^a-z]/gi, '')
     })
+    this.setState({ seeds })
+
     event.preventDefault()
     return false
   }
@@ -264,7 +247,6 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
           <Input
             autoFocus={i === 0}
             className={style.backupField}
-            inputRef={(ref: any) => this.backupFieldInputRefs[i] = ref}
             onPaste={(event: any) => this.onBackupFieldPaste(event, i)}
             {...this.setSeed(i)}
             inverse
