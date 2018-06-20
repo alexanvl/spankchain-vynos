@@ -876,6 +876,49 @@ Channels page
   width: 320px;
 }
 
+.restorePickAddress {
+  margin: 0;
+  padding: 0;
+}
+
+.restorePickAddress li {
+  display: block;
+  color: white;
+  padding: 8px;
+  cursor: pointer;
+  margin-bottom: 6px;
+}
+
+.restorePickAddress li:hover, li.restorePickAddressChosen {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid white;
+  border-radius: 2px;
+  padding: 7px;
+}
+
+.restorePickAddressChosen {
+  background: rgba(255,255,255,0.2) !important;
+}
+
+.restorePickAddressBalance {
+  margin-top: 6px;
+  display: flex;
+}
+
+.restorePickAddressBalance span {
+  margin-right: 12px;
+}
+
+.restorePickAddressCurrency {
+  justify-content: flex-start;
+  font-family: 'CartographMonoCF', monospace;
+}
+
+.restorePickAddressCurrency div {
+  margin-right: 3px;
+  margin-bottom: -2px;
+}
+
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
   .passwordTextBox {
     width: 75%;

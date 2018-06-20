@@ -5,6 +5,7 @@ import Keyring from '../../frame/lib/Keyring'
 import {EventEmitter} from 'events'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import AbstractController from './AbstractController'
+import { BigNumber } from 'bignumber.js'
 import {
   DidStoreMnemonicRequest,
   GenKeyringRequest,
@@ -15,24 +16,41 @@ import {
   RestoreWalletRequest,
   TransactionResolved,
   UnlockWalletRequest,
-  RevealPrivateKeyRequest
+  RevealPrivateKeyRequest, GenerateRestorationCandidates
 } from '../../lib/rpc/yns'
 import bip39 =require('bip39')
 import hdkey = require('ethereumjs-wallet/hdkey')
 import Wallet = require('ethereumjs-wallet')
-import Logger from '../../lib/Logger';
+import Web3 = require('web3')
+import RestorationCandidate from '../../lib/RestorationCandidate'
 
 const STATE_UPDATED_EVENT = 'stateUpdated'
+
+/**
+ * MetaMask's HD derivation path.
+ *
+ * See: https://github.com/MetaMask/metamask-extension/blob/a245fb7d22a5fe08c4fc8c2c1c64d406805018a8/app/scripts/keyrings/hd.js#L10
+ * @type {string}
+ */
+const HD_PATH_STRING = `m/44'/60'/0'/0`
+
+const HD_CHILD_KEY_ID = 0
 
 export default class BackgroundController extends AbstractController {
   store: Store<WorkerState>
 
   events: EventEmitter
 
+  web3: Web3
+
   constructor (store: Store<WorkerState>) {
     super()
     this.store = store
     this.events = new EventEmitter()
+  }
+
+  setWeb3(web3: Web3) {
+    this.web3 = web3
   }
 
   awaitUnlock (fn: Function) {
@@ -71,8 +89,9 @@ export default class BackgroundController extends AbstractController {
   }
 
   genKeyring (password: string): Promise<string> {
-    let mnemonic = bip39.generateMnemonic()
-    let keyring = this._generateKeyring(mnemonic)
+    const mnemonic = bip39.generateMnemonic()
+    const keyring = this._generateKeyring(mnemonic, true)
+    this.store.dispatch(actions.setWallet(keyring.wallet))
     return Keyring.serialize(keyring, password).then(serialized => {
       this.store.dispatch(actions.setKeyring(serialized))
       return mnemonic
@@ -80,27 +99,75 @@ export default class BackgroundController extends AbstractController {
   }
 
   async revealPrivateKey (mnemonic: string): Promise<string> {
-    let wallet = hdkey.fromMasterSeed(mnemonic).getWallet()
-    let walletAddressFromMnemonic = wallet.getAddressString()
-    let walletAddress = await this.getAddressString()
+    const hdWallet = this._generateKeyring(mnemonic, true)
+    const rootWallet = this._generateKeyring(mnemonic, false)
+    const walletAddress = await this.getAddressString()
 
-    if (walletAddressFromMnemonic === walletAddress) {
-      return wallet.getPrivateKeyString()
+    if (hdWallet.wallet.getAddressString() === walletAddress) {
+      return hdWallet.wallet.getPrivateKeyString()
+    }
+
+    if (rootWallet.wallet.getAddressString() === walletAddress) {
+      return rootWallet.wallet.getPrivateKeyString()
     }
 
     throw new Error('Wallet address does not match')
   }
 
-  _generateKeyring (mnemonic: string): Keyring {
-    let wallet = hdkey.fromMasterSeed(mnemonic).getWallet()
-    this.store.dispatch(actions.setWallet(wallet))
-    let privateKey = wallet.getPrivateKey()
+  private _generateKeyring (mnemonic: string, hd: boolean): Keyring {
+    let rootKey
+
+    // Root key generation was not properly converting the mnemonic
+    // to a seed prior to the below if statement being written.
+    // Under the hood, bip39 runs the seed through PBKDF2(mnemonic + 'mnemonic' + password)
+    // in order to generate a seed key. MetaMask and other Ethereum clients
+    // set the password to an empty string.
+    if (hd) {
+      const seed = bip39.mnemonicToSeed(mnemonic, '')
+      rootKey = hdkey.fromMasterSeed(seed)
+    } else {
+      rootKey = hdkey.fromMasterSeed(mnemonic)
+  }
+
+    const key = hd ? rootKey.derivePath(HD_PATH_STRING)
+      .deriveChild(HD_CHILD_KEY_ID) : rootKey
+    const wallet = key.getWallet()
+    const privateKey = wallet.getPrivateKey()
     return new Keyring(privateKey)
   }
 
-  restoreWallet (password: string, mnemonic: string): Promise<void> {
-    let keyring = this._generateKeyring(mnemonic)
-    let wallet = keyring.wallet
+  async generateRestorationCandidates (mnemonic: string): Promise<RestorationCandidate[]> {
+    const hdKeyring = this._generateKeyring(mnemonic, true)
+    const hdAddress = hdKeyring.wallet.getAddressString()
+    const hdBalance = await this.balanceFor(hdAddress)
+    const rootKeyring = this._generateKeyring(mnemonic, false)
+    const rootAddress = rootKeyring.wallet.getAddressString()
+    const rootBalance = await this.balanceFor(rootAddress)
+
+    return [
+      {
+        address: hdAddress,
+        balance: hdBalance.toString(),
+        isHd: true
+      },
+      {
+        address: rootAddress,
+        balance: rootBalance.toString(),
+        isHd: false
+      }
+    ]
+  }
+
+  private balanceFor(address: string): Promise<BigNumber> {
+    return new Promise((resolve, reject) => this.web3.eth.getBalance(address, (err: Error, res: BigNumber) => {
+      return err ? reject(err) : resolve(res)
+    }))
+  }
+
+  restoreWallet (password: string, mnemonic: string, hd: boolean): Promise<void> {
+    const keyring = this._generateKeyring(mnemonic, hd)
+    this.store.dispatch(actions.setWallet(keyring.wallet))
+    const wallet = keyring.wallet
     return Keyring.serialize(keyring, password).then(serialized => {
       this.store.dispatch(actions.restoreWallet({keyring: serialized, wallet: wallet}))
     })
@@ -181,5 +248,6 @@ export default class BackgroundController extends AbstractController {
     this.registerHandler(server, RememberPageRequest.method, this.rememberPage)
     this.registerHandler(server, TransactionResolved.method, this.getSharedState)
     this.registerHandler(server, RevealPrivateKeyRequest.method, this.revealPrivateKey)
+    this.registerHandler(server, GenerateRestorationCandidates.method, this.generateRestorationCandidates)
   }
 }

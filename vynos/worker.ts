@@ -82,6 +82,9 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE) as Store<WorkerState>
     const backgroundController = new BackgroundController(store)
     const server = new WorkerServer(backgroundController, workerWrapper, clientWrapper)
+    // this is a hack. we need to refactor the worker instantiation process using DI
+    // or something to make this cleaner.
+    backgroundController.setWeb3(server.web3)
 
     await new Promise((resolve) => persistStore(store, undefined, resolve))
 

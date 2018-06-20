@@ -55,7 +55,7 @@ export type RememberPageRequest = RequestPayload
 export const GenKeyringRequest = requestFactory<string[]>('genKeyring')
 export type GenKeyringRequest = RequestPayload
 
-export const RestoreWalletRequest = requestFactory<[string, string]>('restoreWallet')
+export const RestoreWalletRequest = requestFactory<[string, string, boolean]>('restoreWallet')
 export type RestoreWalletRequest = RequestPayload
 
 export const UnlockWalletRequest = requestFactory<string[]>('unlockWallet')
@@ -102,3 +102,6 @@ export type RecoverChannelRequest = RequestPayload
 
 export const RevealPrivateKeyRequest = requestFactory<any[]>('revealPrivateKey')
 export type RevealPrivateKeyRequest = RequestPayload
+
+export const GenerateRestorationCandidates = requestFactory<[string]>('generateRestorationCandidates')
+export type GenerateRestorationCandidates = RequestPayload

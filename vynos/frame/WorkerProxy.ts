@@ -19,7 +19,8 @@ import {
   SetUsernameRequest,
   StatusRequest,
   ToggleFrameRequest,
-  UnlockWalletRequest
+  UnlockWalletRequest,
+  GenerateRestorationCandidates
 } from '../lib/rpc/yns'
 import * as BigNumber from 'bignumber.js'
 import JsonRpcClient from '../lib/messaging/JsonRpcClient'
@@ -30,6 +31,7 @@ import Web3 = require('web3')
 
 import * as metrics from '../lib/metrics'
 import { getRpcUrl } from '../lib/rpc/WorkerServer'
+import RestorationCandidate from '../lib/RestorationCandidate'
 
 function timed(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   let oldFunc = descriptor.value
@@ -95,8 +97,8 @@ export default class WorkerProxy extends JsonRpcClient {
     return this.call(GenKeyringRequest.method, password)
   }
 
-  restoreWallet (password: string, mnemonic: string): Promise<string> {
-    return this.call(RestoreWalletRequest.method, password, mnemonic)
+  restoreWallet (password: string, mnemonic: string, hd: boolean): Promise<string> {
+    return this.call(RestoreWalletRequest.method, password, mnemonic, hd)
   }
 
   getSharedState (): Promise<SharedState> {
@@ -146,5 +148,9 @@ export default class WorkerProxy extends JsonRpcClient {
 
   revealPrivateKey (mnemonic: string): Promise<string> {
     return this.call(RevealPrivateKeyRequest.method, mnemonic)
+  }
+
+  generateRestorationCandidates(mnemonic: string): Promise<RestorationCandidate[]> {
+    return this.call(GenerateRestorationCandidates.method, mnemonic)
   }
 }
