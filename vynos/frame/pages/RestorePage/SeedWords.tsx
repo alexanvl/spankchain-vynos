@@ -78,6 +78,25 @@ export default class SeedWords extends React.Component<SeedWordsProps, SeedWords
     })
   }
 
+  onPaste = (idx: number) => (e: any) => {
+    const clipboardData = e.clipboardData || e.originalEvent.clipboardData || (window as any).clipboardData
+    const data = clipboardData.getData('text')
+    const splits = data.split(/\s+/).map((s: string) => s.toLowerCase())
+    const seeds = this.state.seeds.concat()
+
+    splits.forEach((bit: string, i: number) => {
+      seeds[idx + i] = bit.replace(/[^a-z]/gi, '')
+    })
+
+    this.setState({
+      seeds
+    })
+
+    e.preventDefault()
+
+    return false
+  }
+
   onSubmit () {
     this.props.onSubmit(this.state.seeds)
   }
@@ -92,6 +111,7 @@ export default class SeedWords extends React.Component<SeedWordsProps, SeedWords
             autoFocus={i === 0}
             className={style.backupField}
             {...this.setSeed(i)}
+            onPaste={this.onPaste(i)}
             inverse
           />
         </li>
