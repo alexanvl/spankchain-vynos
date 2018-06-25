@@ -1,7 +1,7 @@
 # Note: intended to be run with:
 #  $ cd vynos
 #  $ docker build -f infrastructure/Dockerfile .
-FROM gcr.io/spankchain-camsite/node:9.3.0
+FROM node:9.3.0
 
 WORKDIR /home/node/app
 
