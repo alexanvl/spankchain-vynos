@@ -31,7 +31,6 @@ export type UnlockPageState = {
   passwordError: string | null
   loading: boolean
   displayRestore: boolean
-  isResetting: boolean
 };
 
 export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState> {
@@ -42,12 +41,10 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
       passwordError: null,
       loading: false,
       displayRestore: false,
-      isResetting: false
     }
     this.handleChangePassword = this.handleChangePassword.bind(this)
     this.handleSubmit = this.handleSubmit.bind(this)
     this.doDisplayRestore = this.doDisplayRestore.bind(this)
-    this.onClickReset = this.onClickReset.bind(this)
   }
 
   handleChangePassword (event: ChangeEvent<HTMLInputElement>) {
@@ -82,18 +79,6 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     await this.props.workerProxy.authenticate()
     const next = this.props.next || '/wallet'
     this.props.history.push(next)
-  }
-
-  onClickReset () {
-    if (!this.state.isResetting) {
-      this.setState({
-        isResetting: true
-      })
-
-      return
-    }
-
-    this.props.workerProxy.reset()
   }
 
   doDisplayRestore () {
@@ -162,11 +147,6 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
                   isMini
                   isSubmit
                 />
-              </div>
-              <div className={style.resetText}>
-              <span onClick={this.onClickReset}>
-                {this.state.isResetting ? 'Are you sure? This will permanently erase your wallet.' : 'Reset'}
-              </span>
               </div>
             </Submittable>
           </div>
