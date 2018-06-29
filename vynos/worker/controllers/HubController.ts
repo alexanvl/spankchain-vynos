@@ -93,10 +93,18 @@ export default class HubController extends AbstractController implements Lifecyc
     poll()
   }
 
-  private async getHubBranding (): Promise<null> {
-    const hubUrl = await this.sharedStateView.getHubUrl()
-    const res = await requestJson<BrandingResponse>(`${hubUrl}/branding`)
-    this.store.dispatch(actions.setHubBranding(res))
+  private async getHubBranding (retryCount: number=3): Promise<null> {
+    try {
+      const hubUrl = await this.sharedStateView.getHubUrl()
+      const res = await requestJson<BrandingResponse>(`${hubUrl}/branding`)
+      this.store.dispatch(actions.setHubBranding(res))
+    } catch (e) {
+      LOG(`Failed to fetch branding (${retryCount > 0 ? 'retrying' : 'not retrying'}):`, e)
+      if (retryCount > 0)
+        return this.getHubBranding(retryCount - 1)
+      throw new Error('Error fetching branding (giving up after too many retries): ' + e)
+    }
+
     return null
   }
 
