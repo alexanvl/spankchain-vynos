@@ -1,7 +1,9 @@
 const Raven = require('raven-js')
 
 if (process.env.DEBUG) {
-  Raven.config('https://84ca54d0f2324353bb2c26c600860bb5@sentry.io/1212475').install()
+  Raven.config('https://84ca54d0f2324353bb2c26c600860bb5@sentry.io/1212475', {
+    environment: process.env.NODE_ENV,
+  }).install()
 }
 
 import * as React from 'react'
