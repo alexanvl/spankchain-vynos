@@ -7,8 +7,9 @@ WORKDIR /home/node/app
 
 ADD package.json .
 ADD yarn.lock .
+ADD infrastructure/yarn-install-with-retry .
 
-RUN yarn --production=false --frozen-lockfile --cache-folder /root/.yarn
+RUN ./yarn-install-with-retry
 
 ADD . .
 
