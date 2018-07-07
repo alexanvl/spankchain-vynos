@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
 import Currency, { CurrencyType } from '../Currency/index'
-import {FIVE_FINNEY} from '../../../lib/constants'
+import {TEN_FINNEY} from '../../../lib/constants'
 
 const walletPageStyles = require('../../pages/WalletPage/styles.css')
 const ctaStyles = require('../CTAInput/style.css')
@@ -33,7 +33,7 @@ export default class RefillButton extends React.Component<RefillButtonProps, any
         <div className={s.tooLowTooltip}>
           <span>The minimum refill amount is</span>
           <Currency
-            amount={FIVE_FINNEY}
+            amount={TEN_FINNEY}
             inputType={CurrencyType.WEI}
             outputType={CurrencyType.FINNEY}
             className={s.loadUpCurrency}

@@ -8,7 +8,7 @@ import Currency, {CurrencyType} from '../../../components/Currency/index'
 import {BigNumber} from 'bignumber.js'
 import * as classnames from 'classnames'
 import entireBalance from '../../../lib/entireBalance'
-import {FIVE_FINNEY} from '../../../../lib/constants'
+import {TEN_FINNEY} from '../../../../lib/constants'
 
 const s = require('./index.css')
 
@@ -55,7 +55,7 @@ export class LoadCardCTAButton extends React.Component<Props> {
       <span className={s.loadUpWrapper}>
         <span>Minimum SpankCard refill is </span>
         <Currency
-          amount={FIVE_FINNEY}
+          amount={TEN_FINNEY}
           inputType={CurrencyType.WEI}
           outputType={CurrencyType.FINNEY}
           className={s.loadUpCurrency}
@@ -73,7 +73,7 @@ export class LoadCardCTAButton extends React.Component<Props> {
       return <noscript />
     }
 
-    const tooLow = walletBalance.lt(FIVE_FINNEY)
+    const tooLow = walletBalance.lt(TEN_FINNEY)
     const isLoading = pendingChannelIds && pendingChannelIds.length > 0
     const btnClass = classnames({
       [s.loading]: isLoading,

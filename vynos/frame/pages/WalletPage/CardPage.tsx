@@ -13,7 +13,7 @@ import Currency, {CurrencyType} from '../../components/Currency/index'
 import entireBalance from '../../lib/entireBalance'
 import CurrencyIcon from '../../components/CurrencyIcon/index'
 import RefillButton from '../../components/RefillButton/index'
-import {FIVE_FINNEY} from '../../../lib/constants'
+import {TEN_FINNEY} from '../../../lib/constants'
 
 const s = require('./styles.css')
 
@@ -95,7 +95,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
 
   render() {
     const { walletBalance, cardBalance } = this.props;
-    const isTooLow = walletBalance.lt(FIVE_FINNEY)
+    const isTooLow = walletBalance.lt(TEN_FINNEY)
 
     return (
       <div className={s.walletSpankCardWrapper}>
