@@ -1,8 +1,7 @@
 import * as React from 'react';
 import * as classnames from 'classnames';
 import Currency, { CurrencyType } from '../Currency/index'
-import {TEN_FINNEY} from '../../../lib/constants'
-
+import { BigNumber } from 'bignumber.js';
 const walletPageStyles = require('../../pages/WalletPage/styles.css')
 const ctaStyles = require('../CTAInput/style.css')
 const s = require('./style.css')
@@ -11,6 +10,7 @@ const finneyInverse = require('../CurrencyIcon/style.css').inverse
 export interface RefillButtonProps {
   isRefilling: boolean
   isTooLow: boolean
+  minDeposit: BigNumber
   onClick: () => void
 }
 
@@ -33,7 +33,7 @@ export default class RefillButton extends React.Component<RefillButtonProps, any
         <div className={s.tooLowTooltip}>
           <span>The minimum refill amount is</span>
           <Currency
-            amount={TEN_FINNEY}
+            amount={this.props.minDeposit}
             inputType={CurrencyType.WEI}
             outputType={CurrencyType.FINNEY}
             className={s.loadUpCurrency}

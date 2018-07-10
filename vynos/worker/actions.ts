@@ -305,6 +305,17 @@ export function setUsernameHandler(state: WorkerState, username: string): Worker
   }
 }
 
+export const setMinDeposit: ActionCreator<string> = actionCreator<string>('runtime/setMinDeposit')
+export function setMinDepositHandler(state: WorkerState, minDeposit: string): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      minDeposit
+    }
+  }
+}
+
 function uniqueChannels (channels: SerializedPaymentChannel[]): SerializedPaymentChannel[] {
   const out: SerializedPaymentChannel[] = []
   const ids: { [k: string]: boolean } = {}

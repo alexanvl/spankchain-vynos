@@ -8,7 +8,6 @@ import Currency, {CurrencyType} from '../../../components/Currency/index'
 import {BigNumber} from 'bignumber.js'
 import * as classnames from 'classnames'
 import entireBalance from '../../../lib/entireBalance'
-import {TEN_FINNEY} from '../../../../lib/constants'
 
 const s = require('./index.css')
 
@@ -18,6 +17,7 @@ export interface MapStateToProps {
   workerProxy: WorkerProxy
   walletBalance: BigNumber
   cardBalance: BigNumber
+  minDeposit: BigNumber
   pendingChannelIds: string[]
 }
 
@@ -55,7 +55,7 @@ export class LoadCardCTAButton extends React.Component<Props> {
       <span className={s.loadUpWrapper}>
         <span>Minimum SpankCard refill is </span>
         <Currency
-          amount={TEN_FINNEY}
+          amount={this.props.minDeposit}
           inputType={CurrencyType.WEI}
           outputType={CurrencyType.FINNEY}
           className={s.loadUpCurrency}
@@ -67,13 +67,13 @@ export class LoadCardCTAButton extends React.Component<Props> {
   }
 
   render () {
-    const {walletBalance, cardBalance, pendingChannelIds} = this.props
+    const {walletBalance, cardBalance, pendingChannelIds, minDeposit} = this.props
 
     if (walletBalance.eq(0) || cardBalance.gt(0)) {
       return <noscript />
     }
 
-    const tooLow = walletBalance.lt(TEN_FINNEY)
+    const tooLow = walletBalance.lt(minDeposit)
     const isLoading = pendingChannelIds && pendingChannelIds.length > 0
     const btnClass = classnames({
       [s.loading]: isLoading,
@@ -99,7 +99,8 @@ function mapStateToProps (state: FrameState): MapStateToProps {
     walletBalance: new BigNumber(state.shared.balance || 0),
     cardBalance: cardBalance(state.shared),
     workerProxy: state.temp.workerProxy,
-    pendingChannelIds: state.shared.pendingChannelIds
+    pendingChannelIds: state.shared.pendingChannelIds,
+    minDeposit: new BigNumber(state.shared.minDeposit)
   }
 }
 
