@@ -2,15 +2,18 @@ import SharedStateView from '../SharedStateView'
 import {WorkerState} from '../WorkerState'
 import {Store} from 'redux'
 import {LifecycleAware} from './LifecycleAware'
-import {setBalance, setPendingTransaction, setUsername} from '../actions'
+import {setBalance, setMinDeposit, setPendingTransaction, setUsername} from '../actions'
 import * as BigNumber from 'bignumber.js'
 import {SendRequest, SetUsernameRequest} from '../../lib/rpc/yns'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import AbstractController from './AbstractController'
 import Web3 = require('web3')
 import Logger from '../../lib/Logger'
+import {MinDeposit} from '../../lib/MinDeposit'
 
 const utils = require('web3-utils')
+
+const THIRTY_MINUTES = 30 * 60 * 1000
 
 export default class WalletController extends AbstractController implements LifecycleAware {
   web3: Web3
@@ -33,10 +36,11 @@ export default class WalletController extends AbstractController implements Life
   public async start (): Promise<void> {
     this.isWatching = true
     this.watchBalance()
+    this.watchMinDeposit()
   }
 
   public async stop (): Promise<void> {
-    this.stopWatchingBalance()
+    this.isWatching = false
   }
 
   public async send (to: string, value: string, gas?: string, gasPrice?: string) {
@@ -158,8 +162,15 @@ export default class WalletController extends AbstractController implements Life
     })
   }
 
-  private stopWatchingBalance () {
-    this.isWatching = false
+  private async watchMinDeposit() {
+    if (!this.isWatching) {
+      return
+    }
+
+    const minDeposit = new MinDeposit(this.web3)
+    const min = await minDeposit.get()
+    this.store.dispatch(setMinDeposit(min.toString()))
+    setTimeout(this.watchMinDeposit, THIRTY_MINUTES)
   }
 
   private validateAddress (currentAddress: string, address: string): string | null {

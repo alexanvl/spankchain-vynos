@@ -1,6 +1,7 @@
 import Wallet from 'ethereumjs-wallet'
 import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import Payment from 'machinomy/dist/lib/payment'
+import {FIVE_FINNEY} from '../lib/MinDeposit'
 
 export interface RuntimeState {
   wallet?: Wallet
@@ -22,6 +23,7 @@ export interface RuntimeState {
   activeWithdrawalError: string|null
   exchangeRate: string|null
   username: string|null
+  minDeposit: string
 }
 
 export interface AuthorizationRequestState {
@@ -68,6 +70,7 @@ export interface SharedState {
   activeWithdrawalError: string|null
   exchangeRate: string|null
   username: string|null
+  minDeposit: string
 }
 
 export interface PersistentState {
@@ -114,7 +117,8 @@ export const INITIAL_SHARED_STATE: SharedState = {
   activeWithdrawalError: null,
   pendingChannelIds: [],
   exchangeRate: null,
-  username: null
+  username: null,
+  minDeposit: FIVE_FINNEY.toString()
 }
 
 export const INITIAL_STATE: WorkerState = {
@@ -143,7 +147,8 @@ export const INITIAL_STATE: WorkerState = {
     hasActiveWithdrawal: false,
     activeWithdrawalError: null,
     exchangeRate: null,
-    username: null
+    username: null,
+    minDeposit: FIVE_FINNEY.toString()
   },
 }
 
@@ -171,6 +176,7 @@ export function buildSharedState(state: WorkerState): SharedState {
     activeWithdrawalError: state.runtime.activeWithdrawalError,
     pendingChannelIds: state.persistent.pendingChannelIds,
     exchangeRate: state.runtime.exchangeRate,
-    username: state.runtime.username
+    username: state.runtime.username,
+    minDeposit: state.runtime.minDeposit
   }
 }

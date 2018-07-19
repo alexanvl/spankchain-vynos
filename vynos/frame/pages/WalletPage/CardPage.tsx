@@ -13,7 +13,6 @@ import Currency, {CurrencyType} from '../../components/Currency/index'
 import entireBalance from '../../lib/entireBalance'
 import CurrencyIcon from '../../components/CurrencyIcon/index'
 import RefillButton from '../../components/RefillButton/index'
-import {FIVE_FINNEY} from '../../../lib/constants'
 
 const s = require('./styles.css')
 
@@ -23,6 +22,7 @@ export interface StateProps extends BrandingState {
   isWithdrawing: boolean
   workerProxy: WorkerProxy
   activeWithdrawalError: string|null
+  minDeposit: BigNumber
 }
 
 export interface CardPageState {
@@ -94,8 +94,8 @@ class CardPage extends React.Component<StateProps, CardPageState> {
   }
 
   render() {
-    const { walletBalance, cardBalance } = this.props;
-    const isTooLow = walletBalance.lt(FIVE_FINNEY)
+    const { walletBalance, cardBalance, minDeposit } = this.props;
+    const isTooLow = walletBalance.lt(minDeposit)
 
     return (
       <div className={s.walletSpankCardWrapper}>
@@ -121,6 +121,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
               isDisabled={this.state.isRefilling || isTooLow}
               ctaContent={() =>
                 <RefillButton
+                  minDeposit={minDeposit}
                   isRefilling={this.state.isRefilling}
                   isTooLow={isTooLow}
                   onClick={this.onClickRefill}
@@ -214,6 +215,7 @@ function mapStateToProps (state: FrameState, ownProps: any): StateProps {
     cardBalance: cardBalance(state.shared),
     isWithdrawing: state.shared.hasActiveWithdrawal,
     activeWithdrawalError: state.shared.activeWithdrawalError,
+    minDeposit: new BigNumber(state.shared.minDeposit),
     workerProxy: state.temp.workerProxy
   }
 }

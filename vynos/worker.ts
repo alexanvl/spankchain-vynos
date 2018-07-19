@@ -1,7 +1,9 @@
 const Raven = require('raven-js')
 
 if (!process.env.DEBUG) {
-  Raven.config('https://8199bca0aab84a5da6293737634dcc88@sentry.io/1212501').install()
+  Raven.config('https://8199bca0aab84a5da6293737634dcc88@sentry.io/1212501', {
+    environment: process.env.NODE_ENV,
+  }).install()
 }
 
 import {asServiceWorker} from './worker/window'

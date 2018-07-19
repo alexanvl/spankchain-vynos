@@ -1,13 +1,19 @@
 steps:
   - name: 'gcr.io/cloud-builders/docker'
     args: [
+            'pull', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}:latest'
+          ]
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
             'build',
+            '--cache-from', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}:latest',
             '--build-arg', 'NODE_ENV=${_ENV}',
             '--build-arg', 'FRAME_URL=https://${_FRAME_DOMAIN}',
             '--build-arg', 'API_URL=${_API_URL}',
             '--build-arg', 'NETWORK_NAME=${_NETWORK_NAME}',
             '--build-arg', 'HUB_URL=${_HUB_URL}',
             '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:$COMMIT_SHA',
+            '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}:latest',
             '-f', 'infrastructure/Dockerfile',
             '.'
           ]
@@ -20,6 +26,18 @@ steps:
   - name: 'gcr.io/cloud-builders/gsutil'
     args: ["-m", "rsync", "-r", "-c", "./dist/", "gs://${_FRAME_DOMAIN}"]
     dir: '${_PROJECT}'
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: [
+            'build',
+            '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/nginx/${_ENV}:$COMMIT_SHA',
+            '-f', 'infrastructure/Dockerfile.nginx',
+            '.'
+          ]
+    dir: '${_PROJECT}'
+
 images: [
           'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:$COMMIT_SHA',
+          'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}:latest',
+          'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/nginx/${_ENV}:$COMMIT_SHA'
         ]
