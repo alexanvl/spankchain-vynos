@@ -78,6 +78,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
 
     estimateGas({}, (err, data) => {
       if (err) {
+        console.warn('Error estimating gas:', err)
         return
       }
 
@@ -86,6 +87,7 @@ export class SendEther extends React.Component<SendEtherProps, SendEtherState> {
 
     getGasPrice((err, data) => {
       if (err) {
+        console.warn('Error getting gas price:', err)
         return
       }
 
