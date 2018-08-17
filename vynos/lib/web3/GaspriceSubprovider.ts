@@ -35,8 +35,10 @@ export default class GaspriceSubprovider extends Subprovider {
 
   private async estimateGasPriceFromHub (): Promise<BigNumber | null> {
     const res = await requestJson<any>(`${process.env.HUB_URL}/gasPrice/estimate`)
-    if (res && res.gasPrice)
-      return new BigNumber(res.gasPrice)
+    if (res && res.gasPrice) {
+      return new BigNumber(res.gasPrice).mul(GWEI)
+    }
+
     return null
   }
 
