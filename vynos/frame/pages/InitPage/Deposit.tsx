@@ -1,22 +1,21 @@
-import * as React from "react"
-import Web3 = require('web3')
-import {connect} from "react-redux"
-import {Dispatch} from 'redux'
+import * as React from 'react'
+import {connect} from 'react-redux'
+import {bindActionCreators, Dispatch} from 'redux'
 import * as classnames from 'classnames'
 import * as copy from 'copy-to-clipboard'
 import * as qr from 'qr-image'
-import {FrameState} from "../../redux/FrameState"
-import WorkerProxy from "../../WorkerProxy"
-import * as actions from "../../redux/actions"
-import Button from "../../components/Button/index"
-import CTAInput from "../../components/CTAInput/index"
+import {FrameState} from '../../redux/FrameState'
+import WorkerProxy from '../../WorkerProxy'
+import * as actions from '../../redux/actions'
+import Button from '../../components/Button/index'
+import CTAInput from '../../components/CTAInput/index'
 import OnboardingContainer from './OnboardingContainer'
 
 const style = require('../../styles/ynos.css')
 const d = require('./Deposit.css')
 
 export interface DepositStateProps {
-  web3?: Web3
+  web3?: any
   workerProxy: WorkerProxy
 }
 
@@ -38,7 +37,7 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
   state = {
     address: '',
     isAuthenticating: false,
-    isCopied: false,
+    isCopied: false
   }
 
   handleSubmit = async () => {
@@ -61,33 +60,32 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
     }
   }
 
-  componentDidMount() {
-    const { web3 } = this.props
+  async componentDidMount () {
+    const {web3} = this.props
     if (web3) {
-      web3.eth.getAccounts((err: any, accounts: any) => {
-        let address = accounts[0]
-        this.setState({ address })
-      })
+      const accounts = await web3.eth.getAccounts()
+      const address = accounts[0]
+      this.setState({address})
     }
   }
 
-  componentWillUnmount() {
+  componentWillUnmount () {
     if (this.timeout) {
       clearTimeout(this.timeout)
     }
   }
 
   onCopyAddress = () => {
-    const { address } = this.state;
+    const {address} = this.state
 
     if (address) {
       copy(address)
       this.setState({
-        isCopied: true,
+        isCopied: true
       })
 
       this.timeout = setTimeout(() => {
-        this.setState({ isCopied: false })
+        this.setState({isCopied: false})
       }, 2000)
     }
   }
@@ -104,7 +102,8 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
         <div className={style.content}>
           <div className={style.funnelTitle} data-sel="signupDepositHeader">Wallet Address</div>
           <div className={style.seedPhraseText}>
-          This is your Wallet address, also known as a Public Key. Copy it. Give to others. Send ETH from an exchange or other wallet you control to this address. You'll then be able load your SpankCard and tip away!
+            This is your Wallet address, also known as a Public Key. Copy it. Give to others. Send ETH from an exchange
+            or other wallet you control to this address. You'll then be able load your SpankCard and tip away!
           </div>
           <CTAInput
             className={style.ctaInput}
@@ -140,14 +139,14 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
   }
 }
 
-function mapStateToProps(state: FrameState): DepositStateProps {
+function mapStateToProps (state: FrameState): DepositStateProps {
   return {
     web3: state.temp.workerProxy.web3,
-    workerProxy: state.temp.workerProxy,
+    workerProxy: state.temp.workerProxy
   }
 }
 
-function mapDispatchToProps(dispatch: Dispatch<FrameState>): DepositDispatchProps {
+function mapDispatchToProps (dispatch: Dispatch): DepositDispatchProps {
   return {
     didAcknowledgeDeposit: () => dispatch(actions.didAcknowledgeDeposit(''))
   }

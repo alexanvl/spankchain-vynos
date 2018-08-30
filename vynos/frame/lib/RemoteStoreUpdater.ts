@@ -1,4 +1,4 @@
-import {Store} from 'react-redux'
+import {Store} from 'redux'
 import {SharedState} from '../../worker/WorkerState'
 import {SharedStateBroadcastEvent} from '../../lib/rpc/SharedStateBroadcast'
 import {FrameState} from '../redux/FrameState'

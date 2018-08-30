@@ -9,8 +9,8 @@ if (process.env.DEBUG) {
 import * as React from 'react'
 import * as DOM from 'react-dom'
 import WorkerProxy from './WorkerProxy'
-import {Provider, Store} from 'react-redux'
-import {createLogger} from 'redux-logger'
+import { Store } from 'redux';
+import {Provider} from 'react-redux'
 import * as redux from 'redux'
 import {FrameState, initialState} from './redux/FrameState'
 import RemoteStoreUpdater from './lib/RemoteStoreUpdater'
@@ -25,8 +25,7 @@ async function renderToMountPoint (mountPoint: HTMLElement, workerProxy: WorkerP
   let store: Store<FrameState>
 
   if (process.env.DEBUG) {
-    const middleware = redux.applyMiddleware(createLogger())
-    store = redux.createStore(reducers(workerProxy), initialState(workerProxy), middleware)
+    store = redux.createStore(reducers(workerProxy), initialState(workerProxy))
   } else {
     store = redux.createStore(reducers(workerProxy), initialState(workerProxy))
   }

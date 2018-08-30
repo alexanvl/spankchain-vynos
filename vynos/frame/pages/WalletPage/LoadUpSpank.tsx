@@ -6,6 +6,7 @@ import WorkerProxy from '../../WorkerProxy'
 import * as BigNumber from 'bignumber.js';
 import Currency, {CurrencyType} from '../../components/Currency/index'
 import entireBalance from '../../lib/entireBalance'
+import BN = require('bn.js')
 
 const s = require('./LoadUpSpank.css')
 
@@ -37,7 +38,7 @@ export class LoadUpSpank extends React.Component<LoadUpSpankProps, LoadUpSpankSt
       isLoading: true
     })
 
-    const amount = await entireBalance(this.props.workerProxy, new BigNumber.BigNumber(this.props.walletBalance!))
+    const amount = await entireBalance(this.props.workerProxy, new BN(this.props.walletBalance!))
     await this.props.workerProxy.deposit(amount)
   }
 

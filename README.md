@@ -36,7 +36,6 @@ Wallet instance provides the following API:
 * `wallet.initAccount(): Promise<void>` - resolved when the user unlocks her wallet; if it is already unlocked, the promise resolves immediately;
 * `wallet.openChannel(receiverAccount: string, channelValue: BigNumber.BigNumber): Promise<PaymentChannel>` - open a payment channel,
 * `wallet.buy(receiver: string, amount: number, gateway: string, meta: string, purchase?: PurchaseMeta): Promise<VynosBuyResponse>` - send a payment to `gateway`, open a channel if necessary,
-* `wallet.listChannels(): Promise<Array<PaymentChannel>>` - list all the open channels,
 * `wallet.closeChannel(channelId: string): Promise<void>` - close the channel.
 * `wallet.provider` - web3 provider.
 

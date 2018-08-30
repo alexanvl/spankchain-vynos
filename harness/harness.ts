@@ -1,5 +1,5 @@
 import {VynosWindow} from '../vynos/window'
-import * as BigNumber from 'bignumber.js'
+import BN = require('bn.js')
 import Vynos from '../vynos/inpage/Vynos'
 
 let _window = (window as VynosWindow)
@@ -37,7 +37,7 @@ window.addEventListener('load', function () {
   const tipButton = document.getElementById('tip')
   if (tipButton) {
     tipButton.onclick = () => {
-      vynos.buy(new BigNumber.BigNumber(810000000000), {
+      vynos.buy(new BN(1000000000000000), {
         type: 'TIP',
         fields: {
           streamId: 'abc-123',
@@ -45,7 +45,7 @@ window.addEventListener('load', function () {
           performerId: 'abc-234',
           performerName: 'Butter Bubble'
         },
-        receiver: '0x783111ea0a46518bc14fe45b38f5d34b280d5046'
+        receiver: '0x206726d546769375f4747c4151b5dcdeba1e73b2'
       })
     }
   }
@@ -60,13 +60,13 @@ window.addEventListener('load', function () {
   const buyButton = document.getElementById('buy')
   if (buyButton) {
     buyButton.onclick = () => {
-      vynos.buy(new BigNumber.BigNumber(8100000000000), {
+      vynos.buy(new BN(8100000000000), {
         type: 'PURCHASE',
         fields: {
           productName: 'Widget',
           productSku: 'WIDG-123'
         },
-        receiver: '0x783111ea0a46518bc14fe45b38f5d34b280d5046'
+        receiver: '0x0ec05ca2d7e658259d3cd737d3f33685875c52bb'
       })
     }
   }
@@ -74,13 +74,13 @@ window.addEventListener('load', function () {
   const buyVideoButton = document.getElementById('buy-video')
   if (buyVideoButton) {
     buyVideoButton.onclick = () => {
-      vynos.buy(new BigNumber.BigNumber(8100000000000), {
+      vynos.buy(new BN(8100000000000), {
         type: 'PURCHASE',
         fields: {
           productName: 'Pop Music Video',
           productSku: 'NA-123-POP'
         },
-        receiver: '0xBB1699d16368EBC13BDc29e6A1aaD50A21BE45EB'
+        receiver: '0x0ec05ca2d7e658259d3cd737d3f33685875c52bb'
       })
     }
   }
@@ -88,6 +88,14 @@ window.addEventListener('load', function () {
   const lockButton = document.getElementById('lock')
   if (lockButton) {
     lockButton.onclick = () => vynos.lock()
+  }
+
+  const performerMode = document.getElementById('performer-mode') as HTMLInputElement
+  if (performerMode) {
+    performerMode.onchange = () => {
+      vynos.setNeedsCollateral(performerMode.checked)
+        .catch(console.error.bind(console))
+    }
   }
 
   const eventLog = document.getElementById('event-log')!

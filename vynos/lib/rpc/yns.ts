@@ -12,10 +12,10 @@ function requestFactory<P> (method: string): RequestConstructor {
   method = `yns_${method}`
 
   return class GeneratedRequestPayload implements RequestPayload {
-    id: number
-    jsonrpc: typeof JSONRPC
-    method: string
-    params: P
+    id: number = -1
+    jsonrpc: typeof JSONRPC = '2.0'
+    method: string = method
+    params: P|null = null
 
     static method: string = method
 
@@ -64,8 +64,8 @@ export type UnlockWalletRequest = RequestPayload
 export const LockWalletRequest = requestFactory<string[]>('lockWallet')
 export type LockWalletRequest = RequestPayload
 
-export const CloseChannelsForCurrentHubRequest = requestFactory<[string]>('closeChannelsForCurrentHub')
-export type CloseChannelsForCurrentHubRequest = RequestPayload
+export const CloseLedgerChannels = requestFactory<[string]>('closeLedgerChannels')
+export type CloseLedgerChannels = RequestPayload
 
 export const DepositRequest = requestFactory<[string]>('deposit')
 export type DepositRequest = RequestPayload
@@ -76,19 +76,13 @@ export type BuyRequest = RequestPayload
 export const TransactionResolved = requestFactory<never[]>('transactionResolved')
 export type TransactionResolved = RequestPayload
 
-export const ListChannelsRequest = requestFactory<any[]>('listChannels')
-export type ListChannelsRequest = RequestPayload
-
-export const PopulateChannelsRequest = requestFactory<any[]>('populateChannels')
-export type PopulateChannelsRequest = RequestPayload
-
 export const ToggleFrameRequest = requestFactory<[boolean]>('toggleFrame')
 export type ToggleFrameRequest = RequestPayload
 
 export const FetchHistoryRequest = requestFactory<any[]>('fetchHistory')
 export type FetchHistoryRequest = RequestPayload
 
-export const SendRequest = requestFactory<[string, string, string, string]>('send')
+export const SendRequest = requestFactory<[string, string]>('send')
 export type SendRequest = RequestPayload
 
 export const SetUsernameRequest = requestFactory<[string]>('requestUsername')
@@ -105,3 +99,9 @@ export type RevealPrivateKeyRequest = RequestPayload
 
 export const GenerateRestorationCandidates = requestFactory<[string]>('generateRestorationCandidates')
 export type GenerateRestorationCandidates = RequestPayload
+
+export const SetNeedsCollateralRequest = requestFactory<[boolean]>('setNeedsCollateral')
+export type SetNeedsCollateralRequest = RequestPayload
+
+export const SetIsPendingVerificationRequest = requestFactory<[boolean]>('setIsPendingVerification')
+export type SetIsPendingVerificationRequest = RequestPayload

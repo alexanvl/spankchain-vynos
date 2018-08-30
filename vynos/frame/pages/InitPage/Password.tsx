@@ -67,7 +67,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     return !(passwordError || passwordConfirmationError)
   }
 
-  handleSubmit (e: MouseEvent<HTMLFormElement>) {
+  handleSubmit (e: any) {
     if (this.isValid() && this.state.password) {
       return this.props.genKeyring(this.props.workerProxy, this.state.password)
     }
@@ -169,7 +169,7 @@ function mapStateToProps (state: FrameState): PasswordSubpageStateProps {
   }
 }
 
-function mapDispatchToProps (dispatch: Dispatch<FrameState>): PasswordSubpageDispatchProps {
+function mapDispatchToProps (dispatch: Dispatch): PasswordSubpageDispatchProps {
   return {
     genKeyring: (workerProxy, password) => {
       workerProxy.genKeyring(password).then(mnemonic => {

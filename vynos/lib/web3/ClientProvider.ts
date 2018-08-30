@@ -1,5 +1,3 @@
-import {ProviderOpts} from 'web3-provider-engine'
-
 const ProviderEngine = require('web3-provider-engine')
 const DefaultFixture = require('web3-provider-engine/subproviders/default-fixture')
 const NonceTrackerSubprovider = require('web3-provider-engine/subproviders/nonce-tracker')
@@ -12,7 +10,7 @@ const FetchSubprovider = require('web3-provider-engine/subproviders/fetch')
 
 import GaspriceSubprovider from './GaspriceSubprovider';
 
-export default function ClientProvider(opts: any) {
+export default function ClientProvider(opts: any): any {
   opts = opts || {}
 
   const engine = new ProviderEngine(opts.engineParams)
@@ -78,6 +76,13 @@ export default function ClientProvider(opts: any) {
   // start polling
   engine.start()
 
-  return engine
-
+  // web3 uses the presence of an 'on' method to determine
+  // if it should connect via web sockets. we create the
+  // below proxy method in order to avoid this issue.
+  return {
+    start: engine.start.bind(engine),
+    stop: engine.stop.bind(engine),
+    send: engine.send.bind(engine),
+    sendAsync: engine.sendAsync.bind(engine)
+  }
 }

@@ -1,0 +1,29 @@
+.rc-tooltip {
+  opacity: 1 !important;
+}
+
+.rc-tooltip-inner {
+  min-height: 0;  
+  padding: 12px 22px;
+  border-radius: 11px;
+}
+
+/********* Arrow overrides ********/
+
+.rc-tooltip-placement-bottom .rc-tooltip-arrow, 
+.rc-tooltip-placement-bottomLeft .rc-tooltip-arrow, 
+.rc-tooltip-placement-bottomRight .rc-tooltip-arrow {
+    top: 0px;
+    margin-left: -10px;
+    border-width: 0 10px 10px;
+}
+
+.rc-tooltip-placement-top .rc-tooltip-arrow, 
+.rc-tooltip-placement-topLeft .rc-tooltip-arrow, 
+.rc-tooltip-placement-topRight .rc-tooltip-arrow {
+    bottom: 0px;
+    margin-left: -10px;
+    border-width: 10px 10px 0;
+}
+
+/******* End arrow overrides ********/

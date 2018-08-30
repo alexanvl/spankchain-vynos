@@ -7,7 +7,7 @@ import * as actions from '../../redux/actions'
 import Button from '../../components/Button/index'
 import Checkbox from '../../components/Checkbox/index'
 import OnboardingContainer from './OnboardingContainer'
-import {withRouter} from 'react-router'
+import {RouteComponentProps, RouteProps, RouterProps, withRouter} from 'react-router'
 
 const style = require('../../styles/ynos.css')
 
@@ -28,7 +28,7 @@ export interface MnemonicStates {
 }
 
 
-export type MnemonicSubpageProps = MnemonicStateProps & MnemonicDispatchProps
+export type MnemonicSubpageProps = MnemonicStateProps & MnemonicDispatchProps & RouteComponentProps<any>
 
 export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStates> {
   constructor (props: MnemonicSubpageProps) {
@@ -111,7 +111,7 @@ function mapStateToProps (state: FrameState): MnemonicStateProps {
   }
 }
 
-function mapDispatchToProps (dispatch: Dispatch<FrameState>): MnemonicDispatchProps {
+function mapDispatchToProps (dispatch: Dispatch): MnemonicDispatchProps {
   return {
     saveMnemonic: workerProxy => {
       workerProxy.didStoreMnemonic()

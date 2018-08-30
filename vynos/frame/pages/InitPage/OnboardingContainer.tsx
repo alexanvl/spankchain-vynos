@@ -77,7 +77,7 @@ export class OnboardingContainer extends React.Component<Props> {
         </div>
         <WalletCard
           width={275}
-          cardTitle="SpankCard"
+          cardTitle="SpankPay"
           companyName="SpankChain"
           name="spanktoshi"
           className={s.funnelWalletCard}

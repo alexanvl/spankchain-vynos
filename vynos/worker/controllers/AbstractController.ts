@@ -2,9 +2,9 @@ import JsonRpcServer, {ErrResCallback} from '../../lib/messaging/JsonRpcServer'
 import Logger from '../../lib/Logger'
 
 export default class AbstractController {
-  logger: any
+  logger: Logger
 
-  constructor (logger?: Logger) {
+  constructor (logger: Logger) {
     this.logger = logger
   }
 
@@ -19,13 +19,11 @@ export default class AbstractController {
           res = await res
         }
       } catch (e) {
-        if (this.logger) {
-          this.logToApi(method,{
-            message: `Error has occurred in ${method}: ${e.message || e}`,
-            type: 'error',
-            stack: e.stack || e
-          })
-        }
+        this.logToApi(method,{
+          message: `Error has occurred in ${method}: ${e.message || e}`,
+          type: 'error',
+          stack: e.stack || e
+        })
         return cb(e, null)
       }
 

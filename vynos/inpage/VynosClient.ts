@@ -4,13 +4,11 @@ import {
   BuyRequest,
   GetSharedStateRequest,
   InitAccountRequest,
-  ListChannelsRequest,
-  LockWalletRequest,
+  LockWalletRequest, SetNeedsCollateralRequest, SetIsPendingVerificationRequest,
   SetUsernameRequest,
   StatusRequest,
   ToggleFrameRequest
 } from '../lib/rpc/yns'
-import {PaymentChannel, PaymentChannelSerde, SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 import VynosBuyResponse from '../lib/VynosBuyResponse'
 import {SharedState} from '../worker/WorkerState'
 import JsonRpcClient from '../lib/messaging/JsonRpcClient'
@@ -47,13 +45,8 @@ export default class VynosClient extends JsonRpcClient {
     return this.call(InitAccountRequest.method)
   }
 
-  buy (amount: number, meta: any): Promise<VynosBuyResponse> {
+  buy (amount: string, meta: any): Promise<VynosBuyResponse> {
     return this.call(BuyRequest.method, amount, meta)
-  }
-
-  listChannels (): Promise<PaymentChannel[]> {
-    return this.call(ListChannelsRequest.method).then((res: SerializedPaymentChannel[]) =>
-      res.map(pc => PaymentChannelSerde.instance.deserialize(pc)))
   }
 
   getSharedState (): Promise<SharedState> {
@@ -78,6 +71,14 @@ export default class VynosClient extends JsonRpcClient {
 
   setUsername (username: string): Promise<void> {
     return this.call(SetUsernameRequest.method, username)
+  }
+
+  setNeedsCollateral (needsCollateral: boolean): Promise<void> {
+    return this.call(SetNeedsCollateralRequest.method, needsCollateral);
+  }
+
+  setIsPendingVerification (isPendingVerification: boolean): Promise<void> {
+    return this.call(SetIsPendingVerificationRequest.method, isPendingVerification)
   }
 
   private async statusWithRetry (): Promise<WorkerStatus> {

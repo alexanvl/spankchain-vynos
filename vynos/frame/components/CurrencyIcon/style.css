@@ -24,3 +24,8 @@
 .usd.inverse {
   background: transparent url('../../styles/images/usd-white.svg') no-repeat center center;
 }
+
+/* TODO get the correct icon for ETH */
+.eth {
+  background: transparent url('../../styles/images/fin-duo.svg') no-repeat center center;
+}

@@ -1,8 +1,6 @@
 import {BROWSER_NOT_SUPPORTED_TEXT} from '../frame/constants'
 
-// the below string gets replaced with the real workerRunner filename via webpack
 const WORKER_FILENAME = '/workerRunner.js'
-
 const WORKER_FILENAME_LS_KEY = 'workerFilename'
 
 export interface ServiceWorkerClient {

@@ -1,124 +1,111 @@
 import * as React from "react"
-import Web3 = require('web3')
-import {connect} from "react-redux"
-import * as classnames from 'classnames'
-import * as copy from 'copy-to-clipboard'
-import * as qr from 'qr-image'
-import CTAInput from "../../components/CTAInput/index"
-import Input from "../../components/Input/index"
-import Button from "../../components/Button/index"
-import {Link} from 'react-router-dom'
+import BN = require('bn.js')
+import { connect } from 'react-redux'
+import Button from "../../components/Button"
+import Currency, { CurrencyType } from '../../components/Currency'
+import { Link } from 'react-router-dom'
 
 const s = require('./ReceiveEther.css')
 
-
-export interface Props {
-  address: string|null
-  headerText: string
-  descriptionLineOne: string
-  descriptionLineTwo: string
-  linkText?: string
-}
-
 export interface State {
-  isCopied: boolean
+  isCopied: boolean,
+  gas: String,
+  gasPrice: String,
 }
 
-function renderQR(address: string|null) {
-  if (!address) {
-    return null
-  }
-
-  let pngBuffer = qr.imageSync(address, {type: 'png', margin: 1}) as Buffer
-  let dataURI = 'data:image/png;base64,' + pngBuffer.toString('base64')
-
-  return (
-    <img className={s.walletQR} src={dataURI} />
-  )
-}
-
-export class ReceiveEther extends React.Component<Props, State> {
-  timeout: any
+export class ReceiveEther extends React.Component<any, State> {
 
   state = {
     isCopied: false,
+    gas: '53000',
+    gasPrice: '40'
   }
 
-  componentWillUnmount() {
-    if (this.timeout) {
-      clearTimeout(this.timeout)
-    }
+  componentWillMount() {
+    this.getGas()
   }
 
-  onCopyAddress = () => {
-    const { address } = this.props;
+  getGas() {
+    const {
+      eth: { estimateGas, getGasPrice },
+      fromWei,
+    } = this.props.workerProxy.web3
 
-    if (address) {
-      copy(address)
+    estimateGas({}, (err: any, data: any) => {
+      if (err) {
+        return
+      }
+
+      this.setState({ gas: '' + data })
+    })
+
+    getGasPrice((err: any, data: any) => {
+      if (err) {
+        return
+      }
+      
+      // PR comment:  this doesn't actually do anything because fromWei is undefined? 
+      // which is also the case in SendEther.tsx
       this.setState({
-        isCopied: true,
+        gasPrice: '' + fromWei(data.toNumber(), 'gwei'),
       })
+    })
+  }
 
-      this.timeout = setTimeout(() => {
-        this.setState({ isCopied: false })
-      }, 2000)
-    }
+  totalGasCost() {
+    let gp = new BN(this.state.gasPrice)
+    let g = new BN(this.state.gas)
+        
+    return gp.mul(g).toString()
   }
 
   render() {
-    const {
-      address,
-      headerText,
-      descriptionLineOne,
-      descriptionLineTwo,
-      linkText,
-    } = this.props;
 
     return (
       <div className={s.container}>
-        <div className={s.header}>{headerText}</div>
-        <div className={s.descriptionWrapper}>
-          <div className={s.description}>
-            {descriptionLineOne}
+        <div className={s.header}>Receive Ether</div>
+        <div className={s.whiteRect}>
+          <div className={s.left}>You can send Ether to your address and use it to tip on SPANK.live</div>
+          <div className={s.right}>
+            <div className={s.quarter}>
+              <div className={s.currencyWrap}>Min amount </div>
+              <div className={s.currencyWrap}>Max amount</div>
+              <div className={s.currencyWrap}>Miner fee</div>
+            </div>
+            <div className={s.quarter}>
+              <Currency
+                amount={0.04}
+                outputType={CurrencyType.USD}
+                inputType={CurrencyType.ETH}
+                unitClassName={s.currencyIcon}
+                showUnit
+              />
+              <div>Unlimited</div>
+              <Currency
+                amount={this.totalGasCost()}
+                outputType={CurrencyType.USD}
+                inputType={CurrencyType.WEI}
+                unitClassName={s.currencyIcon}
+                showUnit
+              /></div>
           </div>
-          <div className={s.description}>
-            {descriptionLineTwo}
-            <span className={s.seeTutorialText}>
-              {linkText && `${linkText} ->`}
-            </span>
-          </div>
-        </div>
-        <div className={s.addressWrapper}>
-          <CTAInput
-            isInverse
-            className={s.ctaInput}
-            ctaContentClass={s.ctaInputContent}
-            ctaInputValueClass={s.ctaInputValue}
-            value={address}
-            ctaContent={() => (
-              <div className={s.ctaContentWrapper} onClick={this.onCopyAddress}>
-                <div className={s.ctaIcon} />
-                <span className={s.ctaText}>
-                  {this.state.isCopied ? 'Copied': 'Copy'}
-                </span>
-              </div>
-            )}
-          />
-        </div>
-        <div className={s.qrWrapper}>
-          <div className={s.qrDescription}>Only send Ether (ETH) to this address.</div>
-          {renderQR(address)}
-        </div>
+        </div >
+        <Button to="/wallet/receive/start" content="Start Transaction" isFullWidth />
         <div className={s.recoverText}>
           <Link
-            to="/wallet/recoverChannels"
+            to="/wallet/reveal"
           >
-            Recover Channels (Advanced)
+            Reveal Private Key (Advanced)
           </Link>
         </div>
-      </div>
+      </div >
     )
   }
 }
 
-export default ReceiveEther
+function mapStateToProps(state:any): any {
+  return {
+    workerProxy: state.temp.workerProxy,
+  }
+}
+export default connect(mapStateToProps)(ReceiveEther)

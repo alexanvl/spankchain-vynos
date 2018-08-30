@@ -8,7 +8,8 @@ import SharedStateView from '../SharedStateView'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import requestJson from '../../frame/lib/request'
-import Logger from '../../lib/Logger';
+import Logger from '../../lib/Logger'
+import BackgroundController from './BackgroundController'
 
 const util = require('ethereumjs-util')
 
@@ -19,16 +20,26 @@ export interface NonceResponse {
 export default class AuthController extends AbstractController {
   private store: Store<WorkerState>
 
+  private backgroundController: BackgroundController
+
   private sharedStateView: SharedStateView
 
   private providerOpts: ProviderOpts
 
   private frame: FrameController
 
-  constructor (store: Store<WorkerState>, sharedStateView: SharedStateView, providerOpts: ProviderOpts, frame: FrameController, logger: Logger) {
+  constructor (
+    store: Store<WorkerState>,
+    backgroundController: BackgroundController,
+    sharedStateView: SharedStateView,
+    providerOpts: ProviderOpts,
+    frame: FrameController,
+    logger: Logger
+  ) {
     super(logger)
 
     this.store = store
+    this.backgroundController = backgroundController
     this.sharedStateView = sharedStateView
     this.providerOpts = providerOpts
     this.frame = frame
@@ -39,7 +50,7 @@ export default class AuthController extends AbstractController {
 
     if (isLocked) {
       this.frame.show()
-      await this.sharedStateView.awaitUnlock()
+      await this.backgroundController.awaitUnlockP()
     }
 
     const token = await this.doChallengeResponse(origin)

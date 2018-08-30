@@ -2,21 +2,19 @@ import * as React from 'react'
 import {Route, Switch} from 'react-router'
 import {connect} from 'react-redux'
 import Web3 = require('web3')
-import * as BigNumber from 'bignumber.js'
-
 import {nameByPath} from './WalletMenu'
 import ActivitySubpage from './ActivitySubpage'
 import SendReceivePage from './SendReceivePage'
 import SpankCardPage from './CardPage'
+import AddFunds from './AddFunds'
 import MainEntry from './MainEntry/index'
 import SendReceiveWrapper from './SendReceiveWrapper'
 import RevealPrivateKey from './RevealPrivateKey'
 import WalletCTAButton from './WalletCTAButton/index'
-import LoadCardCTAButton from './LoadCardCTAButton/index'
 import LoadUpSpank from './LoadUpSpank'
-import {cardBalance} from '../../redux/selectors/cardBalance'
 import {FrameState} from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
+import BN = require('bn.js')
 
 const s = require('./styles.css')
 const st = require('./index.css')
@@ -27,8 +25,8 @@ export interface WalletPageStateProps {
   web3: Web3
   workerProxy: WorkerProxy
   address: string|null
-  walletBalance: BigNumber.BigNumber
-  cardBalance: BigNumber.BigNumber
+  walletBalance: BN
+  cardBalance: BN
 }
 
 export interface WalletPageState {
@@ -47,17 +45,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 
   async componentDidMount() {
-    let channelPopulationError = ''
-
-    try {
-      await this.props.workerProxy.populateChannels()
-    } catch (e) {
-      channelPopulationError = 'Failed to load wallet. Please check your internet connection and refresh your browser.'
-    }
-
     this.setState({
       isPopulatingChannels: false,
-      channelPopulationError
     })
   }
 
@@ -80,14 +69,10 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
           exact
           path="/card/insufficient"
           render={() => (
-            walletBalance.gt(0)
+            walletBalance.gt(new BN(0))
               ? <SpankCardPage />
               : <SendReceivePage />
           )}
-        />
-        <Route
-          path="/wallet/(send|receive)"
-          component={SendReceivePage}
         />
         <Route
           path="/wallet"
@@ -121,7 +106,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
           exact
           path="/card/insufficient"
           render={() => (
-            walletBalance.gt(0)
+            walletBalance.gt(new BN(0))
               ? <LoadUpSpank />
               : <SendReceiveWrapper address={address!} balance={this.props.walletBalance} />
           )}
@@ -140,15 +125,8 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
           render={() => <RevealPrivateKey  />}
         />
         <Route
-          exact
           path="/wallet"
-          render={() => {
-            if (this.state.isPopulatingChannels || this.state.channelPopulationError) {
-              return null
-            }
-
-            return <LoadCardCTAButton />
-          }}
+          render={()=>this.props.cardBalance.eq(new BN(0)) ? <AddFunds/>: null}
         />
       </Switch>
     )
@@ -202,8 +180,8 @@ function mapStateToProps (state: FrameState): WalletPageStateProps {
     web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
     address: state.shared.address,
-    walletBalance: new BigNumber.BigNumber(state.shared.balance),
-    cardBalance: cardBalance(state.shared),
+    walletBalance: new BN(state.shared.balance),
+    cardBalance: new BN(state.shared.channel ? state.shared.channel.balance : 0),
   }
 }
 

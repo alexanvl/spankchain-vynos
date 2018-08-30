@@ -193,4 +193,4 @@ function mapStateToProps (state: FrameState): RevealPrivateKeyProps {
   }
 }
 
-export default connect<RevealPrivateKeyProps, undefined, any>(mapStateToProps)(RevealPrivateKey)
+export default connect(mapStateToProps)(RevealPrivateKey)

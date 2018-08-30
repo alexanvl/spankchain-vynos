@@ -27,13 +27,10 @@
   },
   "include": [
     "vynos",
-    "node_modules/**/index.d.ts",
-    "node_modules/web3-typescript-typings/index.d.ts",
-    "node_modules/@machinomy/types-truffle-contract/index.d.ts"
+    "types"
   ],
   "exclude": [
-    "node_modules/homedir/index.d.ts",
-    "node_modules/@types/jasmine/index.d.ts"
+    "node_modules"
   ],
   "typeRoots": [
     "node_modules/@types",

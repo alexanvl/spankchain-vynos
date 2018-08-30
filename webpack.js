@@ -3,7 +3,7 @@ const path = require('path'),
   DIST_PATH = path.resolve(__dirname, 'dist'),
   UglifyJSPlugin = require('uglifyjs-webpack-plugin'),
   HtmlWebpackPlugin = require('html-webpack-plugin'),
-  WorkerRunnerPlugin = require('./WorkerRunnerPlugin')
+  WorkerRunnerPlugin = require('./WorkerRunnerPlugin');
 
 require('dotenv').config({ path: '.env' });
 
@@ -11,7 +11,7 @@ let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
 let API_URL = process.env.API_URL || 'https://camsite-staging.spankdev.com/api'
 
-let HUB_URL = process.env.HUB_URL || 'https://hub-staging.spankdev.com'
+let HUB_URL = process.env.HUB_URL || 'https://hub-connext.spankdev.com'
 
 const NODE_ENV = process.env.NODE_ENV
 
@@ -34,11 +34,24 @@ const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS,
 
 function webpackConfig (entry, hash = true) {
   const config = {
+    mode: NODE_ENV === 'production' ? 'production' : 'development',
     entry: entry,
     devtool: 'source-map',
     output: {
       filename: (NODE_ENV === 'production' || NODE_ENV === 'staging') && hash ? '[name].[hash].js' : '[name].js',
       path: DIST_PATH
+    },
+    optimization: {
+      splitChunks: {
+        cacheGroups: {
+          commons: {
+            test: /node_modules/,
+            chunks: 'initial',
+            minChunks: 2
+          }
+        }
+      },
+      minimize: NODE_ENV === 'production'
     },
     plugins: [
       new webpack.DefinePlugin({
@@ -62,7 +75,7 @@ function webpackConfig (entry, hash = true) {
         {
           test: /\.tsx?$/,
           exclude: [/node_modules/],
-          loaders: ['ts-loader']
+          loaders: ['ts-loader?configFile=tsconfig.json']
         },
         {
           enforce: 'pre',
@@ -166,10 +179,6 @@ function webpackConfig (entry, hash = true) {
   return config
 }
 
-const WORKER_FILE_REGEX = /^worker(\.)?([\w\d]+)?\.js$/i;
-const COMMONS_FILE_REGEX = /^commons(\.)?([\w\d]+)?\.js$/i;
-const FRAME_FILE_REGEX = /^frame(\.)?([\w\d]+)?\.js$/i;
-
 function vynosConfig(entry) {
   const config = webpackConfig(entry);
 
@@ -180,24 +189,12 @@ function vynosConfig(entry) {
     replaceDependency(/^unorm$/, 'stubs/unorm.js'),
     replaceDependency(/Unidirectional\.json$/, 'vendor/@machinomy/contracts/dist/build/contracts/Unidirectional.json'),
     new webpack.HashedModuleIdsPlugin(),
-    new webpack.optimize.CommonsChunkPlugin({
-      name: 'commons',
-      filename: NODE_ENV === 'production' || NODE_ENV === 'staging' ? 'commons.[hash].js' : 'commons.js'
-    }),
     new HtmlWebpackPlugin({
       template: resolvePath('vynos/frame.html'),
       filename: 'frame.html',
       excludeChunks: ['worker']
     }),
-    new WorkerRunnerPlugin({
-      contentScripts: [
-        COMMONS_FILE_REGEX,
-        WORKER_FILE_REGEX
-      ],
-      filename: NODE_ENV === 'production' || NODE_ENV === 'staging' ? 'workerRunner.[hash].js' : 'workerRunner.js',
-      replaceFilename: 'workerRunner.js',
-      replacer: (filename) => filename.match(FRAME_FILE_REGEX)
-    })
+    new WorkerRunnerPlugin(),
   ]);
 
   return config

@@ -39,4 +39,4 @@ function mapStateToProps(state: FrameState): InitPageProps {
   }
 }
 
-export default connect<InitPageProps, undefined, any>(mapStateToProps)(InitPage)
+export default connect(mapStateToProps)(InitPage)

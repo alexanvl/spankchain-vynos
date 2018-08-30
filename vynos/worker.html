@@ -1,0 +1,5 @@
+self.XMLHttpRequest = {};
+self.window = self;
+<% for (var chunk in htmlWebpackPlugin.files.chunks) { %>
+self.importScript('<%= htmlWebpackPlugin.files.chunks[chunk].entry %>')
+<% } %>

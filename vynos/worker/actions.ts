@@ -1,11 +1,28 @@
 import actionCreatorFactory, {ActionCreator} from 'typescript-fsa'
-import {HistoryItem, PendingTransaction, WorkerState} from './WorkerState'
+import {
+  ChannelState,
+  ExchangeRates,
+  HistoryItem,
+  PendingTransaction,
+  WorkerState,
+  AtomicTransactionState
+} from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
-import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
 
 const actionCreator = actionCreatorFactory('worker')
 
 // Runtime
+export const setExchangeRates: ActionCreator<ExchangeRates> = actionCreator<ExchangeRates>('runtime/setExchangeRates')
+export function setExchangeRatesHandler(state: WorkerState, newExchangeRates: ExchangeRates): WorkerState {
+  return { ...state,
+    runtime: {...state.runtime,
+      exchangeRates: {...state.runtime.exchangeRates as ExchangeRates,
+        ...newExchangeRates,
+      }
+    }
+  }
+}
+
 export const setWallet: ActionCreator<Wallet|undefined> = actionCreator<Wallet|undefined>('runtime/setWallet')
 export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): WorkerState {
   return { ...state,
@@ -14,6 +31,15 @@ export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): 
       currentAuthToken: '',
       wallet
     },
+  }
+}
+
+export const setIsPendingVerification: ActionCreator<boolean> = actionCreator<boolean>('runtime/setIsPeformerVerified')
+export function setIsPendingVerificationHandler(state: WorkerState, isPendingVerification: boolean): WorkerState {
+  return { ...state,
+    runtime: {...state.runtime,
+      isPendingVerification,
+    }
   }
 }
 
@@ -45,25 +71,51 @@ export function setDidStoreMnemonicHandler(state: WorkerState): WorkerState {
   }
 }
 
-export const openChannel: ActionCreator<string> = actionCreator<string>('persistent/openChannel')
-export function openChannelHandler(state: WorkerState, channelId: string): WorkerState {
+export const setHasActiveDeposit: ActionCreator<boolean> = actionCreator<boolean>('persistent/hasActiveDeposit')
+export function setHasActiveDepositHandler(state: WorkerState, hasActiveDeposit: boolean): WorkerState {
   return {
     ...state,
-    persistent: {
-      ...state.persistent,
-      pendingChannelIds: [ ...state.persistent.pendingChannelIds, channelId ],
-    },
+      persistent: {
+        ...state.persistent,
+        hasActiveDeposit,
+      }
   }
 }
 
-export const removePendingChannel: ActionCreator<string> = actionCreator<string>('persistent/removePendingChannel')
-export function removePendingChannelHandler(state: WorkerState, channelId: string): WorkerState {
+export interface SetTransactionStateParam {
+  name: string,
+  newState: AtomicTransactionState
+}
+
+export const setTransactionState: ActionCreator<SetTransactionStateParam> = actionCreator<SetTransactionStateParam>('persistent/setTransactionState')
+export function setTransactionStateHandler(state: WorkerState, param: SetTransactionStateParam): WorkerState {
+  const { name, newState } = param
   return {
     ...state,
     persistent: {
       ...state.persistent,
-      pendingChannelIds: state.persistent.pendingChannelIds.filter(id => id !== channelId),
-    },
+      transactions: {
+        ...state.persistent.transactions,
+        [name]: newState
+      }
+    }
+  }
+}
+
+export const removeTransactionState: ActionCreator<string> = actionCreator<string>('persistent/removeTransactionState')
+export function removeTransactionStateHandler(state: WorkerState, name: string): WorkerState {
+  if (!state.persistent.transactions[name]) {
+    return state
+  }
+
+  const transactions = JSON.parse(JSON.stringify(state.persistent.transactions))
+  delete transactions[name]
+  return {
+    ...state,
+    persistent: {
+      ...state.persistent,
+      transactions
+    }
   }
 }
 
@@ -76,23 +128,6 @@ export function setTransactionPendingHandler(state: WorkerState, pending: boolea
   return {
     ...state,
     runtime: { ...state.runtime, isTransactionPending: pendingDate },
-  }
-}
-
-
-export interface AuthorizationRequestParam {
-  hubUrl: string
-  authRealm: string
-}
-
-export const setAuthorizationRequest: ActionCreator<AuthorizationRequestParam> = actionCreator<AuthorizationRequestParam>('runtime/authorizationRequest')
-export function setAuthorizationRequestHandler(state: WorkerState, authorizationRequest: AuthorizationRequestParam): WorkerState {
-  return {
-    ...state,
-    runtime: {
-      ...state.runtime,
-      authorizationRequest
-    }
   }
 }
 
@@ -184,41 +219,13 @@ export function toggleFrameHandler(state: WorkerState, payload: ToggleFrameParam
   }
 }
 
-export const setChannels: ActionCreator<SerializedPaymentChannel[]> = actionCreator<SerializedPaymentChannel[]>('runtime/setChannels')
-export function setChannelsHandler(state: WorkerState, channels: SerializedPaymentChannel[]): WorkerState {
+export const setChannel: ActionCreator<ChannelState|null> = actionCreator<ChannelState|null>('runtime/setChannel')
+export function setChannelHandler(state: WorkerState, channel: ChannelState|null): WorkerState {
   return {
     ...state,
     runtime: {
       ...state.runtime,
-      channels: {
-        ...state.runtime.channels,
-        [state.runtime.currentHubUrl]: uniqueChannels(channels)
-      }
-    }
-  }
-}
-
-export const setChannel: ActionCreator<SerializedPaymentChannel> = actionCreator<SerializedPaymentChannel>('runtime/setChannel')
-export function setChannelHandler(state: WorkerState, channel: SerializedPaymentChannel): WorkerState {
-  let channels = state.runtime.channels[state.runtime.currentHubUrl] || []
-  channels = [].concat(channels as any)
-
-  const index = channels.findIndex((ch: SerializedPaymentChannel) => ch.channelId === channel.channelId)
-
-  if (index === -1) {
-    channels.push(channel)
-  } else {
-    channels[index] = channel
-  }
-
-  return {
-    ...state,
-    runtime: {
-      ...state.runtime,
-      channels: {
-        ...state.runtime.channels,
-        [state.runtime.currentHubUrl]: channels
-      }
+      channel,
     }
   }
 }
@@ -283,17 +290,6 @@ export function setActiveWithdrawalErrorHandler(state: WorkerState, activeWithdr
   }
 }
 
-export const setExchangeRate: ActionCreator<string> = actionCreator<string>('runtime/setExchangeRate')
-export function setExchangeRateHandler(state: WorkerState, exchangeRate: string): WorkerState {
-  return {
-    ...state,
-    runtime: {
-      ...state.runtime,
-      exchangeRate
-    }
-  }
-}
-
 export const setUsername: ActionCreator<string> = actionCreator<string>('runtime/setUsername')
 export function setUsernameHandler(state: WorkerState, username: string): WorkerState {
   return {
@@ -305,29 +301,3 @@ export function setUsernameHandler(state: WorkerState, username: string): Worker
   }
 }
 
-export const setMinDeposit: ActionCreator<string> = actionCreator<string>('runtime/setMinDeposit')
-export function setMinDepositHandler(state: WorkerState, minDeposit: string): WorkerState {
-  return {
-    ...state,
-    runtime: {
-      ...state.runtime,
-      minDeposit
-    }
-  }
-}
-
-function uniqueChannels (channels: SerializedPaymentChannel[]): SerializedPaymentChannel[] {
-  const out: SerializedPaymentChannel[] = []
-  const ids: { [k: string]: boolean } = {}
-
-  channels.forEach((c: SerializedPaymentChannel) => {
-    if (ids[c.channelId]) {
-      return
-    }
-
-    ids[c.channelId] = true
-    out.push(c)
-  })
-
-  return out
-}

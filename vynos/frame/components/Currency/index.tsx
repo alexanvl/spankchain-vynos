@@ -1,30 +1,27 @@
 import * as React from 'react';
-import * as BigNumber from 'bignumber.js'
 import * as classnames from 'classnames'
 import WorkerProxy from '../../WorkerProxy'
 import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
 import CurrencyIcon from '../CurrencyIcon/index'
+import {ExchangeRates, CurrencyType} from '../../../worker/WorkerState'
+export {CurrencyType} // refactoring so this type is only defined once
+import BN = require('bn.js')
+import CurrencyConvertable from '../../../lib/CurrencyConvertable'
 
 const s = require('./style.css')
 
-export enum CurrencyType {
-  USD,
-  ETH,
-  WEI,
-  FINNEY
-}
 
 export interface StateProps {
   workerProxy: WorkerProxy
-  exchangeRate: BigNumber.BigNumber|null
+  exchangeRates: ExchangeRates|null
 }
 
 export interface CurrencyProps extends StateProps {
-  amount: BigNumber.BigNumber
+  amount: BN
   decimals?: number
-  outputType?: CurrencyType.ETH | CurrencyType.USD | CurrencyType.FINNEY
-  inputType?: CurrencyType.ETH | CurrencyType.WEI
+  outputType?: CurrencyType.ETH | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.WEI
+  inputType: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY
   showUnit?: boolean
   unitClassName?: string
   className?: string
@@ -49,20 +46,19 @@ export class Currency extends React.Component<CurrencyProps, any> {
       className,
     } = this.props
 
-    let ret
-    if (inputType === outputType) {
-      ret = new BigNumber.BigNumber(amount).toFixed(decimals).toString()
-    } else if (outputType === CurrencyType.USD) {
-      const eth = inputType === CurrencyType.ETH
-        ? amount
-        : new BigNumber.BigNumber(this.props.workerProxy.web3.fromWei(amount, 'ether'))
-
-      ret = this.props.exchangeRate ? eth.mul(this.props.exchangeRate).toFixed(decimals).toString() : '--'
-    } else if (outputType === CurrencyType.FINNEY) {
-      const finney = new BigNumber.BigNumber(this.props.workerProxy.web3.fromWei(amount, 'finney'))
-      ret = finney.toNumber().toFixed(decimals).toString()
-    } else {
-      ret = this.props.workerProxy.web3.fromWei(amount, 'ether').toFixed(decimals).toString()
+    let ret: string
+    try {
+      ret = (new CurrencyConvertable(inputType, amount.toString(10), () => this.props.exchangeRates))
+        // displaying as only usd atm
+        .to(outputType || CurrencyType.USD)
+        .format({
+          decimals: decimals || 2,
+          withSymbol: false,
+          showTrailingZeros: true
+        })
+    } catch(e) {
+      console.error('unable to get currency', e)
+      ret = '--'
     }
 
     return (
@@ -73,26 +69,20 @@ export class Currency extends React.Component<CurrencyProps, any> {
   }
 }
 
-function renderUnit(showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string) {
-  if (!showUnit) {
-    return ''
-  }
 
-  if (outputType === CurrencyType.USD) {
-    return '$'
-  }
 
-  if (outputType === CurrencyType.FINNEY) {
-    return <CurrencyIcon className={unitClassName} />
-  }
-
-  return ''
-}
+const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string) => (
+  showUnit && (
+    outputType === CurrencyType.USD ||
+    outputType === CurrencyType.FINNEY ||
+    outputType === CurrencyType.ETH
+  )
+) ? <CurrencyIcon className={unitClassName} currency={outputType}/> : ''
 
 function mapStateToProps (state: FrameState, ownProps: any): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
-    exchangeRate: state.shared.exchangeRate ? new BigNumber.BigNumber(state.shared.exchangeRate) : null
+    exchangeRates: state.shared.exchangeRates || null,
   }
 }
 

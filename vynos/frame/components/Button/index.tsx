@@ -1,6 +1,6 @@
 import * as React from 'react' // eslint-disable-line no-unused-vars
 import * as classnames from 'classnames'
-import {PropTypes} from 'react'
+import * as PropTypes from 'prop-types'
 
 const s = require('./style.css')
 
@@ -8,10 +8,15 @@ export const BUTTON_TYPES = {
   PRIMARY: 'primary',
   SECONDARY: 'secondary',
   TERTIARY: 'tertiary',
-  DARK: 'dark'
+  DARK: 'dark',
 }
 
-export type ButtonType = 'primary' | 'secondary' | 'tertiary' | 'dark'
+export type ButtonType = (
+  'primary' | 
+  'secondary' | 
+  'tertiary' | 
+  'dark'  
+)
 
 export interface ButtonProps {
   type?: ButtonType
@@ -19,6 +24,7 @@ export interface ButtonProps {
   isInverse?: boolean
   disabled?: boolean
   isMini?: boolean
+  isFullWidth?: boolean
   content: any
   onClick?: (e: any) => void
   to?: string
@@ -40,13 +46,14 @@ class Button extends React.Component<ButtonProps> {
     className: '',
   }
 
-  render () {
+  render() {
     const {
       type,
       className,
       isInverse,
       disabled,
       isMini,
+      isFullWidth,
       content,
       isSubmit,
       name,
@@ -58,7 +65,8 @@ class Button extends React.Component<ButtonProps> {
       [s.tertiary]: type === BUTTON_TYPES.TERTIARY,
       [s.dark]: type === BUTTON_TYPES.DARK,
       [s.inverse]: isInverse,
-      [s.mini]: isMini
+      [s.mini]: isMini,
+      [s.fullWidth]: isFullWidth,
     })
 
     return (
@@ -70,12 +78,12 @@ class Button extends React.Component<ButtonProps> {
         name={name}
         data-sel={name}
       >
-        {typeof content === 'function' ? content() : content }
+        {typeof content === 'function' ? content() : content}
       </button>
     )
   }
 
-  onClick (e: any) {
+  onClick(e: any) {
     if (this.props.to) {
       this.props.to.indexOf('http') === 0 ? window.open(this.props.to) :
         this.context.router.history.push(this.props.to)

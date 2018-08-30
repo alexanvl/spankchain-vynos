@@ -1,61 +1,54 @@
-const crypto = require('crypto');
+const WORKER_FILE_REGEX = /^worker(\.)?([\w\d]+)?\.js$/i;
+const COMMONS_FILE_REGEX = /^commons~frame~worker(\.)?([\w\d]+)?\.js$/i;
+const FRAME_FILE_REGEX = /^frame(\.)?([\w\d]+)?\.js$/i;
 
 class WorkerRunnerPlugin {
-  constructor(options) {
-    this.options = options;
-
-    if (!this.options.contentScripts || !this.options.contentScripts.length || !this.options.filename) {
-      throw new Error('contentScripts and filename are required.');
-    }
-  }
-
-
   apply(compiler) {
-    compiler.plugin('emit', (compilation, callback) => {
-      const files = this.options.contentScripts.map((file) => {
-        const match = Object.keys(compilation.assets).find((asset) => asset.match(file));
-
-        if (!match) {
-          throw new Error('No file found.');
+    compiler.hooks.emit.tapAsync('WorkerRunnerPlugin', (compilation, callback) => {
+      const filenames = [];
+      let frameFilename = '';
+      for (let name in compilation.assets) {
+        if (!compilation.assets.hasOwnProperty(name)) {
+          continue;
         }
 
-        return match
-      });
-
-      const source = `
-        self.window = self;
-        ${files.map((file) => `self.importScripts('/${file}');`).join('\n')}
-      `;
-
-      const name = this.options.filename.split('.').map((part) => {
-        if (part !== '[hash]') {
-          return part;
+        if (name.match(WORKER_FILE_REGEX) || name.match(COMMONS_FILE_REGEX)) {
+          filenames.push(name);
+        } else if (name.match(FRAME_FILE_REGEX)) {
+            frameFilename = name;
         }
-
-        const hash = crypto.createHash('sha256');
-        hash.update(source, 'utf-8');
-        return hash.digest('hex').slice(0, 20)
-      }).join('.');
-
-      compilation.assets[name] = {
-        source: () => source,
-        size: () => source.length
-      };
-
-      if (this.options.replaceFilename === this.options.filename) {
-        return callback();
       }
 
-      Object.keys(compilation.assets).forEach((key) => {
-        if (!this.options.replacer(key)) {
-          return
-        }
+      if (!filenames.length || !frameFilename) {
+        return callback(new Error('required file not found'));
+      }
 
-        const file = compilation.assets[key];
-        const source = file.source().replace(new RegExp(this.options.replaceFilename, 'g'), name);
-        file.source = () => source;
-        file.length = () => source.length;
-      });
+      let source = `self.XMLHttpRequest = {};\nself.window = self;\n`;
+      source += filenames.map((name) => `self.importScripts('/${name}');`).join('\n');
+      const split = filenames[0].split('.');
+      const sha = split.length === 3 ? split[split.length - 2] : null;
+      const workerRunnerFile = sha ? `workerRunner.${sha}.js` : 'workerRunner.js';
+
+      compilation.assets[workerRunnerFile] = {
+        source() {
+          return source;
+        },
+        size() {
+          return source.length;
+        }
+      };
+
+      const originalAsset = compilation.assets[frameFilename];
+      const originalSource = originalAsset.source();
+      const newSource = sha ? originalSource.replace(/\/workerRunner\.js/g, workerRunnerFile) : originalSource;
+      compilation.assets[frameFilename] = {
+        source() {
+          return newSource
+        },
+        size() {
+          return newSource.length;
+        }
+      };
 
       callback();
     });

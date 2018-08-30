@@ -1,25 +1,20 @@
 import {buildSharedState, SharedState, WorkerState} from './WorkerState'
-import BackgroundController from './controllers/BackgroundController'
+import {Store} from 'redux'
 import Wallet = require('ethereumjs-wallet')
 
 export default class SharedStateView {
-  private background: BackgroundController
+  private store: Store<WorkerState>
 
-  constructor (background: BackgroundController) {
-    this.background = background
+  constructor (store: Store<WorkerState>) {
+    this.store = store
   }
 
-  public async getHubUrl(): Promise<string> {
+  public async getHubUrl (): Promise<string> {
     const state = await this.getState()
     return state.runtime.currentHubUrl
   }
 
-  public async getAuthRealm(): Promise<string> {
-    const state = await this.getState()
-    return state.runtime.currentAuthRealm
-  }
-
-  public async isLocked(): Promise<boolean> {
+  public async isLocked (): Promise<boolean> {
     const isUnlocked = await this.isUnlocked()
     return !isUnlocked
   }
@@ -29,16 +24,12 @@ export default class SharedStateView {
     return !sharedState.isLocked && sharedState.didInit
   }
 
-  public awaitUnlock() {
-    return new Promise((resolve) => this.background.awaitUnlock(resolve))
-  }
-
   public async getSharedState (): Promise<SharedState> {
     const state = await this.getState()
     return buildSharedState(state)
   }
 
-  public async getAccounts(): Promise<string[]> {
+  public async getAccounts (): Promise<string[]> {
     try {
       const wallet = await this.getWallet()
       return [wallet.getAddressString()]
@@ -47,7 +38,7 @@ export default class SharedStateView {
     }
   }
 
-  public async getWallet(): Promise<Wallet> {
+  public async getWallet (): Promise<Wallet> {
     const state = await this.getState()
     const wallet = state.runtime.wallet
 
@@ -58,7 +49,7 @@ export default class SharedStateView {
     return wallet
   }
 
-  public async getState (): Promise<WorkerState> {
-    return this.background.getState()
+  public getState (): WorkerState {
+    return this.store.getState()
   }
 }

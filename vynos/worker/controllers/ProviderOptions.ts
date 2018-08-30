@@ -1,27 +1,29 @@
-import BackgroundController from './BackgroundController'
-import {ProviderOpts} from 'web3-provider-engine'
+import {Store} from 'redux'
+import {WorkerState} from '../WorkerState'
 import ethUtil = require('ethereumjs-util')
 import sigUtil = require('eth-sig-util')
 import Tx = require('ethereumjs-tx')
+import { Buffer } from 'buffer';
+
+const networks = require('../../networks.json')
+const DEFAULT_NETWORK = 'ropsten'
+
+export const RPC_URL = networks[process.env.NETWORK_NAME || DEFAULT_NETWORK]
 
 export type ApproveTransactionCallback = (error: any, isApproved?: boolean) => void
 export type ApproveSignCallback = (error: any, rawMsgSig?: string) => void
 
 export default class ProviderOptions {
-  background: BackgroundController
-  rpcUrl: string
+  store: Store<WorkerState>
 
-  constructor (background: BackgroundController, rpcUrl: string) {
-    this.background = background
-    this.rpcUrl = rpcUrl
+  constructor (store: Store<WorkerState>) {
+    this.store = store
   }
 
   getAccounts (callback: (err: any, accounts?: Array<string>) => void) {
-    this.background.getAccounts().then(accounts =>
-      callback(null, accounts)
-    ).catch(error => {
-      callback(error)
-    })
+    const state = this.store.getState()
+    const addr = state.runtime.wallet ? state.runtime.wallet.getAddressString() : null
+    callback(null, addr ? [addr] : [])
   }
 
   approveTransactionAlways (txParams: any, callback: ApproveTransactionCallback) {
@@ -29,54 +31,58 @@ export default class ProviderOptions {
   }
 
   signTransaction (rawTx: any, callback: any) {
-    this.background.getPrivateKey().then(privateKey => {
-      let tx = new Tx(rawTx)
-      tx.sign(privateKey)
-      let txHex = '0x' + Buffer.from(tx.serialize()).toString('hex')
-      callback(null, txHex)
-    }).catch(error => {
-      callback(error.message)
-    })
+    const key = this.getPrivateKey()
+
+    if (!key) {
+      return callback('Wallet is locked.')
+    }
+
+    let tx = new Tx(rawTx)
+    tx.sign(key)
+    let txHex = '0x' + Buffer.from(tx.serialize()).toString('hex')
+    callback(null, txHex)
   }
 
   signMessageAlways (messageParams: any, callback: ApproveSignCallback) {
-    this.background.getPrivateKey().then(privateKey => {
-      const msg = messageParams.data
+    const key = this.getPrivateKey()
 
-      const hashBuf = new Buffer(msg.split('x')[1], 'hex')
-      const prefix = new Buffer('\x19Ethereum Signed Message:\n')
-      const buf = Buffer.concat([
-        prefix,
-        new Buffer(String(hashBuf.length)),
-        hashBuf
-      ])
+    if (!key) {
+      return callback('Wallet is locked.')
+    }
 
-      const data = ethUtil.sha3(buf)
-      const msgSig = ethUtil.ecsign(data, privateKey)
-      const rawMsgSig = ethUtil.bufferToHex(sigUtil.concatSig(msgSig.v, msgSig.r, msgSig.s))
-      callback(null, rawMsgSig)
-    }).catch(error => {
-      callback(error.message)
-    })
+    const msg = messageParams.data
+
+    const hashBuf = new Buffer(msg.split('x')[1], 'hex')
+    const prefix = new Buffer('\x19Ethereum Signed Message:\n')
+    const buf = Buffer.concat([
+      prefix,
+      new Buffer(String(hashBuf.length)),
+      hashBuf
+    ])
+
+    const data = ethUtil.sha3(buf)
+    const msgSig = ethUtil.ecsign(data, key)
+    const rawMsgSig = ethUtil.bufferToHex(sigUtil.concatSig(msgSig.v, msgSig.r, msgSig.s))
+    callback(null, rawMsgSig)
   }
 
-  approving (): ProviderOpts {
+  approving (): any {
     return {
       static: {
         eth_syncing: false,
         web3_clientVersion: `LiteratePayments/v${1.0}`
       },
-      rpcUrl: this.rpcUrl,
+      rpcUrl: RPC_URL,
       getAccounts: this.getAccounts.bind(this),
       approveTransaction: this.approveTransactionAlways.bind(this),
       signTransaction: this.signTransaction.bind(this),
-      signMessage: this.signMessageAlways.bind(this)
-      // tx signing, newUnapprovedTransaction
-      //processTransaction: processTransaction,
-      // old style msg signing, newUnsignedMessage
-      //processMessage: processMessage,
-      // new style msg signing, newUnsignedPersonalMessage
-      //processPersonalMessage: processPersonalMessage,
+      signMessage: this.signMessageAlways.bind(this),
+      signPersonalMessage: this.signMessageAlways.bind(this)
     }
+  }
+
+  private getPrivateKey (): Buffer | null {
+    const state = this.store.getState()
+    return state.runtime.wallet ? state.runtime.wallet.getPrivateKey() : null
   }
 }

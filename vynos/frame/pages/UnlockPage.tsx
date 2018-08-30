@@ -113,6 +113,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
               backgroundColor={this.props.backgroundColor}
               color={this.props.textColor}
               className={walletStyle.walletSpankCard}
+              gradient
             />
           </div>
         </div>
@@ -163,4 +164,4 @@ function mapStateToProps (state: FrameState): StateProps {
   }
 }
 
-export default withRouter(connect<StateProps, undefined, any>(mapStateToProps)(UnlockPage))
+export default withRouter(connect(mapStateToProps)(UnlockPage))

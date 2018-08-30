@@ -1,163 +1,150 @@
 import * as React from 'react'
-import { BigNumber } from 'bignumber.js';
-import CTAInput from '../../components/CTAInput/index'
 import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
 import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
-import {BrandingState} from '../../../worker/WorkerState'
+import {BrandingState, ExchangeRates} from '../../../worker/WorkerState'
 import {cardBalance} from '../../redux/selectors/cardBalance'
 import WorkerProxy from '../../WorkerProxy'
-import {CLOSE_CHANNEL_ERRORS} from '../../../lib/ChannelClaimStatusResponse'
 import Currency, {CurrencyType} from '../../components/Currency/index'
 import entireBalance from '../../lib/entireBalance'
-import CurrencyIcon from '../../components/CurrencyIcon/index'
-import RefillButton from '../../components/RefillButton/index'
+import BN = require('bn.js')
+import Tooltip from '../../components/Tooltip'
+import {BalanceToolBar} from '../../components/BalanceToolbar'
 
+const pageStyle = require('../UnlockPage.css')
 const s = require('./styles.css')
 
 export interface StateProps extends BrandingState {
-  walletBalance: BigNumber
-  cardBalance: BigNumber
+  walletBalance: BN
+  cardBalance: BN
   isWithdrawing: boolean
   workerProxy: WorkerProxy
-  activeWithdrawalError: string|null
-  minDeposit: BigNumber
+  activeWithdrawalError: string | null
+  isPendingVerification: boolean | undefined
+  hasActiveDeposit: boolean
+  exchangeRates: ExchangeRates|null
+}
+
+enum ActiveButton {
+  'NONE',
+  'RECIEVE',
+  'SEND',
+  'ACTIVITY',
 }
 
 export interface CardPageState {
-  isRefilling: boolean
   error: string
-  showFinUsdConversionRate: boolean
+  activeButton: ActiveButton
 }
 
 class CardPage extends React.Component<StateProps, CardPageState> {
-  constructor (props: StateProps) {
+  constructor(props: StateProps) {
     super(props)
-
-    this.state = {
-      isRefilling: false,
-      error: '',
-      showFinUsdConversionRate: false
-    }
-
-    this.toggleShowFinConversionRate = this.toggleShowFinConversionRate.bind(this)
-    this.onClickRefill = this.onClickRefill.bind(this)
+    this.state = {error: '', activeButton: ActiveButton.NONE}
   }
 
-  async componentDidMount() {
-    await this.props.workerProxy.populateChannels()
-  }
-
-  async onClickWithdraw () {
-    try {
-      await this.props.workerProxy.closeChannelsForCurrentHub()
-    } catch (e) {
-      if (e.message === CLOSE_CHANNEL_ERRORS.ALREADY_IN_PROGRESS) {
-        return this.setState({ error: e.message })
-      }
-
-      this.setState({
-        error: 'Withdrawal failed. Please try again.',
-      })
-    }
-  }
-
-  async onClickRefill () {
-    this.setState({
-      isRefilling: true
-    })
-
-    const amount = await entireBalance(this.props.workerProxy, new BigNumber(this.props.walletBalance!))
+  onClickRefill = async () => {
+    const amount = await entireBalance(this.props.workerProxy, this.props.walletBalance!)
 
     try {
       await this.props.workerProxy.deposit(amount)
     } catch (e) {
       this.setState({
-        isRefilling: false,
         error: e.code === -32603
           ? 'Insufficient funds. Please deposit more ETH.'
           : 'Failed to load up SpankCard. Please try again.'
       })
       return
     }
-
-    this.setState({
-      isRefilling: false
-    })
   }
 
-  toggleShowFinConversionRate (showFinUsdConversionRate: boolean) {
-    this.setState({
-      showFinUsdConversionRate
-    })
-  }
+  setActiveButton = (activeButton: ActiveButton) => this.setState({activeButton})
 
-  render() {
-    const { walletBalance, cardBalance, minDeposit } = this.props;
-    const isTooLow = walletBalance.lt(minDeposit)
+  render () {
+    const {
+      cardBalance,
+      exchangeRates,
+      walletBalance,
+      companyName,
+      backgroundColor,
+      isPendingVerification,
+      title,
+      textColor,
+      hasActiveDeposit,
+      isWithdrawing,
+    } = this.props
+
+    const reserveBalance = walletBalance
+    const activeButton = this.state.activeButton
 
     return (
       <div className={s.walletSpankCardWrapper}>
-        <div className={s.walletRow}>
-          <div className={s.walletFundsHeader}>Wallet Funds</div>
-          <div className={s.walletRowBalanceWrapper}>
-            <CTAInput
-              isInverse
-              isConnected
-              value={(
-                <Currency
-                  amount={walletBalance}
-                  inputType={CurrencyType.WEI}
-                  outputType={CurrencyType.FINNEY}
-                  className={s.sendReceiveCurrency}
-                  unitClassName={s.finneyUnit}
-                  showUnit={true}
-                />
-              )}
-              className={s.spankCardCta}
-              ctaInputValueClass={s.spankCardCtaInputValue}
-              ctaContentClass={s.spankCardCtaContent}
-              isDisabled={this.state.isRefilling || isTooLow}
-              ctaContent={() =>
-                <RefillButton
-                  minDeposit={minDeposit}
-                  isRefilling={this.state.isRefilling}
-                  isTooLow={isTooLow}
-                  onClick={this.onClickRefill}
-                />
-              }
-            />
-          </div>
-          <div className={s.walletRowAction}>
-            <Button to="/card/to/wallet" type="tertiary" content="More" />
-          </div>
-        </div>
+        <div className={pageStyle.close} onClick={this.closeView} />
+        {
+          isPendingVerification
+            ? <div className={s.walletRow}>Account will recieve 20 Finney once age verification is complete</div>
+            : null
+        }
         <div className={s.walletSpankCardContent}>
           {this.renderError()}
           <div className={s.walletSpankCardDetails}>
             <div className={s.walletSpankCardView}>
               <WalletCard
                 width={275}
-                cardTitle={this.props.title}
-                companyName={this.props.companyName}
-                backgroundColor={this.props.backgroundColor}
-                color={this.props.textColor}
+                cardTitle={title}
+                companyName={companyName}
+                backgroundColor={backgroundColor}
+                color={textColor}
                 currencyValue={cardBalance}
                 className={s.walletSpankCard}
-                onToggleUsdFinney={this.toggleShowFinConversionRate}
+                isLoading={hasActiveDeposit || isWithdrawing}
+                gradient
               />
             </div>
             <div className={s.walletSpankCardActions}>
+              <Tooltip content={
+                <BalanceToolBar
+                  amount={cardBalance}
+                  inputType={CurrencyType.WEI}
+                  reserveBalance={reserveBalance}
+                  reserveBalanceType={CurrencyType.WEI}
+                  exchangeRates={exchangeRates}
+                />
+              }
+              >
+                <div className={s.usdBalance}>
+                  <Currency
+                    amount={cardBalance}
+                    inputType={CurrencyType.WEI}
+                    outputType={CurrencyType.USD}
+                    className={s.sendReceiveCurrency}
+                    unitClassName={s.usdUnit}
+                    showUnit={true}
+                  />
+                </div>
+              </Tooltip>
               <Button
-                type="secondary"
-                content={this.props.isWithdrawing ? 'Withdrawing...' : 'Withdraw to Wallet'}
-                disabled={this.props.isWithdrawing}
-                onClick={() => this.onClickWithdraw()}
+                to="/wallet/receive"
+                type={activeButton === ActiveButton.RECIEVE ? "primary" : "secondary"}
+                onClick={() => this.setActiveButton(ActiveButton.RECIEVE)}
+                content="Receive"
                 isMini
               />
-              <Button to="/wallet/activity" type="secondary" content="Activity" isMini />
-              {this.renderFinUsdConversionRate()}
+              <Button
+                to="/wallet/send"
+                type={activeButton === ActiveButton.SEND ? "primary" : "secondary"}
+                onClick={() => this.setActiveButton(ActiveButton.SEND)}
+                content="Send"
+                isMini
+              />
+              <Button
+                to="/wallet/activity"
+                type={activeButton === ActiveButton.ACTIVITY ? "primary" : "secondary"}
+                onClick={() => this.setActiveButton(ActiveButton.ACTIVITY)}
+                content="Activity"
+                isMini
+              />
             </div>
           </div>
         </div>
@@ -165,7 +152,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     )
   }
 
-  renderError () {
+  renderError = () => {
     const {activeWithdrawalError} = this.props
 
     if (!this.state.error && !activeWithdrawalError) {
@@ -183,40 +170,22 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     )
   }
 
-  renderFinUsdConversionRate () {
-    if (!this.state.showFinUsdConversionRate) {
-      return
-    }
-
-    const fin = new BigNumber(this.props.workerProxy.web3.toWei(1, 'finney'))
-
-    return (
-      <div className={s.walletSpankCardConversionRate}>
-        <div className={s.walletSpankCardConversionRateFinTag}>
-          <CurrencyIcon alt /> 1
-        </div>
-        =
-        <Currency
-        amount={fin}
-        inputType={CurrencyType.WEI}
-        outputType={CurrencyType.USD}
-        className={s.walletSpankCardConversionRateAmount}
-        showUnit
-      />
-      </div>
-    )
+  closeView = () => {
+    this.props.workerProxy.toggleFrame(false)
   }
 }
 
-function mapStateToProps (state: FrameState, ownProps: any): StateProps {
+function mapStateToProps (state: FrameState): StateProps {
   return {
     ...state.shared.branding,
-    walletBalance: new BigNumber(state.shared.balance),
+    walletBalance: new BN(state.shared.balance),
     cardBalance: cardBalance(state.shared),
     isWithdrawing: state.shared.hasActiveWithdrawal,
     activeWithdrawalError: state.shared.activeWithdrawalError,
-    minDeposit: new BigNumber(state.shared.minDeposit),
-    workerProxy: state.temp.workerProxy
+    workerProxy: state.temp.workerProxy,
+    isPendingVerification: state.shared.isPendingVerification,
+    hasActiveDeposit: state.shared.hasActiveDeposit,
+    exchangeRates: state.shared.exchangeRates,
   }
 }
 

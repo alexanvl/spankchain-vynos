@@ -1,4 +1,4 @@
-import { BigNumber } from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 
 export const Subprovider = require('web3-provider-engine/subproviders/subprovider')
 
@@ -33,7 +33,7 @@ export default class GaspriceSubprovider extends Subprovider {
       )
   }
 
-  private async estimateGasPriceFromHub (): Promise<BigNumber | null> {
+  private async estimateGasPriceFromHub (): Promise<BigNumber.BigNumber | null> {
     const res = await requestJson<any>(`${process.env.HUB_URL}/gasPrice/estimate`)
     if (res && res.gasPrice) {
       return new BigNumber(res.gasPrice).mul(GWEI)
@@ -42,7 +42,7 @@ export default class GaspriceSubprovider extends Subprovider {
     return null
   }
 
-  private estimateGasPriceFromPreviousBlocks (): Promise<BigNumber> {
+  private estimateGasPriceFromPreviousBlocks (): Promise<BigNumber.BigNumber> {
     return new Promise((resolve, reject) => {
       this.emitPayload({ method: 'eth_blockNumber'}, (err: any, res: any) => {
         let lastBlock = new BigNumber(res.result)
@@ -78,7 +78,7 @@ export default class GaspriceSubprovider extends Subprovider {
     }))
   }
 
-  private meanGasPrice(blocks: Transaction[][]): BigNumber {
+  private meanGasPrice(blocks: Transaction[][]): BigNumber.BigNumber {
     let sum = new BigNumber(0)
     let count = 0
 

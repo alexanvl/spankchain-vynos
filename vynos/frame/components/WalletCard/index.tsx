@@ -1,11 +1,12 @@
 import * as React from 'react'
-import {BigNumber} from 'bignumber.js'
 import * as classnames from 'classnames'
 import Currency, {CurrencyType} from '../Currency/index'
 import CurrencyIcon, {CurrencyIconType} from '../CurrencyIcon'
 import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
-import {DOMElement} from 'react'
+import BN = require('bn.js')
+import LoadingSpinner from '../LoadingSpinner';
+import Tooltip from '../Tooltip'
 
 const s = require('./style.css')
 
@@ -23,13 +24,13 @@ export interface WalletCardProps extends StateProps {
   className?: string
   width?: number
   currency?: string
-  currencyValue?: BigNumber
+  currencyValue?: BN
   currencySize?: string
-  onToggleUsdFinney?: (isShowingUsd: boolean) => void
+  gradient?: boolean
+  isLoading?: boolean
 }
 
 export interface WalletCardState {
-  isShowingUsd: boolean
   animated: boolean,
   initial: boolean
 }
@@ -41,7 +42,6 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
     color: '#ff007f',
     width: 300,
     currency: '$',
-    onToggleUsdFinney: () => null
   }
 
   icon: any
@@ -50,59 +50,48 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
     super(props)
 
     this.state = {
-      isShowingUsd: false,
       animated: true,
       initial: true
     }
-
-    this.toggleUsdFinney = this.toggleUsdFinney.bind(this)
-  }
-
-  toggleUsdFinney () {
-    const isShowingUsd = !this.state.isShowingUsd
-
-    this.setState({
-      isShowingUsd,
-      animated: false,
-      initial: false
-    })
-
-    this.props.onToggleUsdFinney!(isShowingUsd)
-
-    setTimeout(() => this.setState({
-      animated: true
-    }), 0)
   }
 
   render () {
     const {
       cardTitle,
-      companyName,
       name,
       imageUrl,
       backgroundColor,
       color,
       className,
+      gradient,
       width,
-      currencyValue
+      currencyValue,
+      isLoading,
     } = this.props
 
     const height = width! * (18 / 30)
     const titleSize = height * .1333
     const companyNameSize = titleSize * .6
 
+    const _classes = [
+      s.card,
+      className,
+      ...(gradient ? [s.gradient] : [])
+    ]
+
     return (
       <div
-        className={classnames(s.card, className)}
+        className={classnames(..._classes)}
         style={{
-          backgroundImage: imageUrl ? 'url(' + imageUrl + ')' : null,
+          backgroundImage: imageUrl ? 'url(' + imageUrl + ')' : '',
           backgroundColor,
           color,
+          backgroundSize: 'cover',
           width: width + 'px',
           height: height + 'px'
         }}
       >
-        <div className={s.top} style={{color}}>
+        <div className={s.top} style={{ color }}>
           <div
             className={s.cardTitle}
             style={{
@@ -113,18 +102,14 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
           >
             {cardTitle}
           </div>
-          {companyName && (
-            <div
-              className={s.companyName}
-              style={{
-                fontSize: companyNameSize + 'px',
-                lineHeight: companyNameSize + 'px',
-                color
-              }}
-            >
-              by {companyName}
-            </div>
+          {isLoading && (
+            <span>
+              <Tooltip content="Your funds are being processed">
+                <LoadingSpinner className={s.spinner} />
+              </Tooltip>
+            </span>
           )}
+
         </div>
         <div className={s.bottom}>
           <div
@@ -152,17 +137,16 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
           lineHeight: this.props.currencySize + 'px',
           color: this.props.color
         }}
-        onClick={this.toggleUsdFinney}
       >
         <CurrencyIcon
           className={classnames(s.currencyIcon, {
             [s.animating]: this.state.animated,
             [s.initial]: this.state.initial
           })}
-          currency={this.state.isShowingUsd ? CurrencyIconType.USD : CurrencyIconType.FINNEY}
+          currency={CurrencyType.FINNEY}
           reverse
         />
-        <Currency key="value" amount={this.props.currencyValue} outputType={this.state.isShowingUsd ? CurrencyType.USD : CurrencyType.FINNEY} />
+        <Currency key="value" amount={this.props.currencyValue} outputType={CurrencyType.FINNEY} />
       </div>
     )
   }

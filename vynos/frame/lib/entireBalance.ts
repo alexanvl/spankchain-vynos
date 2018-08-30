@@ -1,9 +1,16 @@
-import * as BigNumber from 'bignumber.js';
+import BN = require('bn.js')
 import WorkerProxy from '../WorkerProxy'
-import { getGasPrice } from '../../lib/getGasPrice'
+import {FIVE_FINNEY} from '../../lib/constants'
 
-export default async function entireBalance(workerProxy: WorkerProxy, walletBalance: BigNumber.BigNumber) {
-  const gasPrice = await getGasPrice(workerProxy.web3)
-  const gasCost = gasPrice.times(300000)
-  return walletBalance.minus(gasCost)
+const FIXED_RESERVE = FIVE_FINNEY
+
+export default async function entireBalance (workerProxy: WorkerProxy, walletBalance: BN) {
+  const gasPrice = await getGasPrice(workerProxy)
+  const gasCost = gasPrice.mul(new BN(1500000))
+  return walletBalance.sub(gasCost).sub(FIXED_RESERVE)
+}
+
+async function getGasPrice (workerProxy: WorkerProxy): Promise<BN> {
+  const str = await workerProxy.web3.eth.getGasPrice()
+  return new BN(str)
 }

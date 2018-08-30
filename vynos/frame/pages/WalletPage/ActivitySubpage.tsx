@@ -14,6 +14,7 @@ const s = require('./styles.css')
 export interface StateProps {
   workerProxy: WorkerProxy,
   history: HistoryItem[]
+  address: string
 }
 
 export interface ActivitySubpageProps extends StateProps {
@@ -98,10 +99,6 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
       )
     }
 
-    const aggregateAmount = this.props.history.reduce((acc: BigNumber.BigNumber, curr: HistoryItem) => {
-      return acc.plus(curr.payment.price)
-    }, new BigNumber.BigNumber(0))
-
     const groups = this.props.history.reduce(reduceByTipOrPurchase, [])
       .reduce((acc: GroupOrHistory[], curr: NestedHistory) => {
       if (!Array.isArray(curr)) {
@@ -117,20 +114,6 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
       <div className={s.walletActivityWrapper}>
         <div className={s.walletActivityHeaderRow}>
           <div className={s.walletActivityHeader}>Activity</div>
-          <div className={s.walletAmountWrapper}>
-            <div className={s.walletAmount}>
-              <Currency
-                amount={aggregateAmount}
-                outputType={CurrencyType.FINNEY}
-                unitClassName={s.activityFinneySign}
-                showUnit
-              />
-            </div>
-            <div className={s.walletEqual}>=</div>
-            <div className={s.walletConverted}>
-              <Currency amount={aggregateAmount} outputType={CurrencyType.USD} showUnit />
-            </div>
-          </div>
         </div>
         <T.Table className={s.walletActivityTable}>
           <T.TableHeader className={s.walletActivityTableHeader}>
@@ -147,7 +130,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
           <T.TableBody>
             {
               groups.map((g: GroupOrHistory, i: number) =>
-                g.hasOwnProperty('type') ? this.renderPurchase(g as HistoryItem) : this.renderGroup(g as Group, i))
+                g.hasOwnProperty('type') ? this.renderWithdrawal(g as HistoryItem) : this.renderGroup(g as Group, i))
             }
           </T.TableBody>
         </T.Table>
@@ -155,7 +138,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
     )
   }
 
-  renderPurchase (item: HistoryItem) {
+  renderWithdrawal (item: HistoryItem) {
     const mStart = moment(item.createdAt)
 
     return (
@@ -171,15 +154,15 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
           <div className={s.walletActivityStart}>{mStart.format('h:mmA')}</div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityItemDescription}>
-          <div className={s.walletActivityItem}>{item.fields.productName}</div>
-          <div className={s.walletActivityDescription}>{item.fields.productSku}</div>
+          <div className={s.walletActivityItem}>Sent funds</div>
+          <div className={s.walletActivityDescription}>To: {item.fields.recipient}</div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityPrice}>
-          <div className={s.walletActivitySubtractWrapper}>
-            <div className={s.walletActivitySubtract}>-</div>
-            <div className={s.walletActivitySubtractAmount}>
+          <div className={classnames(s.walletActivityAmountWrapper, s.walletActivitySignNegative)}>
+            <div className={s.walletActivityAmountSign}>-</div>
+            <div className={s.walletActivityAmount}>
               <Currency
-                amount={item.payment.price}
+                amount={item.price}
                 outputType={CurrencyType.FINNEY}
                 unitClassName={s.activityFinneySign}
                 showUnit
@@ -204,8 +187,14 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
     const firstInGroup = group.items[0]
 
     const total = group.items.reduce((acc: BigNumber.BigNumber, curr: HistoryItem) => {
-      return acc.plus(curr.payment.price)
-    }, new BigNumber.BigNumber(0))
+      if (curr.type === 'TIP' && curr.receiver === this.props.address) {
+        return acc.plus(curr.price)
+      }
+
+      return acc.minus(curr.price)
+    }, new BigNumber(0))
+
+    const isNeg = total.isNegative()
 
     return [
       <T.TableRow
@@ -226,11 +215,17 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
           <div className={s.walletActivityDescription}>{firstInGroup.fields.performerName}</div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityPrice}>
-          <div className={s.walletActivitySubtractWrapper}>
-            <div className={s.walletActivitySubtract}>-</div>
-            <div className={s.walletActivitySubtractAmount}>
+          <div
+            className={classnames(s.walletActivityAmountWrapper, {
+              [s.walletActivityEntryToggled]: toggled,
+              [s.walletActivitySignPositive]: !isNeg,
+              [s.walletActivitySignNegative]: isNeg,
+            })}
+          >
+            <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
+            <div className={s.walletActivityAmount}>
               <Currency
-                amount={total}
+                amount={total.abs()}
                 outputType={CurrencyType.FINNEY}
                 unitClassName={s.activityFinneySign}
                 showUnit
@@ -247,7 +242,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
       </T.TableRow>,
       toggled ? group.items.map((item: HistoryItem, i: number) => (
         <T.TableRow
-          key={`${group.groupKey}-details-${item.createdAt}`}
+          key={`${group.groupKey}-details-${item.payment.token}`}
           className={classnames(s.walletActivityDetails, {
             [s.walletActivityEntryToggled]: toggled,
             [s.walletActivityEntryFirst]: i === 0,
@@ -262,11 +257,16 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
             <div className={s.walletActivityItem}>{item.fields.streamName || item.fields.performerName}</div>
           </T.TableCell>
           <T.TableCell className={s.walletActivityPrice}>
-            <div className={s.walletActivitySubtractWrapper}>
-              <div className={s.walletActivitySubtract}>-</div>
-              <div className={s.walletActivitySubtractAmount}>
+            <div
+              className={classnames(s.walletActivityAmountWrapper, {
+                [s.walletActivitySignPositive]: !isNeg,
+                [s.walletActivitySignNegative]: isNeg,
+              })}
+            >
+              <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
+              <div className={s.walletActivityAmount}>
                 <Currency
-                  amount={item.payment.price}
+                  amount={item.price}
                   outputType={CurrencyType.FINNEY}
                   unitClassName={s.activityFinneySign}
                   showUnit
@@ -290,7 +290,7 @@ function entryFor (item: HistoryItem) {
 }
 
 function reduceByTipOrPurchase (acc: NestedHistory[], curr: HistoryItem) {
-  if (Number(curr.payment.price) === 0) {
+  if (Number(curr.price) === 0) {
     return acc
   }
 
@@ -360,7 +360,8 @@ function reduceByTipStream (acc: Group[], curr: HistoryItem, i: number, all: His
 function mapStateToProps (state: FrameState): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
-    history: state.shared.history
+    history: state.shared.history,
+    address: state.shared.address!,
   }
 }
 

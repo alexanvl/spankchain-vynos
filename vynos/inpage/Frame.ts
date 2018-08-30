@@ -6,51 +6,47 @@ export default class Frame {
   vynosScriptAddress: string
   notifications: HTMLDivElement
 
-  constructor(scriptAddress: string, frameElement?: HTMLIFrameElement) {
+  constructor (scriptAddress: string) {
     this.vynosScriptAddress = scriptAddress
 
-    if (frameElement) {
-      this.element = frameElement
-    } else {
-      this.containerElement = document.createElement('div')
-      this.coverElement = document.createElement('div')
-      this.element = document.createElement('iframe')
-      this.element.id = 'ynos_frame'
-      this.element.setAttribute('allowTransparency', 'true')
+    this.containerElement = document.createElement('div')
+    this.coverElement = document.createElement('div')
+    this.element = document.createElement('iframe')
+    this.element.id = 'ynos_frame'
+    this.element.setAttribute('allowTransparency', 'true')
 
-      this.coverElement.style.position = 'fixed'
-      this.coverElement.style.width = '100vw'
-      this.coverElement.style.height = '100vh'
-      this.coverElement.style.backgroundColor = 'rgba(0, 0, 0, .7)'
-      this.coverElement.style.top = '0'
-      this.coverElement.style.left = '0'
-      this.coverElement.style.zIndex = '100'
-      this.coverElement.style.transition = 'opacity 500ms'
+    this.coverElement.style.position = 'fixed'
+    this.coverElement.style.width = '100vw'
+    this.coverElement.style.height = '100vh'
+    this.coverElement.style.backgroundColor = 'rgba(0, 0, 0, .7)'
+    this.coverElement.style.top = '0'
+    this.coverElement.style.left = '0'
+    this.coverElement.style.zIndex = '100'
+    this.coverElement.style.transition = 'opacity 500ms'
 
-      let style = '#vynos_frame_img_close_button{width: 40px;bottom: 3px;position: absolute;left: 50%;margin-left: -20px;opacity:0;transition: opacity 1s}' +
-        '#vynos_frame_close_button:hover > #vynos_frame_img_close_button{opacity: 1}'
-      this.style = document.createElement('style')
-      this.style.appendChild(document.createTextNode(style))
+    let style = '#vynos_frame_img_close_button{width: 40px;bottom: 3px;position: absolute;left: 50%;margin-left: -20px;opacity:0;transition: opacity 1s}' +
+      '#vynos_frame_close_button:hover > #vynos_frame_img_close_button{opacity: 1}'
+    this.style = document.createElement('style')
+    this.style.appendChild(document.createTextNode(style))
 
-      this.notifications = document.createElement('div')
-      this.notifications.id = 'vynos_notifications'
-      this.notifications.style.marginTop = '0'
-      this.notifications.style.height = '0'
+    this.notifications = document.createElement('div')
+    this.notifications.id = 'vynos_notifications'
+    this.notifications.style.marginTop = '0'
+    this.notifications.style.height = '0'
 
-      this.containerElement.appendChild(this.coverElement)
-      this.containerElement.appendChild(this.element)
-      this.containerElement.appendChild(this.style)
-      this.containerElement.appendChild(this.notifications)
+    this.containerElement.appendChild(this.coverElement)
+    this.containerElement.appendChild(this.element)
+    this.containerElement.appendChild(this.style)
+    this.containerElement.appendChild(this.notifications)
 
-      this.setWalletCard()
-      this.hide()
-    }
+    this.setWalletCard()
+    this.hide()
     let frameSrc = this.vynosScriptAddress.replace(/vynos.js/, 'frame.html?cachebust=' + Date.now())
     this.element.src = frameSrc
     this.element.setAttribute('sandbox', 'allow-scripts allow-modals allow-same-origin allow-popups allow-forms')
   }
 
-  setWalletCard() {
+  setWalletCard () {
     // Set iframe styles
     this.element.style.borderWidth = '0px'
     this.element.height = '100%'
@@ -69,7 +65,7 @@ export default class Frame {
     this.containerElement.style.transition = 'margin-top 0.7s'
   }
 
-  attach(document: HTMLDocument): Promise<void> {
+  attach (document: HTMLDocument): Promise<void> {
     return new Promise<void>((resolve) => {
       const listener = () => {
         resolve()
@@ -86,14 +82,14 @@ export default class Frame {
     })
   }
 
-  setContainerStyle(containerStyle: CSSStyleDeclaration) {
+  setContainerStyle (containerStyle: CSSStyleDeclaration) {
     if (containerStyle.right) this.containerElement.style.right = containerStyle.right
     if (containerStyle.top) this.containerElement.style.top = containerStyle.top
     if (containerStyle.left) this.containerElement.style.left = containerStyle.left
     if (containerStyle.bottom) this.containerElement.style.bottom = containerStyle.bottom
   }
 
-  display() {
+  display () {
     const ctx = this
     this.element.style.opacity = '1'
     this.containerElement.style.marginTop = '0px'
@@ -103,7 +99,7 @@ export default class Frame {
     }, 16)
   }
 
-  hide() {
+  hide () {
     const ctx = this
     this.containerElement.style.marginTop = '-100vh'
     this.element.style.opacity = '0'

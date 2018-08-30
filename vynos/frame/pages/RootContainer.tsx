@@ -136,5 +136,5 @@ function mapStateToProps (state: FrameState): StateProps {
 }
 
 export default withRouter(
-  connect<StateProps, any, any>(mapStateToProps)(RootContainer)
+  connect(mapStateToProps)(RootContainer)
 )

@@ -1,14 +1,14 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
-import Web3 = require('web3')
 import {FrameState} from '../../redux/FrameState'
 
 import {Image} from 'semantic-ui-react'
+import BN = require('bn.js')
 
 const style = require('../../styles/ynos.css')
 
 export interface WalletAccountProps {
-  web3?: Web3
+  web3?: any
   onChangeAddress?: (address: string) => void
   onChangeDetailsDisplayed?: (value: boolean) => void
   onChangeBalance?: (balance: number) => void
@@ -41,12 +41,12 @@ export class WalletAccount extends React.Component<WalletAccountProps, WalletAcc
   componentDidMount() {
     if (this.props.web3) {
       let web3 = this.props.web3
-      web3.eth.getAccounts((err, accounts) => {
+      web3.eth.getAccounts((err: any, accounts: string[]) => {
         let address = accounts[0]
         this.updateBalanceTimer = setInterval(() => {
-          web3.eth.getBalance(address, (err, balance) => {
+          web3.eth.getBalance(address, (err: any, balance: BN) => {
             this.setState({
-              balance: web3.fromWei(balance, 'ether').toString()
+              balance: web3.utils.fromWei(balance, 'ether').toString()
             })
             if(this.props.onChangeBalance) this.props.onChangeBalance(parseFloat(this.state.balance));
           })

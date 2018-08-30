@@ -9,9 +9,9 @@ import * as metrics from './lib/metrics'
 import wait from './lib/wait'
 
 class Client implements ServiceWorkerClient {
-  workerProxy: WorkerProxy
+  private workerProxy: WorkerProxy|null = null
 
-  frameServer: FrameServer
+  private frameServer: FrameServer|null = null
 
   private heartbeating = false
 
@@ -27,7 +27,7 @@ class Client implements ServiceWorkerClient {
 
     this.pollWorker()
 
-    metrics.setLogFunc(metrics => this.frameServer.broadcast('__METRICS__', metrics))
+    metrics.setLogFunc(metrics => this.frameServer!.broadcast('__METRICS__', metrics))
     this.loaded = true
   }
 
@@ -38,7 +38,7 @@ class Client implements ServiceWorkerClient {
 
     try {
       this.stopHeartbeating()
-      await this.frameServer.stop()
+      await this.frameServer!.stop()
     } catch (e) {
       console.error(e)
     }
@@ -60,7 +60,7 @@ class Client implements ServiceWorkerClient {
     }
 
     try {
-      await this.workerProxy.status()
+      await this.workerProxy!.status()
     } catch (e) {
     }
 
@@ -68,7 +68,7 @@ class Client implements ServiceWorkerClient {
   }
 
   private passEvent (name: string) {
-    this.workerProxy.addListener(name, (...args: any[]) => this.frameServer.broadcast(name, ...args))
+    this.workerProxy!.addListener(name, (...args: any[]) => this.frameServer!.broadcast(name, ...args))
   }
 
   private async pollWorker () {
@@ -85,10 +85,10 @@ class Client implements ServiceWorkerClient {
     }
 
     if (status !== WorkerStatus.READY) {
-      await new Promise((resolve) => this.workerProxy.once(ReadyBroadcastEvent, resolve))
+      await new Promise((resolve) => this.workerProxy!.once(ReadyBroadcastEvent, resolve))
     }
 
-    renderApplication(document, this.workerProxy)
+    renderApplication(document, this.workerProxy!)
     this.startHeartbeating()
   }
 
@@ -100,7 +100,7 @@ class Client implements ServiceWorkerClient {
       const start = Date.now()
 
       try {
-        const res = await this.workerProxy.status()
+        const res = await this.workerProxy!.status()
 
         metrics.logMetrics([{
           name: 'vynos:frameStatusRetryCount',

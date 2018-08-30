@@ -1,3 +1,85 @@
+.amountWrapper {
+  display: flex;
+  flex-flow: column nowrap;
+  flex: 1 auto 1;
+  width: 46%;
+}
+
+.autoFillButtons {
+  display: flex;
+  justify-content: flex-end;
+  flex-flow: row nowrap;
+  margin: 0 2rem 2rem;
+}
+
+.autoFillButton25 {
+  background-color: rgb(210, 210, 210);
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 4.5em;
+  min-width: 4.5rem;
+  text-align: center;
+}
+
+.autoFillButton25:hover {
+  background-color: rgba(210, 210, 210, .85);
+}
+
+.autoFillButton25:active {
+  background-color: rgb(210,210,210);
+}
+
+.autoFillButton50 {
+  background-color: rgb(160, 160, 160);
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 4.5em;
+  min-width: 4.5rem;
+  text-align: center;
+}
+
+.autoFillButton50:hover {
+  background-color: rgba(160, 160, 160, .85);
+}
+
+.autoFillButton50:active {
+  background-color: rgb(160, 160, 160);
+}
+
+.autoFillButton75 {
+  background-color: rgb(110, 110, 110);
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 4.5em;
+  min-width: 4.5rem;
+  text-align: center;
+}
+
+.autoFillButton75:hover {
+  background-color: rgba(110, 110, 110, .85);
+}
+
+.autoFillButton75:active {
+  background-color: rgb(110, 110, 110);
+}
+
+.autoFillButtonMax {
+  background-color: rgb(60, 60, 60);
+  flex-grow: 0;
+  flex-shrink: 0;
+  flex-basis: 4.5em;
+  min-width: 4.5rem;
+  text-align: center;
+}
+
+.autoFillButtonMax:hover {
+  background-color: rgba(60, 60, 60, .85);
+}
+
+.autoFillButtonMax:active {
+  background-color: rgb(60, 60, 60)
+}
+
 .container {
   background-color: #f0f0f0;
 }
@@ -13,7 +95,13 @@
 .contentRow {
   display: flex;
   flex-flow: row nowrap;
-  margin: 0 2rem 2rem;
+  margin: 0 2rem;
+}
+
+.inputRow {
+  display: flex;
+  flex-flow: row nowrap;
+  margin: 0 2rem;
 }
 
 .inputWrapper {
@@ -72,6 +160,8 @@
 
 .inputEqual {
   margin: 0 1rem;
+  align-self: center;
+  width: 8%;
 }
 
 .inputTotal {
@@ -88,7 +178,7 @@
   padding: 2rem;
   display: flex;
   flex-flow: row nowrap;
-  justify-content: space-between;
+  justify-content: center;
 }
 
 .footer button {

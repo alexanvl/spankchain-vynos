@@ -3,10 +3,10 @@ import * as EventEmitter from 'events'
 import Frame from './Frame'
 import {WalletOptions} from '../WalletOptions'
 import {SharedState} from '../worker/WorkerState'
-import * as BigNumber from 'bignumber.js';
 import Web3 = require('web3')
 import VynosBuyResponse from '../lib/VynosBuyResponse'
 import * as metrics from '../lib/metrics'
+import BN = require('bn.js')
 
 export interface Balance {
   balanceInWei: string
@@ -22,19 +22,19 @@ export interface GetBalanceResponse {
 export default class Vynos extends EventEmitter {
   private options: WalletOptions
 
-  private client: VynosClient
+  private client: VynosClient|null = null
 
   private open: boolean = false
 
-  private ready: boolean
+  private ready: boolean = false
 
-  private frame: Frame
+  private frame: Frame|null = null
 
-  private previousState: SharedState
+  private previousState: SharedState|null = null
 
-  private initializing: Promise<void>
+  private initializing: Promise<void>|null = null
 
-  provider: Web3.Provider
+  provider: any
 
   constructor (options: WalletOptions) {
     super()
@@ -43,24 +43,30 @@ export default class Vynos extends EventEmitter {
   }
 
   public async getBalance(): Promise<GetBalanceResponse> {
-    return this.client.getSharedState()
+    this.requireReady()
+
+    return this.client!.getSharedState()
       .then(state => {
-        const { balance, channels, currentHubUrl } = state
-        const currentChannels = channels[currentHubUrl] || []
+        const { balance, channel } = state
+
+        const channels = {} as any
+
+        if (channel) {
+          channels[channel.ledgerId] = {
+            balanceInWei: channel.balance,
+          }
+        }
+
         return {
           wallet: { balanceInWei: balance },
-          channels: currentChannels.reduce((acc: any, channel: any) => {
-            const { channelId, spent, value } = channel
-            acc[channel.channelId] = { balanceInWei: `${value - spent}` }
-            return acc
-          }, {}),
+          channels
         }
       })
   }
 
-  public async buy (amount: BigNumber.BigNumber, meta: any): Promise<VynosBuyResponse|null> {
+  public async buy (amount: BN, meta: any): Promise<VynosBuyResponse|null> {
     this.requireReady()
-    const { didInit, isLocked } = await this.client.getSharedState()
+    const { didInit, isLocked } = await this.client!.getSharedState()
 
     if (!didInit || isLocked) {
       this.show()
@@ -70,7 +76,7 @@ export default class Vynos extends EventEmitter {
     let res
 
     try {
-      res = await this.client.buy(amount.toNumber(), meta)
+      res = await this.client!.buy(amount.toString(), meta)
     } catch (err) {
       this.emit('error', err)
       throw err
@@ -82,23 +88,34 @@ export default class Vynos extends EventEmitter {
 
   public async lock() {
     this.requireReady()
-    return this.client.lock()
+    return this.client!.lock()
   }
 
   public show(opts?:{ forceRedirect?: string, isPerformer?: boolean }) {
     opts = opts || {}
     this.requireReady()
-    this.client.toggleFrame(true, opts.forceRedirect, opts.isPerformer)
+    this.client!.toggleFrame(true, opts.forceRedirect, opts.isPerformer)
       .catch((e: any) => this.emit('error', e))
   }
 
   public setUsername(username: string): Promise<void> {
-    return this.client.setUsername(username)
+    this.requireReady()
+    return this.client!.setUsername(username)
+  }
+
+  public setNeedsCollateral(needsCollateral: boolean): Promise<void> {
+    this.requireReady()
+    return this.client!.setNeedsCollateral(needsCollateral)
+  }
+
+  public setIsPendingVerification(isPendingVerification: boolean): Promise<void> {
+    this.requireReady()
+    return this.client!.setIsPendingVerification(isPendingVerification)
   }
 
   public hide() {
     this.requireReady()
-    this.client.toggleFrame(false)
+    this.client!.toggleFrame(false)
       .catch((e: any) => this.emit('error', e))
   }
 
@@ -137,7 +154,7 @@ export default class Vynos extends EventEmitter {
     const parts = src.split('/')
     const origin = `${parts[0]}//${parts[2]}`
 
-    this.client = new VynosClient(this.frame.element.contentWindow, origin)
+    this.client = new VynosClient(this.frame.element.contentWindow!, origin)
     await this.client.initialize()
     this.previousState = await this.client.getSharedState()
     this.client.onSharedStateUpdate(this.handleSharedStateUpdate)
@@ -145,7 +162,7 @@ export default class Vynos extends EventEmitter {
 
     document.addEventListener('keydown', (e: KeyboardEvent) => {
       if (e.which === 27) {
-        this.client.toggleFrame(false)
+        this.client!.toggleFrame(false)
       }
     })
 
@@ -160,7 +177,7 @@ export default class Vynos extends EventEmitter {
   async setupAndLogin (): Promise<{ token: string }> {
     this.requireReady()
 
-    const res = await this.client.authenticate()
+    const res = await this.client!.authenticate()
     const token = res.token
 
 
@@ -174,11 +191,11 @@ export default class Vynos extends EventEmitter {
   }
 
   setContainerStyle (style: CSSStyleDeclaration): void {
-    this.frame.setContainerStyle(style)
+    this.frame!.setContainerStyle(style)
   }
 
   private handleSpecificEvents(newState: SharedState) {
-    if (this.previousState.isFrameDisplayed !== newState.isFrameDisplayed) {
+    if (this.previousState!.isFrameDisplayed !== newState.isFrameDisplayed) {
       if (newState.isFrameDisplayed) {
         this.emit('didShow')
       } else {
@@ -187,20 +204,20 @@ export default class Vynos extends EventEmitter {
     }
 
     if (newState.isFrameDisplayed) {
-      this.frame.display()
+      this.frame!.display()
     } else {
-      this.frame.hide()
+      this.frame!.hide()
     }
 
-    if (this.previousState.isLocked !== newState.isLocked) {
+    if (this.previousState!.isLocked !== newState.isLocked) {
       this.emit(newState.isLocked ? 'didLock' : 'didUnlock')
     }
 
-    if (this.previousState.didInit !== newState.didInit && newState.didInit) {
+    if (this.previousState!.didInit !== newState.didInit && newState.didInit) {
       this.emit('didOnboard')
     }
 
-    if (this.previousState.currentAuthToken !== newState.currentAuthToken && newState.currentAuthToken) {
+    if (this.previousState!.currentAuthToken !== newState.currentAuthToken && newState.currentAuthToken) {
       this.emit('didAuthenticate', newState.currentAuthToken)
     }
   }

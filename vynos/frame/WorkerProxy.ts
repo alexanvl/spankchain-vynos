@@ -2,45 +2,44 @@ import {HistoryItem, SharedState} from '../worker/WorkerState'
 import {
   AuthenticateRequest,
   AuthenticateResponse,
-  CloseChannelsForCurrentHubRequest,
+  CloseLedgerChannels,
   DepositRequest,
   DidStoreMnemonicRequest,
   FetchHistoryRequest,
+  GenerateRestorationCandidates,
   GenKeyringRequest,
   GetSharedStateRequest,
   LockWalletRequest,
-  RevealPrivateKeyRequest,
-  PopulateChannelsRequest,
   RecoverChannelRequest,
   RememberPageRequest,
   ResetRequest,
   RestoreWalletRequest,
+  RevealPrivateKeyRequest,
   SendRequest,
   SetUsernameRequest,
   StatusRequest,
   ToggleFrameRequest,
-  UnlockWalletRequest,
-  GenerateRestorationCandidates
+  UnlockWalletRequest
 } from '../lib/rpc/yns'
-import * as BigNumber from 'bignumber.js'
 import JsonRpcClient from '../lib/messaging/JsonRpcClient'
 import {WorkerStatus} from '../lib/rpc/WorkerStatus'
-import {JSONRPCResponsePayload} from 'web3'
 import {Postable} from '../lib/messaging/Postable'
-import Web3 = require('web3')
-
 import * as metrics from '../lib/metrics'
-import { getRpcUrl } from '../lib/rpc/WorkerServer'
 import RestorationCandidate from '../lib/RestorationCandidate'
+import {RPC_URL} from '../worker/controllers/ProviderOptions'
 
-function timed(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+const Web3 = require('web3')
+
+import BN = require('bn.js')
+
+function timed (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
   let oldFunc = descriptor.value
 
-  descriptor.value = function() {
+  descriptor.value = function () {
     let res = oldFunc.apply(this, arguments)
     return metrics.timed('vynos:' + propertyKey, res, {
-      rpcUrl: getRpcUrl(),
-      arguments: Array.prototype.slice.call(arguments),
+      rpcUrl: RPC_URL,
+      arguments: Array.prototype.slice.call(arguments)
     })
   }
 
@@ -48,40 +47,39 @@ function timed(target: any, propertyKey: string, descriptor: PropertyDescriptor)
 }
 
 export default class WorkerProxy extends JsonRpcClient {
-  web3: Web3
+  web3: any
 
   constructor (target: Postable) {
     super('WorkerProxy', target, navigator.serviceWorker, window.location.origin)
+
+    const send = (payload: any, callback: (err: Error, result: any) => void) => {
+      this.call(payload.method, ...payload.params).then((res: any) => {
+        // rewrite the ID
+        res.id = payload.id
+        const cb = callback as any
+        cb(null, res)
+      }).catch((e: any) => {
+        (callback as any)(e, null)
+      })
+    }
+
     this.web3 = new Web3({
-      sendAsync: (payload: Web3.JSONRPCRequestPayload,
-                  callback: (err: Error, result: JSONRPCResponsePayload) => void) => {
-        this.call(payload.method, ...payload.params)
-          .then((res: JSONRPCResponsePayload) => {
-            (callback as any)(null, res)
-          })
-          .catch((e: any) => {
-            (callback as any)(e, null)
-          })
-      }
+      sendAsync: send,
+      send
     })
   }
 
   @timed
-  closeChannelsForCurrentHub (): Promise<void> {
-    return this.call(CloseChannelsForCurrentHubRequest.method)
+  closeLedgerChannels (): Promise<void> {
+    return this.call(CloseLedgerChannels.method)
   }
 
   @timed
-  deposit (amount: BigNumber.BigNumber): Promise<void> {
+  deposit (amount: BN): Promise<void> {
     return this.call(DepositRequest.method, amount.toString())
   }
 
-  @timed
-  populateChannels (): Promise<void> {
-    return this.call(PopulateChannelsRequest.method)
-  }
-
-  getWeb3 (): Web3 {
+  getWeb3 (): any {
     return this.web3
   }
 
@@ -126,11 +124,11 @@ export default class WorkerProxy extends JsonRpcClient {
   }
 
   @timed
-  send (to: string, value: string, gas?: string, gasPrice?: string): Promise<void> {
-    return this.call(SendRequest.method, to, value, gas, gasPrice)
+  send (to: string, value: string): Promise<void> {
+    return this.call(SendRequest.method, to, value)
   }
 
-  setUsername(username: string): Promise<void> {
+  setUsername (username: string): Promise<void> {
     return this.call(SetUsernameRequest.method, username)
   }
 
@@ -150,7 +148,7 @@ export default class WorkerProxy extends JsonRpcClient {
     return this.call(RevealPrivateKeyRequest.method, mnemonic)
   }
 
-  generateRestorationCandidates(mnemonic: string): Promise<RestorationCandidate[]> {
+  generateRestorationCandidates (mnemonic: string): Promise<RestorationCandidate[]> {
     return this.call(GenerateRestorationCandidates.method, mnemonic)
   }
 }

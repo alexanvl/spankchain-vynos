@@ -3,7 +3,6 @@ import {Reducer} from 'redux'
 import {reducerWithInitialState} from "typescript-fsa-reducers";
 import {FrameState, initialState} from "./FrameState";
 import * as actions from './actions'
-import {topmenu} from './menu'
 import WorkerProxy from "../WorkerProxy";
 
 export default function reducers(workerProxy: WorkerProxy): Reducer<FrameState> {
@@ -26,7 +25,6 @@ export default function reducers(workerProxy: WorkerProxy): Reducer<FrameState> 
   return redux.combineReducers({
     temp: tempReducer,
     shared: sharedReducer,
-    menu: topmenu,
     wallet: walletReducer,
   });
 }

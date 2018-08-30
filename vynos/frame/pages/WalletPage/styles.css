@@ -7,6 +7,20 @@
   z-index: 100;
 }
 
+.usdBalance {
+ border-radius: 2rem;
+ border: 1px solid transparent;
+ border-color: rgb(245, 245, 245);
+ background-color: rgb(245, 245, 245);
+ min-width: 8rem;
+ outline: none;
+ height: 1.8rem;
+ display: grid;
+ align-content: center;
+ justify-content: center;
+ margin-bottom: 1rem;
+}
+
 .walletWrapper {
   width: 36rem;
   z-index: 200;
@@ -446,26 +460,51 @@
 
 .walletActivityDescription {
   color: #b5b5b5;
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.walletActivitySubtract,
-.walletActivitySubtractAmount,
+.walletActivitySignPositive .walletActivityAmountSign,
+.walletActivitySignPositive .walletActivityAmount,
+.walletActivitySignPositive .walletActivitySendAmount {
+  color: #55a451;
+}
+
+.walletActivitySignNegative .walletActivityAmountSign,
+.walletActivitySignNegative .walletActivityAmount,
+.walletActivitySignNegative .walletActivitySendAmount {
+  color: #d0021b;
+}
+
+
+.walletActivitySignNegative {}
+
+.walletActivityAmountSign,
+.walletActivityAmount,
 .walletActivitySendAmount {
   font-weight: 600;
   font-size: 1rem;
-  color: #d0021b;
   display: inline-block;
 }
 
-.walletActivitySubtractAmount .activityFinneySign {
+.walletActivityAmount .activityFinneySign {
   color: transparent;
   margin: 2px;
-  background-image: url('../../styles/images/fin-duo-pink.svg');
   height: 14px;
   background-size: contain;
 }
 
-.walletActivitySubtractAmount {
+.walletActivitySignNegative .activityFinneySign {
+  background-image: url('../../styles/images/fin-duo-pink.svg');
+}
+
+.walletActivitySignPositive .activityFinneySign {
+  background-image: url('../../styles/images/fin-duo-green.svg');
+}
+
+.walletActivityAmount {
   border-radius: 1rem;
   border: 0.5px solid #cccccc;
   font-size: 0.9rem;
@@ -473,7 +512,7 @@
   margin-left: 0.3rem;
 }
 
-.walletActivitySubtractAmount span,
+.walletActivityAmount span,
 .walletAmount span {
   font-family: CartographMonoCF !important;
 }
@@ -566,7 +605,13 @@
   display: inline-block;
 }
 
-.walletActivitySubtractWrapper {
+.usdUnit {
+  background-color: white;
+  margin: 2px 4px 0 0;
+  display: inline-block;
+}
+
+.walletActivityAmountWrapper {
   display: flex;
   flex-wrap: nowrap;
 }

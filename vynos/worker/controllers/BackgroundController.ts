@@ -5,24 +5,26 @@ import Keyring from '../../frame/lib/Keyring'
 import {EventEmitter} from 'events'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import AbstractController from './AbstractController'
-import { BigNumber } from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 import {
   DidStoreMnemonicRequest,
+  GenerateRestorationCandidates,
   GenKeyringRequest,
   GetSharedStateRequest,
   InitAccountRequest,
   LockWalletRequest,
   RememberPageRequest,
   RestoreWalletRequest,
+  RevealPrivateKeyRequest,
   TransactionResolved,
-  UnlockWalletRequest,
-  RevealPrivateKeyRequest, GenerateRestorationCandidates
+  UnlockWalletRequest
 } from '../../lib/rpc/yns'
+import RestorationCandidate from '../../lib/RestorationCandidate'
 import bip39 =require('bip39')
 import hdkey = require('ethereumjs-wallet/hdkey')
 import Wallet = require('ethereumjs-wallet')
 import Web3 = require('web3')
-import RestorationCandidate from '../../lib/RestorationCandidate'
+import Logger from '../../lib/Logger'
 
 const STATE_UPDATED_EVENT = 'stateUpdated'
 
@@ -38,33 +40,32 @@ const HD_CHILD_KEY_ID = 0
 
 export default class BackgroundController extends AbstractController {
   store: Store<WorkerState>
-
   events: EventEmitter
-
   web3: Web3
 
-  constructor (store: Store<WorkerState>) {
-    super()
+  constructor (store: Store<WorkerState>, web3: Web3, logger: Logger) {
+    super(logger)
     this.store = store
     this.events = new EventEmitter()
-  }
-
-  setWeb3(web3: Web3) {
     this.web3 = web3
   }
 
   awaitUnlock (fn: Function) {
-    const tryCall = () => {
-      this.getSharedState().then(sharedState => {
-        let isUnlocked = !sharedState.isLocked && sharedState.didInit
-        if (isUnlocked) {
-          fn()
-        } else {
-          this.events.once(STATE_UPDATED_EVENT, tryCall)
-        }
-      })
+    const attempt = () => {
+      const isUnlocked = !this.isLocked()
+
+      if (isUnlocked) {
+        fn()
+      } else {
+        this.events.once(STATE_UPDATED_EVENT, attempt)
+      }
     }
-    tryCall()
+
+    attempt()
+  }
+
+  awaitUnlockP(): Promise<void> {
+    return new Promise((resolve) => this.awaitUnlock(resolve))
   }
 
   async isLocked (): Promise<boolean> {
@@ -72,26 +73,22 @@ export default class BackgroundController extends AbstractController {
     return state.isLocked || !state.didInit
   }
 
-  resolveTransaction () {
-    this.store.dispatch(actions.setLastUpdateDb(Date.now()))
-  }
-
   rememberPage (path: string) {
     this.store.dispatch(actions.rememberPage(path))
   }
 
-  getSharedState (): Promise<SharedState> {
-    return this.getState().then(buildSharedState)
+  getSharedState (): SharedState {
+    return buildSharedState(this.getState())
   }
 
-  async getState (): Promise<WorkerState> {
+  getState (): WorkerState {
     return this.store.getState()
   }
 
   genKeyring (password: string): Promise<string> {
     const mnemonic = bip39.generateMnemonic()
     const keyring = this._generateKeyring(mnemonic, true)
-    this.store.dispatch(actions.setWallet(keyring.wallet))
+    this.setWallet(keyring.wallet)
     return Keyring.serialize(keyring, password).then(serialized => {
       this.store.dispatch(actions.setKeyring(serialized))
       return mnemonic
@@ -127,7 +124,7 @@ export default class BackgroundController extends AbstractController {
       rootKey = hdkey.fromMasterSeed(seed)
     } else {
       rootKey = hdkey.fromMasterSeed(mnemonic)
-  }
+    }
 
     const key = hd ? rootKey.derivePath(HD_PATH_STRING)
       .deriveChild(HD_CHILD_KEY_ID) : rootKey
@@ -158,82 +155,77 @@ export default class BackgroundController extends AbstractController {
     ]
   }
 
-  private balanceFor(address: string): Promise<BigNumber> {
-    return new Promise((resolve, reject) => this.web3.eth.getBalance(address, (err: Error, res: BigNumber) => {
-      return err ? reject(err) : resolve(res)
+  private balanceFor (address: string): Promise<BigNumber.BigNumber> {
+    return new Promise((resolve, reject) => this.web3!.eth.getBalance(address, 'latest', (err: Error, res: number) => {
+      return err ? reject(err) : resolve(new BigNumber(res))
     }))
   }
 
   restoreWallet (password: string, mnemonic: string, hd: boolean): Promise<void> {
     const keyring = this._generateKeyring(mnemonic, hd)
-    this.store.dispatch(actions.setWallet(keyring.wallet))
+    this.setWallet(keyring.wallet)
     const wallet = keyring.wallet
     return Keyring.serialize(keyring, password).then(serialized => {
       this.store.dispatch(actions.restoreWallet({keyring: serialized, wallet: wallet}))
     })
   }
 
-  getAccounts (): Promise<Array<string>> {
-    return this.getWallet().then(wallet => {
-      let account = wallet.getAddressString()
-      return [account]
-    }).catch(() => {
+  getAccounts (): string[] {
+    try {
+      const wallet = this.getWallet()
+      const addr = wallet.getAddressString()
+      return addr ? [addr] : []
+    } catch (e) {
       return []
-    })
+    }
   }
 
-  getWallet (): Promise<Wallet> {
-    return this.getState().then(state => {
-      let wallet = state.runtime.wallet
-      if (wallet) {
-        return Promise.resolve(wallet)
-      } else {
-        return Promise.reject(new Error('Wallet is not available'))
-      }
-    })
+  getWallet (): Wallet {
+    const wallet = this.getState().runtime.wallet
+
+    if (!wallet) {
+      throw new Error('Wallet is not available.')
+    }
+
+    return wallet
   }
 
-  getPrivateKey (): Promise<Buffer> {
-    return this.getWallet().then(wallet => {
-      return wallet.getPrivateKey()
-    })
+  setWallet (wallet?: Wallet): void {
+    this.store.dispatch(actions.setWallet(wallet))
   }
 
-  getAddressString (): Promise<string> {
-    return this.getWallet().then(wallet => {
-      return wallet.getAddressString()
-    })
+  getPrivateKey (): Buffer {
+    return this.getWallet().getPrivateKey()
+  }
+
+  getAddressString (): string {
+    return this.getWallet().getAddressString()
   }
 
   async didStoreMnemonic (): Promise<void> {
     this.store.dispatch(actions.setDidStoreMnemonic(true))
   }
 
-  unlockWallet (password: string): Promise<void> {
-    return this.getState().then(state => {
-      let keyring = state.persistent.keyring
-      if (keyring) {
-        return Promise.resolve(Keyring.deserialize(keyring, password))
-      } else {
-        return Promise.reject(new Error('Keyring is not present'))
-      }
-    }).then((keyring: Keyring) => {
-      this.store.dispatch(actions.setWallet(keyring.wallet))
-    })
+  async unlockWallet (password: string) {
+    const state = this.getState()
+      const keyring = state.persistent.keyring
+
+    if (!keyring) {
+      throw new Error('Keyring is not present.')
+    }
+
+    const deser = await Keyring.deserialize(keyring, password)
+    this.setWallet(deser.wallet)
   }
 
-  lockWallet (): Promise<void> {
-    return this.getState().then(() => {
-      this.store.dispatch(actions.setWallet(undefined))
-    })
+  lockWallet () {
+    this.setWallet(undefined)
   }
 
   didChangeSharedState (fn: (state: SharedState) => void) {
     this.store.subscribe(() => {
       this.events.emit(STATE_UPDATED_EVENT)
-      this.getSharedState().then(sharedState => {
-        fn(sharedState)
-      })
+      fn(this.getSharedState())
     })
   }
 

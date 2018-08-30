@@ -1,7 +1,6 @@
 import Wallet from 'ethereumjs-wallet'
-import {SerializedPaymentChannel} from 'machinomy/dist/lib/payment_channel'
-import Payment from 'machinomy/dist/lib/payment'
-import {FIVE_FINNEY} from '../lib/MinDeposit'
+import VirtualChannel from '../lib/connext/VirtualChannel'
+import {MetaFields, PurchaseMetaType} from '../lib/BuyTransactionTypes'
 
 export interface RuntimeState {
   wallet?: Wallet
@@ -10,20 +9,20 @@ export interface RuntimeState {
   currentHubUrl: string
   currentAuthRealm: string
   currentAuthToken: string
-  authorizationRequest: AuthorizationRequestState|null
+  authorizationRequest: AuthorizationRequestState | null
   isFrameDisplayed: boolean
   isPerformer?: boolean
+  isPendingVerification?: boolean
   forceRedirect?: string
   branding: BrandingState
-  channels: ChannelsState
+  channel: ChannelState | null
   history: HistoryItem[]
   balance: string
-  pendingTransaction: PendingTransaction|null
+  pendingTransaction: PendingTransaction | null
   hasActiveWithdrawal: boolean
   activeWithdrawalError: string|null
-  exchangeRate: string|null
+  exchangeRates: ExchangeRates|null
   username: string|null
-  minDeposit: string
 }
 
 export interface AuthorizationRequestState {
@@ -31,14 +30,40 @@ export interface AuthorizationRequestState {
   authRealm: string
 }
 
-export interface ChannelsState {
-  [hubUrl: string]: SerializedPaymentChannel[]
+export interface ChannelState {
+  ledgerId: string
+  balance: string
+  currentVCs: VirtualChannel[]
 }
 
+export enum CurrencyType {
+  USD = 'USD', 
+  ETH = 'ETH', 
+  WEI = 'WEI', 
+  FINNEY = 'FINNEY', 
+}
+
+export type ExchangeRates = {[key: string/* in CurrencyType*/]: string}
+
 export interface HistoryItem {
-  payment: { channelId: string, sender: string, price: string, token: string }
-  type: string
-  [key: string]: any
+  payment: {
+    channelId: string,
+    meta: MetaFields,
+    token: string
+  }
+  fields: {
+    performerId?: string,
+    performerName?: string,
+    streamId?: string,
+    streamName?: string,
+    productName?: string,
+    productSku?: string,
+    recipient?: string
+  }
+  createdAt: number
+  type: PurchaseMetaType
+  price: string
+  receiver: string
 }
 
 export interface PendingTransaction {
@@ -55,29 +80,39 @@ export interface SharedState {
   currentHubUrl: string
   currentAuthToken: string
   currentAuthRealm: string
-  authorizationRequest: AuthorizationRequestState|null
+  authorizationRequest: AuthorizationRequestState | null
   isFrameDisplayed: boolean
   forceRedirect?: string
   isPerformer?: boolean
+  isPendingVerification?: boolean
   branding: BrandingState
-  channels: ChannelsState
+  channel: ChannelState | null
   history: HistoryItem[]
   balance: string
-  pendingTransaction: PendingTransaction|null
-  address: string|null
+  pendingTransaction: PendingTransaction | null
+  address: string | null
   hasActiveWithdrawal: boolean
-  pendingChannelIds: string[]
+  hasActiveDeposit: boolean
+  username: string | null
   activeWithdrawalError: string|null
-  exchangeRate: string|null
-  username: string|null
-  minDeposit: string
+  exchangeRates: ExchangeRates|null
+}
+
+export interface AtomicTransactionState {
+  nextMethodIndex: number
+  nextMethodArgs: any[]
+}
+
+export interface TransactionsState {
+  [key: string]: AtomicTransactionState
 }
 
 export interface PersistentState {
   didInit: boolean,
   keyring?: string,
   rememberPath: string
-  pendingChannelIds: string[]
+  hasActiveDeposit: boolean
+  transactions: TransactionsState
 }
 
 export interface BrandingState {
@@ -105,27 +140,33 @@ export const INITIAL_SHARED_STATE: SharedState = {
   currentAuthToken: '',
   isFrameDisplayed: false,
   isPerformer: false,
+  isPendingVerification: false,
   branding: {
     address: ''
   },
-  channels: {},
+  channel: null,
   history: [],
   balance: '0',
   pendingTransaction: null,
   address: null,
   hasActiveWithdrawal: false,
   activeWithdrawalError: null,
-  pendingChannelIds: [],
-  exchangeRate: null,
-  username: null,
-  minDeposit: FIVE_FINNEY.toString()
+  hasActiveDeposit: false,
+  exchangeRates: null,
+  username: null
 }
+
+const initialTransactionState = () => ({
+  nextMethodIndex: 0,
+  nextMethodArgs: []
+})
 
 export const INITIAL_STATE: WorkerState = {
   persistent: {
     didInit: false,
     rememberPath: '/',
-    pendingChannelIds: [],
+    hasActiveDeposit: false,
+    transactions: {}
   },
   runtime: {
     isTransactionPending: 0,
@@ -136,23 +177,23 @@ export const INITIAL_STATE: WorkerState = {
     authorizationRequest: null,
     isFrameDisplayed: false,
     isPerformer: false,
+    isPendingVerification: false,
     forceRedirect: undefined,
     branding: {
       address: ''
     },
-    channels: {},
+    channel: null,
     history: [],
     balance: '0',
     pendingTransaction: null,
     hasActiveWithdrawal: false,
     activeWithdrawalError: null,
-    exchangeRate: null,
+    exchangeRates: null,
     username: null,
-    minDeposit: FIVE_FINNEY.toString()
-  },
+  }
 }
 
-export function buildSharedState(state: WorkerState): SharedState {
+export function buildSharedState (state: WorkerState): SharedState {
   return {
     didInit: state.persistent.didInit,
     isLocked: !state.runtime.wallet,
@@ -166,17 +207,17 @@ export function buildSharedState(state: WorkerState): SharedState {
     isFrameDisplayed: state.runtime.isFrameDisplayed,
     forceRedirect: state.runtime.forceRedirect,
     isPerformer: state.runtime.isPerformer,
+    isPendingVerification: state.runtime.isPendingVerification,
     branding: state.runtime.branding,
-    channels: state.runtime.channels,
+    channel: state.runtime.channel,
     history: state.runtime.history,
     balance: state.runtime.balance,
     pendingTransaction: state.runtime.pendingTransaction,
     address: state.runtime.wallet ? state.runtime.wallet.getAddressString() : null,
     hasActiveWithdrawal: state.runtime.hasActiveWithdrawal,
     activeWithdrawalError: state.runtime.activeWithdrawalError,
-    pendingChannelIds: state.persistent.pendingChannelIds,
-    exchangeRate: state.runtime.exchangeRate,
-    username: state.runtime.username,
-    minDeposit: state.runtime.minDeposit
+    hasActiveDeposit: state.persistent.hasActiveDeposit,
+    exchangeRates: state.runtime.exchangeRates,
+    username: state.runtime.username
   }
 }

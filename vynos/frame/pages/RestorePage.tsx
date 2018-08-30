@@ -7,7 +7,7 @@ import OnboardingContainer from './InitPage/OnboardingContainer'
 import SeedWords from './RestorePage/SeedWords'
 import NewPassword from './RestorePage/NewPassword'
 import RestorationCandidate from '../../lib/RestorationCandidate'
-import {BigNumber} from 'bignumber.js'
+import BigNumber from 'bignumber.js'
 import PickAddress from './RestorePage/PickAddress'
 import bip39 = require('bip39')
 
@@ -185,4 +185,4 @@ function mapStateToProps (state: FrameState): RestorePageStateProps {
   }
 }
 
-export default connect<RestorePageStateProps, undefined, any>(mapStateToProps)(RestorePage)
+export default connect(mapStateToProps)(RestorePage)

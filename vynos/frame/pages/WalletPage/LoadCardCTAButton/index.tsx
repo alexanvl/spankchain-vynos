@@ -1,13 +1,15 @@
 import * as React from 'react'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
+import AddFunds from '../AddFunds'
 import {FrameState} from '../../../redux/FrameState'
 import WorkerProxy from '../../../WorkerProxy'
 import {cardBalance} from '../../../redux/selectors/cardBalance'
 import Button from '../../../components/Button/index'
 import Currency, {CurrencyType} from '../../../components/Currency/index'
-import {BigNumber} from 'bignumber.js'
 import * as classnames from 'classnames'
 import entireBalance from '../../../lib/entireBalance'
+import {FIVE_FINNEY} from '../../../../lib/constants'
+import BN = require('bn.js')
 
 const s = require('./index.css')
 
@@ -15,10 +17,9 @@ const finneyInverse = require('../../../components/CurrencyIcon/style.css').inve
 
 export interface MapStateToProps {
   workerProxy: WorkerProxy
-  walletBalance: BigNumber
-  cardBalance: BigNumber
-  minDeposit: BigNumber
-  pendingChannelIds: string[]
+  walletBalance: BN
+  cardBalance: BN
+  hasActiveDeposit: boolean
 }
 
 export type Props = MapStateToProps
@@ -30,9 +31,7 @@ export class LoadCardCTAButton extends React.Component<Props> {
   }
 
   renderLoadContent () {
-    const {pendingChannelIds} = this.props
-
-    return pendingChannelIds && pendingChannelIds.length > 0
+    return this.props.hasActiveDeposit
       ? <span className={s.loaderWrapper}><span className={s.spCircle} /> <span>Card is being filled</span></span>
       : () => (
         <span className={s.loadUpWrapper}>
@@ -55,7 +54,7 @@ export class LoadCardCTAButton extends React.Component<Props> {
       <span className={s.loadUpWrapper}>
         <span>Minimum SpankCard refill is </span>
         <Currency
-          amount={this.props.minDeposit}
+          amount={FIVE_FINNEY}
           inputType={CurrencyType.WEI}
           outputType={CurrencyType.FINNEY}
           className={s.loadUpCurrency}
@@ -67,16 +66,19 @@ export class LoadCardCTAButton extends React.Component<Props> {
   }
 
   render () {
-    const {walletBalance, cardBalance, pendingChannelIds, minDeposit} = this.props
+    const {walletBalance, cardBalance, hasActiveDeposit} = this.props
 
-    if (walletBalance.eq(0) || cardBalance.gt(0)) {
+    if (cardBalance.gt(new BN(0))) {
       return <noscript />
     }
 
-    const tooLow = walletBalance.lt(minDeposit)
-    const isLoading = pendingChannelIds && pendingChannelIds.length > 0
+    if (walletBalance.eq(new BN(0))) {
+      return <AddFunds/>
+    }
+
+    const tooLow = walletBalance.lt(FIVE_FINNEY)
     const btnClass = classnames({
-      [s.loading]: isLoading,
+      [s.loading]: hasActiveDeposit,
       [s.tooLow]: tooLow
     })
 
@@ -84,11 +86,11 @@ export class LoadCardCTAButton extends React.Component<Props> {
       <div className={s.container}>
         <Button
           className={btnClass}
-          content={tooLow ? this.renderDepositMoreContent() : this.renderLoadContent()}
-          disabled={isLoading || tooLow}
+          content={tooLow && !hasActiveDeposit ? this.renderDepositMoreContent() : this.renderLoadContent()}
+          disabled={hasActiveDeposit || tooLow}
           onClick={this.load}
         />
-        {isLoading ? <span className={s.small}>Estimated time: Up to 4 minutes.</span> : null}
+        {hasActiveDeposit ? <span className={s.small}>Estimated time: Up to 4 minutes.</span> : null}
       </div>
     )
   }
@@ -96,12 +98,12 @@ export class LoadCardCTAButton extends React.Component<Props> {
 
 function mapStateToProps (state: FrameState): MapStateToProps {
   return {
-    walletBalance: new BigNumber(state.shared.balance || 0),
+    walletBalance: new BN(state.shared.balance || 0),
     cardBalance: cardBalance(state.shared),
     workerProxy: state.temp.workerProxy,
-    pendingChannelIds: state.shared.pendingChannelIds,
-    minDeposit: new BigNumber(state.shared.minDeposit)
+    hasActiveDeposit: state.shared.hasActiveDeposit
   }
 }
 
 export default connect(mapStateToProps)(LoadCardCTAButton)
+

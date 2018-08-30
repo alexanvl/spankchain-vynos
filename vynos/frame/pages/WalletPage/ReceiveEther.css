@@ -1,74 +1,29 @@
-.walletQR {
-  padding: 2rem 0;
-  width: 10rem;
-  height: 10rem;
-  align-self: flex-end;
+.qrImage {
+  padding: 10px;
+  background: white;
+  border-radius: 10px;
 }
 
 .container {
   background-color: #f0f0f0;
+  padding: 2rem;
+  padding-bottom: 0;
 }
 
 .header {
-  padding: 2rem 3rem;
   font-family: gt-haptik;
   font-size: 1.8rem;
   font-weight: 500;
   color: #797979;
+  margin: 0 0 1rem 1rem;
 }
 
 .descriptionWrapper {
   padding: 0 3rem;
 }
 
-.description {
-  font-size: 1.1rem;
-  color: #797979;
-  font-weight: 500;
-}
-
-.seeTutorialText {
-  font-size: 1.1rem;
-  color: #797979;
-  font-weight: 500;
-  margin-left: .2rem;
-}
-
 .addressWrapper {
   padding: 2rem;
-}
-
-.ctaInput {
-  border: 0 !important;
-  box-shadow: 0 0 0px 2px #e4e4e4;
-}
-
-.ctaInputValue {
-  font-size: 1rem;
-  font-family: CartographMonoCF;
-  font-weight: 500;
-
-}
-
-.ctaInputContent {
-  padding: .65rem !important;
-  width: 4rem;
-  box-shadow: 0 0 0 4px #ff3b81;
-}
-
-.ctaInputContent:hover {
-  background-color: rgba(255, 59, 129, 0.9) !important;
-}
-
-.ctaInputContent:active {
-  background-color: rgb(255, 59, 129) !important;
-}
-
-.ctaContentWrapper {
-  display: flex;
-  flex-flow: row nowrap;
-  text-align: center;
-  justify-content: center;
 }
 
 .ctaIcon {
@@ -87,23 +42,123 @@
   top: 1px;
 }
 
-.qrWrapper {
-  padding: 0 3rem;
-  font-size: 1rem;
-  color: #797979;
-  font-weight: 500;
+.bottomWrapper {
+  margin-left: 1rem;
   display: flex;
-  flex-flow: column nowrap;
 }
 
-.qrDescription {
-  font-size: 1rem;
-  font-weight: 500;
+.buttonWrapper {
+  flex-grow: 1;
+  margin-left: 2rem;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+.buttonContent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.guideButton {
+  background-color: white;
+  border: 0;
+  margin-top: 1rem;
+}
+
+.description,
+.label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  font-family: cartographmonocf;
+  color: #797979;
+}
+
+.description {
+  margin-bottom: 1rem;
+}
+
+.label {
+  margin: 1rem;
+}
+
+.input {
+  display: flex;
+}
+
+.input input {
+  font-family: CartographMonoCF;
+  border-bottom: none !important;
+  border-radius: 4rem !important;
+  padding-left: 1rem !important;
+  font-size: 1.1rem;
+  font-weight: 600;
+  text-transform: none !important;
+  background-color: white;
+  cursor: text !important;
+}
+
+.whiteRect {
+  background: #fcfcfc;
+  display: flex;
+  border-radius: 10px;
+  padding: 20px;
+  color: #797979;
+  margin: 2rem auto;
+  width: 86%;
+}
+
+.whiteRect * {
+  font-family: cartographmonocf;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.left {
+  flex-basis: 40%;
+  align-items: center;
+  display: flex;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 5%;
+  line-height: 1.1rem;
+}
+
+.right {
+  display: flex;
+  flex-basis: 40%;
+  padding-left: 5%;
+  margin: 3% 0;
+  align-items: center;
+  border-left: 1px solid #ccc;
+  line-height: 1.5rem;
+}
+
+.quarter {
+  display: flex;
+  flex-direction: column;
+  margin-right: 1rem;
+  line-height: 1.5rem;
+  align-items: flex-start;
+}
+
+.quarter:first-child {
+  width: 5rem;
+}
+
+.quarter:last-child {
+  margin-right: 0;
+}
+
+.currencyIcon {
+  margin-right: 0.5rem;
 }
 
 .recoverText {
   text-align: center;
-  padding-bottom: 1rem;
+  padding: 1rem;
 }
 
 .recoverText a {
@@ -145,4 +200,3 @@
     height: 6rem;
   }
 }
-

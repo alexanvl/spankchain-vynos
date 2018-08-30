@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="292px" height="185px" viewBox="0 0 292 185" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 50.2 (55047) - http://www.bohemiancoding.com/sketch -->
+    <title>spankCard</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <radialGradient cx="101.919089%" cy="104.437412%" fx="101.919089%" fy="104.437412%" r="122.598578%" gradientTransform="translate(1.019191,1.044374),scale(0.630137,1.000000),rotate(-35.433654),translate(-1.019191,-1.044374)" id="radialGradient-1">
+            <stop stop-color="#FF863B" offset="0%"></stop>
+            <stop stop-color="#FF853D" offset="8.62099125%"></stop>
+            <stop stop-color="#FF8341" offset="16.5597668%"></stop>
+            <stop stop-color="#FF7F47" offset="23.9300292%"></stop>
+            <stop stop-color="#FF7B4E" offset="30.8454811%"></stop>
+            <stop stop-color="#FF7556" offset="37.4198251%"></stop>
+            <stop stop-color="#FF6F5D" offset="43.7667639%"></stop>
+            <stop stop-color="#FF6864" offset="50%"></stop>
+            <stop stop-color="#FF606B" offset="56.2332361%"></stop>
+            <stop stop-color="#FF5871" offset="62.5801749%"></stop>
+            <stop stop-color="#FF5076" offset="69.1545189%"></stop>
+            <stop stop-color="#FF487B" offset="76.0699709%"></stop>
+            <stop stop-color="#FF417E" offset="83.4402332%"></stop>
+            <stop stop-color="#FF3D80" offset="91.3790087%"></stop>
+            <stop stop-color="#FF3B81" offset="100%"></stop>
+        </radialGradient>
+    </defs>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="spankCard">
+            <g id="Group-5">
+                <g transform="translate(0.000000, 0.347343)">
+                    <text id="Powered-by-Vynos-Copy" font-family="CartographMonoCF-Regular, Cartograph Mono CF" font-size="12" font-weight="normal" line-spacing="34" letter-spacing="0.1457143" fill="#FFFFFF">
+                        <tspan x="13" y="42">Powered by Vynos</tspan>
+                    </text>
+                    <text id="0x3930DdDf234B8D2984" font-family="CartographMonoCF-Bold, Cartograph Mono CF" font-size="10" font-weight="bold" line-spacing="30.9355218" fill="#FFFFFF">
+                        <tspan x="23" y="89">0x3930DdDf234B8D2984c9B8122663Fead9fBFF51f</tspan>
+                    </text>
+                    <text id="SpankWallet" font-family="GTHaptik-Bold, GT Haptik" font-size="20" font-weight="bold" line-spacing="34" letter-spacing="0.2428571" fill="#FFFFFF">
+                        <tspan x="21" y="29">SpankWallet</tspan>
+                    </text>
+                    <text id="spanktoshi-copy" font-family="GTHaptik-Bold, GT Haptik" font-size="20" font-weight="bold" line-spacing="34" letter-spacing="0.2428571" fill="#FFFFFF">
+                        <tspan x="21" y="160">spanktoshi</tspan>
+                    </text>
+                    <text id="2374-copy" font-family="CartographMonoCF-DemiBold, Cartograph Mono CF" font-size="22.9521613" font-weight="500" line-spacing="30.9355218" fill="#FFFFFF">
+                        <tspan x="218" y="164">2374</tspan>
+                    </text>
+                    <g id="Coin-Copy-7" transform="translate(193.000000, 149.000000)" fill="#FFFFFF">
+                        <path d="M8.9258774,0 L10.9516387,1.15221028 L10.872867,1.06943655 L11.8271434,0.192508039 L13.4049501,1.85933441 L13.3712586,1.79169645 L14.543818,1.22788912 L15.5564614,3.27263667 L15.5469708,3.21540455 L16.8348406,3.01438264 L17.2144633,5.37556233 L17.2419859,5.20764991 L18.5303303,5.40867182 L18.1450133,7.80485297 L18.2399189,7.61281792 L19.4129529,8.17615226 L18.3272322,10.3694195 L18.4857246,10.2015071 L19.440001,11.0779626 L17.7530529,12.8597262 L17.9575746,12.74337 L18.610051,13.8567949 L16.489384,15.0629263 L16.7029218,15.0142081 L16.9961803,16.2666928 L14.653434,16.7992826 L14.8342293,16.8115805 L14.7431199,18.0938637 L12.398001,17.9321002 L12.5175821,17.9775075 L12.0496972,19.1770171 L9.80517835,18.3279951 L9.94706231,18.4415134 L9.12612834,19.440001 L7.27309532,17.9618988 L7.36515381,18.0957557 L6.28322927,18.8142317 L4.95882078,16.8801644 L4.99868115,17.0069264 L3.74972266,17.3829557 L3.05596228,15.1466461 L3.05596228,15.2715161 L1.7519585,15.2715161 L1.7519585,12.9141204 L1.71067454,13.0451394 L0.463614153,12.6691102 L1.16828868,10.3982721 L1.08192453,10.5250341 L0,9.80608519 L1.35145661,7.83228655 L1.22238491,7.93539896 L0.401450945,6.93643832 L2.34654246,5.38502218 L2.09788963,5.47914774 L1.63000472,4.27916519 L3.9532953,3.4008177 L3.68186511,3.41973741 L3.59028115,2.13792712 L6.02271323,1.9700147 L5.80300663,1.91987747 L6.09673965,0.667865729 L8.42003023,1.1961986 L8.27340098,1.11342488 L8.9258774,0 Z M9.75155665,14.1381826 C12.199573,14.1381826 14.1840824,12.1600951 14.1840824,9.72000051 C14.1840824,7.27990595 12.199573,5.30181846 9.75155665,5.30181846 C7.30354027,5.30181846 5.3190309,7.27990595 5.3190309,9.72000051 C5.3190309,12.1600951 7.30354027,14.1381826 9.75155665,14.1381826 Z" id="Combined-Shape-Copy-2"></path>
+                    </g>
+                    <text id="Powered-by-Vynos-Copy-2" font-family="CartographMonoCF-Regular, Cartograph Mono CF" font-size="12" font-weight="normal" line-spacing="34" letter-spacing="0.1457143" fill="#FFFFFF">
+                        <tspan x="22" y="40">Powered by Vynos</tspan>
+                    </text>
+                    <text id="Powered-by-Vynos-Copy" font-family="CartographMonoCF-Regular, Cartograph Mono CF" font-size="12" font-weight="normal" line-spacing="34" letter-spacing="0.1457143" fill="#FFFFFF">
+                        <tspan x="13" y="42">Powered by Vynos</tspan>
+                    </text>
+                    <rect id="Rectangle-10-🌈ease-in-out;lrgb;15" fill="url(#radialGradient-1)" x="0" y="0" width="292" height="184" rx="6"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

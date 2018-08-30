@@ -1,61 +1,48 @@
 import * as React from 'react'
 import {connect} from 'react-redux'
-import SendReceivePage from '../SendReceivePage'
 import SpankCardPage from '../CardPage'
 import {FrameState} from '../../../redux/FrameState'
 import {cardBalance} from '../../../redux/selectors/cardBalance'
 import WorkerProxy from '../../../WorkerProxy'
-import * as BigNumber from 'bignumber.js'
 import {Route, Switch} from 'react-router'
-import RecoverChannelPage from '../RecoverChannelPage'
+import BN = require('bn.js')
 
 export interface MapStateToProps {
   address: string
-  cardBalance: BigNumber.BigNumber
+  cardBalance: BN
   workerProxy: WorkerProxy
 }
 
 export type Props = MapStateToProps
 
 export class MainEntry extends React.Component<Props> {
-  render() {
+  render () {
     return (
       <Switch>
         <Route
-          exact
-          path="/wallet/recoverChannels"
-          component={RecoverChannelPage}
-        />
-        <Route
           path="/wallet"
-          render={() => this.renderWallet()}
+          render={({location: {pathname}}) => this.renderWallet(pathname)}
         />
       </Switch>
     )
   }
 
-  renderWallet () {
-    const { cardBalance, address } = this.props
+  renderWallet (pathname: string) {
+    const {address} = this.props
 
     if (!address) {
       return <noscript />
     }
 
-    if (cardBalance.gt(0)) {
-      return <SpankCardPage />
-    }
-
-    return (
-      <SendReceivePage />
-    )
+    return <SpankCardPage/>
   }
 }
 
-function mapStateToProps(state: FrameState): MapStateToProps {
+function mapStateToProps (state: FrameState): MapStateToProps {
   return {
     address: state.shared.address!,
     cardBalance: cardBalance(state.shared),
-    workerProxy: state.temp.workerProxy,
+    workerProxy: state.temp.workerProxy
   }
 }
 

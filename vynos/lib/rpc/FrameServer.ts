@@ -4,9 +4,8 @@ import {
   BuyRequest,
   GetSharedStateRequest,
   InitAccountRequest,
-  ListChannelsRequest,
   LockWalletRequest,
-  RegisterHubRequest,
+  RegisterHubRequest, SetNeedsCollateralRequest, SetIsPendingVerificationRequest,
   SetUsernameRequest,
   StatusRequest,
   ToggleFrameRequest
@@ -26,13 +25,14 @@ export default class FrameServer extends JsonRpcServer {
     this.passThroughHandler(RegisterHubRequest.method)
     this.passThroughHandler(InitAccountRequest.method)
     this.passThroughHandler(BuyRequest.method)
-    this.passThroughHandler(ListChannelsRequest.method)
     this.passThroughHandler(GetSharedStateRequest.method)
     this.passThroughHandler(AuthenticateRequest.method)
     this.passThroughHandler(ToggleFrameRequest.method)
     this.passThroughHandler(LockWalletRequest.method)
     this.passThroughHandler(SetUsernameRequest.method)
     this.passThroughHandler(StatusRequest.method)
+    this.passThroughHandler(SetNeedsCollateralRequest.method)
+    this.passThroughHandler(SetIsPendingVerificationRequest.method)
 
     this.passThroughEvent(ReadyBroadcastEvent)
     this.passThroughEvent(ResetBroadcastEvent)
