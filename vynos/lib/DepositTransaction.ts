@@ -179,7 +179,7 @@ export default class DepositTransaction implements TransactionInterface {
       if (!res) {
         throw new Error('Chainsaw has not caught up yet.')
       }
-    }, 24)
+    }, 48)
 
     return [
       amount,

@@ -141,7 +141,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       ingridAddress: '0xbb1699d16368ebc13bdc29e6a1aad50a21be45eb',
       watcherUrl: process.env.HUB_URL!,
       ingridUrl: process.env.HUB_URL!,
-      contractAddress: '0x0010822efcbbea5ceabf1b180bc9c73c6dfffbb0'
+      contractAddress: '0xf91546835f756da0c10cfa0cda95b15577b84aa7'
     })
 
     await new Promise((resolve) => persistStore(store, undefined, resolve))
