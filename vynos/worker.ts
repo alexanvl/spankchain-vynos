@@ -16,7 +16,7 @@ import {ResetRequest, StatusRequest} from './lib/rpc/yns'
 import WorkerServer from './lib/rpc/WorkerServer'
 import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
-import {INITIAL_STATE, WorkerState} from './worker/WorkerState'
+import {INITIAL_STATE, PersistentState, WorkerState} from './worker/WorkerState'
 import {ErrResCallback} from './lib/messaging/JsonRpcServer'
 import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
@@ -88,6 +88,24 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       name: 'NeDB',
       storeName: 'nedbdata'
     })
+
+    const persistentKey = 'persist:persistent'
+    let existingState = await localForage.getItem<PersistentState>(persistentKey)
+
+    // need to migrate
+    if (!existingState.transactions) {
+      await localForage.setItem<PersistentState>(persistentKey + '_backup', existingState)
+
+      existingState = {
+        didInit: existingState.didInit,
+        keyring: existingState.keyring,
+        rememberPath: '/',
+        hasActiveDeposit: false,
+        transactions: {}
+      }
+
+      await localForage.setItem<PersistentState>(persistentKey, existingState)
+    }
 
     const persistConfig = {
       key: 'persistent',
