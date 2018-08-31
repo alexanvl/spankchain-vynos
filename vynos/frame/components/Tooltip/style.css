@@ -1,8 +1,12 @@
-.content {
+.trigger {
+  cursor: pointer;
+}
+
+.tooltip {
   margin: 0;
   font-size: 1.1em;
 }
 
-.trigger {
-  cursor: pointer;
+.arrow {
+  color: #282828;
 }

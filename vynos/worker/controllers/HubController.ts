@@ -83,7 +83,10 @@ export default class HubController extends AbstractController implements Lifecyc
       return
     }
 
-    const USD_RATE: string = new BigNumber(constants.ETHER.toString(10)).div(res.rates.USD).toString(10)
+    const USD_RATE: string = new BigNumber(constants.ETHER.toString(10))
+      .div(res.rates.USD)
+      .toString(10)
+
     this.store.dispatch(actions.setExchangeRates({
       [CurrencyType.USD]: USD_RATE,
       [CurrencyType.ETH]: constants.ETHER.toString(10),

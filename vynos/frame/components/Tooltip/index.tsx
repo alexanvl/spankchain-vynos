@@ -1,5 +1,4 @@
 import * as React from 'react'
-import * as classnames from 'classnames'
 import RCTooltip from 'rc-tooltip'
 import '!style-loader!css-loader!rc-tooltip/assets/bootstrap.css'
 import '!style-loader!css-loader!./unprefixedStyle.css'
@@ -11,11 +10,12 @@ const Tooltip: React.SFC<any> = function (props) {
 
   return (
     <RCTooltip
-      overlay={<p className={s.content}>{content}</p>}
+      overlay={<React.Fragment>{content}</React.Fragment>}
       overlayClassName={s.tooltip}
       arrowContent={<div className={s.arrow}></div>}
       placement="bottom"
       trigger={['hover']}
+      // visible={true} // makes tooltips always visible
     >
       <span className={s.trigger}>{children}</span>
     </RCTooltip>

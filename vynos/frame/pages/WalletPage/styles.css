@@ -7,18 +7,34 @@
   z-index: 100;
 }
 
+
+.downArrow {
+  background: url('../../styles/images/caret-down-solid.svg') no-repeat center center;
+  color: #7B7b7B;
+  background-size: 1rem 1rem;
+  width: 29px;
+  height: 17px;
+  background-size: contain !important;
+  margin-left: 3.8rem;
+}
+
 .usdBalance {
- border-radius: 2rem;
- border: 1px solid transparent;
- border-color: rgb(245, 245, 245);
- background-color: rgb(245, 245, 245);
- min-width: 8rem;
- outline: none;
- height: 1.8rem;
- display: grid;
- align-content: center;
- justify-content: center;
- margin-bottom: 1rem;
+  border-radius: 2rem;
+  border: 1px solid transparent;
+  border-color: rgb(245, 245, 245);
+  background-color: #F5F5F5;
+  min-width: 8rem;
+  outline: none;
+  height: 1.8rem;
+  display: grid;
+  grid-template-columns: auto auto;
+  align-content: center;
+  justify-content: left;
+  padding-left: .75rem;
+}
+
+.buttonSpacer {
+  height: 1rem;
 }
 
 .walletWrapper {
@@ -595,9 +611,10 @@
 .sendReceiveCurrency {
   display: flex;
   flex-flow: row nowrap;
+  font-weight: 540;
   justify-content: center;
-  align-items: center;
   font-family: CartographMonoCF;
+  color: #939393;
 }
 
 .finneyUnit {
@@ -606,9 +623,12 @@
 }
 
 .usdUnit {
+  color: #B7B7B7;
   background-color: white;
-  margin: 2px 4px 0 0;
   display: inline-block;
+  margin-right: .25rem;
+  margin-top: .1rem;
+
 }
 
 .walletActivityAmountWrapper {

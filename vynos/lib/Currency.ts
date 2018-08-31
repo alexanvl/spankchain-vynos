@@ -11,7 +11,7 @@ export interface CurrencyFormatOptions {
 
 export interface ICurrency {
   type: CurrencyType
-  amount: string 
+  amount: string
   amountBigNumber: BigNumber.BigNumber
   symbol: string
   format: (options: CurrencyFormatOptions) => string
@@ -65,7 +65,7 @@ export default class Currency implements ICurrency {
         throw new Error(`Invalid amount: ${_amount} (original error: ${e}`)
       }
     }
-    
+
     this._type = _type
     this._amount = _amount
   }
@@ -89,6 +89,12 @@ export default class Currency implements ICurrency {
   get amountBN(): BN {
     return new BN(this._amount.round(0).toString(10))
   }
+
+  public getDecimalString = (decimals: number) => this.format({
+    decimals,
+    showTrailingZeros: true,
+    withSymbol: false,
+  })
 
   public format = (options?: CurrencyFormatOptions): string => {
     options = {

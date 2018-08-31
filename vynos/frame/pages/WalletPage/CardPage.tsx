@@ -10,7 +10,7 @@ import Currency, {CurrencyType} from '../../components/Currency/index'
 import entireBalance from '../../lib/entireBalance'
 import BN = require('bn.js')
 import Tooltip from '../../components/Tooltip'
-import {BalanceToolBar} from '../../components/BalanceToolbar'
+import {BalanceTooltip} from '../../components/BalanceTooltip'
 
 const pageStyle = require('../UnlockPage.css')
 const s = require('./styles.css')
@@ -104,7 +104,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             </div>
             <div className={s.walletSpankCardActions}>
               <Tooltip content={
-                <BalanceToolBar
+                <BalanceTooltip
                   amount={cardBalance}
                   inputType={CurrencyType.WEI}
                   reserveBalance={reserveBalance}
@@ -122,8 +122,10 @@ class CardPage extends React.Component<StateProps, CardPageState> {
                     unitClassName={s.usdUnit}
                     showUnit={true}
                   />
+                  <div className={s.downArrow} />
                 </div>
               </Tooltip>
+              <div className={s.buttonSpacer}/>
               <Button
                 to="/wallet/receive"
                 type={activeButton === ActiveButton.RECIEVE ? "primary" : "secondary"}
