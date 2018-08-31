@@ -90,12 +90,11 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     })
 
     const persistentKey = 'persist:persistent'
-    let existingStateStr = await localForage.getItem<{ persistent: string }>(persistentKey)
-
     const backup = await localForage.getItem<any>(persistentKey + '_backup')
     if (backup) {
       await localForage.setItem<any>(persistentKey, {"persistent":"{\"didInit\":true,\"rememberPath\":\"/\",\"pendingChannelIds\":[],\"keyring\":\"eyJkYXRhIjoiYWlBbkV4NS9VUElCdVVSWWg2bkd4aFl6alR0dGpBd0l3eTAwR0ZWVXMxZzRkcThkS0JiU09ZTzRVbk0zcEQxSnBaV0VXS1NHQStPTldQMFg1K0F1MlB5aXlJN3FDSEo2SWtOY1dtUUx0TnVLQ09weWlRR0hDTnJ1V0JXM2lzVy9yZVh6YVp0a1h5MTNreGFvSnVXQ1V6b3Z5LzhSUmhUU2hiNWg3Y3BqTGlHZy9zc3RPSkp1TnRuU0doVWZpOEVDTWlSQnZFQmxmaHRpZUZoSmRLWllyWTg9IiwiaXYiOiJvQjNaRjgrV2tKNkIrZFRKUXNzT0VRPT0iLCJzYWx0IjoiR1ZtZkQvUlBvZFlHNXJweUVZaCtDeHlBS2srZUUvdm15aEVRSmg5eFh4Zz0ifQ==\",\"hasActiveDeposit\":true}","_persist":"{\"version\":-1,\"rehydrated\":true}"})
     }
+    let existingStateStr = await localForage.getItem<{ persistent: string }>(persistentKey)
 
 
     let existingState: PersistentState
