@@ -13,7 +13,7 @@
 }
 
 .autoFillButton25 {
-  background-color: rgb(210, 210, 210);
+  background-color: rgb(208, 208, 208);
   flex-grow: 0;
   flex-shrink: 0;
   flex-basis: 4.5em;
@@ -22,15 +22,15 @@
 }
 
 .autoFillButton25:hover {
-  background-color: rgba(210, 210, 210, .85);
+  background-color: rgba(208, 208, 208, .85);
 }
 
 .autoFillButton25:active {
-  background-color: rgb(210,210,210);
+  background-color: rgb(208,208,208);
 }
 
 .autoFillButton50 {
-  background-color: rgb(160, 160, 160);
+  background-color: rgb(179, 179, 179);
   flex-grow: 0;
   flex-shrink: 0;
   flex-basis: 4.5em;
@@ -39,15 +39,15 @@
 }
 
 .autoFillButton50:hover {
-  background-color: rgba(160, 160, 160, .85);
+  background-color: rgba(179, 179, 179, .85);
 }
 
 .autoFillButton50:active {
-  background-color: rgb(160, 160, 160);
+  background-color: rgb(179, 179, 179);
 }
 
 .autoFillButton75 {
-  background-color: rgb(110, 110, 110);
+  background-color: rgb(150, 150, 150);
   flex-grow: 0;
   flex-shrink: 0;
   flex-basis: 4.5em;
@@ -56,15 +56,15 @@
 }
 
 .autoFillButton75:hover {
-  background-color: rgba(110, 110, 110, .85);
+  background-color: rgba(150, 150, 150, .85);
 }
 
 .autoFillButton75:active {
-  background-color: rgb(110, 110, 110);
+  background-color: rgb(150, 150, 150);
 }
 
 .autoFillButtonMax {
-  background-color: rgb(60, 60, 60);
+  background-color: rgb(119,119,119);
   flex-grow: 0;
   flex-shrink: 0;
   flex-basis: 4.5em;
@@ -73,11 +73,11 @@
 }
 
 .autoFillButtonMax:hover {
-  background-color: rgba(60, 60, 60, .85);
+  background-color: rgba(119, 119, 119, .85);
 }
 
 .autoFillButtonMax:active {
-  background-color: rgb(60, 60, 60)
+  background-color: rgb(119, 119, 119)
 }
 
 .container {
