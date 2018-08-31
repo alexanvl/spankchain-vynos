@@ -130,8 +130,13 @@
   padding-left: 1rem !important;
   font-size: 1.1rem;
   font-weight: 500;
+  background-color: white;
   color: #000 !important;
   text-transform: none !important;
+}
+
+.inputBorderless input {
+  border: none !important;
 }
 
 .input input::placeholder {

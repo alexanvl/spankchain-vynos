@@ -24,6 +24,7 @@ export interface StateProps extends BrandingState {
   isPendingVerification: boolean | undefined
   hasActiveDeposit: boolean
   exchangeRates: ExchangeRates|null
+  isFrameDisplayed: boolean
 }
 
 enum ActiveButton {
@@ -33,15 +34,16 @@ enum ActiveButton {
   'ACTIVITY',
 }
 
+let activeButton: ActiveButton = ActiveButton.NONE
+
 export interface CardPageState {
   error: string
-  activeButton: ActiveButton
 }
 
 class CardPage extends React.Component<StateProps, CardPageState> {
   constructor(props: StateProps) {
     super(props)
-    this.state = {error: '', activeButton: ActiveButton.NONE}
+    this.state = {error: ''}
   }
 
   onClickRefill = async () => {
@@ -59,7 +61,10 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     }
   }
 
-  setActiveButton = (activeButton: ActiveButton) => this.setState({activeButton})
+  setActiveButton = (_activeButton: ActiveButton) => {
+    activeButton = _activeButton
+    this.forceUpdate()
+  }
 
   render () {
     const {
@@ -73,10 +78,13 @@ class CardPage extends React.Component<StateProps, CardPageState> {
       textColor,
       hasActiveDeposit,
       isWithdrawing,
+      isFrameDisplayed,
     } = this.props
 
     const reserveBalance = walletBalance
-    const activeButton = this.state.activeButton
+    if (!isFrameDisplayed) {
+      activeButton = ActiveButton.NONE
+    }
 
     return (
       <div className={s.walletSpankCardWrapper}>
@@ -188,6 +196,7 @@ function mapStateToProps (state: FrameState): StateProps {
     isPendingVerification: state.shared.isPendingVerification,
     hasActiveDeposit: state.shared.hasActiveDeposit,
     exchangeRates: state.shared.exchangeRates,
+    isFrameDisplayed: state.shared.isFrameDisplayed,
   }
 }
 
