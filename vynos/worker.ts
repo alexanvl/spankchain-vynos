@@ -83,7 +83,11 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const workerWrapper = new WorkerWrapper(self)
     const clientWrapper = new ClientWrapper(self)
 
-    localForage.config({driver: localForage.INDEXEDDB})
+    localForage.config({
+      driver: localForage.INDEXEDDB,
+      name: 'NeDB',
+      storeName: 'nedbdata'
+    })
 
     const persistConfig = {
       key: 'persistent',
