@@ -111,15 +111,17 @@ class CardPage extends React.Component<StateProps, CardPageState> {
               />
             </div>
             <div className={s.walletSpankCardActions}>
-              <Tooltip content={
-                <BalanceTooltip
-                  amount={cardBalance}
-                  inputType={CurrencyType.WEI}
-                  reserveBalance={reserveBalance}
-                  reserveBalanceType={CurrencyType.WEI}
-                  exchangeRates={exchangeRates}
-                />
-              }
+              <Tooltip
+                trigger="click"
+                content={
+                  <BalanceTooltip
+                    amount={cardBalance}
+                    inputType={CurrencyType.WEI}
+                    reserveBalance={reserveBalance}
+                    reserveBalanceType={CurrencyType.WEI}
+                    exchangeRates={exchangeRates}
+                  />
+                }
               >
                 <div className={s.usdBalance}>
                   <Currency

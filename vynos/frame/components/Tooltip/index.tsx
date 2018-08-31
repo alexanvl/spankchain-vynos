@@ -5,7 +5,14 @@ import '!style-loader!css-loader!./unprefixedStyle.css'
 
 const s = require('./style.css')
 
-const Tooltip: React.SFC<any> = function ({children, content, trigger = 'hover'}) {
+export type Trigger = 'hover'|'click'|'focus'
+
+export interface TooltipProps {
+  content: any
+  trigger: Trigger
+}
+
+const Tooltip: React.SFC<TooltipProps> = function ({children, content, trigger = 'hover'}) {
   return (
     <RCTooltip
       overlay={<React.Fragment>{content}</React.Fragment>}
