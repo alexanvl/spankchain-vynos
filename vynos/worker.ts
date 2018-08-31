@@ -91,7 +91,6 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
 
     const persistentKey = 'persist:persistent'
     let existingStateStr = await localForage.getItem<{ persistent: string }>(persistentKey)
-
     let existingState: PersistentState
 
     try {
@@ -100,6 +99,8 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       console.error(e)
       existingState = INITIAL_STATE.persistent
     }
+
+    console.log('Got existing state:', existingState)
 
     // need to migrate
     if (!existingState.transactions) {

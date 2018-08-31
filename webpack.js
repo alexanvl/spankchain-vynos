@@ -170,7 +170,9 @@ function webpackConfig (entry, hash = true) {
         mangle: false,
         output: {
           comments: false,
-          beautify: false
+          beautify: false,
+          keep_fnames: true,
+          keep_classnames: true
         }
       }
     }))
