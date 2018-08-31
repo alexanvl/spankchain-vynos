@@ -164,7 +164,7 @@ function webpackConfig (entry, hash = true) {
   };
 
   if (NODE_ENV === 'production') {
-    config.plugins.push(new UglifyJSPlugin({
+    config.optimization.minimizer = [new UglifyJSPlugin({
       parallel: true,
       uglifyOptions: {
         mangle: false,
@@ -175,7 +175,7 @@ function webpackConfig (entry, hash = true) {
         keep_fnames: true,
         keep_classnames: true
       }
-    }))
+    })]
   }
 
   return config
