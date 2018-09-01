@@ -1,18 +1,18 @@
 import * as React from 'react'
-import {ChangeEvent, FormEvent} from 'react'
-import {connect} from 'react-redux'
+import { ChangeEvent, FormEvent } from 'react'
+import { connect } from 'react-redux'
 import WorkerProxy from '../WorkerProxy'
-import {FrameState} from '../redux/FrameState'
+import { FrameState } from '../redux/FrameState'
 import RestorePage from './RestorePage'
 import Button from '../components/Button/index'
 import TextBox from '../components/TextBox/index'
 import Input from '../components/Input/index'
-import {RouteComponentProps, withRouter} from 'react-router'
+import { RouteComponentProps, withRouter } from 'react-router'
 import Submittable from '../components/Submittable'
 import _ = require('lodash')
 import WalletCard from '../components/WalletCard'
 import * as classnames from 'classnames';
-import {BrandingState} from '../../worker/WorkerState'
+import { BrandingState } from '../../worker/WorkerState'
 
 const style = require('../styles/ynos.css')
 const walletStyle = require('./WalletPage/styles.css')
@@ -34,7 +34,7 @@ export type UnlockPageState = {
 };
 
 export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState> {
-  constructor (props: UnlockPageProps) {
+  constructor(props: UnlockPageProps) {
     super(props)
     this.state = {
       password: '',
@@ -47,7 +47,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     this.doDisplayRestore = this.doDisplayRestore.bind(this)
   }
 
-  handleChangePassword (event: ChangeEvent<HTMLInputElement>) {
+  handleChangePassword(event: ChangeEvent<HTMLInputElement>) {
     let value = event.target.value
     this.setState({
       password: value,
@@ -55,8 +55,8 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     })
   }
 
-  async handleSubmit (ev: FormEvent<HTMLFormElement>) {
-    this.setState({loading: true})
+  async handleSubmit(ev: FormEvent<HTMLFormElement>) {
+    this.setState({ loading: true })
 
     const password = _.toString(this.state.password)
 
@@ -81,13 +81,13 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     this.props.history.push(next)
   }
 
-  doDisplayRestore () {
+  doDisplayRestore() {
     this.setState({
       displayRestore: true
     })
   }
 
-  doneDisplayRestorePage () {
+  doneDisplayRestorePage() {
     this.setState({
       displayRestore: false
     })
@@ -97,7 +97,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     this.props.workerProxy.toggleFrame(false)
   }
 
-  render () {
+  render() {
     if (this.state.displayRestore) {
       return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
     }
@@ -121,7 +121,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
           <div className={style.content}>
             <div className={pageStyle.header}>Unlock your SpankCard</div>
             <TextBox className={style.passwordTextBox} isInverse>
-              We see that you already have a SpankCard. Enter your password to unlock and login.
+              Forgot your password? No worries, just dig up those backup words you saved when you created your account, and Restore that bad boy.
             </TextBox>
             <Submittable onSubmit={this.handleSubmit}>
               <Input
@@ -135,7 +135,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
               <div className={style.funnelFooter}>
                 <Button
                   type="secondary"
-                  content="Restore SpankWallet"
+                  content="Restore SpankCard"
                   onClick={this.doDisplayRestore}
                   isMini
                 />
@@ -157,7 +157,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
   }
 }
 
-function mapStateToProps (state: FrameState): StateProps {
+function mapStateToProps(state: FrameState): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
     ...state.shared.branding
