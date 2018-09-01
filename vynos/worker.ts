@@ -41,6 +41,7 @@ import Connext = require('connext')
 import ChannelPopulator from './lib/ChannelPopulator'
 import BalanceController from './worker/controllers/BalanceController'
 import WithdrawalController from './worker/controllers/WithdrawalController'
+import * as actions from './worker/actions'
 
 export class ClientWrapper implements WindowClient {
   private self: ServiceWorkerGlobalScope
@@ -131,6 +132,12 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       : undefined
 
     const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE, reduxMiddleware) as Store<WorkerState>
+    
+    const isPersistedStatePreMigration = !store.getState().persistent.transactions
+    if (isPersistedStatePreMigration) {
+      store.dispatch(actions.setInitialState(null))
+    }
+
     const providerOpts = new ProviderOptions(store).approving() as any
     const provider = ClientProvider(providerOpts)
     const web3 = new Web3(provider) as any

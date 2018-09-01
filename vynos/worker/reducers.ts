@@ -28,5 +28,6 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.setIsPendingVerification, actions.setIsPendingVerificationHandler)
   .case(actions.setHasActiveDeposit, actions.setHasActiveDepositHandler)
   .case(actions.removeTransactionState, actions.removeTransactionStateHandler)
+  .case(actions.setInitialState, actions.setInitialStateHandler)
 
 export default reducers
