@@ -38,7 +38,7 @@ export const BalanceTooltip = ({amount, inputType, reserveBalance, reserveBalanc
     amountWEI.amountBigNumber.add(reserveBalanceWEI.amountBigNumber),
     () => exchangeRates,
   ).toWEI()
-  console.log('hasActiveDeposit', hasActiveDeposit)
+
   if (!hasActiveDeposit && canUpdateAmountReserved) amountReservedWei = reserveBalanceWEI
   canUpdateAmountReserved = !!hasActiveDeposit
 
@@ -48,8 +48,6 @@ export const BalanceTooltip = ({amount, inputType, reserveBalance, reserveBalanc
       decimals: 0,
       withSymbol: false,
     })
-
-  console.log('amountReservedString', amountReservedString)
 
   return (
     <div className={s.balanceTipLayout}>
