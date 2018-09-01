@@ -98,7 +98,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
 
     const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE, reduxMiddleware) as Store<WorkerState>
     
-    const isPersistedStatePreMigration = !!store.getState().persistent.transactions
+    const isPersistedStatePreMigration = !store.getState().persistent.transactions
     if (isPersistedStatePreMigration) {
       store.dispatch(actions.setInitialState(null))
     }
