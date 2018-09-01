@@ -52,7 +52,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
         // displaying as only usd atm
         .to(outputType || CurrencyType.USD)
         .format({
-          decimals: decimals || 2,
+          decimals: decimals !== undefined ? decimals : 2,
           withSymbol: false,
           showTrailingZeros: true
         })
