@@ -1,9 +1,9 @@
 import * as React from 'react'
 import BN = require('bn.js')
-import {CurrencyType} from '../Currency'
+import { CurrencyType } from '../Currency'
 import CC from '../../../lib/CurrencyConvertable'
-import {ExchangeRates} from '../../../worker/WorkerState'
-import {TooltipRow} from './TooltipRow'
+import { ExchangeRates } from '../../../worker/WorkerState'
+import { TooltipRow } from './TooltipRow'
 import { setHasActiveDeposit } from '../../../worker/actions';
 
 const s = require('./style.css')
@@ -13,14 +13,14 @@ export interface BalanceTooltipProps {
   inputType: CurrencyType
   reserveBalance: BN
   reserveBalanceType: CurrencyType
-  exchangeRates: ExchangeRates|null
+  exchangeRates: ExchangeRates | null
   hasActiveDeposit?: boolean
 }
 
 let amountReservedWei: CC
 let canUpdateAmountReserved = true
 
-export const BalanceTooltip = ({amount, inputType, reserveBalance, reserveBalanceType, exchangeRates, hasActiveDeposit}: BalanceTooltipProps) => {
+export const BalanceTooltip = ({ amount, inputType, reserveBalance, reserveBalanceType, exchangeRates, hasActiveDeposit }: BalanceTooltipProps) => {
   const reserveBalanceWEI = new CC(
     reserveBalanceType,
     reserveBalance.toString(10),

@@ -90,7 +90,7 @@ export class ReceiveEtherStart extends React.Component<Props, State> {
               } />
             <Button
               type='secondary'
-              to="" // TODO add link to zendesk article
+              to="https://help.spankchain.com/hc/en-us/articles/360004669831-Receiving-ETH"
               className={s.guideButton}
               content="Step-by-Step Guide"
               isFullWidth
