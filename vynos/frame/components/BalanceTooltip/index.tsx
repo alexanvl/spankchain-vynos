@@ -1,9 +1,10 @@
 import * as React from 'react'
 import BN = require('bn.js')
-import {CurrencyType} from '../Currency'
+import { CurrencyType } from '../Currency'
 import CC from '../../../lib/CurrencyConvertable'
-import {ExchangeRates} from '../../../worker/WorkerState'
-import {TooltipRow} from './TooltipRow'
+import { ExchangeRates } from '../../../worker/WorkerState'
+import { TooltipRow } from './TooltipRow'
+import { setHasActiveDeposit } from '../../../worker/actions';
 
 const s = require('./style.css')
 
@@ -12,10 +13,14 @@ export interface BalanceTooltipProps {
   inputType: CurrencyType
   reserveBalance: BN
   reserveBalanceType: CurrencyType
-  exchangeRates: ExchangeRates|null
+  exchangeRates: ExchangeRates | null
+  hasActiveDeposit?: boolean
 }
 
-export const BalanceTooltip = ({amount, inputType, reserveBalance, reserveBalanceType, exchangeRates}: BalanceTooltipProps) => {
+let amountReservedWei: CC
+let canUpdateAmountReserved = true
+
+export const BalanceTooltip = ({ amount, inputType, reserveBalance, reserveBalanceType, exchangeRates, hasActiveDeposit }: BalanceTooltipProps) => {
   const reserveBalanceWEI = new CC(
     reserveBalanceType,
     reserveBalance.toString(10),
@@ -34,6 +39,16 @@ export const BalanceTooltip = ({amount, inputType, reserveBalance, reserveBalanc
     () => exchangeRates,
   ).toWEI()
 
+  if (!hasActiveDeposit && canUpdateAmountReserved) amountReservedWei = reserveBalanceWEI
+  canUpdateAmountReserved = !!hasActiveDeposit
+
+  const amountReservedString = amountReservedWei
+    .to(CurrencyType.FINNEY)
+    .format({
+      decimals: 0,
+      withSymbol: false,
+    })
+
   return (
     <div className={s.balanceTipLayout}>
       <TooltipRow
@@ -45,7 +60,7 @@ export const BalanceTooltip = ({amount, inputType, reserveBalance, reserveBalanc
         outputType={CurrencyType.FINNEY}
       />
       <div className={s.reserveBalanceTip}>
-        {`FIN ${reserveBalanceWEI.to(CurrencyType.FINNEY).format({decimals: 0, withSymbol: false})} reserved for transactions`}
+        {`FIN ${amountReservedString} reserved for transactions`}
       </div>
       <TooltipRow
         className={s.totalRow}

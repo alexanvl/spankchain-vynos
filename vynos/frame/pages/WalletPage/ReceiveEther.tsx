@@ -6,6 +6,7 @@ import Currency, { CurrencyType } from '../../components/Currency'
 import { Link } from 'react-router-dom'
 
 const s = require('./ReceiveEther.css')
+const vs = require('../../styles/ynos.css')
 
 export interface State {
   isCopied: boolean,
@@ -43,7 +44,7 @@ export class ReceiveEther extends React.Component<any, State> {
       if (err) {
         return
       }
-      
+
       // PR comment:  this doesn't actually do anything because fromWei is undefined? 
       // which is also the case in SendEther.tsx
       this.setState({
@@ -55,7 +56,7 @@ export class ReceiveEther extends React.Component<any, State> {
   totalGasCost() {
     let gp = new BN(this.state.gasPrice)
     let g = new BN(this.state.gas)
-        
+
     return gp.mul(g).toString()
   }
 
@@ -65,7 +66,7 @@ export class ReceiveEther extends React.Component<any, State> {
       <div className={s.container}>
         <div className={s.header}>Receive Ether</div>
         <div className={s.whiteRect}>
-          <div className={s.left}>You can send Ether to your address and use it to tip on SPANK.live</div>
+          <div className={s.left}>Ready to transfer some ETH and get tipping? Check the transfer amounts on the right, and then click to see a step-by-step guide. </div>
           <div className={s.right}>
             <div className={s.quarter}>
               <div className={s.currencyWrap}>Min amount </div>
@@ -90,7 +91,7 @@ export class ReceiveEther extends React.Component<any, State> {
               /></div>
           </div>
         </div >
-        <Button to="/wallet/receive/start" content="Start Transaction" isFullWidth />
+        <Button to="/wallet/receive/start" content={<div className={vs.loginButton} />} isFullWidth />
         <div className={s.recoverText}>
           <Link
             to="/wallet/reveal"
@@ -103,7 +104,7 @@ export class ReceiveEther extends React.Component<any, State> {
   }
 }
 
-function mapStateToProps(state:any): any {
+function mapStateToProps(state: any): any {
   return {
     workerProxy: state.temp.workerProxy,
   }

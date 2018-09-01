@@ -1,11 +1,11 @@
 import * as React from 'react'
-import {ChangeEvent, MouseEvent} from 'react'
-import {Dispatch} from 'redux'
-import {FrameState} from '../../redux/FrameState'
+import { ChangeEvent, MouseEvent } from 'react'
+import { Dispatch } from 'redux'
+import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 import * as actions from '../../redux/actions'
-import {MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT} from '../../constants'
+import { MINIMUM_PASSWORD_LENGTH, PASSWORD_CONFIRMATION_HINT_TEXT, PASSWORD_HINT_TEXT } from '../../constants'
 import RestorePage from '../RestorePage'
 import Button from '../../components/Button/index'
 import TextBox from '../../components/TextBox/index'
@@ -35,7 +35,7 @@ export interface PasswordSubpageDispatchProps {
 export type PasswordSubpageProps = PasswordSubpageStateProps & PasswordSubpageDispatchProps
 
 export class Password extends React.Component<PasswordSubpageProps, PasswordState> {
-  constructor (props: PasswordSubpageProps) {
+  constructor(props: PasswordSubpageProps) {
     super(props)
     this.state = {
       password: '',
@@ -49,7 +49,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     this.handleSubmit = this.handleSubmit.bind(this)
   }
 
-  isValid () {
+  isValid() {
     let passwordError = this.state.passwordError
     if (this.state.password.length < MINIMUM_PASSWORD_LENGTH) {
       passwordError = PASSWORD_HINT_TEXT
@@ -67,13 +67,13 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     return !(passwordError || passwordConfirmationError)
   }
 
-  handleSubmit (e: any) {
+  handleSubmit(e: any) {
     if (this.isValid() && this.state.password) {
       return this.props.genKeyring(this.props.workerProxy, this.state.password)
     }
   }
 
-  handleChangePassword (ev: ChangeEvent<EventTarget>) {
+  handleChangePassword(ev: ChangeEvent<EventTarget>) {
     let value = (ev.target as HTMLInputElement).value
     this.setState({
       password: value,
@@ -82,7 +82,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     })
   }
 
-  handleChangePasswordConfirmation (ev: ChangeEvent<EventTarget>) {
+  handleChangePasswordConfirmation(ev: ChangeEvent<EventTarget>) {
     let value = (ev.target as HTMLInputElement).value
     this.setState({
       passwordConfirmation: value,
@@ -91,7 +91,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     })
   }
 
-  doneDisplayRestorePage () {
+  doneDisplayRestorePage() {
     this.setState({
       displayRestore: false
     })
@@ -99,11 +99,11 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
 
   getText() {
     return this.props.isPerformer
-      ? 'This is how you’ll get paid. SpankCard is a very safe and secure payment method based on crypto currencies.'
-      : 'Your SpankWallet allows you to tip without any delay and to save you crypto fees by bundling payments.'
+      ? 'Welcome to your new SpankCard! Before you can start getting paid with crypto, you\'ll need to protect your SpankCard with a password'
+      : 'Welcome to your new SpankCard! Before you can start tipping with crypto, you\'ll need to protect your SpankCard with a password'
   }
 
-  render () {
+  render() {
     const { isPerformer } = this.props
 
     if (this.state.displayRestore)
@@ -116,7 +116,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
         currentStep={0}
       >
         <div className={style.content}>
-          <div className={style.funnelTitle}>Create SpankCard</div>
+          <div className={style.funnelTitle}>We've made a SpankCard for you</div>
           <TextBox className={style.passwordTextBox}>
             {this.getText()}
           </TextBox>
@@ -162,14 +162,14 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
   }
 }
 
-function mapStateToProps (state: FrameState): PasswordSubpageStateProps {
+function mapStateToProps(state: FrameState): PasswordSubpageStateProps {
   return {
     workerProxy: state.temp.workerProxy,
     isPerformer: state.shared.isPerformer,
   }
 }
 
-function mapDispatchToProps (dispatch: Dispatch): PasswordSubpageDispatchProps {
+function mapDispatchToProps(dispatch: Dispatch): PasswordSubpageDispatchProps {
   return {
     genKeyring: (workerProxy, password) => {
       workerProxy.genKeyring(password).then(mnemonic => {
