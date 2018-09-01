@@ -98,11 +98,11 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
 
     const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE, reduxMiddleware) as Store<WorkerState>
     
-    const isPersistedStatePreMigration = (store: Store<WorkerState>): boolean => !!store.getState().persistent.transactions
-    
-    if (isPersistedStatePreMigration(store)) {
+    const isPersistedStatePreMigration = !!store.getState().persistent.transactions
+    if (isPersistedStatePreMigration) {
       store.dispatch(actions.setInitialState(null))
     }
+
     const providerOpts = new ProviderOptions(store).approving() as any
     const provider = ClientProvider(providerOpts)
     const web3 = new Web3(provider) as any
