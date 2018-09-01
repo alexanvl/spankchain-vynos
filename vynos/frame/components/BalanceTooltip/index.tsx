@@ -56,7 +56,7 @@ export const BalanceTooltip = ({ amount, inputType, reserveBalance, reserveBalan
         outputType={CurrencyType.FINNEY}
       />
       <TooltipRow
-        amount={reserveBalanceWEI}
+        amount={amountReservedWei}
         outputType={CurrencyType.FINNEY}
       />
       <div className={s.reserveBalanceTip}>
