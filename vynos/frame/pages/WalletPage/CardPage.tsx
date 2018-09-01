@@ -1,16 +1,16 @@
 import * as React from 'react'
 import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
-import {FrameState} from '../../redux/FrameState'
-import {connect} from 'react-redux'
-import {BrandingState, ExchangeRates} from '../../../worker/WorkerState'
-import {cardBalance} from '../../redux/selectors/cardBalance'
+import { FrameState } from '../../redux/FrameState'
+import { connect } from 'react-redux'
+import { BrandingState, ExchangeRates } from '../../../worker/WorkerState'
+import { cardBalance } from '../../redux/selectors/cardBalance'
 import WorkerProxy from '../../WorkerProxy'
-import Currency, {CurrencyType} from '../../components/Currency/index'
+import Currency, { CurrencyType } from '../../components/Currency/index'
 import entireBalance from '../../lib/entireBalance'
 import BN = require('bn.js')
 import Tooltip from '../../components/Tooltip'
-import {BalanceTooltip} from '../../components/BalanceTooltip'
+import { BalanceTooltip } from '../../components/BalanceTooltip'
 
 const pageStyle = require('../UnlockPage.css')
 const s = require('./styles.css')
@@ -23,7 +23,8 @@ export interface StateProps extends BrandingState {
   activeWithdrawalError: string | null
   isPendingVerification: boolean | undefined
   hasActiveDeposit: boolean
-  exchangeRates: ExchangeRates|null
+  exchangeRates: ExchangeRates | null
+  isFrameDisplayed: boolean
 }
 
 enum ActiveButton {
@@ -33,15 +34,16 @@ enum ActiveButton {
   'ACTIVITY',
 }
 
+let activeButton: ActiveButton = ActiveButton.NONE
+
 export interface CardPageState {
   error: string
-  activeButton: ActiveButton
 }
 
 class CardPage extends React.Component<StateProps, CardPageState> {
   constructor(props: StateProps) {
     super(props)
-    this.state = {error: '', activeButton: ActiveButton.NONE}
+    this.state = { error: '' }
   }
 
   onClickRefill = async () => {
@@ -59,9 +61,12 @@ class CardPage extends React.Component<StateProps, CardPageState> {
     }
   }
 
-  setActiveButton = (activeButton: ActiveButton) => this.setState({activeButton})
+  setActiveButton = (_activeButton: ActiveButton) => {
+    activeButton = _activeButton
+    this.forceUpdate()
+  }
 
-  render () {
+  render() {
     const {
       cardBalance,
       exchangeRates,
@@ -73,10 +78,13 @@ class CardPage extends React.Component<StateProps, CardPageState> {
       textColor,
       hasActiveDeposit,
       isWithdrawing,
+      isFrameDisplayed,
     } = this.props
 
     const reserveBalance = walletBalance
-    const activeButton = this.state.activeButton
+    if (!isFrameDisplayed) {
+      activeButton = ActiveButton.NONE
+    }
 
     return (
       <div className={s.walletSpankCardWrapper}>
@@ -103,15 +111,18 @@ class CardPage extends React.Component<StateProps, CardPageState> {
               />
             </div>
             <div className={s.walletSpankCardActions}>
-              <Tooltip content={
-                <BalanceTooltip
-                  amount={cardBalance}
-                  inputType={CurrencyType.WEI}
-                  reserveBalance={reserveBalance}
-                  reserveBalanceType={CurrencyType.WEI}
-                  exchangeRates={exchangeRates}
-                />
-              }
+              <Tooltip
+                trigger="click"
+                content={
+                  <BalanceTooltip
+                    amount={cardBalance}
+                    inputType={CurrencyType.WEI}
+                    reserveBalance={reserveBalance}
+                    reserveBalanceType={CurrencyType.WEI}
+                    exchangeRates={exchangeRates}
+                    hasActiveDeposit={hasActiveDeposit}
+                  />
+                }
               >
                 <div className={s.usdBalance}>
                   <Currency
@@ -125,7 +136,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
                   <div className={s.downArrow} />
                 </div>
               </Tooltip>
-              <div className={s.buttonSpacer}/>
+              <div className={s.buttonSpacer} />
               <Button
                 to="/wallet/receive"
                 type={activeButton === ActiveButton.RECIEVE ? "primary" : "secondary"}
@@ -155,7 +166,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
   }
 
   renderError = () => {
-    const {activeWithdrawalError} = this.props
+    const { activeWithdrawalError } = this.props
 
     if (!this.state.error && !activeWithdrawalError) {
       return null
@@ -177,7 +188,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
   }
 }
 
-function mapStateToProps (state: FrameState): StateProps {
+function mapStateToProps(state: FrameState): StateProps {
   return {
     ...state.shared.branding,
     walletBalance: new BN(state.shared.balance),
@@ -188,6 +199,7 @@ function mapStateToProps (state: FrameState): StateProps {
     isPendingVerification: state.shared.isPendingVerification,
     hasActiveDeposit: state.shared.hasActiveDeposit,
     exchangeRates: state.shared.exchangeRates,
+    isFrameDisplayed: state.shared.isFrameDisplayed,
   }
 }
 

@@ -1,13 +1,13 @@
 import * as React from 'react'
-import {connect} from 'react-redux'
-import {Dispatch} from 'redux'
-import {FrameState} from '../../redux/FrameState'
+import { connect } from 'react-redux'
+import { Dispatch } from 'redux'
+import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import * as actions from '../../redux/actions'
 import Button from '../../components/Button/index'
 import Checkbox from '../../components/Checkbox/index'
 import OnboardingContainer from './OnboardingContainer'
-import {RouteComponentProps, RouteProps, RouterProps, withRouter} from 'react-router'
+import { RouteComponentProps, RouteProps, RouterProps, withRouter } from 'react-router'
 
 const style = require('../../styles/ynos.css')
 
@@ -31,7 +31,7 @@ export interface MnemonicStates {
 export type MnemonicSubpageProps = MnemonicStateProps & MnemonicDispatchProps & RouteComponentProps<any>
 
 export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStates> {
-  constructor (props: MnemonicSubpageProps) {
+  constructor(props: MnemonicSubpageProps) {
     super(props)
     this.state = {
       acknowledged: false,
@@ -39,7 +39,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
     }
   }
 
-  async handleSubmit () {
+  async handleSubmit() {
     if (this.state.acknowledged) {
       this.props.saveMnemonic(this.props.workerProxy)
 
@@ -54,7 +54,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
     }
   }
 
-  render () {
+  render() {
     const { isPerformer } = this.props
     const mnemonic = this.props.mnemonic || ''
 
@@ -67,9 +67,9 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
         <div className={style.content}>
           <div className={style.funnelTitle} data-sel="signupPasswordHeader">Backup Words</div>
           <div className={style.seedPhraseText}>
-            <p>These are <em><strong>your</strong></em> backup words. They will restore <em><strong>your</strong></em> SpankCard. Keep them secret. Keep them safe. DO NOT LOSE OR SHARE! SPANKCHAIN CANNOT RESTORE THEM FOR YOU!</p>
-            <p>Welcome to Crypto! 😘</p>
-            </div>
+            <p>Ever hear of backup words? They're not as scary as they look - but they are <em>very important</em>.</p>
+            <p>Save these words in a safe place. If you forget your password, your backup words are the <em>only</em> way to get your SpankCard back.</p>
+          </div>
           <div className={style.seedWords}>
             {mnemonic.split(' ').map((seed, i) => (
               <div className={style.seedWord} key={`${seed}-${i}`}>
@@ -78,11 +78,15 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
               </div>
             ))}
           </div>
+          <div className={style.seedPhraseText}>
+            <p>Keep them secret. Keep them safe. DO NOT LOSE OR SHARE! SPANKCHAIN CANNOT RESTORE THEM FOR YOU!</p>
+            <p>Welcome to Crypto! 😘</p>
+          </div>
           <label>
             <div className={style.ackMnemonics}>
               <Checkbox
                 className={style.ackCheckbox}
-                onChange={(e: any) => this.setState({acknowledged: e.target.checked})}
+                onChange={(e: any) => this.setState({ acknowledged: e.target.checked })}
                 name="signupAckCheckbox"
               />
               <div className={style.ackText}>I have copied the backup words. They are secret. They are safe. I promise!</div>
@@ -103,7 +107,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
   }
 }
 
-function mapStateToProps (state: FrameState): MnemonicStateProps {
+function mapStateToProps(state: FrameState): MnemonicStateProps {
   return {
     workerProxy: state.temp.workerProxy,
     mnemonic: state.temp.initPage.mnemonic,
@@ -111,7 +115,7 @@ function mapStateToProps (state: FrameState): MnemonicStateProps {
   }
 }
 
-function mapDispatchToProps (dispatch: Dispatch): MnemonicDispatchProps {
+function mapDispatchToProps(dispatch: Dispatch): MnemonicDispatchProps {
   return {
     saveMnemonic: workerProxy => {
       workerProxy.didStoreMnemonic()

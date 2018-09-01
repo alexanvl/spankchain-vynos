@@ -1,4 +1,4 @@
-import { BigNumber } from 'bignumber.js';
+import BigNumber from 'bignumber.js';
 import Web3 = require('web3')
 import { getGasPrice } from './getGasPrice'
 
@@ -21,7 +21,7 @@ export class MinDeposit {
     this.web3 = web3
   }
 
-  public async get(): Promise<BigNumber> {
+  public async get(): Promise<BigNumber.BigNumber> {
     let gasPrice
     try {
       gasPrice = await getGasPrice(this.web3)
@@ -31,7 +31,7 @@ export class MinDeposit {
     return this.minDepositStepFunction(gasPrice)
   }
 
-  private minDepositStepFunction(gasPrice: BigNumber): BigNumber {
+  private minDepositStepFunction(gasPrice: BigNumber.BigNumber): BigNumber.BigNumber {
     if (gasPrice.lessThan(TEN_GWEI)) {
       return FIVE_FINNEY
     } else if (gasPrice.lessThan(FIFTY_GWEI)) {

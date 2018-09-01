@@ -1,9 +1,9 @@
 import * as React from 'react'
 import * as classnames from 'classnames'
-import Currency, {CurrencyType} from '../Currency/index'
-import CurrencyIcon, {CurrencyIconType} from '../CurrencyIcon'
-import {FrameState} from '../../redux/FrameState'
-import {connect} from 'react-redux'
+import Currency, { CurrencyType } from '../Currency/index'
+import CurrencyIcon, { CurrencyIconType } from '../CurrencyIcon'
+import { FrameState } from '../../redux/FrameState'
+import { connect } from 'react-redux'
 import BN = require('bn.js')
 import LoadingSpinner from '../LoadingSpinner';
 import Tooltip from '../Tooltip'
@@ -46,7 +46,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
 
   icon: any
 
-  constructor (props: WalletCardProps) {
+  constructor(props: WalletCardProps) {
     super(props)
 
     this.state = {
@@ -55,7 +55,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
     }
   }
 
-  render () {
+  render() {
     const {
       cardTitle,
       name,
@@ -104,7 +104,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
           </div>
           {isLoading && (
             <span>
-              <Tooltip content="Your funds are being processed">
+              <Tooltip content="Your funds are being processed. This may take a few minutes." trigger="click">
                 <LoadingSpinner className={s.spinner} />
               </Tooltip>
             </span>
@@ -128,7 +128,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
     )
   }
 
-  renderCurrencyValue () {
+  renderCurrencyValue() {
     return (
       <div
         className={s.currency}
@@ -152,7 +152,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
   }
 }
 
-function mapStateToProps (state: FrameState, ownProps: WalletCardProps): StateProps {
+function mapStateToProps(state: FrameState, ownProps: WalletCardProps): StateProps {
   return {
     name: ownProps.name || (state.shared.username || '')
   }
