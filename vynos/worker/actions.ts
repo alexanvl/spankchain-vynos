@@ -5,7 +5,8 @@ import {
   HistoryItem,
   PendingTransaction,
   WorkerState,
-  AtomicTransactionState
+  AtomicTransactionState,
+  INITIAL_STATE,
 } from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
 
@@ -85,6 +86,19 @@ export function setHasActiveDepositHandler(state: WorkerState, hasActiveDeposit:
 export interface SetTransactionStateParam {
   name: string,
   newState: AtomicTransactionState
+}
+
+// sets initial state if it hasn't been set already (like if inital state is pre migration)
+export const setInitialState: ActionCreator<null> = actionCreator<undefined>('persistent/setInitialState')
+export function setInitialStateHandler(state: WorkerState): WorkerState {
+  return {
+    ...INITIAL_STATE,
+    ...state,
+      persistent: {
+        ...INITIAL_STATE.persistent,
+        ...state.persistent,
+      }
+  }
 }
 
 export const setTransactionState: ActionCreator<SetTransactionStateParam> = actionCreator<SetTransactionStateParam>('persistent/setTransactionState')
