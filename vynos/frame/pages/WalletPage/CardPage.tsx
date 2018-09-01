@@ -118,6 +118,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
                   reserveBalance={reserveBalance}
                   reserveBalanceType={CurrencyType.WEI}
                   exchangeRates={exchangeRates}
+                  hasActiveDeposit={hasActiveDeposit}
                 />
               }
               >
