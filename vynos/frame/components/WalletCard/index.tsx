@@ -146,7 +146,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
           currency={CurrencyType.FINNEY}
           reverse
         />
-        <Currency key="value" amount={this.props.currencyValue} outputType={CurrencyType.FINNEY} />
+        <Currency key="value" amount={this.props.currencyValue} outputType={CurrencyType.FINNEY} decimals={0} />
       </div>
     )
   }
