@@ -11,7 +11,7 @@ let FRAME_URL = process.env.FRAME_URL || 'http://localhost:9090'
 
 let API_URL = process.env.API_URL || 'https://camsite-staging.spankdev.com/api'
 
-let HUB_URL = process.env.HUB_URL || 'https://hub-staging.spankdev.com'
+let HUB_URL = process.env.HUB_URL || 'https://hub-connext.spankdev.com'
 
 const NODE_ENV = process.env.NODE_ENV
 
