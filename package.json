@@ -8,7 +8,7 @@
     "test": "mocha -r ts-node/register \"vynos/**/*.test.ts\"",
     "harness": "gulp serve:harness",
     "e2e": "./node_modules/.bin/nightwatch --config ./nightwatch.conf.js",
-    "harness:remote": "HUB_URL='https://hub-connext.spankdev.com' yarn harness",
+    "harness:remote": "HUB_URL='https://hub-staging.spankdev.com' yarn harness",
     "lint": "tslint -t stylish -c ../common/tslint.json --project '.' vynos/**/*.ts",
     "start": "gulp serve",
     "postinstall": "rm -f node_modules/web3/index.d.ts"
