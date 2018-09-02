@@ -142,10 +142,10 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
 
     const connext = new Connext({
       web3: web3,
-      ingridAddress: '0xf36cb9c2984838eb2bbda4fcdb3f9cb2ac05d1fa',
+      ingridAddress: process.env.INGRID_ADDRESS!,
       watcherUrl: process.env.HUB_URL!,
       ingridUrl: process.env.HUB_URL!,
-      contractAddress: '0xf91546835f756da0c10cfa0cda95b15577b84aa7'
+      contractAddress: process.env.CONTRACT_ADDRESS!
     })
 
     await new Promise((resolve) => persistStore(store, undefined, resolve))

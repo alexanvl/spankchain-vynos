@@ -30,7 +30,12 @@ function stubDependency(regex) {
 }
 
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS,
+  INGRID_ADDRESS = process.env.INGRID_ADDRESS,
   RPC_URL = process.env.RPC_URL;
+
+if (!CONTRACT_ADDRESS || !INGRID_ADDRESS) {
+  throw new Error('Refusing to build without a defined contract or Ingrid address.')
+}
 
 function webpackConfig (entry, hash = true) {
   const config = {
@@ -56,14 +61,15 @@ function webpackConfig (entry, hash = true) {
     plugins: [
       new webpack.DefinePlugin({
         'window.RPC_URL': JSON.stringify(RPC_URL),
-        'self.CONTRACT_ADDRESS': JSON.stringify(CONTRACT_ADDRESS),
         'process.env': {
           'NODE_ENV': JSON.stringify(NODE_ENV || 'development'), // This has effect on the react lib size,
           'DEBUG': NODE_ENV !== 'production',
           'FRAME_URL': JSON.stringify(FRAME_URL),
           'API_URL': JSON.stringify(API_URL),
           'NETWORK_NAME': JSON.stringify(NETWORK_NAME),
-          'HUB_URL': JSON.stringify(HUB_URL)
+          'HUB_URL': JSON.stringify(HUB_URL),
+          'CONTRACT_ADDRESS': JSON.stringify(CONTRACT_ADDRESS),
+          'INGRID_ADDRESS': JSON.stringify(INGRID_ADDRESS)
         }
       })
     ],
