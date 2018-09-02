@@ -26,7 +26,7 @@ export const SendCurrencyInputs = ({
   const inputClass = isConfirming
     ? classnames(s.inputBorderless, s.input)
     : classnames(s.input)
-  console.log('input class', inputClass)
+
   return (
     <React.Fragment>
       <div className={s.contentRow}>

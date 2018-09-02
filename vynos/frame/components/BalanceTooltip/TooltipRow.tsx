@@ -12,7 +12,7 @@ export const TooltipRow = ({amount, outputType, className = s.tooltipRow}: {amou
       <div className={s.amount}>
         {amount.to(outputType).getDecimalString(0)}
       </div>
-      <div className={s.underline}>________</div>
+      <div className={s.underline}/>
       <div className={s.usdAmount}>
         {amount.to(CurrencyType.USD).format({
           decimals: 2,
