@@ -12,6 +12,8 @@ steps:
             '--build-arg', 'API_URL=${_API_URL}',
             '--build-arg', 'NETWORK_NAME=${_NETWORK_NAME}',
             '--build-arg', 'HUB_URL=${_HUB_URL}',
+            '--build-arg', 'INGRID_ADDRESS=${_INGRID_ADDRESS}',
+            '--build-arg', 'CONTRACT_ADDRESS=${_CONTRACT_ADDRESS}',
             '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}/${_ENV}:$COMMIT_SHA',
             '-t', 'gcr.io/$PROJECT_ID/$REPO_NAME/${_PROJECT}:latest',
             '-f', 'infrastructure/Dockerfile',
