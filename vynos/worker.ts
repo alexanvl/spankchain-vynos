@@ -95,7 +95,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     let existingState: PersistentState
 
     try {
-      existingState = JSON.parse(existingStateStr).persistent
+      existingState = JSON.parse(JSON.parse(existingStateStr).persistent)
     } catch (e) {
       existingState = INITIAL_STATE.persistent
     }
