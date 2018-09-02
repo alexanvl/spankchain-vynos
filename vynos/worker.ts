@@ -91,17 +91,14 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     })
 
     const persistentKey = 'persist:persistent'
-    let existingStateStr = await localForage.getItem<{ persistent: string }>(persistentKey)
+    let existingStateStr = await localForage.getItem<string>(persistentKey)
     let existingState: PersistentState
 
     try {
-      existingState = JSON.parse(existingStateStr.persistent)
+      existingState = JSON.parse(existingStateStr).persistent
     } catch (e) {
-      console.error(e)
       existingState = INITIAL_STATE.persistent
     }
-
-    console.log('Got existing state:', existingState)
 
     // need to migrate
     if (!existingState.transactions) {
