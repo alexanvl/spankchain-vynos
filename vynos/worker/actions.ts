@@ -89,7 +89,7 @@ export interface SetTransactionStateParam {
 }
 
 // sets initial state if it hasn't been set already (like if inital state is pre migration)
-export const setInitialState: ActionCreator<null> = actionCreator<undefined>('persistent/setInitialState')
+export const setInitialState: ActionCreator<any> = actionCreator<any>('persistent/setInitialState')
 export function setInitialStateHandler(state: WorkerState): WorkerState {
   return {
     ...INITIAL_STATE,
