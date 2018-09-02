@@ -5,6 +5,7 @@
   color: #B2B2B2;
   font-size: 1.4rem;
   font-family: sans-serif;
+  margin-right: .15rem;
 }
 
 .balanceTipLayout {
@@ -47,10 +48,11 @@
 }
 
 .underline {
-  color: #3D3D3D;
   font-weight: 300;
   justify-self: center;
   padding: 0rem .4rem .6rem .3rem;
+  border-bottom: 1px solid #3D3D3D;
+  width: 4rem;
 }
 
 .usdAmount {
@@ -59,5 +61,6 @@
   font-size: .55rem;
   line-height: 4;
   margin-bottom: -.60rem;
+  margin-left: .15rem;
   justify-self: left;
 }
