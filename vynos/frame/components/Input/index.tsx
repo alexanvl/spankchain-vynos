@@ -3,7 +3,7 @@ import * as classnames from 'classnames'
 
 const s = require('./style.css')
 
-const Input: React.SFC<any> = function(props) {
+const Input: React.SFC<any> = function (props) {
   const {
     type,
     className,
@@ -19,10 +19,12 @@ const Input: React.SFC<any> = function(props) {
     onPaste,
     inputRef,
     name,
+    onClick,
+    disableError,
   } = props
 
   return (
-    <div className={classnames(s.wrapper, className)}>
+    <div className={classnames(s.wrapper, className)} onClick={onClick}>
       <input
         type={type}
         ref={inputRef}
@@ -41,9 +43,10 @@ const Input: React.SFC<any> = function(props) {
         data-sel={name}
         name={name}
       />
-      <div className={classnames(s.errorMessage, {
+      {!disableError && <div className={classnames(s.errorMessage, {
         [s.inverse]: inverse
       })}>{errorMessage}</div>
+      }
     </div>
   )
 }

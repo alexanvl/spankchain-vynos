@@ -80,51 +80,54 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
     ]
 
     return (
-      <div
-        className={classnames(..._classes)}
-        style={{
-          backgroundImage: imageUrl ? 'url(' + imageUrl + ')' : '',
-          backgroundColor,
-          color,
-          backgroundSize: 'cover',
-          width: width + 'px',
-          height: height + 'px'
-        }}
-      >
-        <div className={s.top} style={{ color }}>
-          <div
-            className={s.cardTitle}
-            style={{
-              fontSize: titleSize + 'px',
-              lineHeight: titleSize + 'px',
-              color
-            }}
-          >
-            {cardTitle}
-          </div>
-          {isLoading && (
-            <span>
-              <Tooltip content="Your funds are being processed. This may take a few minutes." trigger="click">
-                <LoadingSpinner className={s.spinner} />
-              </Tooltip>
-            </span>
-          )}
+      <div className={s.wrapper} style={{
+        width: width + 'px',
+        height: height + 'px'
+      }}>
+        <div
+          className={classnames(..._classes)}
+          style={{
+            backgroundImage: imageUrl ? 'url(' + imageUrl + ')' : '',
+            backgroundColor,
+            color,
+            backgroundSize: 'cover',
+          }}
+        >
+          <div className={s.top} style={{ color }}>
+            <div
+              className={s.cardTitle}
+              style={{
+                fontSize: titleSize + 'px',
+                lineHeight: titleSize + 'px',
+                color
+              }}
+            >
+              {cardTitle}
+            </div>
+            {isLoading && (
+              <span>
+                <Tooltip content="Your funds are being processed. This may take a few minutes." trigger="click">
+                  <LoadingSpinner className={s.spinner} />
+                </Tooltip>
+              </span>
+            )}
 
-        </div>
-        <div className={s.bottom}>
-          <div
-            className={s.name}
-            style={{
-              fontSize: companyNameSize + 'px',
-              lineHeight: companyNameSize + 'px',
-              color
-            }}
-          >
-            {name}
           </div>
-          {currencyValue ? this.renderCurrencyValue() : null}
+          <div className={s.bottom}>
+            <div
+              className={s.name}
+              style={{
+                fontSize: companyNameSize + 'px',
+                lineHeight: companyNameSize + 'px',
+                color
+              }}
+            >
+              {name}
+            </div>
+            {currencyValue ? this.renderCurrencyValue() : null}
+          </div>
         </div>
-      </div>
+      </div >
     )
   }
 

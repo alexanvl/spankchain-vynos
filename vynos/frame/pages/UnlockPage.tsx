@@ -112,16 +112,16 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
               companyName={this.props.companyName}
               backgroundColor={this.props.backgroundColor}
               color={this.props.textColor}
-              className={walletStyle.walletSpankCard}
+              className={classnames(walletStyle.walletSpankCard, pageStyle.walletSpankCard)}
               gradient
             />
           </div>
         </div>
         <div className={classnames(walletStyle.walletRow, pageStyle.afterWalletCardWrapper)}>
-          <div className={style.content}>
-            <div className={pageStyle.header}>Unlock your SpankCard</div>
+          <div className={classnames(style.content, pageStyle.content)}>
+            <div className={pageStyle.header}>Unlock your SpankPay account</div>
             <TextBox className={style.passwordTextBox} isInverse>
-              Forgot your password? No worries, just dig up those backup words you saved when you created your account, and Restore that bad boy.
+              Enter your password below. Forgot your password? No worries, just dig up those backup words you saved when you created your account, and Restore that bad boy.
             </TextBox>
             <Submittable onSubmit={this.handleSubmit}>
               <Input

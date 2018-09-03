@@ -87,8 +87,8 @@
 .header {
   padding: 2rem 3rem;
   font-family: gt-haptik;
-  font-size: 1.8rem;
-  font-weight: 500;
+  font-size: 1.6rem;
+  font-weight: 600;
   color: #797979;
 }
 
@@ -248,7 +248,7 @@
   to { transform: rotate(359deg); }
 }
 
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
+@media only screen and (max-width : 480px) {
   .header {
     padding: 2rem;
   }
@@ -259,5 +259,15 @@
 
   .inputEqual {
     margin: 0 .5rem;
+  }
+  .autoFillButtons {
+    flex-flow: row wrap;
+    justify-content: space-around;
+    margin: 0 0 2rem;
+  }
+
+  .autoFillButtons button {
+    flex-basis: 40%;
+    margin: 0.3rem;
   }
 }

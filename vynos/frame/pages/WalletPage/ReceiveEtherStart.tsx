@@ -1,9 +1,11 @@
 import * as React from "react"
 import * as copy from 'copy-to-clipboard'
 import * as qr from 'qr-image'
+import * as classnames from 'classnames'
+import { Link } from 'react-router-dom'
 import Input from "../../components/Input"
 import Button from "../../components/Button"
-import { Link } from 'react-router-dom'
+import Currency, { CurrencyType } from '../../components/Currency'
 
 const s = require('./ReceiveEther.css')
 
@@ -65,18 +67,38 @@ export class ReceiveEtherStart extends React.Component<Props, State> {
     return (
       <div className={s.container}>
         <div className={s.header}>Add Ether to your card</div>
-        <div className={s.label}>Address</div>
+        <div className={classnames(s.description, s.mediumUp)}>Only send Ether (ETH) to this address.</div>
+
+        <div className={classnames(s.minAmount, s.smallDown)}>Minimum Amount
+              <Currency
+            amount={0.04}
+            outputType={CurrencyType.ETH}
+            inputType={CurrencyType.ETH}
+            unitClassName={s.minIcon}
+            showUnit
+          />
+        </div>
         <Input
           disabled={true}
           value={address}
           className={s.input}
+          onClick={this.onCopyAddress}
+          disableError
         />
         <div className={s.bottomWrapper}>
           <div className={s.qrWrapper}>
             {renderQR(address)}
           </div>
           <div className={s.buttonWrapper}>
-            <div className={s.description}>Only send Ether (ETH) to this address.</div>
+            <div className={classnames(s.minAmount, s.mediumUp)}>Minimum Amount
+              <Currency
+                amount={0.04}
+                outputType={CurrencyType.ETH}
+                inputType={CurrencyType.ETH}
+                unitClassName={s.minIcon}
+                showUnit
+              />
+            </div>
             <Button
               type='primary'
               onClick={this.onCopyAddress}

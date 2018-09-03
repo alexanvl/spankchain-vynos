@@ -9,13 +9,14 @@
 
 .walletCardWrapper {
   background: #f0f0f0;
-  height: 185px;
+  height: 215px;
   position: relative;
 }
 
 .walletCard {
   position: relative;
   bottom: -55px;
+  width: 100%;
 }
 
 .afterWalletCardWrapper {
@@ -34,4 +35,32 @@
 
 .close:hover {
   opacity: 0.8;
+}
+
+.content {
+  width: 100%;
+}
+
+form {
+  width: 100%;
+  max-width: 380px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.funnelFooter button {
+  min-width: 0;
+}
+
+.funnelFooter button:first-child {
+    margin-left: 0;
+}
+
+.funnelFooter button:last-child {
+    margin-right: 0;
+}
+
+.walletSpankCard {
+  margin: auto;
 }

@@ -1,26 +1,45 @@
+:root{
+  --buttonWidth: 175px;
+  --buttonWidthSmall: 100px;
+}
+
+.ctaInput {
+  width: 640px;
+  max-width: 100%;
+  align-items: center;
+}
 .ctaInputValue {
+  display: block;
   padding: 0 1rem;
   font-family: CartographMonoCF;
   line-height: 1rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  width: calc(100% - var(--buttonWidth));
 }
 
 .ctaInputContent {
   box-shadow: 0 0 0 1px #fff;
   margin: 0;
+  padding: .4rem 0;
+  display: flex;
+  justify-content: center;
+  flex: 0 0 var(--buttonWidth);
 }
 
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
-  .ctaInputValue {
-    flex: 1 1 auto;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    overflow: hidden;
-    display: block;
-    line-height: 2rem;
-  }
-
+@media only screen and (max-width : 750px) {
   .ctaInputContent {
-    padding: .5rem 2rem;
+    flex-basis: var(--buttonWidthSmall);
+  }
+  .ctaInputValue {
+    width: calc(100% - var(--buttonWidthSmall));
+  }
+}
+
+@media only screen and (max-width : 650px) {
+  .qrCode{
+    position: unset;
+    margin: 0 auto 3em;
   }
 }

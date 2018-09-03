@@ -1,10 +1,10 @@
 import * as React from 'react'
-import {connect} from 'react-redux'
-import {bindActionCreators, Dispatch} from 'redux'
+import { connect } from 'react-redux'
+import { bindActionCreators, Dispatch } from 'redux'
 import * as classnames from 'classnames'
 import * as copy from 'copy-to-clipboard'
 import * as qr from 'qr-image'
-import {FrameState} from '../../redux/FrameState'
+import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import * as actions from '../../redux/actions'
 import Button from '../../components/Button/index'
@@ -60,23 +60,23 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
     }
   }
 
-  async componentDidMount () {
-    const {web3} = this.props
+  async componentDidMount() {
+    const { web3 } = this.props
     if (web3) {
       const accounts = await web3.eth.getAccounts()
       const address = accounts[0]
-      this.setState({address})
+      this.setState({ address })
     }
   }
 
-  componentWillUnmount () {
+  componentWillUnmount() {
     if (this.timeout) {
       clearTimeout(this.timeout)
     }
   }
 
   onCopyAddress = () => {
-    const {address} = this.state
+    const { address } = this.state
 
     if (address) {
       copy(address)
@@ -85,28 +85,28 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
       })
 
       this.timeout = setTimeout(() => {
-        this.setState({isCopied: false})
+        this.setState({ isCopied: false })
       }, 2000)
     }
   }
 
-  renderQR () {
-    let pngBuffer = qr.imageSync(this.state.address, {type: 'png', margin: 1}) as Buffer
+  renderQR() {
+    let pngBuffer = qr.imageSync(this.state.address, { type: 'png', margin: 1 }) as Buffer
     let dataURI = 'data:image/png;base64,' + pngBuffer.toString('base64')
-    return <img className={classnames('react-qr', style.qrCode)} src={dataURI} />
+    return <img className={classnames('react-qr', style.qrCode, d.qrCode)} src={dataURI} />
   }
 
-  render () {
+  render() {
     return (
       <OnboardingContainer totalSteps={4} currentStep={2}>
         <div className={style.content}>
           <div className={style.funnelTitle} data-sel="signupDepositHeader">Wallet Address</div>
           <div className={style.seedPhraseText}>
-            This is your Wallet address, also known as a Public Key. Copy it. Give to others. Send ETH from an exchange
-            or other wallet you control to this address. You'll then be able load your SpankCard and tip away!
+            This is your SpankPay address, also known as a Public Key. Copy it. Give to others. Send ETH to this address from an exchange
+            or a wallet you control. You'll then be able load your SpankCard and tip away!
           </div>
           <CTAInput
-            className={style.ctaInput}
+            className={classnames(style.ctaInput, d.ctaInput)}
             ctaInputValueClass={d.ctaInputValue}
             ctaContentClass={d.ctaInputContent}
             value={this.state.address}
@@ -139,14 +139,14 @@ export class Deposit extends React.Component<DepositProps, DepositStates> {
   }
 }
 
-function mapStateToProps (state: FrameState): DepositStateProps {
+function mapStateToProps(state: FrameState): DepositStateProps {
   return {
     web3: state.temp.workerProxy.web3,
     workerProxy: state.temp.workerProxy
   }
 }
 
-function mapDispatchToProps (dispatch: Dispatch): DepositDispatchProps {
+function mapDispatchToProps(dispatch: Dispatch): DepositDispatchProps {
   return {
     didAcknowledgeDeposit: () => dispatch(actions.didAcknowledgeDeposit(''))
   }

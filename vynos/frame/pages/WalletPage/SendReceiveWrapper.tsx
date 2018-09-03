@@ -20,16 +20,16 @@ export default class SendReceiveWrapper extends React.Component<SendReceiveWrapp
           path="/wallet/send"
           component={SendCurrency}
         />
-        <Route
+        {/* <Route
           exact
           path="/wallet/receive"
           render={() => (
             <ReceiveEther />
           )}
-        />
+        /> */}
         <Route
           exact
-          path="/wallet/receive/start"
+          path="/wallet/receive"
           render={() => (
             <ReceiveEtherStart
               address={this.props.address}

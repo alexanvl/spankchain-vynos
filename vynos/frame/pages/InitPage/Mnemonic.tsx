@@ -68,7 +68,7 @@ export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStat
           <div className={style.funnelTitle} data-sel="signupPasswordHeader">Backup Words</div>
           <div className={style.seedPhraseText}>
             <p>Ever hear of backup words? They're not as scary as they look - but they are <em>very important</em>.</p>
-            <p>Save these words in a safe place. If you forget your password, your backup words are the <em>only</em> way to get your SpankCard back.</p>
+            <p>Save these words in a safe place. If you forget your password, your backup words are the <em>only</em> way to get your account back.</p>
           </div>
           <div className={style.seedWords}>
             {mnemonic.split(' ').map((seed, i) => (

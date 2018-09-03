@@ -1,11 +1,11 @@
 import * as React from 'react'
 import * as T from '../../components/Table/index'
 import * as classnames from 'classnames'
-import {connect} from 'react-redux'
-import {FrameState} from '../../redux/FrameState'
+import { connect } from 'react-redux'
+import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
-import {HistoryItem} from '../../../worker/WorkerState'
-import Currency, {CurrencyType} from '../../components/Currency/index'
+import { HistoryItem } from '../../../worker/WorkerState'
+import Currency, { CurrencyType } from '../../components/Currency/index'
 import * as BigNumber from 'bignumber.js'
 import * as moment from 'moment'
 
@@ -38,7 +38,7 @@ type NestedHistory = HistoryItem | HistoryItem[]
 type GroupOrHistory = HistoryItem | Group
 
 class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubpageState> {
-  constructor (props: any) {
+  constructor(props: any) {
     super(props)
 
     this.state = {
@@ -48,7 +48,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
     }
   }
 
-  async componentDidMount () {
+  async componentDidMount() {
     this.setState({
       isLoading: true
     })
@@ -68,7 +68,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
     })
   }
 
-  toggleDetails (i: number) {
+  toggleDetails(i: number) {
     const clone = new Set(Array.from(this.state.detailRows))
 
     if (clone.has(i)) {
@@ -82,8 +82,8 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
     })
   }
 
-  render () {
-    const {isLoading, error} = this.state
+  render() {
+    const { isLoading, error } = this.state
 
     if (isLoading || error) {
       return (
@@ -101,14 +101,14 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
 
     const groups = this.props.history.reduce(reduceByTipOrPurchase, [])
       .reduce((acc: GroupOrHistory[], curr: NestedHistory) => {
-      if (!Array.isArray(curr)) {
-        acc.push(curr)
-        return acc
-      }
+        if (!Array.isArray(curr)) {
+          acc.push(curr)
+          return acc
+        }
 
-      const tips = curr.reduce(reduceByTipStream, [])
-      return acc.concat(tips)
-    }, [])
+        const tips = curr.reduce(reduceByTipStream, [])
+        return acc.concat(tips)
+      }, [])
 
     return (
       <div className={s.walletActivityWrapper}>
@@ -138,7 +138,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
     )
   }
 
-  renderWithdrawal (item: HistoryItem) {
+  renderWithdrawal(item: HistoryItem) {
     const mStart = moment(item.createdAt)
 
     return (
@@ -147,15 +147,19 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
         className={s.walletActivityEntry}
       >
         <T.TableCell className={s.walletActivityDate}>
-          <div className={s.walletActivityMonth}>{mStart.format('MMM')}</div>
-          <div className={s.walletActivityDay}>{mStart.format('DD')}</div>
+          <div>
+            <div className={s.walletActivityMonth}>{mStart.format('MMM')}</div>
+            <div className={s.walletActivityDay}>{mStart.format('DD')}</div>
+          </div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityTime}>
           <div className={s.walletActivityStart}>{mStart.format('h:mmA')}</div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityItemDescription}>
-          <div className={s.walletActivityItem}>Sent funds</div>
-          <div className={s.walletActivityDescription}>To: {item.fields.recipient}</div>
+          <div>
+            <div className={s.walletActivityItem}>Sent funds</div>
+            <div className={s.walletActivityDescription}>To: {item.fields.recipient}</div>
+          </div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityPrice}>
           <div className={classnames(s.walletActivityAmountWrapper, s.walletActivitySignNegative)}>
@@ -175,7 +179,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
     )
   }
 
-  renderGroup (group: Group, i: number) {
+  renderGroup(group: Group, i: number) {
     const startDate = group.startDate
     const endDate = group.endDate
 
@@ -204,15 +208,19 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
         })}
       >
         <T.TableCell className={s.walletActivityDate}>
-          <div className={s.walletActivityMonth}>{mStart.format('MMM')}</div>
-          <div className={s.walletActivityDay}>{mStart.format('DD')}</div>
+          <div>
+            <div className={s.walletActivityMonth}>{mStart.format('MMM')}</div>
+            <div className={s.walletActivityDay}>{mStart.format('DD')}</div>
+          </div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityTime}>
           <div className={s.walletActivityStart}>{mStart.format('h:mmA')} - <br /> {mEnd.format('h:mmA')}</div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityItemDescription}>
-          <div className={s.walletActivityItem}>{firstInGroup.fields.streamName || firstInGroup.fields.performerName}</div>
-          <div className={s.walletActivityDescription}>{firstInGroup.fields.performerName}</div>
+          <div>
+            <div className={s.walletActivityItem}>{firstInGroup.fields.streamName || firstInGroup.fields.performerName}</div>
+            <div className={s.walletActivityDescription}>{firstInGroup.fields.performerName}</div>
+          </div>
         </T.TableCell>
         <T.TableCell className={s.walletActivityPrice}>
           <div
@@ -281,7 +289,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
   }
 }
 
-function entryFor (item: HistoryItem) {
+function entryFor(item: HistoryItem) {
   if (item.type === 'TIP') {
     return [item]
   }
@@ -289,7 +297,7 @@ function entryFor (item: HistoryItem) {
   return item
 }
 
-function reduceByTipOrPurchase (acc: NestedHistory[], curr: HistoryItem) {
+function reduceByTipOrPurchase(acc: NestedHistory[], curr: HistoryItem) {
   if (Number(curr.price) === 0) {
     return acc
   }
@@ -311,7 +319,7 @@ function reduceByTipOrPurchase (acc: NestedHistory[], curr: HistoryItem) {
   return acc
 }
 
-function reduceByTipStream (acc: Group[], curr: HistoryItem, i: number, all: HistoryItem[]) {
+function reduceByTipStream(acc: Group[], curr: HistoryItem, i: number, all: HistoryItem[]) {
   const date = new Date(curr.createdAt)
 
   const mon = date.getMonth()
@@ -357,7 +365,7 @@ function reduceByTipStream (acc: Group[], curr: HistoryItem, i: number, all: His
   return acc
 }
 
-function mapStateToProps (state: FrameState): StateProps {
+function mapStateToProps(state: FrameState): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
     history: state.shared.history,

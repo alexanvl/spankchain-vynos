@@ -8,6 +8,7 @@ export enum CurrencyIconType {
   FINNEY,
   USD,
   ETH,
+  UNKNOWN,
 }
 
 export interface Props {
@@ -17,10 +18,10 @@ export interface Props {
   currency?: CurrencyType
 }
 
-const CurrencyIcon: React.SFC<Props> = function(props) {
-  const currency =  props.currency === CurrencyType.USD ? CurrencyIconType.USD :
-                    props.currency === CurrencyType.ETH ? CurrencyIconType.ETH :
-                    CurrencyIconType.FINNEY
+const CurrencyIcon: React.SFC<Props> = function (props) {
+  const currency = props.currency === CurrencyType.USD ? CurrencyIconType.USD :
+    props.currency === CurrencyType.FINNEY ? CurrencyIconType.FINNEY :
+      CurrencyIconType.UNKNOWN
 
   return (
     <div
@@ -29,9 +30,9 @@ const CurrencyIcon: React.SFC<Props> = function(props) {
         [s.alt]: props.alt,
         [s.finney]: currency === CurrencyIconType.FINNEY,
         [s.usd]: currency === CurrencyIconType.USD,
-        [s.eth]: currency === CurrencyIconType.ETH,
+        [s.unknown]: currency === CurrencyIconType.UNKNOWN,
       })}
-    />
+    >{currency == CurrencyIconType.UNKNOWN && props.currency}</div>
   )
 }
 

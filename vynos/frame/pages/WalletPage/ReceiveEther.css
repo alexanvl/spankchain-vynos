@@ -6,6 +6,7 @@
 
 .container {
   background-color: #f0f0f0;
+  color: #797979;;
   padding: 2rem;
   padding-bottom: 0;
 }
@@ -14,7 +15,6 @@
   font-family: gt-haptik;
   font-size: 1.8rem;
   font-weight: 500;
-  color: #797979;
   margin: 0 0 1rem 1rem;
 }
 
@@ -73,26 +73,36 @@
   font-size: 0.7rem;
   font-weight: 600;
   font-family: cartographmonocf;
-  color: #797979;
+  margin: 1rem;
 }
 
 .description {
   margin-bottom: 1rem;
 }
 
-.label {
-  margin: 1rem;
+.minAmount {
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+  line-height: 0.8em;
+  font-family: cartographmonocf;
+  margin: 1.2em auto;
+  font-weight: 600;
 }
 
 .input {
   display: flex;
+  margin-bottom: 16px;
 }
+
 
 .input input {
   font-family: CartographMonoCF;
   border-bottom: none !important;
   border-radius: 4rem !important;
   padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  text-overflow: ellipsis;
   font-size: 1.1rem;
   font-weight: 600;
   text-transform: none !important;
@@ -100,12 +110,15 @@
   cursor: text !important;
 }
 
+.input input:active {
+  background: #fbf8f8;
+}
+
 .whiteRect {
   background: #fcfcfc;
   display: flex;
   border-radius: 10px;
   padding: 20px;
-  color: #797979;
   margin: 2rem auto;
   width: 86%;
 }
@@ -156,6 +169,11 @@
   margin-right: 0.5rem;
 }
 
+.minIcon {
+  margin: 0 0.4rem;
+  background-color: white;
+}
+
 .recoverText {
   text-align: center;
   padding: 1rem;
@@ -167,10 +185,11 @@
   font-size: 0.6rem;
 }
 
-@media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
-  .header {
-    padding: 2rem;
-  }
+.smallDown {
+  display: none;
+}
+
+@media only screen and (max-width : 480px) {
 
   .descriptionWrapper {
     padding: 0 2rem;
@@ -198,5 +217,43 @@
   .walletQR {
     width: 6rem;
     height: 6rem;
+  }
+
+  .bottomWrapper {
+    flex-direction: column-reverse;
+    margin-left: 0;
+  }
+
+  .header {
+    margin-left: 0;
+    margin-bottom: 2rem;
+    font-size: 1.4rem;
+    font-weight: 600;
+  }
+  .buttonWrapper {
+    margin: 0;
+  }
+
+  .qrImage {    
+    margin: 2rem auto 0;
+    display: block;
+  }
+
+  .description {
+    font-size: 0.6rem;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .smallDown {
+    display:block;
+  }
+
+  .mediumUp {
+    display: none;
+  }
+
+  .input input {
+    font-size: 0.7rem;
   }
 }

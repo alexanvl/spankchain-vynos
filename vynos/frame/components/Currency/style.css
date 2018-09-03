@@ -1,7 +1,9 @@
 .currency {
   font-size: inherit !important;
-  display: flex;
+  display: inline-flex;
   flex-flow: row nowrap;
   align-items: center;
   justify-content: center;
+  font-family: cartographmonocf;
+  font-weight: 600;
 }

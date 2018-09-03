@@ -99,8 +99,8 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
 
   getText() {
     return this.props.isPerformer
-      ? 'Welcome to your new SpankCard! Before you can start getting paid with crypto, you\'ll need to protect your SpankCard with a password'
-      : 'Welcome to your new SpankCard! Before you can start tipping with crypto, you\'ll need to protect your SpankCard with a password'
+      ? 'Welcome to your new SpankPay account! Before you can start getting paid with crypto, you\'ll need to protect your account with a password'
+      : 'Welcome to your new SpankPay account! Before you can start tipping with crypto, you\'ll need to protect your account with a password'
   }
 
   render() {
@@ -116,7 +116,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
         currentStep={0}
       >
         <div className={style.content}>
-          <div className={style.funnelTitle}>We've made a SpankCard for you</div>
+          <div className={style.funnelTitle}>Your SpankPay Account</div>
           <TextBox className={style.passwordTextBox}>
             {this.getText()}
           </TextBox>

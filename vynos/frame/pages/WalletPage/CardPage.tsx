@@ -113,6 +113,7 @@ class CardPage extends React.Component<StateProps, CardPageState> {
             <div className={s.walletSpankCardActions}>
               <Tooltip
                 trigger="click"
+                className="balanceTooltip" // this is intentionally a string because tooltip styles need to be added to /components/Tooltip/unprefixedStyle.css
                 content={
                   <BalanceTooltip
                     amount={cardBalance}

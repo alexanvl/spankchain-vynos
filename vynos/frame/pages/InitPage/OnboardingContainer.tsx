@@ -1,8 +1,8 @@
 import * as React from "react"
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 import * as classnames from "classnames"
 import WorkerProxy from '../../WorkerProxy'
-import {FrameState} from '../../redux/FrameState'
+import { FrameState } from '../../redux/FrameState'
 import WalletCard from "../../components/WalletCard/index"
 import WalletMiniCard from "../../components/WalletMiniCard/index"
 import XButton from '../../components/XButton/index'
@@ -56,7 +56,7 @@ export class OnboardingContainer extends React.Component<Props> {
     return (
       <div
         className={s.progressDots}>
-          {steps}
+        {steps}
       </div>
     )
   }
@@ -75,13 +75,15 @@ export class OnboardingContainer extends React.Component<Props> {
           {this.renderProgressDots()}
           <XButton onClick={this.closeView} />
         </div>
-        <WalletCard
-          width={275}
-          cardTitle="SpankPay"
-          companyName="SpankChain"
-          name="spanktoshi"
-          className={s.funnelWalletCard}
-        />
+        <div className={s.cardWrapper}>
+          <WalletCard
+            width={275}
+            cardTitle="SpankPay"
+            companyName="SpankChain"
+            name="spanktoshi"
+            className={s.funnelWalletCard}
+          />
+        </div>
         {this.props.children}
       </div>
     )

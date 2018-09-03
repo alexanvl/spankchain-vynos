@@ -1,8 +1,19 @@
 .currency {
   width: 29px;
-  height: 17px;
+  height: 16px;
   text-indent: -999999px;
   background-size: contain !important;
+  border-radius: 3px;
+}
+
+.unknown {
+  border: 1px solid;
+  text-indent: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 600;
+  font-size: 0.7rem;
 }
 
 .finney {
