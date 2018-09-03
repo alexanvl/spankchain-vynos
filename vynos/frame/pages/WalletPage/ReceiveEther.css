@@ -13,8 +13,8 @@
 
 .header {
   font-family: gt-haptik;
-  font-size: 1.8rem;
-  font-weight: 500;
+  font-size: 1.6rem;
+  font-weight: 600;
   margin: 0 0 1rem 1rem;
 }
 
@@ -228,8 +228,8 @@
     margin-left: 0;
     margin-bottom: 2rem;
     font-size: 1.4rem;
-    font-weight: 600;
   }
+  
   .buttonWrapper {
     margin: 0;
   }

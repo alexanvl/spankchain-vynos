@@ -641,6 +641,10 @@
 }
 
 @media only screen and (max-width : 480px) {
+    
+  .walletActivityHeader {
+    font-size: 1.4rem;
+  }
   .walletWrapper {
     width: 100vw;
   }
