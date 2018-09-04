@@ -85,20 +85,6 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
   render() {
     const { isLoading, error } = this.state
 
-    if (isLoading || error) {
-      return (
-        <div className={s.walletActivityWrapper}>
-          <div className={s.walletActivityHeaderRow}>
-            <div className={classnames(s.walletActivityMiniHeader, {
-              [s.walletActivityErrorHeader]: !!error
-            })}>
-              {error ? error : 'Loading...'}
-            </div>
-          </div>
-        </div>
-      )
-    }
-
     const groups = this.props.history.reduce(reduceByTipOrPurchase, [])
       .reduce((acc: GroupOrHistory[], curr: NestedHistory) => {
         if (!Array.isArray(curr)) {
@@ -111,10 +97,8 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
       }, [])
 
     return (
-      <div className={s.walletActivityWrapper}>
-        <div className={s.walletActivityHeaderRow}>
-          <div className={s.walletActivityHeader}>Activity</div>
-        </div>
+      <div className={s.subpageWrapper}>
+        <div className={s.header}>Activity</div>
         <T.Table className={s.walletActivityTable}>
           <T.TableHeader className={s.walletActivityTableHeader}>
             <T.TableRow>
@@ -134,6 +118,13 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
             }
           </T.TableBody>
         </T.Table>
+        {(isLoading || error) &&
+          <div className={classnames(s.walletActivityMiniHeader, {
+            [s.walletActivityErrorHeader]: !!error
+          })}>
+            {error ? error : 'Loading...'}
+          </div>
+        }
       </div>
     )
   }

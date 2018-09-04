@@ -7,6 +7,25 @@
   z-index: 100;
 }
 
+.subpageWrapper {
+  background-color: #f0f0f0;
+  color: #797979;
+  padding: 2rem;
+}
+
+.header {
+  font-size: 1.6rem;
+  font-weight: 500;
+  margin: 0 1rem 1.5rem;
+}
+
+@media screen and (max-width:480px){
+  .header {
+    font-size: 1.4rem;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
 
 .downArrow {
   background: url('../../styles/images/caret-down-solid.svg') no-repeat center center;
@@ -295,9 +314,6 @@
 }
 
 .walletActivityWrapper {
-  background: #f0f0f0;
-  padding: 2rem 0;
-  max-height: 17rem;
   overflow-y: auto;
   overflow-x: hidden;
   box-sizing: content-box;

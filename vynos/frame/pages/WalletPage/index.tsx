@@ -1,18 +1,14 @@
 import * as React from 'react'
-import {Route, Switch} from 'react-router'
-import {connect} from 'react-redux'
+import { Route, Switch } from 'react-router'
+import { connect } from 'react-redux'
 import Web3 = require('web3')
-import {nameByPath} from './WalletMenu'
 import ActivitySubpage from './ActivitySubpage'
-import SendReceivePage from './SendReceivePage'
-import SpankCardPage from './CardPage'
 import AddFunds from './AddFunds'
-import MainEntry from './MainEntry/index'
-import SendReceiveWrapper from './SendReceiveWrapper'
+import SpankCardPage from './CardPage'
+import SendCurrency from './SendCurrency'
+import ReceivePage from './ReceivePage'
 import RevealPrivateKey from './RevealPrivateKey'
-import WalletCTAButton from './WalletCTAButton/index'
-import LoadUpSpank from './LoadUpSpank'
-import {FrameState} from '../../redux/FrameState'
+import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import BN = require('bn.js')
 
@@ -20,11 +16,10 @@ const s = require('./styles.css')
 const st = require('./index.css')
 
 export interface WalletPageStateProps {
-  name: string
   path: string
   web3: Web3
   workerProxy: WorkerProxy
-  address: string|null
+  address: string | null
   walletBalance: BN
   cardBalance: BN
 }
@@ -55,91 +50,60 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
     workerProxy.toggleFrame(false)
   }
 
-  renderMainPage () {
-    const { walletBalance } = this.props
-
+  renderMainPage() {
     return (
-      <Switch>
-        <Route
-          exact
-          path="/card/to/wallet"
-          component={SendReceivePage}
-        />
-        <Route
-          exact
-          path="/card/insufficient"
-          render={() => (
-            walletBalance.gt(new BN(0))
-              ? <SpankCardPage />
-              : <SendReceivePage />
-          )}
-        />
-        <Route
-          path="/wallet"
-          render={() => {
-            if (this.state.isPopulatingChannels || this.state.channelPopulationError) {
-              return this.renderLoadingOrError()
-            }
-
-            return <MainEntry />
-          }}
-        />
-      </Switch>
+      <Route
+        path="/wallet"
+        render={() => {
+          if (this.state.isPopulatingChannels || this.state.channelPopulationError) {
+            return this.renderLoadingOrError()
+          }
+          return <SpankCardPage />
+        }}
+      />
     )
   }
 
-  renderSubPage () {
-    const {address, walletBalance} = this.props
+  renderSubPage() {
+    const { address } = this.props
 
     return (
       <Switch>
-        <Route
-          exact
-          path="/card/to/wallet"
-          render={() => (
-            <WalletCTAButton
-              to="/wallet"
-            />
-          )}
-        />
-        <Route
-          exact
-          path="/card/insufficient"
-          render={() => (
-            walletBalance.gt(new BN(0))
-              ? <LoadUpSpank />
-              : <SendReceiveWrapper address={address!} balance={this.props.walletBalance} />
-          )}
-        />
         <Route
           exact
           path="/wallet/activity"
           component={ActivitySubpage}
         />
         <Route
-          path="/wallet/(send|receive)"
-          render={() => <SendReceiveWrapper address={address!} balance={this.props.walletBalance} />}
+          exact
+          path="/wallet/send"
+          component={SendCurrency}
+        />
+        <Route
+          path="/wallet/receive"
+          render={() => <ReceivePage address={address!} />}
         />
         <Route
           path="/wallet/reveal"
-          render={() => <RevealPrivateKey  />}
+          render={() => <RevealPrivateKey />}
         />
         <Route
           path="/wallet"
-          render={()=>this.props.cardBalance.eq(new BN(0)) ? <AddFunds/>: null}
+          render={() => this.props.cardBalance.eq(new BN(0)) ? <AddFunds /> : null}
         />
       </Switch>
+
     )
   }
 
-  render () {
+  render() {
     if (!this.props.address) {
       return <noscript />
     }
 
     return (
       <div className={s.walletWrapper}>
-        <div className={s.cover} onClick={this.closeFrame}/>
+        <div className={s.cover} onClick={this.closeFrame} />
         <div className={s.walletContentContainer}>
           {this.renderMainPage()}
           {this.renderSubPage()}
@@ -148,7 +112,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
     )
   }
 
-  renderLoadingOrError () {
+  renderLoadingOrError() {
     if (this.state.channelPopulationError) {
       return (
         <div className={s.walletRow}>
@@ -172,10 +136,9 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 }
 
-function mapStateToProps (state: FrameState): WalletPageStateProps {
+function mapStateToProps(state: FrameState): WalletPageStateProps {
   let workerProxy = state.temp.workerProxy!
   return {
-    name: nameByPath(state.shared.rememberPath),
     path: state.shared.rememberPath,
     web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
