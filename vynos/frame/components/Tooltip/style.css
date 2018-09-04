@@ -7,6 +7,11 @@
   font-size: 1.1em;
 }
 
+.content {
+  margin: 0;
+  font-size: .6em;
+}
+
 .arrow {
   color: #282828;
 }
