@@ -184,7 +184,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     }, new BigNumber(0))
 
     const isNeg = total.isNegative()
-
+    // BOOKMARK 1 render react
     return [
       <T.TableRow
         key={`${group.groupKey}-info`}
@@ -247,7 +247,12 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             <div className={s.walletActivityStart}>{moment(new Date(item.createdAt)).format('h:mmA')}</div>
           </T.TableCell>
           <T.TableCell className={s.walletActivityItemDescription}>
-            <div className={s.walletActivityItem}>{item.fields.streamName || item.fields.performerName}</div>
+            <div className={s.walletActivityItem}>
+            {isNeg
+              ? item.fields.streamName || item.fields.performerName
+              : item.fields.tipperName
+            }
+            </div>
           </T.TableCell>
           <T.TableCell className={s.walletActivityPrice}>
             <div
@@ -275,11 +280,9 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
 }
 
 function entryFor(item: HistoryItem) {
-  if (item.type === 'TIP') {
-    return [item]
-  }
-
-  return item
+  return item.type === 'TIP'
+    ? [item]
+    : item
 }
 
 function reduceByTipOrPurchase(acc: NestedHistory[], curr: HistoryItem) {

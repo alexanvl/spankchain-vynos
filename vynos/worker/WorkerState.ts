@@ -58,7 +58,8 @@ export interface HistoryItem {
     streamName?: string,
     productName?: string,
     productSku?: string,
-    recipient?: string
+    recipient?: string,
+    tipperName?: string,
   }
   createdAt: number
   type: PurchaseMetaType

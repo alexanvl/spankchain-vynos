@@ -58,14 +58,15 @@ export default class HubController extends AbstractController implements Lifecyc
   public stop = async (): Promise<void> => {
     this.poller.stop()
   }
-
   public fetchHistory = async (): Promise<HistoryItem[]> => {
     const hubUrl = await this.sharedStateView.getHubUrl()
     const address = (await this.sharedStateView.getAccounts())[0]
+    // BOOKMARK 3 request history from /accounts/:address/payments
     const history = await requestJson<HistoryItem[]>(`${hubUrl}/accounts/${address}/payments`, {
       credentials: 'include'
     })
 
+    // BOOKMARK 2 set history in redux store
     this.store.dispatch(actions.setHistory(history))
     return history
   }
