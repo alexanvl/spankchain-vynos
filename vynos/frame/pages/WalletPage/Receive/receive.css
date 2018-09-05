@@ -68,18 +68,6 @@
   margin-top: 1rem;
 }
 
-.description,
-.label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  font-family: cartographmonocf;
-  margin: 1rem;
-}
-
-.description {
-  margin-bottom: 1rem;
-}
-
 .minAmount {
   display: flex;
   align-items: center;

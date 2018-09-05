@@ -2,11 +2,11 @@ import * as React from 'react'
 import { Route, Switch } from 'react-router'
 import { connect } from 'react-redux'
 import Web3 = require('web3')
-import ActivitySubpage from './ActivitySubpage'
-import AddFunds from './AddFunds'
-import SpankCardPage from './CardPage'
+import Activity from './Activity'
+import AddFundsCallout from './AddFundsCallout'
+import SpankCard from './SpankCard'
 import SendCurrency from './SendCurrency'
-import ReceivePage from './ReceivePage'
+import Receive from './Receive'
 import RevealPrivateKey from './RevealPrivateKey'
 import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
@@ -58,7 +58,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
           if (this.state.isPopulatingChannels || this.state.channelPopulationError) {
             return this.renderLoadingOrError()
           }
-          return <SpankCardPage />
+          return <SpankCard />
         }}
       />
     )
@@ -72,7 +72,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         <Route
           exact
           path="/wallet/activity"
-          component={ActivitySubpage}
+          component={Activity}
         />
         <Route
           exact
@@ -81,7 +81,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         />
         <Route
           path="/wallet/receive"
-          render={() => <ReceivePage address={address!} />}
+          render={() => <Receive address={address!} />}
         />
         <Route
           path="/wallet/reveal"
@@ -89,7 +89,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         />
         <Route
           path="/wallet"
-          render={() => this.props.cardBalance.eq(new BN(0)) ? <AddFunds /> : null}
+          render={() => this.props.cardBalance.eq(new BN(0)) ? <AddFundsCallout /> : null}
         />
       </Switch>
 
