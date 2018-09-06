@@ -17,11 +17,13 @@ export interface BalanceTooltipProps {
   hasActiveDeposit?: boolean
 }
 
-let amountReservedWei: CC 
+let amountReservedWei: CC
 let canUpdateAmountReserved = true
 
 export const BalanceTooltip = ({ amount, inputType, reserveBalance, reserveBalanceType, exchangeRates, hasActiveDeposit }: BalanceTooltipProps) => {
-  if (!amountReservedWei) amountReservedWei = new CC(CurrencyType.WEI, '0', () => exchangeRates)
+  if (!amountReservedWei) {
+    amountReservedWei = new CC(CurrencyType.WEI, '0', () => exchangeRates)
+  }
 
   const reserveBalanceWEI = new CC(
     reserveBalanceType,
@@ -41,7 +43,9 @@ export const BalanceTooltip = ({ amount, inputType, reserveBalance, reserveBalan
     () => exchangeRates,
   ).toWEI()
 
-  if (!hasActiveDeposit && canUpdateAmountReserved) amountReservedWei = reserveBalanceWEI
+  if (!hasActiveDeposit && canUpdateAmountReserved) {
+    amountReservedWei = reserveBalanceWEI
+  }
   canUpdateAmountReserved = !!hasActiveDeposit
 
   const amountReservedString = amountReservedWei

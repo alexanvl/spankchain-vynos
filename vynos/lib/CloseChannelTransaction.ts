@@ -8,7 +8,7 @@ import withRetries from './withRetries'
 import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
 import LockStateObserver from './LockStateObserver'
 import ChannelPopulator, {DeferredPopulator} from './ChannelPopulator'
-import { error } from 'util';
+import {IConnext} from './connext/ConnextTypes'
 
 /**
  * The CloseChannelTransaction handles starting new withdrawals as well
@@ -21,14 +21,14 @@ import { error } from 'util';
 
 export default class CloseChannelTransaction implements TransactionInterface {
   private doCloseChannel: AtomicTransaction
-  private connext: any
+  private connext: IConnext
   private store: Store<WorkerState>
   private lockStateObserver: LockStateObserver
   private sem: semaphore.Semaphore
   private chanPopulator: ChannelPopulator
   private deferredPopulate: DeferredPopulator | null
 
-  constructor (store: Store<WorkerState>, connext: any, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore, chanPopulator: ChannelPopulator) {
+  constructor (store: Store<WorkerState>, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore, chanPopulator: ChannelPopulator) {
     this.store = store
     this.connext = connext
     this.lockStateObserver = lockStateObserver
@@ -87,7 +87,8 @@ export default class CloseChannelTransaction implements TransactionInterface {
       return
     }
     try{
-      return this.connext.closeThreads(channel.currentVCs.map((vc) => vc.channelId) as any)
+      this.connext.closeThreads(channel.currentVCs.map((vc) => vc.channelId) as any)
+      return
     } catch(e) {
       console.error('connext.closeThreads failed', e)
       throw e

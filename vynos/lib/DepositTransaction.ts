@@ -9,6 +9,7 @@ import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
 import LockStateObserver from './LockStateObserver'
 import ChannelPopulator, {DeferredPopulator} from './ChannelPopulator'
 import BN = require('bn.js')
+import {IConnext, Deposit} from './connext/ConnextTypes'
 
 /**
  * The DepositTransaction handles starting new deposits as well
@@ -19,14 +20,11 @@ import BN = require('bn.js')
  * Author: William Cory -- GitHub: roninjin10
  */
 
-interface Deposit {
-  ethDeposit: BN;
-  tokenDeposit: BN | null;
-}
+
 
 export default class DepositTransaction implements TransactionInterface {
   private doDeposit: AtomicTransaction
-  private connext: any
+  private connext: IConnext
   private store: Store<WorkerState>
   private needsCollateral: boolean = false
   private lockStateObserver: LockStateObserver
@@ -38,7 +36,7 @@ export default class DepositTransaction implements TransactionInterface {
 
   constructor (
     store: Store<WorkerState>,
-    connext: any,
+    connext: IConnext,
     lockStateObserver: LockStateObserver,
     sem: semaphore.Semaphore,
     chanPopulator: ChannelPopulator

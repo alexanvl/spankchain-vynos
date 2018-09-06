@@ -45,7 +45,7 @@ window.addEventListener('load', function () {
           performerId: 'abc-234',
           performerName: 'Butter Bubble'
         },
-        receiver: '0x206726d546769375f4747c4151b5dcdeba1e73b2'
+        receiver: '0x6b97e388f6e5cfe6dd90500eb9573a7a247d0678'
       })
     }
   }

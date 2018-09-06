@@ -66,8 +66,10 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
 
   validateBalance = () => {
     const cardBalance = this.props.cardBalance!.amountBigNumber
-    const { balance } = this.state
-    if (!cardBalance) return false
+    const {balance} = this.state
+    if (!cardBalance) {
+      return false
+    }
     if (!balance) {
       this.setState({ balanceError: 'Balance cannot be empty' })
       return false
@@ -95,7 +97,9 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
     const { address, isAddressDirty } = this.state
     const { isAddress } = utils
 
-    if (!isAddressDirty) return false
+    if (!isAddressDirty) {
+      return false
+    }
 
     if (!address) {
       this.setState({

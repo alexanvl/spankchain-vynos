@@ -4,15 +4,16 @@ import AbstractController from './AbstractController'
 import {LifecycleAware} from './LifecycleAware'
 import Logger from '../../lib/Logger'
 import Poller from '../../lib/Poller'
+import {IConnext} from '../../lib/connext/ConnextTypes'
 
 export default class ChannelJoinController extends AbstractController implements LifecycleAware {
-  private connext: any
+  private connext: IConnext
   private store: Store<WorkerState>
   private poller: Poller
   static INTERVAL_LENGTH = 60000
 
   constructor(
-    connext: any,
+    connext: IConnext,
     store: Store<WorkerState>,
     logger: Logger,
   ) {

@@ -1,5 +1,5 @@
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
-import {WorkerState} from '../WorkerState'
+import {WorkerState, CurrencyType} from '../WorkerState'
 import {Store} from 'redux'
 import * as semaphore from 'semaphore'
 import AbstractController from './AbstractController'
@@ -20,7 +20,8 @@ import BuyTransaction from '../../lib/BuyTransaction'
 import getCurrentLedgerChannels from '../../lib/connext/getCurrentLedgerChannels'
 import LockStateObserver from '../../lib/LockStateObserver'
 import ChannelPopulator from '../../lib/ChannelPopulator'
-import Web3 = require('web3')
+import Currency from '../../lib/Currency'
+import {IConnext} from '../../lib/connext/ConnextTypes'
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -28,13 +29,13 @@ export default class MicropaymentsController extends AbstractController {
   timeout: any
 
   private sem: semaphore.Semaphore
-  private connext: any
+  private connext: IConnext
   private depositTransaction: DepositTransaction
   private closeChannelTransaction: CloseChannelTransaction
   private buyTransaction: BuyTransaction
   private chanPopulator: ChannelPopulator
 
-  constructor (web3: Web3, store: Store<WorkerState>, logger: Logger, connext: any, lockStateObserver: LockStateObserver, chanPopulator: ChannelPopulator) {
+  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, lockStateObserver: LockStateObserver, chanPopulator: ChannelPopulator) {
     super(logger)
     this.store = store
     this.sem = semaphore(1)
@@ -64,16 +65,17 @@ export default class MicropaymentsController extends AbstractController {
     return takeSem<void>(this.sem, () => this.doDeposit(amount))
   }
 
-  public async buy (price: string, meta: any): Promise<VynosBuyResponse> {
+  public async buy (priceStrWEI: string, meta: any): Promise<VynosBuyResponse> {
     if (!this.sem.available(1)) {
       throw new Error('Cannot tip. Another operation is in progress.')
     }
+    const priceWEI = new Currency(CurrencyType.WEI, priceStrWEI)
     return takeSem<VynosBuyResponse>(this.sem, () => {
       this.logToApi('doBuy', {
-        price,
+        priceStrWEI,
         meta
       })
-      return this.buyTransaction.startTransaction(price, meta)
+      return this.buyTransaction.startTransaction(priceWEI, meta)
     })
   }
 
@@ -99,15 +101,11 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   private async doDeposit (amount: string): Promise<void> {
-    this.logToApi('doDeposit', {
-      amount
-    })
+    this.logToApi('doDeposit', {amount})
 
     const existingChannel = await getCurrentLedgerChannels(this.connext, this.store)
-    if (existingChannel) {
-      await this.depositTransaction.depositIntoExistingChannel(amount)
-    } else {
-      await this.depositTransaction.startTransaction(amount)
-    }
+    existingChannel
+      ? await this.depositTransaction.depositIntoExistingChannel(amount)
+      : await this.depositTransaction.startTransaction(amount)
   }
 }
