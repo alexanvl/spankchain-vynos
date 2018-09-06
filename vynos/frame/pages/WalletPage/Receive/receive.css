@@ -27,7 +27,7 @@
 }
 
 .ctaIcon {
-  background-image: url(../../styles/images/copy-white.svg);
+  background-image: url(../../../styles/images/copy-white.svg);
   height: 1rem;
   width: 1rem;
   background-repeat: no-repeat;
@@ -66,18 +66,6 @@
   background-color: white;
   border: 0;
   margin-top: 1rem;
-}
-
-.description,
-.label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  font-family: cartographmonocf;
-  margin: 1rem;
-}
-
-.description {
-  margin-bottom: 1rem;
 }
 
 .minAmount {
@@ -176,7 +164,8 @@
 
 .recoverText {
   text-align: center;
-  padding: 1rem;
+  position: relative;
+  top: 1rem;
 }
 
 .recoverText a {

@@ -1,14 +1,15 @@
 import * as React from 'react';
-import {connect} from 'react-redux'
+import { connect } from 'react-redux'
 import * as copy from 'copy-to-clipboard'
-import WorkerProxy from '../../WorkerProxy'
-import {FrameState} from '../../redux/FrameState'
-import Input from '../../components/Input/index'
-import Button from '../../components/Button/index'
-import CTAInput from "../../components/CTAInput/index"
+import WorkerProxy from '../../../WorkerProxy'
+import { FrameState } from '../../../redux/FrameState'
+import Input from '../../../components/Input'
+import Button from '../../../components/Button'
+import CTAInput from "../../../components/CTAInput"
 import bip39 = require('bip39')
 
-const style = require('./RevealPrivateKey.css')
+const style = require('./style.css')
+const baseStyle = require('../styles.css')
 
 export interface RevealPrivateKeyProps {
   workerProxy: WorkerProxy
@@ -44,7 +45,7 @@ class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPriv
     }
   }
 
-  async handleSubmitSeed () {
+  async handleSubmitSeed() {
     let privateKey
     const phrase = this.state.seeds.join(' ')
 
@@ -71,7 +72,7 @@ class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPriv
     })
   }
 
-  updateSeed (i: number, e: any) {
+  updateSeed(i: number, e: any) {
     const value = e.target.value.toLowerCase()
 
     if (!value.match(alpha)) {
@@ -86,14 +87,14 @@ class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPriv
     })
   }
 
-  setSeed (i: number) {
+  setSeed(i: number) {
     return {
       value: this.state.seeds[i] || '',
       onChange: (e: KeyboardEvent) => this.updateSeed(i, e)
     }
   }
 
-  renderFields () {
+  renderFields() {
     const out = []
 
     for (let i = 0; i < 12; i++) {
@@ -117,7 +118,7 @@ class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPriv
   }
 
   onCopyAddress = () => {
-    const {privateKey} = this.state;
+    const { privateKey } = this.state;
 
     if (privateKey) {
       copy(privateKey)
@@ -133,10 +134,10 @@ class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPriv
 
   renderPrivateKey() {
     return (
-      <div className={style.container}>
-        <div className={style.header}>Reveal private key</div>
+      <div className={baseStyle.subpageWrapper}>
+        <div className={baseStyle.header}>Your private key</div>
         <div className={style.descriptionWrapper}>
-           <div className={style.description}>Enter your private key at <a href="https://mycrypto.com/account">MyCrypto</a>.</div>
+          <div className={style.description}>You can enter your private key at <a href="https://mycrypto.com/account">MyCrypto</a>.</div>
         </div>
         <div className={style.contentWrapper}>
           <CTAInput
@@ -161,12 +162,10 @@ class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPriv
 
   renderSeedInputs() {
     return (
-      <div className={style.container}>
-        <div className={style.header}>Reveal private key</div>
-        <div className={style.descriptionWrapper}>
-           <div className={style.description}>Enter your seed words to reveal your private key.</div>
-           {this.state.seedError && <div className={style.error}>{this.state.seedError}</div>}
-        </div>
+      <div className={baseStyle.subpageWrapper}>
+        <div className={baseStyle.header}>Reveal private key</div>
+        <div className={baseStyle.description}>Enter your seed words to reveal your private key.</div>
+        {this.state.seedError && <div className={style.error}>{this.state.seedError}</div>}
         {this.renderFields()}
         <div className={style.buttonWrapper}>
           <Button
@@ -187,7 +186,7 @@ class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPriv
   }
 }
 
-function mapStateToProps (state: FrameState): RevealPrivateKeyProps {
+function mapStateToProps(state: FrameState): RevealPrivateKeyProps {
   return {
     workerProxy: state.temp.workerProxy
   }

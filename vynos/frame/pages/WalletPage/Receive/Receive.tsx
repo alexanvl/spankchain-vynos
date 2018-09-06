@@ -3,11 +3,12 @@ import * as copy from 'copy-to-clipboard'
 import * as qr from 'qr-image'
 import * as classnames from 'classnames'
 import { Link } from 'react-router-dom'
-import Input from "../../components/Input"
-import Button from "../../components/Button"
-import Currency, { CurrencyType } from '../../components/Currency'
+import Input from "../../../components/Input"
+import Button from "../../../components/Button"
+import Currency, { CurrencyType } from '../../../components/Currency'
 
-const s = require('./ReceiveEther.css')
+const s = require('./receive.css')
+const baseStyle = require('../styles.css')
 
 
 export interface Props {
@@ -31,7 +32,7 @@ function renderQR(address: string | null) {
   )
 }
 
-export class ReceiveEtherStart extends React.Component<Props, State> {
+export class Receive extends React.Component<Props, State> {
   timeout: any
 
   state = {
@@ -65,9 +66,9 @@ export class ReceiveEtherStart extends React.Component<Props, State> {
     } = this.props;
 
     return (
-      <div className={s.container}>
-        <div className={s.header}>Add Ether to your card</div>
-        <div className={classnames(s.description, s.mediumUp)}>Only send Ether (ETH) to this address.</div>
+      <div className={baseStyle.subpageWrapper}>
+        <div className={baseStyle.header}>Add Ether to your card</div>
+        <div className={classnames(baseStyle.description, s.mediumUp)}>Only send Ether (ETH) to this address.</div>
 
         <div className={classnames(s.minAmount, s.smallDown)}>Minimum Amount
               <Currency
@@ -132,4 +133,4 @@ export class ReceiveEtherStart extends React.Component<Props, State> {
   }
 }
 
-export default ReceiveEtherStart
+export default Receive

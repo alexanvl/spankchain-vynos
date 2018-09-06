@@ -36,11 +36,11 @@ enum ActiveButton {
 
 let activeButton: ActiveButton = ActiveButton.NONE
 
-export interface CardPageState {
+export interface SpankCardState {
   error: string
 }
 
-class CardPage extends React.Component<StateProps, CardPageState> {
+class SpankCard extends React.Component<StateProps, SpankCardState> {
   constructor(props: StateProps) {
     super(props)
     this.state = { error: '' }
@@ -204,4 +204,4 @@ function mapStateToProps(state: FrameState): StateProps {
   }
 }
 
-export default connect(mapStateToProps)(CardPage)
+export default connect(mapStateToProps)(SpankCard)

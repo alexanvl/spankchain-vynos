@@ -1,16 +1,17 @@
-import {Store} from 'redux' 
-import {WorkerState} from '../../worker/WorkerState' 
+import {Store} from 'redux'
+import {WorkerState} from '../../worker/WorkerState'
 import getVirtualChannels from '../getVirtualChannels'
 import VirtualChannel from './VirtualChannel'
+import {IConnext} from './ConnextTypes'
 
-export async function closeAllVCs(store: Store<WorkerState>, connext: any) {
+export async function closeAllVCs(store: Store<WorkerState>, connext: IConnext) {
   const channel = store.getState().runtime.channel
 
   if (!channel) {
     return
   }
 
-  const vcs = await getVirtualChannels(channel.ledgerId) 
+  const vcs = await getVirtualChannels(channel.ledgerId)
 
   if (!vcs.length) {
     return

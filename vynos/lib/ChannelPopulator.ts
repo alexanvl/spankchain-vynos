@@ -6,6 +6,7 @@ import aggregateVCBalances from './aggregateVCBalances'
 import getAddress from './getAddress'
 import * as actions from '../worker/actions'
 import BN = require('bn.js')
+import {IConnext} from './connext/ConnextTypes'
 
 export interface DeferredPopulator {
   populate (): Promise<void>
@@ -13,11 +14,11 @@ export interface DeferredPopulator {
 }
 
 export default class ChannelPopulator {
-  private connext: any
+  private connext: IConnext
   private store: Store<WorkerState>
   private awaiter: Promise<void> | null
 
-  constructor (connext: any, store: Store<WorkerState>) {
+  constructor (connext: IConnext, store: Store<WorkerState>) {
     this.awaiter = null
     this.connext = connext
     this.store = store

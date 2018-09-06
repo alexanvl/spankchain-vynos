@@ -31,8 +31,12 @@ export default class LockStateObserver {
       const isLocked = this.isLocked()
       const authToken = this.store.getState().runtime.currentAuthToken
 
-      if (isLocked === wasLocked) return
-      if (!isLocked && authToken === prevAuthToken) return
+      if (isLocked === wasLocked) {
+        return
+      }
+      if (!isLocked && authToken === prevAuthToken) {
+        return
+      }
 
       wasLocked = isLocked
       prevAuthToken = authToken

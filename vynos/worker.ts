@@ -42,6 +42,7 @@ import ChannelPopulator from './lib/ChannelPopulator'
 import BalanceController from './worker/controllers/BalanceController'
 import WithdrawalController from './worker/controllers/WithdrawalController'
 import * as actions from './worker/actions'
+import { IConnext } from './lib/connext/ConnextTypes';
 
 export class ClientWrapper implements WindowClient {
   private self: ServiceWorkerGlobalScope
@@ -129,7 +130,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       : undefined
 
     const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE, reduxMiddleware) as Store<WorkerState>
-    
+
     const isPersistedStatePreMigration = !store.getState().persistent.transactions
     if (isPersistedStatePreMigration) {
       store.dispatch(actions.setInitialState(null))
@@ -146,7 +147,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       watcherUrl: process.env.HUB_URL!,
       ingridUrl: process.env.HUB_URL!,
       contractAddress: process.env.CONTRACT_ADDRESS!
-    })
+    }) as any
 
     await new Promise((resolve) => persistStore(store, undefined, resolve))
 
@@ -166,7 +167,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const backgroundController = new BackgroundController(store, web3, logger)
     const frameController = new FrameController(store, logger)
     const hubController = new HubController(store, sharedStateView, logger)
-    const micropaymentsController = new MicropaymentsController(web3, store, logger, connext, lockStateObserver, chanPopulator)
+    const micropaymentsController = new MicropaymentsController(store, logger, connext, lockStateObserver, chanPopulator)
     const authController = new AuthController(store, backgroundController, sharedStateView, providerOpts, frameController, logger)
     const walletController = new WalletController(web3, store, sharedStateView, logger)
     const virtualChannelsController = new VirtualChannelsController(logger, lockStateObserver, chanPopulator)

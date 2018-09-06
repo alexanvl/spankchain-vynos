@@ -22,13 +22,9 @@ import {BrowserRouter} from 'react-router-dom'
 const MOUNT_POINT_ID = 'mount-point'
 
 async function renderToMountPoint (mountPoint: HTMLElement, workerProxy: WorkerProxy) {
-  let store: Store<FrameState>
-
-  if (process.env.DEBUG) {
-    store = redux.createStore(reducers(workerProxy), initialState(workerProxy))
-  } else {
-    store = redux.createStore(reducers(workerProxy), initialState(workerProxy))
-  }
+  const store: Store<FrameState> = process.env.DEBUG
+    ? redux.createStore(reducers(workerProxy), initialState(workerProxy))
+    : redux.createStore(reducers(workerProxy), initialState(workerProxy))
 
   const frameState = await workerProxy.getSharedState()
   let remoteStore = new RemoteStoreUpdater(workerProxy, frameState)

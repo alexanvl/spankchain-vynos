@@ -9,7 +9,6 @@
   display: flex;
   justify-content: flex-end;
   flex-flow: row nowrap;
-  margin: 0 2rem 2rem;
 }
 
 .autoFillButton25 {
@@ -95,7 +94,6 @@
 .contentRow {
   display: flex;
   flex-flow: row nowrap;
-  margin: 0 2rem;
 }
 
 .inputRow {
@@ -254,17 +252,12 @@
     font-size: 1.4rem;
   }
 
-  .contentRow {
-    margin: 0 1rem 1rem;
-  }
-
   .inputEqual {
     margin: 0 .5rem;
   }
   .autoFillButtons {
     flex-flow: row wrap;
     justify-content: space-around;
-    margin: 0 0 2rem;
   }
 
   .autoFillButtons button {

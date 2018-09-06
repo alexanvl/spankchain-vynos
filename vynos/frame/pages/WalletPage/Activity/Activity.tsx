@@ -1,15 +1,16 @@
 import * as React from 'react'
-import * as T from '../../components/Table/index'
+import * as T from '../../../components/Table/index'
 import * as classnames from 'classnames'
 import { connect } from 'react-redux'
-import { FrameState } from '../../redux/FrameState'
-import WorkerProxy from '../../WorkerProxy'
-import { HistoryItem } from '../../../worker/WorkerState'
-import Currency, { CurrencyType } from '../../components/Currency/index'
+import { FrameState } from '../../../redux/FrameState'
+import WorkerProxy from '../../../WorkerProxy'
+import { HistoryItem } from '../../../../worker/WorkerState'
+import Currency, { CurrencyType } from '../../../components/Currency/index'
 import * as BigNumber from 'bignumber.js'
 import * as moment from 'moment'
 
-const s = require('./styles.css')
+const s = require('./activity.css')
+const baseStyle = require('../styles.css')
 
 export interface StateProps {
   workerProxy: WorkerProxy,
@@ -17,10 +18,10 @@ export interface StateProps {
   address: string
 }
 
-export interface ActivitySubpageProps extends StateProps {
+export interface ActivityProps extends StateProps {
 }
 
-export interface ActivitySubpageState {
+export interface ActivityState {
   isLoading: boolean
   detailRows: Set<number>
   error: string
@@ -37,7 +38,7 @@ type NestedHistory = HistoryItem | HistoryItem[]
 
 type GroupOrHistory = HistoryItem | Group
 
-class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubpageState> {
+class Activity extends React.Component<ActivityProps, ActivityState> {
   constructor(props: any) {
     super(props)
 
@@ -85,20 +86,6 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
   render() {
     const { isLoading, error } = this.state
 
-    if (isLoading || error) {
-      return (
-        <div className={s.walletActivityWrapper}>
-          <div className={s.walletActivityHeaderRow}>
-            <div className={classnames(s.walletActivityMiniHeader, {
-              [s.walletActivityErrorHeader]: !!error
-            })}>
-              {error ? error : 'Loading...'}
-            </div>
-          </div>
-        </div>
-      )
-    }
-
     const groups = this.props.history.reduce(reduceByTipOrPurchase, [])
       .reduce((acc: GroupOrHistory[], curr: NestedHistory) => {
         if (!Array.isArray(curr)) {
@@ -111,15 +98,13 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
       }, [])
 
     return (
-      <div className={s.walletActivityWrapper}>
-        <div className={s.walletActivityHeaderRow}>
-          <div className={s.walletActivityHeader}>Activity</div>
-        </div>
+      <div className={baseStyle.subpageWrapper}>
+        <div className={baseStyle.header}>Activity</div>
         <T.Table className={s.walletActivityTable}>
           <T.TableHeader className={s.walletActivityTableHeader}>
             <T.TableRow>
               <T.TableHeaderCell
-                className={classnames(s.walletActivityHeaderCell, s.walletActivityDate)}>Date</T.TableHeaderCell>
+                className={s.walletActivityHeaderCell}>Date</T.TableHeaderCell>
               <T.TableHeaderCell
                 className={classnames(s.walletActivityHeaderCell, s.walletActivityTime)}>Time</T.TableHeaderCell>
               <T.TableHeaderCell className={s.walletActivityHeaderCell}>Item</T.TableHeaderCell>
@@ -146,7 +131,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
         key={`${item.payment.token}-info`}
         className={s.walletActivityEntry}
       >
-        <T.TableCell className={s.walletActivityDate}>
+        <T.TableCell>
           <div>
             <div className={s.walletActivityMonth}>{mStart.format('MMM')}</div>
             <div className={s.walletActivityDay}>{mStart.format('DD')}</div>
@@ -207,7 +192,7 @@ class ActivitySubpage extends React.Component<ActivitySubpageProps, ActivitySubp
           [s.walletActivityEntryToggled]: toggled
         })}
       >
-        <T.TableCell className={s.walletActivityDate}>
+        <T.TableCell >
           <div>
             <div className={s.walletActivityMonth}>{mStart.format('MMM')}</div>
             <div className={s.walletActivityDay}>{mStart.format('DD')}</div>
@@ -373,4 +358,4 @@ function mapStateToProps(state: FrameState): StateProps {
   }
 }
 
-export default connect(mapStateToProps)(ActivitySubpage)
+export default connect(mapStateToProps)(Activity)

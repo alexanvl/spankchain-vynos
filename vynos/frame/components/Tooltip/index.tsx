@@ -15,10 +15,11 @@ export interface TooltipProps {
   className?: string
 }
 
-const Tooltip: React.SFC<TooltipProps> = function ({ children, content, trigger = 'hover', className }) {
+const Tooltip: React.SFC<TooltipProps> = function ({children, content, trigger = 'hover', className}) {
+
   return (
     <RCTooltip
-      overlay={<React.Fragment>{content}</React.Fragment>}
+      overlay={<div className={s.content}>{content}</div>}
       overlayClassName={classnames(s.tooltip, className)}
       arrowContent={<div className={s.arrow}></div>}
       placement="bottom"

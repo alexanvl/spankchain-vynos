@@ -1,14 +1,14 @@
 import * as React from 'react'
-import {ReactNode} from 'react'
-import {connect} from 'react-redux'
-import WorkerProxy from '../WorkerProxy'
-import {FrameState} from '../redux/FrameState'
-import OnboardingContainer from './InitPage/OnboardingContainer'
-import SeedWords from './RestorePage/SeedWords'
-import NewPassword from './RestorePage/NewPassword'
-import RestorationCandidate from '../../lib/RestorationCandidate'
+import { ReactNode } from 'react'
+import { connect } from 'react-redux'
+import WorkerProxy from '../../WorkerProxy'
+import { FrameState } from '../../redux/FrameState'
+import OnboardingContainer from './../InitPage/OnboardingContainer'
+import SeedWords from './../RestorePage/SeedWords'
+import NewPassword from './../RestorePage/NewPassword'
+import RestorationCandidate from '../../../lib/RestorationCandidate'
 import BigNumber from 'bignumber.js'
-import PickAddress from './RestorePage/PickAddress'
+import PickAddress from './../RestorePage/PickAddress'
 import bip39 = require('bip39')
 
 export interface RestorePageStateProps {
@@ -38,7 +38,7 @@ export interface RestorePageState {
 const isAndroid = !!navigator.userAgent.match(/android/i)
 
 class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
-  constructor (props: RestorePageProps) {
+  constructor(props: RestorePageProps) {
     super(props)
 
     this.state = {
@@ -56,7 +56,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     this.handlePickRestorationCandidate = this.handlePickRestorationCandidate.bind(this)
   }
 
-  async handleSubmitSeed (seeds: string[]) {
+  async handleSubmitSeed(seeds: string[]) {
     const mnemonic = seeds.join(' ')
 
     if (!bip39.validateMnemonic(mnemonic)) {
@@ -95,20 +95,20 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     })
   }
 
-  handlePickRestorationCandidate (chosenRestorationCandidate: RestorationCandidate) {
+  handlePickRestorationCandidate(chosenRestorationCandidate: RestorationCandidate) {
     this.setState({
       chosenRestorationCandidate,
       step: RestorePageStep.NEW_PASSWORD
     })
   }
 
-  goto (step: RestorePageStep) {
+  goto(step: RestorePageStep) {
     this.setState({
       step
     })
   }
 
-  async handleSubmitPassword (password: string) {
+  async handleSubmitPassword(password: string) {
     try {
       await this.props.workerProxy.restoreWallet(password, this.state.seeds.join(' '), this.state.chosenRestorationCandidate!.isHd)
     } catch (e) {
@@ -123,7 +123,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     await this.props.workerProxy.authenticate()
   }
 
-  render () {
+  render() {
     return (
       <OnboardingContainer totalSteps={0} currentStep={0}>
         {this.renderContent()}
@@ -131,7 +131,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     )
   }
 
-  renderContent (): ReactNode {
+  renderContent(): ReactNode {
     switch (this.state.step) {
       case RestorePageStep.SEED_WORDS:
         return this.renderSeedWords()
@@ -144,7 +144,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     }
   }
 
-  renderSeedWords (): ReactNode {
+  renderSeedWords(): ReactNode {
     return (
       <SeedWords
         message={this.state.seedError}
@@ -155,7 +155,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     )
   }
 
-  renderPickAddress (): ReactNode {
+  renderPickAddress(): ReactNode {
     return (
       <PickAddress
         restorationCandidates={this.state.restorationCandidates}
@@ -165,7 +165,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     )
   }
 
-  renderNewPassword (): ReactNode {
+  renderNewPassword(): ReactNode {
     const prev = this.state.restorationCandidates.length === 1 ? RestorePageStep.SEED_WORDS : RestorePageStep.PICK_ADDRESS
 
     return (
@@ -179,7 +179,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
   }
 }
 
-function mapStateToProps (state: FrameState): RestorePageStateProps {
+function mapStateToProps(state: FrameState): RestorePageStateProps {
   return {
     workerProxy: state.temp.workerProxy
   }

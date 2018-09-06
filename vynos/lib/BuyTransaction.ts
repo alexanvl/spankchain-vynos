@@ -2,15 +2,17 @@ import { Store } from 'redux'
 import VynosBuyResponse from './VynosBuyResponse'
 import BN = require('bn.js')
 import * as semaphore from 'semaphore'
-import { Meta, ChannelState, ChannelType, PaymentObject } from "./BuyTransactionTypes";
+import { Meta, ChannelType, PaymentObject, IConnext } from "./connext/ConnextTypes";
 import * as actions from '../worker/actions'
 import { AtomicTransaction, TransactionInterface } from './AtomicTransaction'
-import { WorkerState } from '../worker/WorkerState'
+import { WorkerState, ChannelState,CurrencyType } from '../worker/WorkerState'
 import LockStateObserver from './LockStateObserver'
 import {closeAllVCs} from './connext/closeAllVCs'
 import {TEN_FINNEY} from './constants'
 import takeSem from './takeSem'
 import VirtualChannel from './connext/VirtualChannel'
+import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
+import Currency from './Currency'
 
 /**
  * The BuyTransaction handles purchases and tips
@@ -24,17 +26,16 @@ import VirtualChannel from './connext/VirtualChannel'
 
 
 export default class BuyTransaction implements TransactionInterface {
-  private doBuyTransaction: AtomicTransaction
-  private connext: any
-  private store: Store<WorkerState>
-  private lockStateObserver: LockStateObserver
-  private sem: semaphore.Semaphore
-  static DEFAULT_DEPOSIT: BN = TEN_FINNEY
+  static DEFAULT_DEPOSIT = new Currency(CurrencyType.WEI, TEN_FINNEY.toString(10))
 
-  constructor (store: Store<WorkerState>, connext: any, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore) {
+  private doBuyTransaction: AtomicTransaction
+  private connext: IConnext
+  private store: Store<WorkerState>
+  private sem: semaphore.Semaphore
+
+  constructor (store: Store<WorkerState>, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore) {
     this.store = store
     this.connext = connext
-    this.lockStateObserver = lockStateObserver
     this.sem = sem
 
     const methodOrder = [
@@ -51,50 +52,45 @@ export default class BuyTransaction implements TransactionInterface {
     }
   }
 
-  public startTransaction = async (price: string, meta: Meta): Promise<VynosBuyResponse> => {
-    return await this.doBuyTransaction.start(price, meta)
+  public startTransaction = async (priceWEI: Currency, meta: Meta): Promise<VynosBuyResponse> => {
+    return await this.doBuyTransaction.start(priceWEI, meta)
   }
 
-  public restartTransaction = async (): Promise<any> => {
-    if (!this.isInProgress()) {
-      return
+  public restartTransaction = async (): Promise<VynosBuyResponse|undefined> => {
+    if (this.isInProgress()) {
+      return takeSem<VynosBuyResponse>(this.sem, () => this.doBuyTransaction.restart())
     }
-    return takeSem<VynosBuyResponse>(this.sem, () => {
-      return this.doBuyTransaction.restart()
-    })
   }
 
   public isInProgress = (): boolean => this.doBuyTransaction.isInProgress()
 
-  private getExistingChannel = (price: string, meta: Meta): [string, Meta, ChannelState] => {
+  private getExistingChannel = (priceWEI: Currency, meta: Meta): [Currency, Meta, ChannelState] => {
     const existingChannel = this.store.getState().runtime.channel
     if (!existingChannel) {
       throw new Error('A channel must be open')
     }
-    return [price, meta, existingChannel]
+    return [priceWEI, meta, existingChannel]
   }
 
-  private getVC = async (price: string, meta: Meta, existingChannel: ChannelState): Promise<any[]> => {
-    const priceBn = new BN(String(price))
-    const existingVC: VirtualChannel = existingChannel.currentVCs
+  private getVC = async (priceWEI: Currency, meta: Meta, existingChannel: ChannelState): Promise<[Currency, Meta, ChannelState, VirtualChannel]> => {
+    const existingVC: VirtualChannel|undefined = existingChannel.currentVCs
       .find((testVc: VirtualChannel) => testVc.partyB === meta.receiver)
 
-    const vc = existingVC && priceBn.lte(new BN(existingVC.ethBalanceA))
+    const vc = existingVC && priceWEI.amountBN.lte(new BN(existingVC.ethBalanceA))
       ? existingVC
-      : await this.createNewVC(meta.receiver, priceBn)
-
+      : await this.createNewVC(meta.receiver, priceWEI)
+    console.log('vc', vc)
     return [
-      price,
+      priceWEI,
       meta,
       existingChannel,
       vc,
-      priceBn,
     ]
   }
 
-  private updateBalance = async (price: string, meta: Meta, existingChannel: ChannelState, vc: VirtualChannel, priceBn: BN): Promise<any[]> => {
-    const balA = new BN(vc.ethBalanceA).sub(priceBn)
-    const balB = new BN(vc.ethBalanceB).add(priceBn)
+  private updateBalance = async (priceWEI: Currency, meta: Meta, existingChannel: ChannelState, vc: VirtualChannel): Promise<[Currency, Meta, ChannelState, VirtualChannel, string]> => {
+    const balA = new BN(vc.ethBalanceA).sub(priceWEI.amountBN)
+    const balB = new BN(vc.ethBalanceB).add(priceWEI.amountBN)
 
     const connextUpdate: PaymentObject[] = [
       {
@@ -126,7 +122,7 @@ export default class BuyTransaction implements TransactionInterface {
     vcCopy.ethBalanceB = balB.toString()
 
     return [
-      price,
+      priceWEI,
       meta,
       existingChannel,
       vcCopy,
@@ -134,14 +130,14 @@ export default class BuyTransaction implements TransactionInterface {
     ]
   }
 
-  private updateStore = (price: string, meta: Meta, existingChannel: ChannelState, vc: any, id: string): {channelId: string, token: string} => {
+  private updateStore = (priceWEI: Currency, meta: Meta, existingChannel: ChannelState, vc: any, id: string): {channelId: string, token: string} => {
     const oldChannel = this.store.getState().runtime.channel
     if (!oldChannel) {
-      // making typescript happy
-      throw new Error('channel is null or undefined')
+      throw new Error('channel cannot be null or undefined')
     }
+
     const oldBalance = new BN(oldChannel.balance)
-    const newBalance = oldBalance.sub(new BN(price))
+    const newBalance = oldBalance.sub(priceWEI.amountBN)
 
     this.store.dispatch(actions.setChannel({
       ledgerId: existingChannel.ledgerId,
@@ -156,15 +152,17 @@ export default class BuyTransaction implements TransactionInterface {
   }
 
   // helpers
-  private createNewVC = async (receiver: string, priceBn: BN): Promise<any> => {
+  private createNewVC = async (receiver: string, priceWEI: Currency): Promise<VirtualChannel> => {
     await closeAllVCs(this.store, this.connext)
 
     let newVCId: string
+    const ethDeposit: Currency = await this.getEthDepositAmountInWei(priceWEI)
+
     try {
       newVCId = await this.connext.openThread({
         to: receiver,
         deposit: {
-          ethDeposit: priceBn.gt(BuyTransaction.DEFAULT_DEPOSIT) ? priceBn : BuyTransaction.DEFAULT_DEPOSIT,
+          ethDeposit: ethDeposit.amountBN
         }
       })
     } catch(e) {
@@ -177,5 +175,36 @@ export default class BuyTransaction implements TransactionInterface {
       console.error('connext.getThreadById failed', e)
       throw e
     }
+  }
+
+  private getEthDepositAmountInWei = async (priceWEI: Currency): Promise<Currency> => {
+    const AVAILABLE: Currency = await this.getAvailableLCBalanceInWEI()
+    const DEFAULT: Currency = BuyTransaction.DEFAULT_DEPOSIT
+
+    if (priceWEI.amountBN.gt(AVAILABLE.amountBN)) {
+      throw new Error(`
+        The price cannot be larger than the available LC balance when opening a new channel.
+        Price: ${priceWEI.amountBN.toString(10)} availableLcBalance: ${AVAILABLE.amountBN.toString(10)}
+      `)
+    }
+
+    if (AVAILABLE.amountBN.lt(DEFAULT.amountBN)) {
+      return AVAILABLE
+    }
+
+    if (priceWEI.amountBN.gt(DEFAULT.amountBN)) {
+      return priceWEI
+    }
+
+    return DEFAULT
+  }
+
+  private getAvailableLCBalanceInWEI = async (): Promise<Currency> => {
+    const channels = await getCurrentLedgerChannels(this.connext, this.store)
+    if (!channels) {
+      throw new Error('Expected to find ledger channels.')
+    }
+
+    return new Currency(CurrencyType.WEI, channels[0].ethBalanceA)
   }
 }

@@ -1,11 +1,11 @@
 import * as React from "react"
 import BN = require('bn.js')
 import { connect } from 'react-redux'
-import Button from "../../components/Button"
-import Currency, { CurrencyType } from '../../components/Currency'
+import Button from "../../../components/Button"
+import Currency, { CurrencyType } from '../../../components/Currency'
 import { Link } from 'react-router-dom'
 
-const s = require('./ReceiveEther.css')
+const s = require('./style.css')
 const vs = require('../../styles/ynos.css')
 
 export interface State {

@@ -1,18 +1,3 @@
-.container {
-  background-color: #f0f0f0;
-}
-
-.header {
-  padding: 2rem 3rem;
-  font-family: gt-haptik;
-  font-size: 1.8rem;
-  font-weight: 500;
-  color: #797979;
-}
-
-.descriptionWrapper {
-  padding: 0 3rem;
-}
 
 .description {
   font-size: 1.1rem;
@@ -120,7 +105,7 @@
 }
 
 .ctaIcon {
-  background-image: url(../../styles/images/copy-white.svg);
+  background-image: url(../../../styles/images/copy-white.svg);
   height: 1rem;
   width: 1rem;
   background-repeat: no-repeat;

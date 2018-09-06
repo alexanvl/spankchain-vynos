@@ -83,10 +83,18 @@ export default class Frame {
   }
 
   setContainerStyle (containerStyle: CSSStyleDeclaration) {
-    if (containerStyle.right) this.containerElement.style.right = containerStyle.right
-    if (containerStyle.top) this.containerElement.style.top = containerStyle.top
-    if (containerStyle.left) this.containerElement.style.left = containerStyle.left
-    if (containerStyle.bottom) this.containerElement.style.bottom = containerStyle.bottom
+    if (containerStyle.right) {
+      this.containerElement.style.right = containerStyle.right
+    }
+    if (containerStyle.top) {
+      this.containerElement.style.top = containerStyle.top
+    }
+    if (containerStyle.left) {
+      this.containerElement.style.left = containerStyle.left
+    }
+    if (containerStyle.bottom) {
+      this.containerElement.style.bottom = containerStyle.bottom
+    }
   }
 
   display () {
