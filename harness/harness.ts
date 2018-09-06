@@ -37,15 +37,24 @@ window.addEventListener('load', function () {
   const tipButton = document.getElementById('tip')
   if (tipButton) {
     tipButton.onclick = () => {
-      vynos.buy(new BN(1000000000000000), {
+
+      const receiver: string =
+        (document.getElementById('reciever') as HTMLInputElement).value
+        || '0x0ec05ca2d7e658259d3cd737d3f33685875c52bb'
+
+      const tipAmountFIN: string =
+        (document.getElementById('amount') as HTMLInputElement).value
+        || '1'
+
+      vynos.buy(new BN(1000000000000000).mul(new BN(tipAmountFIN)), {
         type: 'TIP',
         fields: {
           streamId: 'abc-123',
           streamName: 'SpankCam',
           performerId: 'abc-234',
-          performerName: 'Butter Bubble'
+          performerName: 'Butter Bubble',
         },
-        receiver: '0x6b97e388f6e5cfe6dd90500eb9573a7a247d0678'
+        receiver,
       })
     }
   }
