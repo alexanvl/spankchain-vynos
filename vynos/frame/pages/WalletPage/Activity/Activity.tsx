@@ -184,7 +184,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     }, new BigNumber(0))
 
     const isNeg = total.isNegative()
-    // BOOKMARK 1 render react
+
     return [
       <T.TableRow
         key={`${group.groupKey}-info`}
@@ -250,7 +250,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             <div className={s.walletActivityItem}>
             {isNeg
               ? item.fields.streamName || item.fields.performerName
-              : item.fields.tipperName
+              : item.fields.tipperName || item.fields.streamName
             }
             </div>
           </T.TableCell>
