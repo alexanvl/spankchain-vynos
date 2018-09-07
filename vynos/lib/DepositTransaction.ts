@@ -23,7 +23,8 @@ import {IConnext, Deposit} from './connext/ConnextTypes'
 
 
 export default class DepositTransaction implements TransactionInterface {
-  private doDeposit: AtomicTransaction
+  private deposit: AtomicTransaction
+  private depositExistingChannel: AtomicTransaction
   private connext: IConnext
   private store: Store<WorkerState>
   private needsCollateral: boolean = false
@@ -49,14 +50,8 @@ export default class DepositTransaction implements TransactionInterface {
     this.deferredPopulate = null
     this.depSem = semaphore(1)
 
-    const methodOrder = [
-      this.openChannel,
-      this.pingChainsaw,
-      this.requestDeposit,
-      this.finishTransaction
-    ]
-
-    this.doDeposit = new AtomicTransaction(this.store, 'deposit', methodOrder, this.afterAll, this.onStart, this.onRestart)
+    this.deposit = this.makeDepositTransaction()
+    this.depositExistingChannel = this.makeDepositExistingChannelTransaction()
 
     lockStateObserver.addUnlockHandler(this.onUnlock)
     if (!lockStateObserver.isLocked()) {
@@ -64,9 +59,26 @@ export default class DepositTransaction implements TransactionInterface {
     }
   }
 
+  private makeDepositExistingChannelTransaction = () => new AtomicTransaction(
+    this.store,
+    'deposit:existingChannel',
+    [this.doDepositExisting, this.pingChainsawBalanceChange, this.finishTransaction],
+    this.afterAll,
+    this.onStart,
+    this.onRestart
+  )
+
+  private makeDepositTransaction = () => new AtomicTransaction(
+    this.store,
+    'deposit',
+    [this.openChannel, this.pingChainsaw, this.requestDeposit, this.finishTransaction],
+    this.afterAll,
+    this.onRestart,
+  )
+
   public startTransaction = async (amount: string): Promise<void> => {
     try {
-      this.awaiter = this.doDeposit.start(amount)
+      this.awaiter = this.deposit.start(amount)
       await this.awaiter
     } catch (e) {
       this.releaseDeferred()
@@ -77,12 +89,16 @@ export default class DepositTransaction implements TransactionInterface {
   }
 
   public restartTransaction = async (): Promise<void> => {
-    if (!this.isInProgress()) {
-      return
-    }
-
     try {
-      this.awaiter = takeSem<void>(this.sem, () => this.doDeposit.restart())
+      this.awaiter =
+        (this.deposit.isInProgress && takeSem<void>(this.sem, () => this.deposit.restart())) ||
+        (this.depositExistingChannel.isInProgress && takeSem<void>(this.sem, () => this.deposit.restart())) ||
+        null
+
+      if (!this.awaiter) {
+        return
+      }
+
       await this.awaiter
     } catch (e) {
       this.releaseDeferred()
@@ -92,7 +108,7 @@ export default class DepositTransaction implements TransactionInterface {
     }
   }
 
-  public isInProgress = (): boolean => this.doDeposit.isInProgress()
+  public isInProgress = (): boolean => this.deposit.isInProgress() || this.depositExistingChannel.isInProgress()
 
   public setNeedsCollateral = (needsCollateral: boolean): void => {
     this.needsCollateral = needsCollateral
@@ -254,7 +270,7 @@ export default class DepositTransaction implements TransactionInterface {
   }
 
   private onUnlock = (): void => {
-    this.doDeposit.restart()
+    this.deposit.restart()
       .then(this.maybeCollateralize)
       .catch((e) => console.error(e))
   }
