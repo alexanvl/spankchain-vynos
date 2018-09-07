@@ -53,7 +53,7 @@ window.addEventListener('load', function () {
           streamName: 'SpankCam',
           performerId: 'abc-234',
           performerName: 'Butter Bubble',
-          tipperName: 'Harness',
+          tipperName: 'They call me Harness',
         },
         receiver,
       })

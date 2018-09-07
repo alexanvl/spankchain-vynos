@@ -253,6 +253,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
               : item.fields.tipperName || item.fields.streamName
             }
             </div>
+            {!isNeg && <div className={s.walletActivityDescription}>{item.fields.streamName || item.fields.performerName}</div>}
           </T.TableCell>
           <T.TableCell className={s.walletActivityPrice}>
             <div
