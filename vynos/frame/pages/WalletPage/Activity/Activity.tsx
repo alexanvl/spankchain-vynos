@@ -247,7 +247,13 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             <div className={s.walletActivityStart}>{moment(new Date(item.createdAt)).format('h:mmA')}</div>
           </T.TableCell>
           <T.TableCell className={s.walletActivityItemDescription}>
-            <div className={s.walletActivityItem}>{item.fields.streamName || item.fields.performerName}</div>
+            <div className={s.walletActivityItem}>
+            {isNeg
+              ? item.fields.streamName || item.fields.performerName
+              : item.fields.tipperName || item.fields.streamName
+            }
+            </div>
+            {!isNeg && <div className={s.walletActivityDescription}>{item.fields.streamName || item.fields.performerName}</div>}
           </T.TableCell>
           <T.TableCell className={s.walletActivityPrice}>
             <div
@@ -275,11 +281,9 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
 }
 
 function entryFor(item: HistoryItem) {
-  if (item.type === 'TIP') {
-    return [item]
-  }
-
-  return item
+  return item.type === 'TIP'
+    ? [item]
+    : item
 }
 
 function reduceByTipOrPurchase(acc: NestedHistory[], curr: HistoryItem) {
