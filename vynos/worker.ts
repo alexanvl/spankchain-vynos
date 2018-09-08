@@ -147,7 +147,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       watcherUrl: process.env.HUB_URL!,
       ingridUrl: process.env.HUB_URL!,
       contractAddress: process.env.CONTRACT_ADDRESS!
-    }) as any
+    }) as any // as IConnext
 
     await new Promise((resolve) => persistStore(store, undefined, resolve))
 

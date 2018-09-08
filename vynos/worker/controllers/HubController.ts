@@ -58,7 +58,6 @@ export default class HubController extends AbstractController implements Lifecyc
   public stop = async (): Promise<void> => {
     this.poller.stop()
   }
-
   public fetchHistory = async (): Promise<HistoryItem[]> => {
     const hubUrl = await this.sharedStateView.getHubUrl()
     const address = (await this.sharedStateView.getAccounts())[0]
