@@ -2,7 +2,7 @@ import { Store } from 'redux'
 import VynosBuyResponse from './VynosBuyResponse'
 import BN = require('bn.js')
 import * as semaphore from 'semaphore'
-import { Meta, ChannelType, PaymentObject, IConnext } from "./connext/ConnextTypes";
+import { Meta, ChannelType, PaymentObject, IConnext, VirtualChannel} from "./connext/ConnextTypes";
 import * as actions from '../worker/actions'
 import { AtomicTransaction, TransactionInterface } from './AtomicTransaction'
 import { WorkerState, ChannelState,CurrencyType } from '../worker/WorkerState'
@@ -10,9 +10,9 @@ import LockStateObserver from './LockStateObserver'
 import {closeAllVCs} from './connext/closeAllVCs'
 import {TEN_FINNEY} from './constants'
 import takeSem from './takeSem'
-import VirtualChannel from './connext/VirtualChannel'
 import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
 import Currency from './Currency'
+import getChannels from './connext/getChannels';
 
 /**
  * The BuyTransaction handles purchases and tips
@@ -72,23 +72,26 @@ export default class BuyTransaction implements TransactionInterface {
     return [priceWEI, meta, existingChannel]
   }
 
-  private getVC = async (priceWEI: Currency, meta: Meta, existingChannel: ChannelState): Promise<[Currency, Meta, ChannelState, VirtualChannel]> => {
+  private getVC = async (priceWEI: Currency, meta: Meta, existingChannel: ChannelState): Promise<[Currency, Meta, VirtualChannel]> => {
     const existingVC: VirtualChannel|undefined = existingChannel.currentVCs
       .find((testVc: VirtualChannel) => testVc.partyB === meta.receiver)
 
     const vc = existingVC && priceWEI.amountBN.lte(new BN(existingVC.ethBalanceA))
       ? existingVC
       : await this.createNewVC(meta.receiver, priceWEI)
-    console.log('vc', vc)
-    return [
+
+      return [
       priceWEI,
       meta,
-      existingChannel,
       vc,
     ]
   }
 
-  private updateBalance = async (priceWEI: Currency, meta: Meta, existingChannel: ChannelState, vc: VirtualChannel): Promise<[Currency, Meta, ChannelState, VirtualChannel, string]> => {
+  private updateBalance = async (
+    priceWEI: Currency,
+    meta: Meta,
+    vc: VirtualChannel
+  ): Promise<[VirtualChannel, string]> => {
     const balA = new BN(vc.ethBalanceA).sub(priceWEI.amountBN)
     const balB = new BN(vc.ethBalanceB).add(priceWEI.amountBN)
 
@@ -122,28 +125,18 @@ export default class BuyTransaction implements TransactionInterface {
     vcCopy.ethBalanceB = balB.toString()
 
     return [
-      priceWEI,
-      meta,
-      existingChannel,
       vcCopy,
       res[0].id.toString()
     ]
   }
 
-  private updateStore = (priceWEI: Currency, meta: Meta, existingChannel: ChannelState, vc: any, id: string): {channelId: string, token: string} => {
-    const oldChannel = this.store.getState().runtime.channel
-    if (!oldChannel) {
-      throw new Error('channel cannot be null or undefined')
-    }
-
-    const oldBalance = new BN(oldChannel.balance)
-    const newBalance = oldBalance.sub(priceWEI.amountBN)
-
-    this.store.dispatch(actions.setChannel({
-      ledgerId: existingChannel.ledgerId,
-      balance: newBalance.toString(),
-      currentVCs: [ vc ],
-    }))
+  private updateStore = async (
+    vc: VirtualChannel,
+    id: string
+  ): Promise<{channelId: string, token: string}> => {
+    this.store.dispatch(actions.setChannel(
+      await getChannels(this.connext, this.store)
+    ))
 
     return {
       channelId: vc.channelId,
@@ -152,7 +145,10 @@ export default class BuyTransaction implements TransactionInterface {
   }
 
   // helpers
-  private createNewVC = async (receiver: string, priceWEI: Currency): Promise<VirtualChannel> => {
+  private createNewVC = async (
+    receiver: string,
+    priceWEI: Currency
+  ): Promise<VirtualChannel> => {
     await closeAllVCs(this.store, this.connext)
 
     let newVCId: string

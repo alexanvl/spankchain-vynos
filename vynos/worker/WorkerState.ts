@@ -1,6 +1,5 @@
 import Wallet from 'ethereumjs-wallet'
-import VirtualChannel from '../lib/connext/VirtualChannel'
-import {MetaFields, PurchaseMetaType} from '../lib/connext/ConnextTypes'
+import {MetaFields, PurchaseMetaType, VirtualChannel} from '../lib/connext/ConnextTypes'
 
 export interface RuntimeState {
   wallet?: Wallet

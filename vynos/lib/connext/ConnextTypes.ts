@@ -1,5 +1,17 @@
 import BN = require('bn.js')
-import VirtualChannel from './VirtualChannel'
+
+export interface VirtualChannel {
+  state: number
+  ethBalanceA: string
+  ethBalanceB: string
+  channelId: string
+  partyA: string
+  partyB: string
+  partyI: string
+  subchanAtoI: string
+  subchanBtoI: string
+  nonce: number
+}
 
 export enum PurchaseMetaType {
   PURCHASE = 'PURCHASE',

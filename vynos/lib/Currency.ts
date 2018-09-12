@@ -12,9 +12,6 @@ export interface CurrencyFormatOptions {
 export interface ICurrency {
   type: CurrencyType
   amount: string
-  amountBigNumber: BigNumber.BigNumber
-  symbol: string
-  format: (options: CurrencyFormatOptions) => string
 }
 
 export default class Currency implements ICurrency {
@@ -76,6 +73,13 @@ export default class Currency implements ICurrency {
 
   get symbol(): string {
     return Currency.typeToSymbol[this._type] as string
+  }
+
+  get currency(): ICurrency {
+    return {
+      amount: this.amount,
+      type: this.type,
+    }
   }
 
   get amount(): string {

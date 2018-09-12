@@ -1,4 +1,4 @@
-import VirtualChannel from './connext/VirtualChannel'
+import {VirtualChannel} from './connext/ConnextTypes'
 import BN = require('bn.js')
 
 export default function aggregateVCBalances(address: string, vcs: VirtualChannel[]): BN {
