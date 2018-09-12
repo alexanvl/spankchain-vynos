@@ -6,14 +6,19 @@ import reducers from '../worker/reducers'
 import {expect, assert} from 'chai'
 import LockStateObserver from './LockStateObserver'
 import * as semaphore from 'semaphore'
-import {Meta, PurchaseMetaType, PaymentObject, ChannelType} from './connext/ConnextTypes'
+import {
+  Meta,
+  PurchaseMetaType,
+  PaymentObject,
+  VirtualChannel,
+  ChannelType
+} from './connext/ConnextTypes'
 import Connext = require('connext')
 import Web3 = require('web3')
 import * as sinon from 'sinon'
 import Currency from './Currency'
 import BN = require('bn.js')
 import toFinney from './web3/toFinney';
-import VirtualChannel from './connext/VirtualChannel';
 require('isomorphic-fetch')
 
 

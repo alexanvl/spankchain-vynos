@@ -1,25 +1,32 @@
 import {Store} from 'redux'
-import {WorkerState} from '../WorkerState'
+import BN = require('bn.js')
 import AbstractController from './AbstractController'
+import aggregateVCBalances from '../../lib/aggregateVCBalances'
+import ChannelPopulator from '../../lib/ChannelPopulator'
+import {closeAllVCs} from '../../lib/connext/closeAllVCs'
+import Currency from '../../lib/Currency'
+import {
+  IConnext,
+  PurchaseMetaType,
+  ChannelType,
+  LedgerChannel,
+} from '../../lib/connext/ConnextTypes'
+import getAddress from '../../lib/getAddress'
+import getVirtualChannels from '../../lib/getVirtualChannels'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
-import {SendRequest} from '../../lib/rpc/yns'
 import Logger from '../../lib/Logger'
 import LockStateObserver from '../../lib/LockStateObserver'
-import ChannelPopulator from '../../lib/ChannelPopulator'
-import BN = require('bn.js')
-import Web3 = require('web3')
-import {IConnext, PurchaseMetaType, ChannelType} from '../../lib/connext/ConnextTypes'
+import {SendRequest} from '../../lib/rpc/yns'
+import {WorkerState} from '../WorkerState'
 
 export default class WithdrawalController extends AbstractController {
-  private web3: Web3
   private store: Store<WorkerState>
   private connext: IConnext
   private lso: LockStateObserver
   private populator: ChannelPopulator
 
-  constructor (logger: Logger, connext: IConnext, web3: Web3, store: Store<WorkerState>, lso: LockStateObserver, populator: ChannelPopulator) {
+  constructor (logger: Logger, connext: IConnext, store: Store<WorkerState>, lso: LockStateObserver, populator: ChannelPopulator) {
     super(logger)
-    this.web3 = web3
     this.store = store
     this.connext = connext
     this.lso = lso
@@ -40,23 +47,66 @@ export default class WithdrawalController extends AbstractController {
   }
 
   private updateChannel = async (recipient: string, value: string): Promise<void> => {
-    const lc = await this.connext.getChannelByPartyA()
-    const ethBalanceA = new BN(lc.ethBalanceA).sub(new BN(value))
-    const ethBalanceB = new BN(lc.ethBalanceI).add(new BN(value))
+    const lc: LedgerChannel = await this.connext.getChannelByPartyA()
+
+    const VALUE_WEI = Currency.WEI(value)
+    const LC_BALANCE_WEI = Currency.WEI(lc.ethBalanceA)
+
+    if (VALUE_WEI.amountBN.gt(LC_BALANCE_WEI.amountBN)) {
+      const vcs = await getVirtualChannels(lc.channelId)
+
+      const VC_BALANCES_WEI = Currency.WEI(
+        await aggregateVCBalances(
+          getAddress(this.store),
+          vcs
+        ).toString(10)
+      )
+      const TOTAL_BALANCE_WEI = Currency.WEI(
+        LC_BALANCE_WEI
+          .amountBN
+          .add(VC_BALANCES_WEI.amountBN)
+          .toString(10)
+      )
+
+
+      if (VALUE_WEI.amountBN.gt(TOTAL_BALANCE_WEI.amountBN)) {
+        throw new Error(`
+          value is higher than aggregrate virtual channel and ledger channel balances
+          value in wei: ${VALUE_WEI.getDecimalString(0)}
+          lcBalance in wei: ${LC_BALANCE_WEI.getDecimalString(0)}
+          vcBalance in wei: ${VC_BALANCES_WEI.getDecimalString(0)}
+          total balance in wei: ${TOTAL_BALANCE_WEI.getDecimalString(0)}
+          difference between value and total: ${TOTAL_BALANCE_WEI.amountBN.sub(VALUE_WEI.amountBN).toString(10)}
+        `)
+      }
+
+      await closeAllVCs(this.store, this.connext)
+      return this.updateChannel(recipient, value)
+    }
+
+    const BALANCE_A_WEI = Currency.ETH(
+      LC_BALANCE_WEI
+        .amountBN
+        .sub(VALUE_WEI.amountBN)
+        .toString(10)
+    )
+    const BALANCE_B_WEI = Currency.ETH(
+      new BN(lc.ethBalanceI)
+        .add(VALUE_WEI.amountBN)
+        .toString(10)
+    )
 
     await this.connext.updateBalances([{
       type: ChannelType.LEDGER,
       payment: {
         channelId: lc.channelId,
-        balanceA: {ethDeposit: ethBalanceA},
-        balanceB: {ethDeposit: ethBalanceB}
+        balanceA: {ethDeposit: BALANCE_A_WEI.amountBN},
+        balanceB: {ethDeposit: BALANCE_B_WEI.amountBN}
       },
       meta: {
         type: PurchaseMetaType.WITHDRAWAL,
         receiver: lc.partyI,
-        fields: {
-          recipient
-        }
+        fields: {recipient},
       }
     }])
   }

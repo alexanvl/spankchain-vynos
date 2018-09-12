@@ -23,7 +23,6 @@ export default class CloseChannelTransaction implements TransactionInterface {
   private doCloseChannel: AtomicTransaction
   private connext: IConnext
   private store: Store<WorkerState>
-  private lockStateObserver: LockStateObserver
   private sem: semaphore.Semaphore
   private chanPopulator: ChannelPopulator
   private deferredPopulate: DeferredPopulator | null
@@ -31,7 +30,6 @@ export default class CloseChannelTransaction implements TransactionInterface {
   constructor (store: Store<WorkerState>, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore, chanPopulator: ChannelPopulator) {
     this.store = store
     this.connext = connext
-    this.lockStateObserver = lockStateObserver
     this.sem = sem
     this.chanPopulator = chanPopulator
     this.deferredPopulate = null

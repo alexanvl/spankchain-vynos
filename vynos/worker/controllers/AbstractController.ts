@@ -2,7 +2,7 @@ import JsonRpcServer, {ErrResCallback} from '../../lib/messaging/JsonRpcServer'
 import Logger from '../../lib/Logger'
 
 export default class AbstractController {
-  logger: Logger
+  public logger: Logger
 
   constructor (logger: Logger) {
     this.logger = logger

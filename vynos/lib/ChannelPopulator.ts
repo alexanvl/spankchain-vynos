@@ -7,6 +7,7 @@ import getAddress from './getAddress'
 import * as actions from '../worker/actions'
 import BN = require('bn.js')
 import {IConnext} from './connext/ConnextTypes'
+import getChannels from './connext/getChannels';
 
 export interface DeferredPopulator {
   populate (): Promise<void>
@@ -69,22 +70,9 @@ export default class ChannelPopulator {
     })
   }
 
-  private async doPopulate (): Promise<void> {
-    const existingChannels = await getCurrentLedgerChannels(this.connext, this.store)
-
-    if (!existingChannels) {
-      this.store.dispatch(actions.setChannel(null))
-      return
-    }
-
-    const existingChannel = existingChannels[0]
-    const vcs = await getVirtualChannels(existingChannel.channelId)
-    const balanceLedger = new BN(existingChannel.ethBalanceA)
-    const balanceTotal = aggregateVCBalances(getAddress(this.store), vcs).add(balanceLedger)
-    this.store.dispatch(actions.setChannel({
-      ledgerId: existingChannel.channelId,
-      balance: balanceTotal.toString(),
-      currentVCs: vcs
-    }))
+  private doPopulate = async (): Promise<void> => {
+    this.store.dispatch(actions.setChannel(
+      await getChannels(this.connext, this.store)
+    ))
   }
 }

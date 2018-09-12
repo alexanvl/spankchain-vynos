@@ -195,7 +195,6 @@ function vynosConfig(entry) {
     stubDependency(/wordlists\/((chinese_(.*))|french|italian|japanese|korean|spanish)\.json$/),
     stubDependency(/^(request|xhr)$/),
     replaceDependency(/^unorm$/, 'stubs/unorm.js'),
-    replaceDependency(/Unidirectional\.json$/, 'vendor/@machinomy/contracts/dist/build/contracts/Unidirectional.json'),
     new webpack.HashedModuleIdsPlugin(),
     new HtmlWebpackPlugin({
       template: resolvePath('vynos/frame.html'),

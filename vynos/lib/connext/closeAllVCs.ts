@@ -1,8 +1,7 @@
 import {Store} from 'redux'
 import {WorkerState} from '../../worker/WorkerState'
 import getVirtualChannels from '../getVirtualChannels'
-import VirtualChannel from './VirtualChannel'
-import {IConnext} from './ConnextTypes'
+import {IConnext, VirtualChannel} from './ConnextTypes'
 
 export async function closeAllVCs(store: Store<WorkerState>, connext: IConnext) {
   const channel = store.getState().runtime.channel

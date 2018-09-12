@@ -77,6 +77,13 @@ CONTRACT_ADDRESS=0x**************************
 RPC_URL=http://example.com:port
 ```
 
+Here are the current staging addresses.
+```
+HUB_URL=https://hub-staging.spankdev.com
+INGRID_ADDRESS=0xbb1699d16368ebc13bdc29e6a1aad50a21be45eb
+CONTRACT_ADDRESS=0x0010822efcbbea5ceabf1b180bc9c73c6dfffbb0
+```
+
 ## Run
 ```
 yarn run harness

@@ -172,7 +172,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const walletController = new WalletController(web3, store, sharedStateView, logger)
     const virtualChannelsController = new VirtualChannelsController(logger, lockStateObserver, chanPopulator)
     const balanceController = new BalanceController(logger, lockStateObserver, sharedStateView, store, web3, micropaymentsController)
-    const withdrawalController = new WithdrawalController(logger, connext, web3, store, lockStateObserver, chanPopulator)
+    const withdrawalController = new WithdrawalController(logger, connext, store, lockStateObserver, chanPopulator)
 
     await balanceController.start()
     await virtualChannelsController.start()
