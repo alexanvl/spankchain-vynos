@@ -248,10 +248,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
           </T.TableCell>
           <T.TableCell className={s.walletActivityItemDescription}>
             <div className={s.walletActivityItem}>
-            {isNeg
-              ? item.fields.streamName || item.fields.performerName
-              : item.fields.tipperName || item.fields.streamName
-            }
+            {this.renderActivityItem(item, !isNeg)}
             </div>
             {!isNeg && <div className={s.walletActivityDescription}>{item.fields.streamName || item.fields.performerName}</div>}
           </T.TableCell>
@@ -278,6 +275,18 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
       )) : null
     ]
   }
+
+  renderActivityItem = (item: HistoryItem, isPerformer: boolean): string => {
+    if (!isPerformer || !item.fields.tipperName) {
+      return item.fields.streamName || item.fields.performerName!
+    }
+    if (typeof item.fields.tipperName !== 'string') {
+      // some history items were mistakingly set to a object instead of object.username
+      return (item.fields.tipperName as any).username
+    }
+    return item.fields.tipperName
+  }
+
 }
 
 function entryFor(item: HistoryItem) {
