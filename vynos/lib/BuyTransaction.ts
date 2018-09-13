@@ -64,8 +64,8 @@ export default class BuyTransaction implements TransactionInterface {
 
   public isInProgress = (): boolean => this.doBuyTransaction.isInProgress()
 
-  private getExistingChannel = (priceWEI: Currency, meta: Meta): [Currency, Meta, ChannelState] => {
-    const existingChannel = this.store.getState().runtime.channel
+  private getExistingChannel = async (priceWEI: Currency, meta: Meta): Promise<[Currency, Meta, ChannelState]> => {
+    const existingChannel = await getChannels(this.connext, this.store)
     if (!existingChannel) {
       throw new Error('A channel must be open')
     }
