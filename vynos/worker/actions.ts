@@ -7,6 +7,7 @@ import {
   WorkerState,
   AtomicTransactionState,
   INITIAL_STATE,
+  FeatureFlags,
 } from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
 
@@ -32,6 +33,15 @@ export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): 
       currentAuthToken: '',
       wallet
     },
+  }
+}
+
+export const setFeatureFlags: ActionCreator<FeatureFlags> = actionCreator<FeatureFlags>('runtime/setFeatureFlags')
+export function setFeatureFlagsHandler(state: WorkerState, featureFlags: FeatureFlags): WorkerState {
+  return { ...state,
+    runtime: { ...state.runtime,
+      featureFlags,
+    }
   }
 }
 
