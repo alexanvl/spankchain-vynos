@@ -11,7 +11,6 @@ import CurrencyConvertable from '../../../lib/CurrencyConvertable'
 
 const s = require('./style.css')
 
-
 export interface StateProps {
   workerProxy: WorkerProxy
   exchangeRates: ExchangeRates|null
@@ -35,15 +34,13 @@ export class Currency extends React.Component<CurrencyProps, any> {
     showUnit: false
   }
 
-  render() {
+  getValue() {
+
     const {
       amount,
       decimals,
       inputType,
-      outputType,
-      showUnit,
-      unitClassName,
-      className,
+      outputType
     } = this.props
 
     let ret: string
@@ -56,20 +53,29 @@ export class Currency extends React.Component<CurrencyProps, any> {
           withSymbol: false,
           showTrailingZeros: true
         })
-    } catch(e) {
+    } catch (e) {
       console.error('unable to get currency', e)
       ret = '--'
     }
 
+    return ret
+  }
+
+  render() {
+    const {
+      outputType,
+      showUnit,
+      unitClassName,
+      className,
+    } = this.props
+
     return (
       <span className={classnames(s.currency, className)}>
-        {renderUnit(showUnit, outputType, unitClassName)} {ret}
+        {renderUnit(showUnit, outputType, unitClassName)} {this.getValue()}
       </span>
     )
   }
 }
-
-
 
 const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string) => (
   showUnit && (
