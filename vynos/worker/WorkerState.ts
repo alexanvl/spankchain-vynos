@@ -23,6 +23,7 @@ export interface RuntimeState {
   exchangeRates: ExchangeRates|null
   username: string | null
   baseCurrency: any
+  featureFlags: FeatureFlags|null
 }
 
 export interface AuthorizationRequestState {
@@ -73,6 +74,10 @@ export interface PendingTransaction {
   hash: string
 }
 
+export interface FeatureFlags {
+  bootySupport: boolean
+}
+
 export interface SharedState {
   didInit: boolean
   isLocked: boolean
@@ -97,8 +102,9 @@ export interface SharedState {
   hasActiveDeposit: boolean
   username: string | null
   activeWithdrawalError: string|null
-  exchangeRates: ExchangeRates | null
   baseCurrency: any
+  exchangeRates: ExchangeRates|null
+  featureFlags: FeatureFlags|null
 }
 
 export interface AtomicTransactionState {
@@ -157,7 +163,8 @@ export const INITIAL_SHARED_STATE: SharedState = {
   hasActiveDeposit: false,
   exchangeRates: null,
   username: null,
-  baseCurrency: null
+  baseCurrency: null,
+  featureFlags: {bootySupport: false},
 }
 
 const initialTransactionState = () => ({
@@ -195,6 +202,7 @@ export const INITIAL_STATE: WorkerState = {
     exchangeRates: null,
     username: null,
     baseCurrency: CurrencyType.FINNEY,
+    featureFlags: {bootySupport: false},
   }
 }
 
@@ -224,6 +232,7 @@ export function buildSharedState (state: WorkerState): SharedState {
     hasActiveDeposit: state.persistent.hasActiveDeposit,
     exchangeRates: state.runtime.exchangeRates,
     username: state.runtime.username,
-    baseCurrency: state.runtime.baseCurrency
+    baseCurrency: state.runtime.baseCurrency,
+    featureFlags: state.runtime.featureFlags,
   }
 }

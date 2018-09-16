@@ -16,7 +16,7 @@ import {ResetRequest, StatusRequest} from './lib/rpc/yns'
 import WorkerServer from './lib/rpc/WorkerServer'
 import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
-import {INITIAL_STATE, PersistentState, WorkerState} from './worker/WorkerState'
+import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags} from './worker/WorkerState'
 import {ErrResCallback} from './lib/messaging/JsonRpcServer'
 import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
@@ -43,6 +43,8 @@ import BalanceController from './worker/controllers/BalanceController'
 import WithdrawalController from './worker/controllers/WithdrawalController'
 import * as actions from './worker/actions'
 import { IConnext } from './lib/connext/ConnextTypes';
+import requestJson from './frame/lib/request';
+
 
 export class ClientWrapper implements WindowClient {
   private self: ServiceWorkerGlobalScope
@@ -130,6 +132,10 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       : undefined
 
     const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE, reduxMiddleware) as Store<WorkerState>
+
+    store.dispatch(actions.setFeatureFlags(
+      await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`, {credentials: 'include'})
+    ))
 
     const isPersistedStatePreMigration = !store.getState().persistent.transactions
     if (isPersistedStatePreMigration) {
