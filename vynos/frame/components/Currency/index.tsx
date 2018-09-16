@@ -35,7 +35,7 @@ export interface CurrencyProps extends StateProps {
 export class Currency extends React.Component<CurrencyProps, any> {
   public static defaultProps: Partial<CurrencyProps> = {
     decimals: 2,
-    outputType: CurrencyType.USD,
+    outputType: undefined,
     inputType: CurrencyType.WEI,
     showUnit: false,
     inverse: false,

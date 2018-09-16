@@ -25,8 +25,7 @@ export interface Props {
 
 export class CurrencyIcon extends React.Component<Props, any> {
   render() {
-    let props = this.props
-    let { baseCurrency, currency, big, spaceAround, color, alt, reverse  } = props
+    let { baseCurrency, currency, big, spaceAround, color, alt, reverse, className  } = this.props
 
     currency = currency || baseCurrency
 
@@ -35,7 +34,7 @@ export class CurrencyIcon extends React.Component<Props, any> {
     return (
       <div
         style={{ color: color || 'inherit' }}
-        className={classnames(s.currency, props.className, {
+        className={classnames(s.currency, className, {
           [s.big]: big,
           [s.spaceAround]: spaceAround,
           [s.inverse]: reverse,
