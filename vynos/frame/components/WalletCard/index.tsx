@@ -148,6 +148,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
           })}
           currency={CurrencyType.FINNEY}
           reverse
+          big
         />
         <Currency key="value" amount={this.props.currencyValue} outputType={CurrencyType.FINNEY} decimals={0} />
       </div>

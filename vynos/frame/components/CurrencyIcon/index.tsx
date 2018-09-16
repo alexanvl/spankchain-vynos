@@ -1,14 +1,15 @@
 import * as React from 'react'
+import { connect } from 'react-redux'
 import * as classnames from 'classnames'
 import { CurrencyType } from '../Currency';
 
 const s = require('./style.css')
 
 export enum CurrencyIconType {
-  FINNEY,
-  USD,
-  ETH,
-  UNKNOWN,
+  FINNEY = 'FIN',
+  USD = 'USD',
+  ETH = 'ETH',
+  UNKNOWN = '?',
 }
 
 export interface Props {
@@ -16,24 +17,42 @@ export interface Props {
   reverse?: boolean
   alt?: boolean
   currency?: CurrencyType
+  baseCurrency?: CurrencyType
+  color?: string
+  big?: boolean
+  spaceAround?: boolean
 }
 
-const CurrencyIcon: React.SFC<Props> = function (props) {
-  const currency = props.currency === CurrencyType.USD ? CurrencyIconType.USD :
-    props.currency === CurrencyType.FINNEY ? CurrencyIconType.FINNEY :
-      CurrencyIconType.UNKNOWN
+export class CurrencyIcon extends React.Component<Props, any> {
+  render() {
+    let props = this.props
+    let { baseCurrency, currency, big, spaceAround, color, alt, reverse  } = props
 
-  return (
-    <div
-      className={classnames(s.currency, props.className, {
-        [s.inverse]: props.reverse,
-        [s.alt]: props.alt,
-        [s.finney]: currency === CurrencyIconType.FINNEY,
-        [s.usd]: currency === CurrencyIconType.USD,
-        [s.unknown]: currency === CurrencyIconType.UNKNOWN,
-      })}
-    >{currency == CurrencyIconType.UNKNOWN && props.currency}</div>
-  )
+    currency = currency || baseCurrency
+
+    const c = currency === CurrencyType.FINNEY ? CurrencyIconType.FINNEY : CurrencyIconType.UNKNOWN
+
+    return (
+      <div
+        style={{ color: color || 'inherit' }}
+        className={classnames(s.currency, props.className, {
+          [s.big]: big,
+          [s.spaceAround]: spaceAround,
+          [s.inverse]: reverse,
+          [s.pink]: color === "#ff3b81",
+          [s.alt]: alt,
+          [s.finney]: c === CurrencyIconType.FINNEY,
+          [s.unknown]: c === CurrencyIconType.UNKNOWN,
+        })}
+      >{c == CurrencyIconType.UNKNOWN && currency}</div>
+    )
+  }
 }
 
-export default CurrencyIcon
+function mapStateToProps(state: any): any {
+  return {
+    baseCurrency: state.shared.baseCurrency
+  }
+}
+
+export default connect(mapStateToProps)(CurrencyIcon)

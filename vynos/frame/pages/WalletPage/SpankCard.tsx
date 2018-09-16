@@ -133,6 +133,7 @@ class SpankCard extends React.Component<StateProps, SpankCardState> {
                     className={s.sendReceiveCurrency}
                     unitClassName={s.usdUnit}
                     showUnit={true}
+                    big
                   />
                   <div className={s.downArrow} />
                 </div>

@@ -14,16 +14,22 @@ const s = require('./style.css')
 export interface StateProps {
   workerProxy: WorkerProxy
   exchangeRates: ExchangeRates|null
+  baseCurrency?: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.BOOTY
 }
 
 export interface CurrencyProps extends StateProps {
   amount: BN
   decimals?: number
-  outputType?: CurrencyType.ETH | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.WEI
+  outputType?: CurrencyType.ETH | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.WEI | CurrencyType.BOOTY
   inputType: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY
   showUnit?: boolean
   unitClassName?: string
   className?: string
+  inverse?: boolean
+  alt?: boolean
+  color?: string
+  big?: boolean
+  baseCurrency?: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.BOOTY
 }
 
 export class Currency extends React.Component<CurrencyProps, any> {
@@ -31,10 +37,12 @@ export class Currency extends React.Component<CurrencyProps, any> {
     decimals: 2,
     outputType: CurrencyType.USD,
     inputType: CurrencyType.WEI,
-    showUnit: false
+    showUnit: false,
+    inverse: false,
+    alt: false,
   }
 
-  getValue() {
+  formatAmount() {
 
     const {
       amount,
@@ -62,33 +70,36 @@ export class Currency extends React.Component<CurrencyProps, any> {
   }
 
   render() {
-    const {
+    let {
       outputType,
       showUnit,
       unitClassName,
       className,
+      inverse,
+      alt,
+      color,
+      big,
+      baseCurrency,
     } = this.props
 
+
     return (
-      <span className={classnames(s.currency, className)}>
-        {renderUnit(showUnit, outputType, unitClassName)} {this.getValue()}
+      <span className={classnames(s.currency, className)} style={{color: color || 'inherit'}}>
+        {renderUnit(showUnit, outputType, unitClassName, inverse, alt, color, big)} {this.formatAmount()}
       </span>
     )
   }
 }
 
-const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string) => (
-  showUnit && (
-    outputType === CurrencyType.USD ||
-    outputType === CurrencyType.FINNEY ||
-    outputType === CurrencyType.ETH
-  )
-) ? <CurrencyIcon className={unitClassName} currency={outputType}/> : ''
+const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string, inverse?: boolean, alt?: boolean, color?: string, big?: boolean) => (
+  showUnit && <CurrencyIcon className={unitClassName} currency={outputType} reverse={inverse} alt={alt} color={color} big={big} spaceAround />
+)
 
 function mapStateToProps (state: FrameState, ownProps: any): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
     exchangeRates: state.shared.exchangeRates || null,
+    baseCurrency: state.shared.baseCurrency
   }
 }
 

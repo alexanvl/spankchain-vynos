@@ -1,6 +1,7 @@
 .currency {
-  width: 29px;
-  height: 16px;
+  display: inline-flex;
+  width: 26px;
+  height: 14px;
   text-indent: -999999px;
   background-size: contain !important;
   border-radius: 3px;
@@ -12,8 +13,21 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  font-weight: 600;
-  font-size: 0.7rem;
+  text-align: center;
+  font-weight: 800;
+  font-size: 0.5rem;
+  line-height: 0.9rem;
+  letter-spacing: 1px;
+}
+
+.big {
+  width: 32px;
+  height: 18px;
+  font-size: 0.6rem;
+}
+
+.spaceAround {
+  margin-right: 7px;
 }
 
 .finney {
