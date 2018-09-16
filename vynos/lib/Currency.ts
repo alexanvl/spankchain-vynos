@@ -20,6 +20,7 @@ export default class Currency implements ICurrency {
     [CurrencyType.ETH]: 'ETH',
     [CurrencyType.WEI]: 'WEI',
     [CurrencyType.FINNEY]: 'FIN',
+    [CurrencyType.BOOTY]: 'BOO',
   }
 
   static ETH = (amount: BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.ETH, amount)
@@ -48,6 +49,11 @@ export default class Currency implements ICurrency {
       showTrailingZeros: false,
     } as CurrencyFormatOptions,
     [CurrencyType.FINNEY]: {
+      decimals: 0,
+      withSymbol: true,
+      showTrailingZeros: false,
+    } as CurrencyFormatOptions,
+    [CurrencyType.BOOTY]: {
       decimals: 0,
       withSymbol: true,
       showTrailingZeros: false,
