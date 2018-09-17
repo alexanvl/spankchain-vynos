@@ -133,10 +133,6 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
 
     const store = redux.createStore(persistReducer(persistConfig, reducers), INITIAL_STATE, reduxMiddleware) as Store<WorkerState>
 
-    store.dispatch(actions.setFeatureFlags(
-      await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`, {credentials: 'include'})
-    ))
-
     const isPersistedStatePreMigration = !store.getState().persistent.transactions
     if (isPersistedStatePreMigration) {
       store.dispatch(actions.setInitialState(null))
@@ -170,6 +166,15 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
 
     const chanPopulator = new ChannelPopulator(connext, store)
     const lockStateObserver = new LockStateObserver(store)
+    lockStateObserver.addUnlockHandler(async () => {
+      try {
+        store.dispatch(actions.setFeatureFlags(
+          await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`, {credentials: 'include'})
+        ))
+      } catch(e) {
+        console.error('unable to get feature flags', e)
+      }
+    })
     const backgroundController = new BackgroundController(store, web3, logger)
     const frameController = new FrameController(store, logger)
     const hubController = new HubController(store, sharedStateView, logger)
