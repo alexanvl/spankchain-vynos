@@ -36,13 +36,13 @@ export const SendCurrencyInputs = ({
             className={inputClass}
             placeholder="0x3930DdDf234..."
             onChange={onAddressChange}
-            errorMessage={addressError}
+            errorMessage={addressError || balanceError}
             disabled={isConfirming}
             value={address}
           />
         </div>
       </div>
-      <div className={s.contentRow}>
+      {/* <div className={s.contentRow}>
         <div className={s.amountWrapper}>
           <div className={s.inputLabel}>Finney Amount</div>
           <Input
@@ -66,8 +66,8 @@ export const SendCurrencyInputs = ({
             disabled={isConfirming}
             value={rightBalance}
           />
-        </div>
-      </div>
+        </div> 
+      </div> */}
     </React.Fragment>
   )
 }

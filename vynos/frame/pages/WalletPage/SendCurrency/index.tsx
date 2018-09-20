@@ -125,11 +125,11 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
     return true
   }
 
-  autoFill = (percentage: number) => {
+  autoFill = (percentageMultiplier: number) => {
     const cardBalance = this.props.cardBalance
 
     const [type, amount] = cardBalance
-      ? [cardBalance.type, cardBalance.amountBigNumber.mul(percentage)]
+      ? [cardBalance.type, cardBalance.amountBigNumber.mul(percentageMultiplier)]
       : [CurrencyType.WEI, 0]
 
     const balance = this.props.currencyConvertable(type, amount)
@@ -233,6 +233,10 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
     this.setState({ isConfirming: false })
   }
 
+  componentWillMount = () => {
+    this.autoFill(1)
+  }
+
   render() {
     const { addressError, balanceError, isConfirming, address, displayedBalances } = this.state
     return (
@@ -248,10 +252,10 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
             onAddressChange={this.onAddressChange}
             onBalanceChange={this.onBalanceChange}
           />
-          <AutoFillButtons
+          {/* <AutoFillButtons
             autoFill={this.autoFill}
             isConfirming={isConfirming}
-          />
+          /> */}
         </div>
         <SendCurrencyFooter
           isConfirming={isConfirming}

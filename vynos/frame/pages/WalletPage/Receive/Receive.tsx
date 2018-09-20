@@ -68,7 +68,7 @@ export class Receive extends React.Component<Props, State> {
     return (
       <div className={baseStyle.subpageWrapper}>
         <div className={baseStyle.header}>Add Ether to your card</div>
-        <div className={classnames(baseStyle.description, s.mediumUp)}>Only send Ether (ETH) to this address.</div>
+        <div className={classnames(baseStyle.label, s.mediumUp)}>Only send Ether (ETH) to this address.</div>
 
         <div className={classnames(s.minAmount, s.smallDown)}>Minimum Amount
               <Currency
