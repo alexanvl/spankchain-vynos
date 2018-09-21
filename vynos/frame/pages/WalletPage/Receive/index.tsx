@@ -4,7 +4,7 @@ import { Route, Switch } from 'react-router'
 import ReceivePage from './Receive'
 import LandingPage from './Landing'
 
-class Receive extends React.Component<{address: string, bootySupport?:boolean}, any> {
+class Receive extends React.Component<{ address: string, bootySupport?: boolean, location: any }, any> {
   render() {
     let { address, bootySupport } = this.props
     return (
@@ -28,7 +28,7 @@ class Receive extends React.Component<{address: string, bootySupport?:boolean}, 
 
 function mapStateToProps(state: any): any {
   return {
-    bootySupport: state.shared.featureFlags.bootySupport
+    bootySupport: state.shared.featureFlags.bootySupport,
   }
 }
 export default connect(mapStateToProps)(Receive)

@@ -22,6 +22,7 @@ export interface WalletPageStateProps {
   address: string | null
   walletBalance: BN
   cardBalance: BN
+  location?: any
 }
 
 export interface WalletPageState {
@@ -81,7 +82,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         />
         <Route
           path="/wallet/receive"
-          render={() => <Receive address={address!} />}
+          render={() => <Receive address={address!} location={this.props.location}/>}
         />
         <Route
           path="/wallet/reveal"

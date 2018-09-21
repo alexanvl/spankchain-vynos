@@ -55,11 +55,11 @@ export class Currency extends React.Component<CurrencyProps, any> {
     try {
       let curr = (new CurrencyConvertable(inputType, amount.toString(10), () => this.props.exchangeRates))
       if (outputType != inputType) {
-        curr.to(outputType)
+        curr = curr.to(outputType)
       }
-      decimals = decimals || outputType == CurrencyType.USD ? 2 : 0
+      decimals = decimals || (outputType == CurrencyType.USD ? 2 : 0)
       ret = curr.format({
-        decimals: decimals ,
+        decimals: decimals,
         withSymbol: false,
         showTrailingZeros: outputType == CurrencyType.USD
       })
