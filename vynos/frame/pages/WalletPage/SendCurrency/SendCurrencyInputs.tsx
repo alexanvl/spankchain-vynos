@@ -12,6 +12,7 @@ export interface SendCurrencyInputsProps {
   onAddressChange: Function
   onBalanceChange: Function
   displayedBalances: [string, string]
+  bootySupport: boolean
 }
 
 export const SendCurrencyInputs = ({
@@ -22,6 +23,7 @@ export const SendCurrencyInputs = ({
   isConfirming,
   onAddressChange,
   onBalanceChange,
+  bootySupport,
 }: SendCurrencyInputsProps) => {
   const inputClass = isConfirming
     ? classnames(s.inputBorderless, s.input)
@@ -36,13 +38,13 @@ export const SendCurrencyInputs = ({
             className={inputClass}
             placeholder="0x3930DdDf234..."
             onChange={onAddressChange}
-            errorMessage={addressError || balanceError}
+            errorMessage={addressError || (bootySupport ? balanceError : '')}
             disabled={isConfirming}
             value={address}
           />
         </div>
       </div>
-      {/* <div className={s.contentRow}>
+      {!bootySupport && <div className={s.contentRow}>
         <div className={s.amountWrapper}>
           <div className={s.inputLabel}>Finney Amount</div>
           <Input
@@ -67,7 +69,7 @@ export const SendCurrencyInputs = ({
             value={rightBalance}
           />
         </div> 
-      </div> */}
+      </div> }
     </React.Fragment>
   )
 }

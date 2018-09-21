@@ -20,7 +20,7 @@ export interface StateProps {
 export interface CurrencyProps extends StateProps {
   amount: BN
   decimals?: number
-  outputType?: CurrencyType.ETH | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.WEI | CurrencyType.BOOTY
+  outputType: CurrencyType.ETH | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.WEI | CurrencyType.BOOTY
   inputType: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY
   showUnit?: boolean
   unitClassName?: string
@@ -35,7 +35,7 @@ export interface CurrencyProps extends StateProps {
 export class Currency extends React.Component<CurrencyProps, any> {
   public static defaultProps: Partial<CurrencyProps> = {
     decimals: 2,
-    outputType: undefined,
+    outputType: CurrencyType.USD,
     inputType: CurrencyType.WEI,
     showUnit: false,
     inverse: false,
@@ -44,23 +44,26 @@ export class Currency extends React.Component<CurrencyProps, any> {
 
   formatAmount() {
 
-    const {
+    let {
       amount,
       decimals,
       inputType,
       outputType
     } = this.props
 
-    let ret: string
+    let ret: string = ''
     try {
-      ret = (new CurrencyConvertable(inputType, amount.toString(10), () => this.props.exchangeRates))
-        // displaying as only usd atm
-        .to(outputType || CurrencyType.USD)
-        .format({
-          decimals: decimals !== undefined ? decimals : 2,
-          withSymbol: false,
-          showTrailingZeros: true
-        })
+      let curr = (new CurrencyConvertable(inputType, amount.toString(10), () => this.props.exchangeRates))
+      if (outputType != inputType) {
+        curr.to(outputType)
+      }
+      decimals = decimals || outputType == CurrencyType.USD ? 2 : 0
+      ret = curr.format({
+        decimals: decimals ,
+        withSymbol: false,
+        showTrailingZeros: outputType == CurrencyType.USD
+      })
+      
     } catch (e) {
       console.error('unable to get currency', e)
       ret = '--'

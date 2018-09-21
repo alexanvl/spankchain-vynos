@@ -2,15 +2,15 @@ import * as React from 'react'
 
 const baseStyle = require('../styles.css')
 
-export const SendCurrencyHeader = () => (
+export const SendCurrencyHeader = ({bootySupport}:any) => (
   <React.Fragment>
     <div className={baseStyle.header}>Send Ether</div>
-    <div className={baseStyle.description}>
+    {bootySupport && <div className={baseStyle.description}>
       Your full Booty balance will be converted into Ether and sent to the address you specify.
       <br />
       <br />
       Partial sending will be available soon ❤️
       <br />
-    </div>
+    </div>}
   </React.Fragment>
 )

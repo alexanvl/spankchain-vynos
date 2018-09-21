@@ -39,8 +39,10 @@ export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): 
 export const setFeatureFlags: ActionCreator<FeatureFlags> = actionCreator<FeatureFlags>('runtime/setFeatureFlags')
 export function setFeatureFlagsHandler(state: WorkerState, featureFlags: FeatureFlags): WorkerState {
   return { ...state,
-    runtime: { ...state.runtime,
+    runtime: {
+      ...state.runtime,
       featureFlags,
+      ...state.runtime, // uncomment this to let wallet's feature flags take presedence over hub's feature flag's (useful for local debugging)
     }
   }
 }

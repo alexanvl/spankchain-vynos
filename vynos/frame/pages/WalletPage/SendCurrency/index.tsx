@@ -12,6 +12,7 @@ import { AutoFillButtons } from './AutoFillButtons'
 import { SendCurrencyFooter } from './SendCurrencyFooter'
 import { SendCurrencyHeader } from './SendCurrencyHeader'
 import { SendCurrencyInputs } from './SendCurrencyInputs'
+import { setFeatureFlags } from '../../../../worker/actions';
 
 const s = require('./index.css')
 const si = require('./../styles.css')
@@ -23,6 +24,7 @@ export interface MapStateToProps {
   cardBalance: CurrencyConvertable | null
   pendingTransaction: PendingTransaction | null
   currencyConvertable: (type: CurrencyType, amount: string | number | BigNumber.BigNumber) => CurrencyConvertable
+  featureFlags: any
 }
 
 export interface MapDispatchToProps {
@@ -239,10 +241,11 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
 
   render() {
     const { addressError, balanceError, isConfirming, address, displayedBalances } = this.state
+    let { featureFlags } = this.props
     return (
       <div className={s.container}>
         <div className={si.subpageWrapper}>
-          <SendCurrencyHeader />
+          <SendCurrencyHeader bootySupport={featureFlags.bootySupport}/>
           <SendCurrencyInputs
             address={address}
             addressError={addressError}
@@ -251,11 +254,12 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
             displayedBalances={displayedBalances}
             onAddressChange={this.onAddressChange}
             onBalanceChange={this.onBalanceChange}
+            bootySupport={featureFlags.bootySupport}
           />
-          {/* <AutoFillButtons
+          {!featureFlags.bootySupport && <AutoFillButtons
             autoFill={this.autoFill}
             isConfirming={isConfirming}
-          /> */}
+          />}
         </div>
         <SendCurrencyFooter
           isConfirming={isConfirming}
@@ -280,6 +284,7 @@ function mapStateToProps(state: FrameState): MapStateToProps {
     cardBalance: new CurrencyConvertable(CurrencyType.WEI, cardBalance(state.shared).toString(10), () => state.shared.exchangeRates),
     currencyConvertable: (type: CurrencyType, amount: string | number | BigNumber.BigNumber) => new CurrencyConvertable(type, amount, () => state.shared.exchangeRates),
     pendingTransaction: state.shared.pendingTransaction,
+    featureFlags: state.shared.featureFlags,
   }
 }
 

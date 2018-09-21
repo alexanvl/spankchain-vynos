@@ -106,24 +106,24 @@
   background: #fcfcfc;
   display: flex;
   border-radius: 10px;
-  padding: 20px;
+  padding: 20px 30px;
   margin: 2rem auto;
-  width: 86%;
 }
 
-.whiteRect * {
+.whiteRect > * {
   font-family: cartographmonocf;
   font-size: 0.8rem;
   font-weight: 600;
 }
 
 .left {
-  flex-basis: 40%;
+  flex-basis: 55%;
   align-items: center;
   display: flex;
   font-size: 0.8rem;
   font-weight: 600;
   padding: 5%;
+  padding-left: 0;
   line-height: 1.1rem;
 }
 

@@ -5,8 +5,9 @@ import Button from "../../../components/Button"
 import Currency, { CurrencyType } from '../../../components/Currency'
 import { Link } from 'react-router-dom'
 
-const s = require('./style.css')
-const vs = require('../../styles/ynos.css')
+const s = require('./receive.css')
+const vs = require('../../../styles/ynos.css')
+const baseStyle = require('../styles.css')
 
 export interface State {
   isCopied: boolean,
@@ -63,32 +64,48 @@ export class ReceiveEther extends React.Component<any, State> {
   render() {
 
     return (
-      <div className={s.container}>
-        <div className={s.header}>Receive Ether</div>
+      <div className={baseStyle.subpageWrapper}>
+        <div className={baseStyle.header}>Receive Ether to get Booty</div>
+        <div className={baseStyle.description}>When you receive ETH in your SpankPay account, it will automatically get converted to BOOTY so you can start tipping.</div>
+        <div style={{textAlign: 'center'}}>
+          <Currency
+            amount={1}
+            outputType={CurrencyType.BOOTY}
+            inputType={CurrencyType.BOOTY}
+            unitClassName={s.currencyIcon}
+            showUnit
+          />&nbsp;&nbsp;=&nbsp;&nbsp;
+          <Currency
+            amount={1}
+            outputType={CurrencyType.USD}
+            inputType={CurrencyType.USD}
+            unitClassName={s.currencyIcon}
+            showUnit
+          />
+        </div>
         <div className={s.whiteRect}>
-          <div className={s.left}>Ready to transfer some ETH and get tipping? Check the transfer amounts on the right, and then click to see a step-by-step guide. </div>
+          <div className={s.left}>You can get 69 BOOTY at a time. When you blow your entire load of BOOTY, you can load up with more.</div>
           <div className={s.right}>
             <div className={s.quarter}>
-              <div className={s.currencyWrap}>Min amount </div>
+              <div className={s.currencyWrap}>Min amount</div>
               <div className={s.currencyWrap}>Max amount</div>
-              <div className={s.currencyWrap}>Miner fee</div>
             </div>
             <div className={s.quarter}>
               <Currency
                 amount={0.04}
-                outputType={CurrencyType.USD}
+                outputType={CurrencyType.ETH}
                 inputType={CurrencyType.ETH}
                 unitClassName={s.currencyIcon}
                 showUnit
               />
-              <div>Unlimited</div>
               <Currency
-                amount={this.totalGasCost()}
-                outputType={CurrencyType.USD}
-                inputType={CurrencyType.WEI}
+                amount={69}
+                outputType={CurrencyType.ETH}
+                inputType={CurrencyType.USD}
                 unitClassName={s.currencyIcon}
                 showUnit
-              /></div>
+              />
+            </div>
           </div>
         </div >
         <Button to="/wallet/receive/start" content={<div className={vs.loginButton} />} isFullWidth />

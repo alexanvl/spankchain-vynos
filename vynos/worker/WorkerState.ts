@@ -164,7 +164,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   exchangeRates: null,
   username: null,
   baseCurrency: null,
-  featureFlags: {bootySupport: false},
+  featureFlags: null,
 }
 
 const initialTransactionState = () => ({
@@ -202,7 +202,7 @@ export const INITIAL_STATE: WorkerState = {
     exchangeRates: null,
     username: null,
     baseCurrency: CurrencyType.FINNEY,
-    featureFlags: {bootySupport: false},
+    featureFlags: {bootySupport: true},
   }
 }
 
