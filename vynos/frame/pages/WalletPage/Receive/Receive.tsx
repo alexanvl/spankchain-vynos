@@ -13,6 +13,7 @@ const baseStyle = require('../styles.css')
 
 export interface Props {
   address: string | null
+  bootySupport?: boolean
 }
 
 export interface State {
@@ -63,15 +64,20 @@ export class Receive extends React.Component<Props, State> {
   render() {
     const {
       address,
+      bootySupport,
     } = this.props;
 
     return (
       <div className={baseStyle.subpageWrapper}>
-        <div className={baseStyle.header}>Receive Ether to get Booty</div>
-        <div className={classnames(baseStyle.label, s.mediumUp)}>Only send Ether (ETH) to this address.</div>
+        <div className={baseStyle.header}>Receive Ether {bootySupport && 'to get Booty'}</div>
+        <div className={classnames(baseStyle.label, s.mediumUp)}>
+          { bootySupport ? 'When you receive ETH in your SpankPay account, it will automatically get converted to BOOTY so you can start tipping.'
+            : 'Only send Ether (ETH) to this address.'
+          }
+        </div>
 
-        <div className={classnames(s.minAmount, s.smallDown)}>Minimum Amount
-              <Currency
+        <div className={classnames(s.minAmount, s.smallDown)}>Min Amount
+          <Currency
             amount={0.04}
             outputType={CurrencyType.ETH}
             inputType={CurrencyType.ETH}
@@ -79,6 +85,15 @@ export class Receive extends React.Component<Props, State> {
             showUnit
           />
         </div>
+        { bootySupport && <div className={classnames(s.minAmount, s.smallDown)}>Max Amount
+          <Currency
+            amount={69}
+            outputType={CurrencyType.ETH}
+            inputType={CurrencyType.USD}
+            unitClassName={s.minIcon}
+            showUnit
+          />
+        </div> }
         <Input
           disabled={true}
           value={address}
@@ -91,7 +106,7 @@ export class Receive extends React.Component<Props, State> {
             {renderQR(address)}
           </div>
           <div className={s.buttonWrapper}>
-            <div className={classnames(s.minAmount, s.mediumUp)}>Minimum Amount
+            <div className={classnames(s.minAmount, s.mediumUp)}>Min Amount
               <Currency
                 amount={0.04}
                 outputType={CurrencyType.ETH}
@@ -100,6 +115,15 @@ export class Receive extends React.Component<Props, State> {
                 showUnit
               />
             </div>
+            { bootySupport && <div className={classnames(s.minAmount, s.mediumUp)}> Max Amount
+              <Currency
+                amount={69}
+                outputType={CurrencyType.ETH}
+                inputType={CurrencyType.USD}
+                unitClassName={s.minIcon}
+                showUnit
+              />
+            </div>}
             <Button
               type='primary'
               onClick={this.onCopyAddress}

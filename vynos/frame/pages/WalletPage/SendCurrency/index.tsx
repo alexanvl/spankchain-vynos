@@ -212,7 +212,7 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
       addressError: '',
       isAddressDirty: false,
       disableSend: false
-    }, () => this.props.history.push('/wallet'))
+    }, () => this.props.history.push('/wallet/activity'))
   }
 
   confirm = () => {
@@ -228,7 +228,13 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
       })
       return
     }
-    this.setState({ isConfirming: true })
+    if (this.props.featureFlags.bootySupport) {
+      // don't need to show the confirmation page if we're sending Booty
+      // because it's withdrawing for the full amount, so just send the transaction
+      this.onSendTransaction()
+    } else {
+      this.setState({ isConfirming: true })
+    }
   }
 
   cancel = (): void => {
@@ -236,7 +242,9 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
   }
 
   componentWillMount = () => {
-    this.autoFill(1)
+    if (this.props.featureFlags.bootySupport) {
+      this.autoFill(1)
+    }
   }
 
   render() {
