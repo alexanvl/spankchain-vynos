@@ -12,7 +12,7 @@ export interface SendCurrencyInputsProps {
   onAddressChange: Function
   onBalanceChange: Function
   displayedBalances: [string, string]
-  bootySupport: boolean
+  bootySupport?: boolean
 }
 
 export const SendCurrencyInputs = ({

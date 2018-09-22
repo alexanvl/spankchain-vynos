@@ -13,6 +13,7 @@ import { SendCurrencyFooter } from './SendCurrencyFooter'
 import { SendCurrencyHeader } from './SendCurrencyHeader'
 import { SendCurrencyInputs } from './SendCurrencyInputs'
 import { setFeatureFlags } from '../../../../worker/actions';
+import { FeatureFlags } from '../../../../worker/WorkerState'
 
 const s = require('./index.css')
 const si = require('./../styles.css')
@@ -24,7 +25,7 @@ export interface MapStateToProps {
   cardBalance: CurrencyConvertable | null
   pendingTransaction: PendingTransaction | null
   currencyConvertable: (type: CurrencyType, amount: string | number | BigNumber.BigNumber) => CurrencyConvertable
-  featureFlags: any
+  featureFlags: FeatureFlags
 }
 
 export interface MapDispatchToProps {
