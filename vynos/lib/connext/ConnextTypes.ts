@@ -19,6 +19,11 @@ export enum PurchaseMetaType {
   WITHDRAWAL = 'WITHDRAWAL'
 }
 
+export enum PaymentMetaType {
+  FEE = 'FEE',
+  PRINCIPAL = 'PRINCIPAL'
+}
+
 export enum ChannelType {
   LEDGER = 'LEDGER',
   VIRTUAL = 'VIRTUAL',
@@ -42,10 +47,16 @@ export interface MetaFields {
 
 export interface WithdrawalFields {recipient: string}
 
-export type Meta = {
+export type PurchaseMeta = {
+  fields: MetaFields|WithdrawalFields
+  merchant: string
+  type: PurchaseMetaType
+}
+
+export type PaymentMeta = {
   fields: MetaFields|WithdrawalFields
   receiver: string
-  type: PurchaseMetaType
+  type: PaymentMetaType
 }
 
 export interface BalanceType {
@@ -55,7 +66,7 @@ export interface BalanceType {
 
 export interface PaymentObject {
   type: ChannelType
-  meta: Meta
+  meta: PaymentMeta
   payment: {
     channelId: string
     balanceA: BalanceType

@@ -2,7 +2,7 @@ import { Store } from 'redux'
 import VynosBuyResponse from './VynosBuyResponse'
 import BN = require('bn.js')
 import * as semaphore from 'semaphore'
-import { Meta, ChannelType, PaymentObject, IConnext, VirtualChannel} from "./connext/ConnextTypes";
+import { PurchaseMeta, PaymentMeta, ChannelType, PaymentObject, IConnext, VirtualChannel} from "./connext/ConnextTypes";
 import * as actions from '../worker/actions'
 import { AtomicTransaction, TransactionInterface } from './AtomicTransaction'
 import { WorkerState, ChannelState,CurrencyType } from '../worker/WorkerState'
@@ -23,6 +23,16 @@ import getChannels from './connext/getChannels';
  *
  * Author: William Cory -- GitHub: roninjin10
  */
+
+// TODO: Myabe we can inherit from another interface here? Or maybe not?
+interface XXXPayment {
+  amount: Currency
+  meta: PaymentMeta
+}
+
+type XXXPurchase = PurchaseMeta & {
+  payments: XXXPayment[]
+}
 
 
 export default class BuyTransaction implements TransactionInterface {
@@ -52,8 +62,8 @@ export default class BuyTransaction implements TransactionInterface {
     }
   }
 
-  public startTransaction = async (priceWEI: Currency, meta: Meta): Promise<VynosBuyResponse> => {
-    return await this.doBuyTransaction.start(priceWEI, meta)
+  public startTransaction = async (purchase: XXXPurchase): Promise<VynosBuyResponse> => {
+    return await this.doBuyTransaction.start(purchase)
   }
 
   public restartTransaction = async (): Promise<VynosBuyResponse|undefined> => {
@@ -64,52 +74,57 @@ export default class BuyTransaction implements TransactionInterface {
 
   public isInProgress = (): boolean => this.doBuyTransaction.isInProgress()
 
-  private getExistingChannel = async (priceWEI: Currency, meta: Meta): Promise<[Currency, Meta, ChannelState]> => {
-    const existingChannel = await getChannels(this.connext, this.store)
-    if (!existingChannel) {
+  private getExistingChannel = async (purchase: XXXPurchase): Promise<[XXXPurchase, ChannelState]> => {
+    const lc = await getChannels(this.connext, this.store)
+    if (!lc) {
       throw new Error('A channel must be open')
     }
-    return [priceWEI, meta, existingChannel]
+    return [purchase, lc]
   }
 
-  private getVC = async (priceWEI: Currency, meta: Meta, existingChannel: ChannelState): Promise<[Currency, Meta, VirtualChannel]> => {
-    const existingVC: VirtualChannel|undefined = existingChannel.currentVCs
-      .find((testVc: VirtualChannel) => testVc.partyB === meta.receiver)
+  private getVC = async (purchase: XXXPurchase, lc: ChannelState): Promise<[XXXPurchase, ChannelState, VirtualChannel]> => {
+    let recipient = getPurcahseNonCustodialRecipient(purchase)
+    let nonCustodialAmount = getPurchaseNonCustodialAmount(purchase)
+    const existingVC: VirtualChannel|undefined = lc.currentVCs
+      .find((testVc: VirtualChannel) => testVc.partyB === recipient)
 
-    const vc = existingVC && priceWEI.amountBN.lte(new BN(existingVC.ethBalanceA))
+    // TODO: this should be done using something like Currency.compare(...) to
+    // make sure the two currencies are the same (ex, ETH isn't being compared
+    // to BOOTY)
+    const vc = existingVC && nonCustodialAmount.amountBN.lte(new BN(existingVC.ethBalanceA))
       ? existingVC
-      : await this.createNewVC(meta.receiver, priceWEI)
+      : await this.createNewVC(recipient, nonCustodialAmount)
 
-      return [
-      priceWEI,
-      meta,
-      vc,
-    ]
+      return [purchase, lc, vc]
   }
 
   private updateBalance = async (
-    priceWEI: Currency,
-    meta: Meta,
-    vc: VirtualChannel
-  ): Promise<[VirtualChannel, string]> => {
-    const balA = new BN(vc.ethBalanceA).sub(priceWEI.amountBN)
-    const balB = new BN(vc.ethBalanceB).add(priceWEI.amountBN)
+    purchase: XXXPurchase,
+    lc: ChannelState,
+    vc: VirtualChannel,
+  ): Promise<[VirtualChannel, PurchaseResult]> => {
+    // OLD: const balA = new BN(vc.ethBalanceA).sub(priceWEI.amountBN)
+    // OLD: const balB = new BN(vc.ethBalanceB).add(priceWEI.amountBN)
 
-    const connextUpdate: PaymentObject[] = [
-      {
-        payment: {
-          balanceA: {
-            ethDeposit: balA
-          },
-          balanceB: {
-            ethDeposit: balB
-          },
-          channelId: vc.channelId,
-        },
-        meta,
-        type: ChannelType.VIRTUAL // this is hardcoded atm
-      }
-    ]
+    // OLD: const connextUpdate: PaymentObject[] = [
+    // OLD:   {
+    // OLD:     payment: {
+    // OLD:       balanceA: {
+    // OLD:         ethDeposit: balA
+    // OLD:       },
+    // OLD:       balanceB: {
+    // OLD:         ethDeposit: balB
+    // OLD:       },
+    // OLD:       channelId: vc.channelId,
+    // OLD:     },
+    // OLD:     meta,
+    // OLD:     type: ChannelType.VIRTUAL // this is hardcoded atm
+    // OLD:   }
+    // OLD: ]
+
+    const connextUpdate: PaymentObject[] = purchase.payments.map(p => {
+      return convertPaymentToPaymentObject(p)
+    })
 
     let res: any
 
@@ -120,13 +135,14 @@ export default class BuyTransaction implements TransactionInterface {
       throw e
     }
 
-    const vcCopy: VirtualChannel = JSON.parse(JSON.stringify(vc))
-    vcCopy.ethBalanceA = balA.toString()
-    vcCopy.ethBalanceB = balB.toString()
+    // OLD: const vcCopy: VirtualChannel = JSON.parse(JSON.stringify(vc))
+    // OLD: vcCopy.ethBalanceA = balA.toString()
+    // OLD: vcCopy.ethBalanceB = balB.toString()
 
     return [
-      vcCopy,
-      res[0].id.toString()
+      updateLCFromPayment(lc, payment),
+      updateVCFromPayment(vc, payment),
+      res,
     ]
   }
 
