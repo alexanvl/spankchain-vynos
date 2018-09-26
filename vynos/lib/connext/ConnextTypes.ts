@@ -84,7 +84,7 @@ export interface IConnext {
 
   updateBalances: (update: PaymentObject[], sender?: string) => any
 
-  openThread: (thread: {to: string, deposit: {ethDeposit: BN, tokenDeposit?: BN}}, sender?: string) => string
+  openThread: (thread: {to: string, deposit: {ethDeposit: BN} | {tokenDeposit: BN}}, sender?: string) => string
 
   getThreadById: (threadId: string) => VirtualChannel
 

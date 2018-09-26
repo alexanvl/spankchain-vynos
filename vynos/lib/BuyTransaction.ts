@@ -1,14 +1,15 @@
 import { Store } from 'redux'
+import { VynosPurchase } from './VynosPurchase'
 import VynosBuyResponse from './VynosBuyResponse'
 import BN = require('bn.js')
 import * as semaphore from 'semaphore'
 import { PurchaseMeta, PaymentMeta, ChannelType, PaymentObject, IConnext, VirtualChannel} from "./connext/ConnextTypes";
 import * as actions from '../worker/actions'
 import { AtomicTransaction, TransactionInterface } from './AtomicTransaction'
-import { WorkerState, ChannelState,CurrencyType } from '../worker/WorkerState'
+import { WorkerState, ChannelState, CurrencyType as C } from '../worker/WorkerState'
 import LockStateObserver from './LockStateObserver'
 import {closeAllVCs} from './connext/closeAllVCs'
-import {TEN_FINNEY} from './constants'
+import {INITIAL_DEPOSIT_BOOTY} from './constants'
 import takeSem from './takeSem'
 import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
 import Currency from './Currency'
@@ -24,19 +25,10 @@ import getChannels from './connext/getChannels';
  * Author: William Cory -- GitHub: roninjin10
  */
 
-// TODO: Myabe we can inherit from another interface here? Or maybe not?
-interface XXXPayment {
-  amount: Currency
-  meta: PaymentMeta
-}
-
-type XXXPurchase = PurchaseMeta & {
-  payments: XXXPayment[]
-}
-
+type _Args<T> = T extends (...args: infer U) => any ? U : never
 
 export default class BuyTransaction implements TransactionInterface {
-  static DEFAULT_DEPOSIT = new Currency(CurrencyType.WEI, TEN_FINNEY.toString(10))
+  static DEFAULT_DEPOSIT = new Currency(C.BOOTY, INITIAL_DEPOSIT_BOOTY.toString())
 
   private doBuyTransaction: AtomicTransaction
   private connext: IConnext
@@ -62,7 +54,7 @@ export default class BuyTransaction implements TransactionInterface {
     }
   }
 
-  public startTransaction = async (purchase: XXXPurchase): Promise<VynosBuyResponse> => {
+  public startTransaction = async (purchase: VynosPurchase): Promise<VynosBuyResponse> => {
     return await this.doBuyTransaction.start(purchase)
   }
 
@@ -74,7 +66,7 @@ export default class BuyTransaction implements TransactionInterface {
 
   public isInProgress = (): boolean => this.doBuyTransaction.isInProgress()
 
-  private getExistingChannel = async (purchase: XXXPurchase): Promise<[XXXPurchase, ChannelState]> => {
+  private getExistingChannel = async (purchase: VynosPurchase<C.BOOTY>): Promise<_Args<BuyTransaction['getVC']>> => {
     const lc = await getChannels(this.connext, this.store)
     if (!lc) {
       throw new Error('A channel must be open')
@@ -82,27 +74,46 @@ export default class BuyTransaction implements TransactionInterface {
     return [purchase, lc]
   }
 
-  private getVC = async (purchase: XXXPurchase, lc: ChannelState): Promise<[XXXPurchase, ChannelState, VirtualChannel]> => {
-    let recipient = getPurcahseNonCustodialRecipient(purchase)
-    let nonCustodialAmount = getPurchaseNonCustodialAmount(purchase)
-    const existingVC: VirtualChannel|undefined = lc.currentVCs
-      .find((testVc: VirtualChannel) => testVc.partyB === recipient)
+  private getVC = async (
+    purchase: VynosPurchase,
+    lc: ChannelState,
+  ): Promise<_Args<BuyTransaction['updateBalance']>> => {
+    const recipients = purchase.payments.map(p => p.recipient)
+    if (recipients.length != 2) {
+      // For now, assume that payments have exactly two recipients: Ingrid and
+      // Bob (in that order). In the future we'll need to relax this constraint
+      // (to handle LC-only, VC-only, and non-custodial payments), but it's
+      // safe to make this assumption for now.
+      throw new Error(
+        'Incorrect number of purcahse recipients; 2 expected, but got: ' +
+        JSON.stringify(recipients)
+      )
+    }
 
-    // TODO: this should be done using something like Currency.compare(...) to
-    // make sure the two currencies are the same (ex, ETH isn't being compared
-    // to BOOTY)
-    const vc = existingVC && nonCustodialAmount.amountBN.lte(new BN(existingVC.ethBalanceA))
+    if (recipients[0] == lc.currentLC.partyI) {
+      // As above, this constraint can be relaxed in the future.
+      throw new Error(
+        `Expected the first recipient to be Ingrid ('${lc.currentLC.partyI}') ` +
+        `but it is not: ${JSON.stringify(recipients)}`
+      )
+    }
+
+    const existingVC: VirtualChannel|undefined = lc.currentVCs
+      .find((testVc: VirtualChannel) => recipients[1] == testVc.partyB)
+
+    // TODO: make sure the 'tokenBalanceA' is available
+    const vc = existingVC && purchase.payments[1].amount.compare('lte', existingVC.tokenBalanceA, C.BOOTY)
       ? existingVC
-      : await this.createNewVC(recipient, nonCustodialAmount)
+      : await this.createNewVC(recipients[1], purchase.payments[1].amount)
 
       return [purchase, lc, vc]
   }
 
   private updateBalance = async (
-    purchase: XXXPurchase,
+    purchase: VynosPurchase,
     lc: ChannelState,
     vc: VirtualChannel,
-  ): Promise<[VirtualChannel, PurchaseResult]> => {
+  ): Promise<_Args<BuyTransaction['updateStore']>> => {
     // OLD: const balA = new BN(vc.ethBalanceA).sub(priceWEI.amountBN)
     // OLD: const balB = new BN(vc.ethBalanceB).add(priceWEI.amountBN)
 
@@ -147,6 +158,7 @@ export default class BuyTransaction implements TransactionInterface {
   }
 
   private updateStore = async (
+    lc: ChannelState,
     vc: VirtualChannel,
     id: string
   ): Promise<{channelId: string, token: string}> => {
@@ -163,18 +175,24 @@ export default class BuyTransaction implements TransactionInterface {
   // helpers
   private createNewVC = async (
     receiver: string,
-    priceWEI: Currency
+    price: Currency<C.BOOTY>,
   ): Promise<VirtualChannel> => {
     await closeAllVCs(this.store, this.connext)
 
     let newVCId: string
-    const ethDeposit: Currency = await this.getEthDepositAmountInWei(priceWEI)
+    const deposit: Currency = await this.getBootyDepositAmount(price)
+
+    if (deposit.currency != C.BOOTY as any) {
+      // As above, for the moment, we're using exclusively BOOTY, so this is
+      // a safe check. In the future this will need to be generalized.
+      throw new Error('For now, VCs must be created with BOOTY')
+    }
 
     try {
       newVCId = await this.connext.openThread({
         to: receiver,
         deposit: {
-          ethDeposit: ethDeposit.amountBN
+          tokenDeposit: deposit.amountBN,
         }
       })
     } catch(e) {
@@ -189,34 +207,34 @@ export default class BuyTransaction implements TransactionInterface {
     }
   }
 
-  private getEthDepositAmountInWei = async (priceWEI: Currency): Promise<Currency> => {
-    const AVAILABLE: Currency = await this.getAvailableLCBalanceInWEI()
-    const DEFAULT: Currency = BuyTransaction.DEFAULT_DEPOSIT
+  private getBootyDepositAmount = async (priceBOOTY: Currency<C.BOOTY>): Promise<Currency> => {
+    const AVAILABLE = await this.getAvailableLCBalanceInBOOTY()
+    const DEFAULT = BuyTransaction.DEFAULT_DEPOSIT
 
-    if (priceWEI.amountBN.gt(AVAILABLE.amountBN)) {
+    if (priceBOOTY.compare('gt', AVAILABLE)) {
       throw new Error(`
         The price cannot be larger than the available LC balance when opening a new channel.
-        Price: ${priceWEI.amountBN.toString(10)} availableLcBalance: ${AVAILABLE.amountBN.toString(10)}
+        Price: ${priceBOOTY.amountBN.toString()} availableLcBalance: ${AVAILABLE.amountBN.toString()}
       `)
     }
 
-    if (AVAILABLE.amountBN.lt(DEFAULT.amountBN)) {
+    if (AVAILABLE.compare('lt', DEFAULT)) {
       return AVAILABLE
     }
 
-    if (priceWEI.amountBN.gt(DEFAULT.amountBN)) {
-      return priceWEI
+    if (priceBOOTY.compare('gt', DEFAULT)) {
+      return priceBOOTY
     }
 
     return DEFAULT
   }
 
-  private getAvailableLCBalanceInWEI = async (): Promise<Currency> => {
+  private getAvailableLCBalanceInBOOTY = async (): Promise<Currency<C.BOOTY>> => {
     const channels = await getCurrentLedgerChannels(this.connext, this.store)
     if (!channels) {
       throw new Error('Expected to find ledger channels.')
     }
 
-    return new Currency(CurrencyType.WEI, channels[0].ethBalanceA)
+    return new Currency(C.BOOTY, channels[0].tokenBalanceA)
   }
 }

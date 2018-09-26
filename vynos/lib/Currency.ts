@@ -8,13 +8,14 @@ export interface CurrencyFormatOptions {
   showTrailingZeros?: boolean
 }
 
-
-export interface ICurrency {
+export interface ICurrency<ThisType extends CurrencyType=any> {
   type: CurrencyType
   amount: string
 }
 
-export default class Currency implements ICurrency {
+type CmpType = 'lt' | 'lte' | 'gt' | 'gte' | 'eq'
+
+export default class Currency<ThisType extends CurrencyType=any> implements ICurrency<ThisType> {
   static typeToSymbol: {[key: string]: string} = {
     [CurrencyType.USD]: '$',
     [CurrencyType.ETH]: 'ETH',
@@ -30,7 +31,7 @@ export default class Currency implements ICurrency {
   // static SPANK = (amount: BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.SPANK, amount)
   // static BOOTY = (amount: BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.BOOTY, amount)
 
-  private _type: CurrencyType
+  private _type: ThisType
   private _amount: BigNumber.BigNumber
   private _defaultOptions = {
     [CurrencyType.USD]: {
@@ -60,7 +61,7 @@ export default class Currency implements ICurrency {
     } as CurrencyFormatOptions,
   }
 
-  constructor(_type: CurrencyType, _amount: BigNumber.BigNumber|string|number) {
+  constructor(_type: ThisType, _amount: BigNumber.BigNumber|string|number) {
     if (typeof _amount === 'string' || typeof _amount === 'number') {
       try {
         _amount = new BigNumber(_amount)
@@ -106,10 +107,10 @@ export default class Currency implements ICurrency {
     withSymbol: false,
   })
 
-  public format = (options?: CurrencyFormatOptions): string => {
-    options = {
-      ...this._defaultOptions[this._type],
-      ...options || {},
+  public format = (_options?: CurrencyFormatOptions): string => {
+    const options: CurrencyFormatOptions = {
+      ...this._defaultOptions[this._type] as any,
+      ..._options || {},
     }
 
     const symbol = options.withSymbol ? `${this.symbol}` : ``
@@ -119,4 +120,19 @@ export default class Currency implements ICurrency {
 
     return `${symbol}${amount}`
   }
+
+  public compare(cmp: CmpType, b: Currency<ThisType>|string, bType?: CurrencyType): boolean {
+    if (typeof b == 'string')
+      b = new Currency(bType || this._type, b) as Currency<ThisType>
+
+    if (this.type != b.type) {
+      throw new Error(
+        `Cannot compare incompatible currency types ${this.type} and ${b.type} ` +
+        `(amounts: ${this.amount}, ${b.amount})`
+      )
+    }
+
+    return this.amountBigNumber[cmp](b.amountBigNumber)
+  }
+
 }

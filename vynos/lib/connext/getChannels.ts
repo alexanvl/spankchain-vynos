@@ -27,6 +27,6 @@ export default async function getChannels(connext: IConnext, store: Store<Worker
     ledgerId: lc.channelId,
     balance: balanceTotal.amount,
     currentVCs: vcs,
-    currentLCs: lc,
+    currentLC: lc,
   }
 }

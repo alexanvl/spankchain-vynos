@@ -1,5 +1,6 @@
 import Wallet from 'ethereumjs-wallet'
 import {MetaFields, PurchaseMetaType, VirtualChannel} from '../lib/connext/ConnextTypes'
+import {LedgerChannel} from '../lib/connext/ConnextTypes'
 
 export interface RuntimeState {
   wallet?: Wallet
@@ -35,6 +36,7 @@ export interface ChannelState {
   ledgerId: string
   balance: string
   currentVCs: VirtualChannel[]
+  currentLC: LedgerChannel
 }
 
 export enum CurrencyType {
@@ -42,7 +44,7 @@ export enum CurrencyType {
   ETH = 'ETH',
   WEI = 'WEI',
   FINNEY = 'FINNEY',
-  BOOTY = 'BOO'
+  BOOTY = 'BOOTY'
 }
 
 export type ExchangeRates = {[key: string/* in CurrencyType*/]: string}
