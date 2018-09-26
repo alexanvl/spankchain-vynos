@@ -169,7 +169,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     lockStateObserver.addUnlockHandler(async () => {
       try {
         store.dispatch(actions.setFeatureFlags(
-          await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`, {credentials: 'include'})
+          {bootySupport: true}//await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`, {credentials: 'include'})
         ))
       } catch(e) {
         console.error('unable to get feature flags', e)

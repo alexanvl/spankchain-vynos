@@ -12,7 +12,6 @@ import { AutoFillButtons } from './AutoFillButtons'
 import { SendCurrencyFooter } from './SendCurrencyFooter'
 import { SendCurrencyHeader } from './SendCurrencyHeader'
 import { SendCurrencyInputs } from './SendCurrencyInputs'
-import { setFeatureFlags } from '../../../../worker/actions';
 import { FeatureFlags } from '../../../../worker/WorkerState'
 
 const s = require('./index.css')

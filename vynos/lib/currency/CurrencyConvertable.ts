@@ -16,13 +16,7 @@ export default class CurrencyConvertable extends Currency {
     this.getExchangeRates = (): ExchangeRates => {
       const rates = typeof exchangeRates === 'function' ? exchangeRates() : exchangeRates
       if (!rates) {
-        return {
-          [CurrencyType.WEI]: '1',
-          [CurrencyType.ETH]: '1000000000000000000',
-          [CurrencyType.BOOTY]: '5000000000000000',
-          [CurrencyType.FINNEY]: '1000000000000000',
-          [CurrencyType.USD]: '5000000000000000',
-        }
+        throw new Error('no exchange rates are set')
       }
       return rates
     }
