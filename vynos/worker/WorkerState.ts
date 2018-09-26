@@ -201,8 +201,8 @@ export const INITIAL_STATE: WorkerState = {
     activeWithdrawalError: null,
     exchangeRates: null,
     username: null,
-    baseCurrency: CurrencyType.FINNEY,
-    featureFlags: {bootySupport: false},
+    baseCurrency: null,
+    featureFlags: {bootySupport: true},
   }
 }
 
@@ -232,7 +232,7 @@ export function buildSharedState (state: WorkerState): SharedState {
     hasActiveDeposit: state.persistent.hasActiveDeposit,
     exchangeRates: state.runtime.exchangeRates,
     username: state.runtime.username,
-    baseCurrency: state.runtime.baseCurrency,
+    baseCurrency: state.runtime.featureFlags.bootySupport ? CurrencyType.BOOTY : CurrencyType.FINNEY,
     featureFlags: state.runtime.featureFlags,
   }
 }
