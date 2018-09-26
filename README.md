@@ -69,20 +69,7 @@ cd vynos
 yarn install
 ```
 
-Rename example.env to .env and set some environment variables:
-```
-FRAME_PORT=9090
-HARNESS_PORT=9999
-CONTRACT_ADDRESS=0x**************************
-RPC_URL=http://example.com:port
-```
-
-Here are the current staging addresses.
-```
-HUB_URL=https://hub-staging.spankdev.com
-INGRID_ADDRESS=0xbb1699d16368ebc13bdc29e6a1aad50a21be45eb
-CONTRACT_ADDRESS=0x0010822efcbbea5ceabf1b180bc9c73c6dfffbb0
-```
+Rename development.env to .env and double check that the environment variables are correct.
 
 ## Run
 ```

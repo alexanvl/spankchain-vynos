@@ -7,34 +7,85 @@ import {expect, assert} from 'chai'
 import LockStateObserver from './LockStateObserver'
 import * as semaphore from 'semaphore'
 import {
-  Meta,
+  PaymentMetaType,
   PurchaseMetaType,
   PaymentObject,
   VirtualChannel,
-  ChannelType
+  LedgerChannel,
+  ChannelType,
+  UpdateBalancesResult,
 } from './connext/ConnextTypes'
+import { VynosPurchase } from './VynosPurchase'
 import Connext = require('connext')
 import Web3 = require('web3')
 import * as sinon from 'sinon'
 import Currency from './Currency'
-import BN = require('bn.js')
+import _BN = require('bn.js')
 import toFinney from './web3/toFinney';
 require('isomorphic-fetch')
+require('chai').use(require('chai-subset'))
 
+type BN = _BN
+const BN = (x: any) => new _BN(x)
 
-const TWO_FINNEY = new Currency(CurrencyType.WEI, toFinney(2).toString(10))
-const address = '0x0000000000000000000000000000000000000000'
+const contractAddress = '0xC000000000000000000000000000000000000000'
+const ingridAddress = '0x1000000000000000000000000000000000000000'
+const aliceAddress = '0xA000000000000000000000000000000000000000'
+const bobAddress = '0xB000000000000000000000000000000000000000'
 
-const meta: Meta= {
+const FIN = (amt: string | number): string => toFinney(+amt).toString()
+const FINBN = (amt: string | number): BN => BN(FIN(amt))
+const BOOTY = (amt: string | number): string => Web3.utils.toWei(amt.toString())
+const BOOTYBN = (amt: string | number): BN => BN(BOOTY(amt))
+
+const PURCHASE_AMOUNT = BOOTY(69)
+const PURCHASE_FEE = BOOTY(6)
+const PURCHASE_PRINCIPAL = BOOTY(9)
+
+const mkPurchase = (principal: string = PURCHASE_PRINCIPAL): VynosPurchase => ({
   fields: {
     streamId: '',
     streamName: '',
     peformerId: '',
     peformerName: 'butterbubbles',
   },
-  receiver: address,
-  type: PurchaseMetaType.TIP
-}
+  type: PurchaseMetaType.TIP,
+  payments: [
+    {
+      type: PaymentMetaType.FEE,
+      receiver: ingridAddress,
+      amount: {
+        type: CurrencyType.BOOTY,
+        amount: PURCHASE_FEE,
+      },
+    },
+
+    {
+      type: PaymentMetaType.PRINCIPAL,
+      receiver: bobAddress,
+      amount: {
+        type: CurrencyType.BOOTY,
+        amount: principal,
+      },
+    },
+  ],
+})
+
+const mkVc = (overrides?: Partial<VirtualChannel>): VirtualChannel => ({
+  state: 1,
+  ethBalanceA: '0',
+  ethBalanceB: '0',
+  tokenBalanceA: '0',
+  tokenBalanceB: '0',
+  channelId: '1',
+  partyA: aliceAddress,
+  partyB: bobAddress,
+  partyI: ingridAddress,
+  subchanAtoI: '',
+  subchanBtoI: '',
+  nonce: 1,
+  ...(overrides || {}),
+})
 
 describe('BuyTransaction', () => {
   let buyTransaction: BuyTransaction
@@ -43,7 +94,6 @@ describe('BuyTransaction', () => {
   let sem: semaphore.Semaphore
   let connext: any
 
-
   beforeEach(() => {
     store = redux.createStore(reducers, INITIAL_STATE) as Store<WorkerState>
     sem = semaphore(1)
@@ -51,21 +101,74 @@ describe('BuyTransaction', () => {
 
     connext = new Connext({
       web3: new Web3(),
-      ingridAddress: address,
+      ingridAddress,
       watcherUrl: '',
       ingridUrl: '',
-      contractAddress: address,
+      contractAddress,
     })
+
+    connext.openThreadCalls = 0
+    connext.expectedThreadOpenAmount = BuyTransaction.DEFAULT_DEPOSIT.amount
+    connext.openThread = (open: any) => {
+      assert.containSubset(open, {
+        to: bobAddress,
+      })
+      assert.equal(open.deposit.tokenDeposit.toString(), connext.expectedThreadOpenAmount)
+      connext.openThreadCalls += 1
+    }
+
+    connext.vcEthBalanceA = BuyTransaction.DEFAULT_DEPOSIT.amount
+    connext.getThreadById = async (): Promise<VirtualChannel> => mkVc({
+      ethBalanceA: connext.vcEthBalanceA,
+    })
+
+    ;(global as any).fetch = () => {}
+    let stubedFetch: any = sinon.stub(global, 'fetch' as any)
+    stubedFetch.resolves({json: () => []})
+    connext.closeThreads = async () => {}
+
+    connext.lcEthBalanceA = FIN(101)
+    connext.lcEthBalanceB = FIN(102)
+    connext.lcTokenBalanceA = BOOTY(111)
+    connext.lcTokenBalanceA = BOOTY(112)
+    connext.getChannelByPartyA = (): LedgerChannel => ({
+      state: 1,
+      channelId: 'channelId',
+      partyA: aliceAddress,
+      partyI: ingridAddress,
+      ethBalanceA: connext.lcEthBalanceA,
+      ethBalanceI: connext.lcEthBalanceB,
+      tokenBalanceA: connext.lcTokenBalanceA,
+      tokenBalanceI: connext.lcTokenBalanceB,
+      token: '0xBOOTY',
+      nonce: 1,
+      openVcs: 0,
+      vcRootHash: '',
+      openTimeout: 1,
+      updateTimeout: 1,
+    })
+
+    connext.updateBalances = (update: PaymentObject[]): UpdateBalancesResult => {
+      connext.lastBalanceUpdate = update
+
+      return {
+        purchaseId: 'purchaseId',
+        receipts: [
+          { TODO: 1 },
+          { TODO: 2 },
+        ] as any,
+      }
+    }
 
     buyTransaction = new BuyTransaction(store, connext, lockStateObserver, sem)
   })
 
   it('Should throw an error if no LC channel is open', async () => {
-    await buyTransaction.startTransaction(TWO_FINNEY, meta)
+    await buyTransaction.startTransaction(mkPurchase())
       .then(() => {
         throw new Error('should have thrown')
       })
-      .catch(e => {
+      .catch((e: any) => {
         expect(e.message).to.equal('A channel must be open')
       })
   })
@@ -77,7 +180,7 @@ describe('BuyTransaction', () => {
         ...INITIAL_STATE.runtime,
         channel: {
           currentVCs: [],
-          balance: toFinney(50).toString(10),
+          balance: toFinney(50).toString(),
           ledgerId: 'ledgerId',
         },
         wallet: {
@@ -90,23 +193,15 @@ describe('BuyTransaction', () => {
 
     let openThreadCalls = 0
     connext.openThread = ({to, deposit: {ethDeposit}}: {to: string, deposit: {ethDeposit: BN}}) => {
-      expect(to).to.equal(meta.receiver)
-      expect(ethDeposit.toString(10)).to.equal(BuyTransaction.DEFAULT_DEPOSIT.amountBN.toString(10))
+      expect(to).to.equal(bobAddress)
+      expect(ethDeposit.toString()).to.equal(BuyTransaction.DEFAULT_DEPOSIT.amountBN.toString())
       openThreadCalls++
     }
 
     connext.closeThreads = async () => {}
-    connext.getThreadById = async (): Promise<VirtualChannel> => ({
-      state: 1,
-      ethBalanceA: BuyTransaction.DEFAULT_DEPOSIT.amountBN.toString(10),
-      ethBalanceB: '0',
-      channelId: 'channelId',
-      partyA: address,
-      partyB: address,
+    connext.getThreadById = async (): Promise<VirtualChannel> => mkVc({
+      ethBalanceA: BuyTransaction.DEFAULT_DEPOSIT.amount,
       partyI: '',
-      subchanAtoI: '',
-      subchanBtoI: '',
-      nonce: 1,
     })
 
     ;(global as any).fetch = () => {}
@@ -117,15 +212,15 @@ describe('BuyTransaction', () => {
       channelId: '1',
       partyA: '',
       partyI: '',
-      ethBalanceA: toFinney(50).toString(10),
-      ethBalanceI: toFinney(50).toString(10),
+      ethBalanceA: toFinney(50).toString(),
+      ethBalanceI: toFinney(50).toString(),
     })
 
     connext.updateBalances = (update: PaymentObject[]) => {
       expect(update.length === 1)
-      expect(update[0].payment.balanceA.ethDeposit!.toString(10)).to.equal(toFinney(8).toString(10))
-      expect(update[0].payment.balanceB.ethDeposit!.toString(10)).to.equal(toFinney(2).toString(10))
-      expect(update[0].meta).to.equal(meta)
+      expect(update[0].payment.balanceA.ethDeposit!.toString()).to.equal(toFinney(8).toString())
+      expect(update[0].payment.balanceB.ethDeposit!.toString()).to.equal(toFinney(2).toString())
+      expect(update[0].meta).to.equal({ TODO: true })
       expect(update[0].type).to.equal(ChannelType.VIRTUAL)
 
       return {
@@ -137,9 +232,9 @@ describe('BuyTransaction', () => {
       }
     }
 
-    await buyTransaction.startTransaction(TWO_FINNEY, meta)
+    await buyTransaction.startTransaction(mkPurchase())
 
-    expect(store.getState().runtime.channel!.balance).to.equal(toFinney(48).toString(10))
+    expect(store.getState().runtime.channel!.balanceEth).to.equal(toFinney(48).toString())
 
     expect(openThreadCalls).to.equal(1)
   })
@@ -150,21 +245,14 @@ describe('BuyTransaction', () => {
       runtime: {
         ...INITIAL_STATE.runtime,
         channel: {
-          balance: toFinney(50).toString(10),
-          currentVCs: [{
-            state: 1,
-            ethBalanceA: toFinney(1).toString(),
-            ethBalanceB: toFinney(1).toString(),
-            channelId: '1',
-            partyA: address,
-            partyB: address,
-            partyI: address,
-            subchanAtoI: '',
-            subchanBtoI: '',
-            nonce: 1,
-          }] as VirtualChannel[]},
+          balance: toFinney(50).toString(),
+          currentVCs: [mkVc({
+            ethBalanceA: FIN(1),
+            ethBalanceB: FIN(1),
+          })],
+        },
         wallet: {
-          getAddressString: () => address,
+          getAddressString: () => aliceAddress,
         },
       },
     }
@@ -173,23 +261,15 @@ describe('BuyTransaction', () => {
 
     let openThreadCalls = 0
     connext.openThread = ({to, deposit: {ethDeposit}}: {to: string, deposit: {ethDeposit: BN}}) => {
-      expect(to).to.equal(meta.receiver)
-      expect(ethDeposit.toString(10)).to.equal(BuyTransaction.DEFAULT_DEPOSIT.amountBN.toString(10))
+      expect(to).to.equal(bobAddress)
+      expect(ethDeposit.toString()).to.equal(BuyTransaction.DEFAULT_DEPOSIT.amountBN.toString())
       openThreadCalls++
     }
 
     connext.closeThreads = async () => {}
-    connext.getThreadById = async (): Promise<VirtualChannel> => ({
-      state: 1,
-      ethBalanceA: BuyTransaction.DEFAULT_DEPOSIT.amountBN.toString(10),
-      ethBalanceB: '0',
-      channelId: 'channelId',
-      partyA: address,
-      partyB: address,
-      partyI: '',
-      subchanAtoI: '',
-      subchanBtoI: '',
-      nonce: 1,
+    connext.getThreadById = async (): Promise<VirtualChannel> => mkVc({
+      ethBalanceA: BuyTransaction.DEFAULT_DEPOSIT.amount,
+      tokenBalanceA: BuyTransaction.DEFAULT_DEPOSIT.amount,
     })
 
     ;(global as any).fetch = () => {}
@@ -200,15 +280,15 @@ describe('BuyTransaction', () => {
       channelId: '1',
       partyA: '',
       partyI: '',
-      ethBalanceA: toFinney(50).toString(10),
-      ethBalanceI: toFinney(50).toString(10),
+      ethBalanceA: toFinney(50).toString(),
+      ethBalanceI: toFinney(50).toString(),
     })
 
     connext.updateBalances = (update: PaymentObject[]) => {
       expect(update.length === 1)
-      expect(update[0].payment.balanceA.ethDeposit!.toString(10)).to.equal(toFinney(8).toString(10))
-      expect(update[0].payment.balanceB.ethDeposit!.toString(10)).to.equal(toFinney(2).toString(10))
-      expect(update[0].meta).to.equal(meta)
+      expect(update[0].payment.balanceA.ethDeposit!.toString()).to.equal(toFinney(8).toString())
+      expect(update[0].payment.balanceB.ethDeposit!.toString()).to.equal(toFinney(2).toString())
+      expect(update[0].meta).to.equal({ TODO: true })
       expect(update[0].type).to.equal(ChannelType.VIRTUAL)
 
       return {
@@ -220,9 +300,9 @@ describe('BuyTransaction', () => {
       }
     }
 
-    await buyTransaction.startTransaction(TWO_FINNEY, meta)
+    await buyTransaction.startTransaction(mkPurchase())
 
-    expect(store.getState().runtime.channel!.balance).to.equal(toFinney(48).toString(10))
+    expect(store.getState().runtime.channel!.balanceEth).to.equal(toFinney(48).toString())
 
     expect(openThreadCalls).to.equal(1)
   })
@@ -233,48 +313,35 @@ describe('BuyTransaction', () => {
       runtime: {
         ...INITIAL_STATE.runtime,
         channel: {
-          balance: toFinney(5).toString(10),
-          currentVCs: [{
-          state: 1,
-          ethBalanceA: toFinney(1).toString(),
-          ethBalanceB: toFinney(1).toString(),
-          channelId: '1',
-          partyA: address,
-          partyB: address,
-          partyI: address,
-          subchanAtoI: '',
-          subchanBtoI: '',
-          nonce: 1,
-        }] as VirtualChannel[]},
+          balance: toFinney(5).toString(),
+          currentVCs: [mkVc({
+            ethBalanceA: FIN(1),
+            ethBalanceB: FIN(1),
+          })],
+        },
         wallet: {
-          getAddressString: () => address,
+          getAddressString: () => aliceAddress,
         },
       },
     }
+
     store = redux.createStore(reducers, s) as Store<WorkerState>
     buyTransaction = new BuyTransaction(store, connext, lockStateObserver, sem)
 
-    const LC_BALANCE = toFinney(5).toString(10)
+    const LC_BALANCE = toFinney(5).toString()
 
     let openThreadCalls = 0
     connext.openThread = ({to, deposit: {ethDeposit}}: {to: string, deposit: {ethDeposit: BN}}) => {
-      expect(to).to.equal(meta.receiver)
-      expect(ethDeposit.toString(10)).to.equal(LC_BALANCE)
+      expect(to).to.equal(bobAddress)
+      expect(ethDeposit.toString()).to.equal(LC_BALANCE)
       openThreadCalls++
     }
 
     connext.closeThreads = async () => {}
-    connext.getThreadById = async (): Promise<VirtualChannel> => ({
-      state: 1,
+    connext.getThreadById = async (): Promise<VirtualChannel> => mkVc({
       ethBalanceA: LC_BALANCE,
-      ethBalanceB: '0',
-      channelId: 'channelId',
-      partyA: address,
-      partyB: address,
+      tokenBalanceA: LC_BALANCE,
       partyI: '',
-      subchanAtoI: '',
-      subchanBtoI: '',
-      nonce: 1,
     })
 
     ;(global as any).fetch = () => {}
@@ -286,14 +353,14 @@ describe('BuyTransaction', () => {
       partyA: '',
       partyI: '',
       ethBalanceA: LC_BALANCE,
-      ethBalanceI: toFinney(50).toString(10),
+      ethBalanceI: toFinney(50).toString(),
     })
 
     connext.updateBalances = (update: PaymentObject[]) => {
       expect(update.length === 1)
-      expect(update[0].payment.balanceA.ethDeposit!.toString(10)).to.equal(toFinney(3).toString(10))
-      expect(update[0].payment.balanceB.ethDeposit!.toString(10)).to.equal(toFinney(2).toString(10))
-      expect(update[0].meta).to.equal(meta)
+      expect(update[0].payment.balanceA.ethDeposit!.toString()).to.equal(toFinney(3).toString())
+      expect(update[0].payment.balanceB.ethDeposit!.toString()).to.equal(toFinney(2).toString())
+      expect(update[0].meta).to.equal({ TODO: true })
       expect(update[0].type).to.equal(ChannelType.VIRTUAL)
 
       return {
@@ -305,19 +372,23 @@ describe('BuyTransaction', () => {
       }
     }
 
-    await buyTransaction.startTransaction(TWO_FINNEY, meta)
+    await buyTransaction.startTransaction(mkPurchase())
 
-    expect(store.getState().runtime.channel!.balance).to.equal(toFinney(3).toString(10))
+    expect(store.getState().runtime.channel!.balanceEth).to.equal(toFinney(3).toString())
 
     expect(openThreadCalls).to.equal(1)
   })
 
   it('should open a vc for the buy price if it is larger than the default', async () => {
+    let initialBalance = BN(PURCHASE_AMOUNT).add(FINBN(100)).toString()
     const s = {
       ...INITIAL_STATE,
       runtime: {
         ...INITIAL_STATE.runtime,
-        channel: {currentVCs: [], balance: toFinney(50).toString(10)},
+        channel: {
+          currentVCs: [],
+          balanceToken: initialBalance,
+        },
         wallet: {
           getAddressString: () => '',
         },
@@ -326,61 +397,20 @@ describe('BuyTransaction', () => {
     store = redux.createStore(reducers, s) as Store<WorkerState>
     buyTransaction = new BuyTransaction(store, connext, lockStateObserver, sem)
 
-    const BUY_AMOUNT = new Currency(CurrencyType.WEI, toFinney(20).toString(10))
+    const buyAmount = BuyTransaction.DEFAULT_DEPOSIT.amountBN.add(FINBN(10)).toString()
 
-    let openThreadCalls = 0
-    connext.openThread = ({to, deposit: {ethDeposit}}: {to: string, deposit: {ethDeposit: BN}}) => {
-      expect(to).to.equal(meta.receiver)
-      expect(ethDeposit.toString(10)).to.equal(BUY_AMOUNT.amountBN.toString(10))
-      openThreadCalls++
-    }
+    connext.expectedThreadOpenAmount = buyAmount
+    connext.vcEthBalanceA = buyAmount
 
-    connext.closeThreads = async () => {}
-    connext.getThreadById = async (): Promise<VirtualChannel> => ({
-      state: 1,
-      ethBalanceA: BUY_AMOUNT.amountBN.toString(10),
-      ethBalanceB: '0',
-      channelId: 'channelId',
-      partyA: address,
-      partyB: address,
-      partyI: '',
-      subchanAtoI: '',
-      subchanBtoI: '',
-      nonce: 1,
+    await buyTransaction.startTransaction(mkPurchase(buyAmount))
+
+    assert.equal(
+      store.getState().runtime.channel!.balanceToken,
+      BN(initialBalance).sub(BN(buyAmount)).toString(),
+    )
+    expect(connext.openThreadCalls).to.equal(1)
+    assert.containSubset(connext.lastBalanceUpdate, {
+      TODO: true,
     })
-
-    ;(global as any).fetch = () => {}
-    let stubedFetch: any = sinon.stub(global, 'fetch' as any)
-    stubedFetch.resolves({json: () => []})
-
-    connext.getChannelByPartyA = () => ({
-      channelId: 'channelId',
-      partyA: '',
-      partyI: '',
-      ethBalanceA: toFinney(50).toString(10),
-      ethBalanceI: toFinney(50).toString(10),
-    })
-
-    connext.updateBalances = (update: PaymentObject[]) => {
-      expect(update.length === 1)
-      expect(update[0].payment.balanceA.ethDeposit!.toString(10)).to.equal('0')
-      expect(update[0].payment.balanceB.ethDeposit!.toString(10)).to.equal(toFinney(20).toString(10))
-      expect(update[0].meta).to.equal(meta)
-      expect(update[0].type).to.equal(ChannelType.VIRTUAL)
-
-      return {
-      '0': {
-        id: {
-          toString: () => ''
-        }
-      }
-      }
-    }
-
-    await buyTransaction.startTransaction(BUY_AMOUNT, meta)
-
-    expect(store.getState().runtime.channel!.balance).to.equal(toFinney(30).toString(10))
-
-    expect(openThreadCalls).to.equal(1)
   })
 })

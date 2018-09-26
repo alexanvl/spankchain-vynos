@@ -16,16 +16,14 @@ export default async function getChannels(connext: IConnext, store: Store<Worker
   }
 
   const vcs: VirtualChannel[] = await getVirtualChannels(lc.channelId)
+  const vcBals = aggregateVCBalances(getAddress(store), vcs)
 
-  const balanceTotal: Currency = Currency.ETH(
-    aggregateVCBalances(getAddress(store), vcs)
-      .add(new BN(lc.ethBalanceA))
-      .toString(10)
-  )
+  vcBals.balanceEth = vcBals.balanceEth.add(new BN(lc.ethBalanceA))
+  vcBals.balanceToken = vcBals.balanceEth.add(new BN(lc.tokenBalanceA))
 
   return {
     ledgerId: lc.channelId,
-    balance: balanceTotal.amount,
+    ...vcBals,
     currentVCs: vcs,
     currentLC: lc,
   }

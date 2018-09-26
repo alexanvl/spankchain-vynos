@@ -61,7 +61,14 @@ export default class Currency<ThisType extends CurrencyType=any> implements ICur
     } as CurrencyFormatOptions,
   }
 
-  constructor(_type: ThisType, _amount: BigNumber.BigNumber|string|number) {
+  constructor(currency: ICurrency<ThisType>);
+  constructor(type: ThisType, amount: BigNumber.BigNumber|string|number);
+
+  constructor(...args: any[]) {
+    let [_type, _amount] = (
+      args.length == 1 ? [ args[0].type, args[0].amount ] : args
+    )
+
     if (typeof _amount === 'string' || typeof _amount === 'number') {
       try {
         _amount = new BigNumber(_amount)
@@ -69,6 +76,9 @@ export default class Currency<ThisType extends CurrencyType=any> implements ICur
         throw new Error(`Invalid amount: ${_amount} (original error: ${e}`)
       }
     }
+
+    if (!_amount)
+      throw new Error('Invalid amount: ' + _amount)
 
     this._type = _type
     this._amount = _amount
@@ -101,7 +111,7 @@ export default class Currency<ThisType extends CurrencyType=any> implements ICur
     return new BN(this._amount.round(0).toString(10))
   }
 
-  public getDecimalString = (decimals: number) => this.format({
+  public getDecimalString = (decimals?: number) => this.format({
     decimals,
     showTrailingZeros: true,
     withSymbol: false,
@@ -119,6 +129,10 @@ export default class Currency<ThisType extends CurrencyType=any> implements ICur
       : this._amount.toNumber().toFixed(options.decimals)
 
     return `${symbol}${amount}`
+  }
+
+  public toString(): string {
+    return this.format()
   }
 
   public compare(cmp: CmpType, b: Currency<ThisType>|string, bType?: CurrencyType): boolean {

@@ -53,7 +53,7 @@ export default class Vynos extends EventEmitter {
 
         if (channel) {
           channels[channel.ledgerId] = {
-            balanceInWei: channel.balance,
+            balanceInWei: channel.balanceEth,
           }
         }
 

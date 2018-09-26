@@ -4,6 +4,8 @@ export interface VirtualChannel {
   state: number
   ethBalanceA: string
   ethBalanceB: string
+  tokenBalanceA: string
+  tokenBalanceB: string
   channelId: string
   partyA: string
   partyB: string
@@ -30,15 +32,25 @@ export enum ChannelType {
   WITHDRAWAL = 'WITHDRAWAL',
 }
 
+// Note: coppied from hub/src/domain/LedgerChannel.ts
 export interface LedgerChannel {
+  state: number // LcStatus
+  ethBalanceA: string
+  ethBalanceI: string
+  tokenBalanceA: string
+  tokenBalanceI: string
   channelId: string
   partyA: string
   partyI: string
-  ethBalanceA: string
-  ethBalanceI: string
+  token: string
+  nonce: number
+  openVcs: number
+  vcRootHash: string
+  openTimeout: number
+  updateTimeout: number
 }
 
-export interface MetaFields {
+export interface PurchaseMetaFields {
   streamId: string
   streamName: string
   peformerId: string
@@ -48,13 +60,12 @@ export interface MetaFields {
 export interface WithdrawalFields {recipient: string}
 
 export type PurchaseMeta = {
-  fields: MetaFields|WithdrawalFields
-  merchant: string
+  fields: PurchaseMetaFields
   type: PurchaseMetaType
 }
 
 export type PaymentMeta = {
-  fields: MetaFields|WithdrawalFields
+  fields?: WithdrawalFields
   receiver: string
   type: PaymentMetaType
 }
@@ -79,10 +90,51 @@ export interface Deposit {
   tokenDeposit?: BN | null;
 }
 
+// Note: coppied from hub/src/domain/VirtualChannel.ts
+export interface VcStateUpdate {
+  id: number
+  channelId: string
+  nonce: number
+  ethBalanceA: string
+  ethBalanceB: string
+  tokenBalanceA: string
+  tokenBalanceB: string
+  price?: string
+  sigA?: string
+  sigB?: string
+  createdAt: number
+}
+
+// Note: coppied from hub/src/domain/LedgerChannel.ts
+export interface LcStateUpdate {
+  id: number
+  channelId: string
+  isClose: boolean
+  nonce: number
+  openVcs: number
+  vcRootHash: string
+  ethBalanceA: string
+  ethBalanceI: string
+  tokenBalanceA: string
+  tokenBalanceI: string
+  price?: string
+  sigA?: string
+  sigI?: string
+}
+
+
+export interface UpdateBalancesResult {
+  purchaseId: string
+  receipts: Array<
+    ({ type: ChannelType.LEDGER } & LcStateUpdate) |
+    ({ type: ChannelType.VIRTUAL } & VcStateUpdate)
+  >
+}
+
 export interface IConnext {
   openChannel: (initialDeposits: Deposit, tokenAddresss?: string, sender?: string, challenge?: string) => Promise<string>
 
-  updateBalances: (update: PaymentObject[], sender?: string) => any
+  updateBalances: (update: PaymentObject[], sender?: string) => UpdateBalancesResult
 
   openThread: (thread: {to: string, deposit: {ethDeposit: BN} | {tokenDeposit: BN}}, sender?: string) => string
 

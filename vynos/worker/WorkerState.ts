@@ -1,5 +1,5 @@
 import Wallet from 'ethereumjs-wallet'
-import {MetaFields, PurchaseMetaType, VirtualChannel} from '../lib/connext/ConnextTypes'
+import {PurchaseMetaFields, PurchaseMetaType, VirtualChannel} from '../lib/connext/ConnextTypes'
 import {LedgerChannel} from '../lib/connext/ConnextTypes'
 
 export interface RuntimeState {
@@ -34,7 +34,8 @@ export interface AuthorizationRequestState {
 
 export interface ChannelState {
   ledgerId: string
-  balance: string
+  balanceEth: string
+  balanceToken: string
   currentVCs: VirtualChannel[]
   currentLC: LedgerChannel
 }
@@ -52,7 +53,7 @@ export type ExchangeRates = {[key: string/* in CurrencyType*/]: string}
 export interface HistoryItem {
   payment: {
     channelId: string,
-    meta: MetaFields,
+    meta: PurchaseMetaFields,
     token: string
   }
   fields: {

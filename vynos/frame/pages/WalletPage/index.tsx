@@ -145,7 +145,7 @@ function mapStateToProps(state: FrameState): WalletPageStateProps {
     workerProxy: workerProxy,
     address: state.shared.address,
     walletBalance: new BN(state.shared.balance),
-    cardBalance: new BN(state.shared.channel ? state.shared.channel.balance : 0),
+    cardBalance: new BN(state.shared.channel ? state.shared.channel.balanceEth : 0),
   }
 }
 
