@@ -1,11 +1,11 @@
 import * as React from 'react'
 import * as classnames from 'classnames'
 import Currency, { CurrencyType } from '../Currency/index'
-import CurrencyIcon, { CurrencyIconType } from '../CurrencyIcon'
+import CurrencyIcon from '../CurrencyIcon'
 import { FrameState } from '../../redux/FrameState'
 import { connect } from 'react-redux'
 import BN = require('bn.js')
-import LoadingSpinner from '../LoadingSpinner';
+import LoadingSpinner from '../LoadingSpinner'
 import Tooltip from '../Tooltip'
 
 const s = require('./style.css')

@@ -7,21 +7,20 @@ import * as actions from '../actions'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import {
   BuyRequest,
-  CloseLedgerChannels,
   DepositRequest,
   SetIsPendingVerificationRequest,
   SetNeedsCollateralRequest
 } from '../../lib/rpc/yns'
 import Logger from '../../lib/Logger'
 import takeSem from '../../lib/takeSem'
-import DepositTransaction from '../../lib/DepositTransaction'
-import CloseChannelTransaction from '../../lib/CloseChannelTransaction'
-import BuyTransaction from '../../lib/BuyTransaction'
+import DepositTransaction, { DepositArgs } from '../../lib/transactions/DepositTransaction'
+import BuyTransaction from '../../lib/transactions/BuyTransaction'
 import getCurrentLedgerChannels from '../../lib/connext/getCurrentLedgerChannels'
 import LockStateObserver from '../../lib/LockStateObserver'
 import ChannelPopulator from '../../lib/ChannelPopulator'
-import Currency from '../../lib/Currency'
+import Currency from '../../lib/currency/Currency'
 import {IConnext} from '../../lib/connext/ConnextTypes'
+import Web3 = require('web3')
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -31,38 +30,25 @@ export default class MicropaymentsController extends AbstractController {
   private sem: semaphore.Semaphore
   private connext: IConnext
   private depositTransaction: DepositTransaction
-  private closeChannelTransaction: CloseChannelTransaction
   private buyTransaction: BuyTransaction
-  private chanPopulator: ChannelPopulator
 
-  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, lockStateObserver: LockStateObserver, chanPopulator: ChannelPopulator) {
+  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, lockStateObserver: LockStateObserver, chanPopulator: ChannelPopulator, web3: Web3) {
     super(logger)
     this.store = store
     this.sem = semaphore(1)
     this.connext = connext
-    this.chanPopulator = chanPopulator
 
-    this.depositTransaction = new DepositTransaction(store, connext, lockStateObserver, this.sem, chanPopulator)
-    this.closeChannelTransaction = new CloseChannelTransaction(store, connext, lockStateObserver, this.sem, chanPopulator)
-    this.buyTransaction = new BuyTransaction(store, connext, lockStateObserver, this.sem)
+    this.depositTransaction = new DepositTransaction(store, connext, lockStateObserver, this.sem, chanPopulator, web3, logger)
+    this.buyTransaction = new BuyTransaction(store, logger, connext, lockStateObserver, this.sem)
     this.depositTransaction.restartTransaction()
-    this.closeChannelTransaction.restartTransaction()
     this.buyTransaction.restartTransaction()
   }
 
-  public async closeLedgerChannels (): Promise<void> {
-    if (!this.sem.available(1)) {
-      throw new Error('Cannot withdraw. Another operation is in progress.')
-    }
-
-    return takeSem<void>(this.sem, () => this.doCloseLedgerChannels())
-  }
-
-  public async deposit (amount: string): Promise<void> {
+  public async deposit (deposit: DepositArgs): Promise<void> {
     if (!this.sem.available(1)) {
       throw new Error('Cannot deposit. Another operation is in progress.')
     }
-    return takeSem<void>(this.sem, () => this.doDeposit(amount))
+    return takeSem<void>(this.sem, () => this.doDeposit(deposit))
   }
 
   public async buy (priceStrWEI: string, meta: any): Promise<VynosBuyResponse> {
@@ -88,24 +74,18 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   public registerHandlers (server: JsonRpcServer) {
-    this.registerHandler(server, CloseLedgerChannels.method, this.closeLedgerChannels)
     this.registerHandler(server, DepositRequest.method, this.deposit)
     this.registerHandler(server, BuyRequest.method, this.buy)
     this.registerHandler(server, SetNeedsCollateralRequest.method, this.setNeedsCollateral)
     this.registerHandler(server, SetIsPendingVerificationRequest.method, this.setIsPendingVerification)
   }
 
-  private async doCloseLedgerChannels (): Promise<void> {
-    this.logToApi('doCloseLedgerChannels', {})
-    this.closeChannelTransaction.startTransaction()
-  }
-
-  private async doDeposit (amount: string): Promise<void> {
-    this.logToApi('doDeposit', {amount})
+  private async doDeposit (deposit: DepositArgs): Promise<void> {
+    this.logToApi('doDeposit', {deposit})
 
     const existingChannel = await getCurrentLedgerChannels(this.connext, this.store)
     existingChannel
-      ? await this.depositTransaction.depositIntoExistingChannel(amount)
-      : await this.depositTransaction.startTransaction(amount)
+      ? await this.depositTransaction.depositIntoExistingChannel(deposit)
+      : await this.depositTransaction.startTransaction(deposit)
   }
 }

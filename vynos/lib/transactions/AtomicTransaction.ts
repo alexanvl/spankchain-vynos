@@ -1,6 +1,7 @@
 import {Store} from 'redux'
-import * as actions from '../worker/actions'
-import { WorkerState, AtomicTransactionState } from '../worker/WorkerState'
+import * as actions from '../../worker/actions'
+import { WorkerState, AtomicTransactionState } from '../../worker/WorkerState'
+import Logger from '../Logger'
 
 /**
  * AtomicTransaction handles long running multi step transactions
@@ -18,7 +19,7 @@ import { WorkerState, AtomicTransactionState } from '../worker/WorkerState'
  * const getData = (url) => axios.get(url)
  * const postData = (data) => axios.post('http://example.com', data)
  *
- * getThenPostData = new AtomicTransaction(reduxStore, 'getThenPost', [getData, postData])
+ * getThenPostData = new AtomicTransaction<PostDataResponse>(reduxStore, 'getThenPost', [getData, postData])
  *
  * getThenPostData.start('http://example2.com')
  *
@@ -34,66 +35,96 @@ export interface TransactionInterface {
   restartTransaction(): Promise<any>
 }
 
-export class AtomicTransaction {
+export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   public name: string
   private store: Store<WorkerState>
+  private logger: Logger
   private methodOrder: Function[]
   private onStart: Function 
   private onRestart: Function
   private afterAll: Function
-
-  constructor(store: Store<WorkerState>, name: string, methodOrder: Function[], afterAll: Function = noop, onStart = noop, onRestart = noop) {
+  
+  constructor(
+    store: Store<WorkerState>, 
+    logger: Logger,
+    name: string, 
+    methodOrder: Function[], 
+    afterAll: Function = noop, 
+    onStart = noop, 
+    onRestart = noop
+  ) {
     this.name = name
     this.store = store
     this.methodOrder = methodOrder
     this.onStart = onStart 
     this.onRestart = onRestart
     this.afterAll = afterAll
+    this.logger = logger
   }
 
-  public start = async (...args: any[]): Promise<any> => {
+  public start = async (...args: T2): Promise<T1> => {
+    this.setState({
+      nextMethodArgs: args,
+      nextMethodIndex: 0
+    })
     await this.onStart()
-    return await this.run(args, 0)
+    return await this.doTransaction()
   }
 
-  public restart = async (): Promise<any> => {
-    if (!this.isInProgress()) {
-      return
-    }
-    
-    const {nextMethodArgs, nextMethodIndex} = this.getState()
 
+  public restart = async (): Promise<T1|null> => {
+    if (!this.isInProgress()) {
+      return null
+    }
     await this.onRestart()
-    await this.run(nextMethodArgs, nextMethodIndex) 
+    return await this.doTransaction()
   }
 
   public isInProgress = (): boolean => !!this.getState()
 
-  private run = async (nextMethodArgs: any[], nextMethodIndex: number): Promise<any> => {
+  private doTransaction = async () => {
     try {
-      nextMethodArgs = await this.methodOrder[nextMethodIndex++](...nextMethodArgs)
-
-      if (nextMethodIndex === this.methodOrder.length) {
-        this.removeState()
-        this.afterAll()
-        return nextMethodArgs
-      }
-
-      if (!Array.isArray(nextMethodArgs)) {
-        nextMethodArgs = [nextMethodArgs]
-      }
-
-      this.setState({
-        nextMethodIndex,
-        nextMethodArgs,
-      })
-
-      return await this.run(nextMethodArgs, nextMethodIndex)
+      const {nextMethodArgs, nextMethodIndex} = this.getState()
+      return await this.persistAndRun(nextMethodArgs, nextMethodIndex)
     } catch(e) {
+      const data = {
+        message: 'there was an error running an AtomicTransaction', 
+        name: this.name, 
+        state: this.getState(), 
+        e
+      }
+      console.error(data.message, data)
+      this.logger.logToApi([{
+        name: `${this.logger.source}:${this.name}`,
+        ts: new Date(),
+        data
+      }])
+      throw e
+    } finally {
       this.removeState()
       this.afterAll()
-      throw e
     }
+  }
+
+  private persistAndRun = async (nextMethodArgs: any, nextMethodIndex: number): Promise<T1> => {
+    nextMethodArgs = await this.methodOrder[nextMethodIndex](...nextMethodArgs)
+
+    nextMethodIndex++
+
+    if (nextMethodIndex === this.methodOrder.length) {
+      return nextMethodArgs
+    }
+
+    if (!Array.isArray(nextMethodArgs)) {
+      nextMethodArgs = [nextMethodArgs]
+    }
+
+    this.setState({
+      nextMethodIndex,
+      nextMethodArgs,
+    })
+
+    return await this.persistAndRun(nextMethodArgs, nextMethodIndex)
   }
 
   private getState = (): AtomicTransactionState => this.store.getState().persistent.transactions[this.name]

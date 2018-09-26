@@ -1,13 +1,8 @@
 import {WorkerState} from '../worker/WorkerState'
 import {Store} from 'redux'
-import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
-import getVirtualChannels from './getVirtualChannels'
-import aggregateVCBalances from './aggregateVCBalances'
-import getAddress from './getAddress'
 import * as actions from '../worker/actions'
-import BN = require('bn.js')
 import {IConnext} from './connext/ConnextTypes'
-import getChannels from './connext/getChannels';
+import getChannels from './connext/getChannels'
 
 export interface DeferredPopulator {
   populate (): Promise<void>

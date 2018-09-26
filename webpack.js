@@ -31,10 +31,11 @@ function stubDependency(regex) {
 
 const CONTRACT_ADDRESS = process.env.CONTRACT_ADDRESS,
   INGRID_ADDRESS = process.env.INGRID_ADDRESS,
+  BOOTY_CONTRACT_ADDRESS = process.env.BOOTY_CONTRACT_ADDRESS,
   RPC_URL = process.env.RPC_URL;
 
-if (!CONTRACT_ADDRESS || !INGRID_ADDRESS) {
-  throw new Error('Refusing to build without a defined contract or Ingrid address.')
+if (!CONTRACT_ADDRESS || !INGRID_ADDRESS || !BOOTY_CONTRACT_ADDRESS) {
+  throw new Error('Refusing to build without a defined channel contract, booty contract, or Ingrid address.')
 }
 
 function webpackConfig(entry, hash = true) {
@@ -69,7 +70,8 @@ function webpackConfig(entry, hash = true) {
           'NETWORK_NAME': JSON.stringify(NETWORK_NAME),
           'HUB_URL': JSON.stringify(HUB_URL),
           'CONTRACT_ADDRESS': JSON.stringify(CONTRACT_ADDRESS),
-          'INGRID_ADDRESS': JSON.stringify(INGRID_ADDRESS)
+          'BOOTY_CONTRACT_ADDRESS': JSON.stringify(BOOTY_CONTRACT_ADDRESS),
+          'INGRID_ADDRESS': JSON.stringify(INGRID_ADDRESS),
         }
       })
     ],

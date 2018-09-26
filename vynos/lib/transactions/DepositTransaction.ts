@@ -1,15 +1,20 @@
 import {Store} from 'redux'
 import * as semaphore from 'semaphore'
-import takeSem from './takeSem'
-import * as actions from '../worker/actions'
+import takeSem from '../takeSem'
+import * as actions from '../../worker/actions'
 import {AtomicTransaction, TransactionInterface} from './AtomicTransaction'
-import {WorkerState} from '../worker/WorkerState'
-import withRetries from './withRetries'
-import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
-import LockStateObserver from './LockStateObserver'
-import ChannelPopulator, {DeferredPopulator} from './ChannelPopulator'
+import {WorkerState} from '../../worker/WorkerState'
+import withRetries from '../withRetries'
+import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
+import LockStateObserver from '../LockStateObserver'
+import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
 import BN = require('bn.js')
-import {IConnext, Deposit} from './connext/ConnextTypes'
+import {IConnext, Deposit} from '../connext/ConnextTypes'
+import Web3 = require('web3')
+import getAddress from '../getAddress'
+import Logger from '../Logger' 
+
+const tokenABI = require('human-standard-token-abi')
 
 /**
  * The DepositTransaction handles starting new deposits as well
@@ -20,11 +25,14 @@ import {IConnext, Deposit} from './connext/ConnextTypes'
  * Author: William Cory -- GitHub: roninjin10
  */
 
-
+export interface DepositArgs {
+  ethDeposit: string,
+  tokenDeposit?: string,
+}
 
 export default class DepositTransaction implements TransactionInterface {
-  private deposit: AtomicTransaction
-  private depositExistingChannel: AtomicTransaction
+  private deposit: AtomicTransaction<void, [DepositArgs]>
+  private depositExistingChannel: AtomicTransaction<void, [DepositArgs]>
   private connext: IConnext
   private store: Store<WorkerState>
   private needsCollateral: boolean = false
@@ -34,13 +42,17 @@ export default class DepositTransaction implements TransactionInterface {
   private deferredPopulate: DeferredPopulator | null
   private awaiter: Promise<void> | null = null
   private depSem: semaphore.Semaphore
+  private bootyContract: any
+  private logger: Logger
 
   constructor (
     store: Store<WorkerState>,
     connext: IConnext,
     lockStateObserver: LockStateObserver,
     sem: semaphore.Semaphore,
-    chanPopulator: ChannelPopulator
+    chanPopulator: ChannelPopulator,
+    web3: Web3,
+    logger: Logger,
   ) {
     this.store = store
     this.connext = connext
@@ -49,6 +61,9 @@ export default class DepositTransaction implements TransactionInterface {
     this.chanPopulator = chanPopulator
     this.deferredPopulate = null
     this.depSem = semaphore(1)
+    this.logger = logger
+
+    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS)
 
     this.deposit = this.makeDepositTransaction()
     this.depositExistingChannel = this.makeDepositExistingChannelTransaction()
@@ -58,27 +73,10 @@ export default class DepositTransaction implements TransactionInterface {
       this.restartTransaction()
     }
   }
-
-  private makeDepositExistingChannelTransaction = () => new AtomicTransaction(
-    this.store,
-    'deposit:existingChannel',
-    [this.doDepositExisting, this.pingChainsawBalanceChange, this.finishTransaction],
-    this.afterAll,
-    this.onStart,
-    this.onRestart
-  )
-
-  private makeDepositTransaction = () => new AtomicTransaction(
-    this.store,
-    'deposit',
-    [this.openChannel, this.pingChainsaw, this.requestDeposit, this.finishTransaction],
-    this.afterAll,
-    this.onRestart,
-  )
-
-  public startTransaction = async (amount: string): Promise<void> => {
+  
+  public startTransaction = async (deposit: DepositArgs): Promise<void> => {
     try {
-      this.awaiter = this.deposit.start(amount)
+      this.awaiter = this.deposit.start(deposit)
       await this.awaiter
     } catch (e) {
       this.releaseDeferred()
@@ -91,8 +89,8 @@ export default class DepositTransaction implements TransactionInterface {
   public restartTransaction = async (): Promise<void> => {
     try {
       this.awaiter =
-        (this.deposit.isInProgress && takeSem<void>(this.sem, () => this.deposit.restart())) ||
-        (this.depositExistingChannel.isInProgress && takeSem<void>(this.sem, () => this.deposit.restart())) ||
+        (this.deposit.isInProgress && takeSem<void>(this.sem, () => { this.deposit.restart()})) ||
+        (this.depositExistingChannel.isInProgress && takeSem<void>(this.sem, () => {this.deposit.restart()})) ||
         null
 
       if (!this.awaiter) {
@@ -115,41 +113,69 @@ export default class DepositTransaction implements TransactionInterface {
     this.maybeCollateralize().catch(console.error.bind(console))
   }
 
-  public depositIntoExistingChannel = async (amount: string): Promise<void> => {
-    const depositObj: Deposit = {
-      ethDeposit: new BN(amount),
-      tokenDeposit: null
-    }
-
-    const t = new AtomicTransaction(
-      this.store,
-      'deposit:existingChannel',
-      [this.doDepositExisting, this.pingChainsawBalanceChange, this.finishTransaction],
-      this.afterAll,
-      this.onStart,
-      this.onRestart
-    )
-
+  public depositIntoExistingChannel = async (deposit: DepositArgs): Promise<void> => {
     try {
-      await t.start(depositObj)
+      await this.depositExistingChannel.start(deposit)
     } catch (e) {
       this.releaseDeferred()
       throw e
     }
   }
 
-  private doDepositExisting = async (depositObj: Deposit): Promise<[string]> => {
+  private makeDepositExistingChannelTransaction = () => new AtomicTransaction<void, [DepositArgs]>(
+    this.store,
+    this.logger,
+    'deposit:existingChannel',
+    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.finishTransaction],
+    this.afterAll,
+    this.onStart,
+    this.onRestart
+  )
+
+  private makeDepositTransaction = () => new AtomicTransaction<void, [DepositArgs]>(
+    this.store,
+    this.logger,
+    'deposit',
+    [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.maybeRequestDeposit, this.finishTransaction],
+    this.afterAll,
+    this.onRestart,
+  )
+
+  private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
+    if (!depositObj.tokenDeposit || new BN(depositObj.tokenDeposit).eq(new BN(0))) {
+      return {
+        ...depositObj,
+        tokenDeposit: undefined,
+      }
+    }
+    
+    await this.bootyContract
+      .methods
+      .approve(
+        process.env.BOOTY_CONTRACT_ADDRESS, 
+        new BN(depositObj.tokenDeposit)
+      )
+      .send({from: getAddress(this.store)})
+    
+    return depositObj
+  }
+
+  private doDepositExisting = async (depositObj: DepositArgs): Promise<[string]> => {
     const channels = await getCurrentLedgerChannels(this.connext, this.store)
     if (!channels) {
       throw new Error('Expected to find ledger channels.')
     }
 
     const startBal = channels[0].ethBalanceA
-    await this.connext.deposit(depositObj)
 
-    return [
-      startBal
-    ]
+    await this.connext.deposit({
+      ethDeposit: new BN(depositObj.ethDeposit), 
+      tokenDeposit: depositObj.tokenDeposit === undefined 
+        ? undefined
+        : new BN(depositObj.tokenDeposit) 
+    })
+
+    return [startBal]
   }
 
   private onStart = async () => {
@@ -164,7 +190,7 @@ export default class DepositTransaction implements TransactionInterface {
     this.deferredPopulate = null
   }
 
-  private openChannel = async (amount: string): Promise<any[]> => {
+  private openChannel = async (amount: string): Promise<[string, string, boolean]> => {
     const amountBn = new BN(amount)
     const depositObj: Deposit = {
       ethDeposit: amountBn,
@@ -182,11 +208,11 @@ export default class DepositTransaction implements TransactionInterface {
     return [
       amount,
       ledgerId,
-      this.needsCollateral
+      this.needsCollateral,
     ]
   }
 
-  private pingChainsaw = async (amount: string, ledgerId: string, needsCollateral: boolean): Promise<any[]> => {
+  private awaitChainsaw = async (amount: string, ledgerId: string, needsCollateral: boolean): Promise<[string, string, boolean]> => {
     await withRetries(async () => {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
@@ -198,11 +224,11 @@ export default class DepositTransaction implements TransactionInterface {
     return [
       amount,
       ledgerId,
-      needsCollateral
+      needsCollateral,
     ]
   }
 
-  private pingChainsawBalanceChange = async (startAmount: string): Promise<void> => {
+  private awaitChainsawBalanceChange = async (startAmount: string): Promise<void> => {
     const bigStartAmount = new BN(startAmount)
 
     await withRetries(async () => {
@@ -214,12 +240,12 @@ export default class DepositTransaction implements TransactionInterface {
     })
   }
 
-  private requestDeposit = async (amount: string, ledgerId: string, needsCollateral: boolean): Promise<any[]> => {
+  private maybeRequestDeposit = async (amount: string, ledgerId: string, needsCollateral: boolean): Promise<[string, string, boolean]> => {
     if (!this.needsCollateral) {
       return [
         amount,
         ledgerId,
-        needsCollateral
+        needsCollateral,
       ]
     }
 
@@ -235,7 +261,11 @@ export default class DepositTransaction implements TransactionInterface {
       console.error('connext.requestHubDeposit failed', e)
       throw e
     }
-    return []
+    return [
+      amount, 
+      ledgerId, 
+      needsCollateral,
+    ]
   }
 
   private finishTransaction = async (): Promise<void> => {

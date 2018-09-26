@@ -2,9 +2,8 @@ import {expect} from 'chai'
 import BigNumber from 'bignumber.js'
 import * as redux from 'redux'
 import CurrencyConvertable from './CurrencyConvertable'
-import {WorkerState, INITIAL_STATE, CurrencyType} from '../worker/WorkerState'
-import reducers from '../worker/reducers'
-
+import {WorkerState, INITIAL_STATE, CurrencyType} from '../../worker/WorkerState'
+import reducers from '../../worker/reducers'
 
 const USD = new BigNumber('2e15').toString(10)
 const ETH = new BigNumber('1e18').toString(10)

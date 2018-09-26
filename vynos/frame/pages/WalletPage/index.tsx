@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Route, Switch } from 'react-router'
 import { connect } from 'react-redux'
-import Web3 = require('web3')
 import Activity from './Activity'
 import AddFundsCallout from './AddFundsCallout'
 import SpankCard from './SpankCard'
@@ -16,11 +15,8 @@ const s = require('./styles.css')
 const st = require('./index.css')
 
 export interface WalletPageStateProps {
-  path: string
-  web3: Web3
   workerProxy: WorkerProxy
   address: string | null
-  walletBalance: BN
   cardBalance: BN
   location?: any
 }
@@ -134,14 +130,12 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
 }
 
 function mapStateToProps(state: FrameState): WalletPageStateProps {
-  let workerProxy = state.temp.workerProxy!
+  const workerProxy = state.temp.workerProxy!
+  const channel = state.shared.channel
   return {
-    path: state.shared.rememberPath,
-    web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
     address: state.shared.address,
-    walletBalance: new BN(state.shared.balance),
-    cardBalance: new BN(state.shared.channel ? state.shared.channel.balance : 0),
+    cardBalance: new BN(channel.balances.ethBalance.amount),
   }
 }
 

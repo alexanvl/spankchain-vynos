@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from 'react'
 import { connect } from 'react-redux'
 import * as copy from 'copy-to-clipboard'
 import WorkerProxy from '../../../WorkerProxy'

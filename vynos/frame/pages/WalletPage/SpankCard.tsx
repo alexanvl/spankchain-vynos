@@ -46,20 +46,6 @@ export interface SpankCardState {
 class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
   state = {error: ''} as SpankCardState
 
-  onClickRefill = async () => {
-    const amount = await entireBalance(this.props.workerProxy, this.props.walletBalance!)
-
-    try {
-      await this.props.workerProxy.deposit(amount)
-    } catch (e) {
-      this.setState({
-        error: e.code === -32603
-          ? 'Insufficient funds. Please deposit more ETH.'
-          : 'Failed to load up SpankCard. Please try again.'
-      })
-      return
-    }
-  }
 
   render() {
     const {
@@ -180,9 +166,10 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
 }
 
 function mapStateToProps(state: FrameState): StateProps {
+  const walletBalance = state.shared.addressBalances
   return {
     ...state.shared.branding,
-    walletBalance: new BN(state.shared.balance),
+    walletBalance: new BN(walletBalance.ethBalance.amount),
     cardBalance: cardBalance(state.shared),
     isWithdrawing: state.shared.hasActiveWithdrawal,
     activeWithdrawalError: state.shared.activeWithdrawalError,

@@ -7,14 +7,13 @@ import CurrencyIcon from '../CurrencyIcon/index'
 import {ExchangeRates, CurrencyType} from '../../../worker/WorkerState'
 export {CurrencyType} // refactoring so this type is only defined once
 import BN = require('bn.js')
-import CurrencyConvertable from '../../../lib/CurrencyConvertable'
+import CurrencyConvertable from '../../../lib/currency/CurrencyConvertable'
 
 const s = require('./style.css')
 
 export interface StateProps {
   workerProxy: WorkerProxy
   exchangeRates: ExchangeRates|null
-  baseCurrency?: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.BOOTY
 }
 
 export interface CurrencyProps extends StateProps {
@@ -29,7 +28,6 @@ export interface CurrencyProps extends StateProps {
   alt?: boolean
   color?: string
   big?: boolean
-  baseCurrency?: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.BOOTY
 }
 
 export class Currency extends React.Component<CurrencyProps, any> {
@@ -82,7 +80,6 @@ export class Currency extends React.Component<CurrencyProps, any> {
       alt,
       color,
       big,
-      baseCurrency,
     } = this.props
 
 
@@ -102,7 +99,6 @@ function mapStateToProps (state: FrameState, ownProps: any): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
     exchangeRates: state.shared.exchangeRates || null,
-    baseCurrency: state.shared.baseCurrency
   }
 }
 

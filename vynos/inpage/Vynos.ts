@@ -7,9 +7,11 @@ import Web3 = require('web3')
 import VynosBuyResponse from '../lib/VynosBuyResponse'
 import * as metrics from '../lib/metrics'
 import BN = require('bn.js')
+import {ICurrency} from '../lib/currency/Currency'
 
 export interface Balance {
-  balanceInWei: string
+  balanceInWei: ICurrency|null
+  balanceInTokens: ICurrency|null
 }
 
 export interface GetBalanceResponse {
@@ -42,23 +44,29 @@ export default class Vynos extends EventEmitter {
     this.handleSharedStateUpdate = this.handleSharedStateUpdate.bind(this)
   }
 
+  public getSharedState = () => this.client!.getSharedState()
+
   public async getBalance(): Promise<GetBalanceResponse> {
     this.requireReady()
 
     return this.client!.getSharedState()
       .then(state => {
-        const { balance, channel } = state
+        const { addressBalances, channel } = state
 
         const channels = {} as any
 
         if (channel) {
           channels[channel.ledgerId] = {
-            balanceInWei: channel.balance,
+            balanceInWei: channel.balances.ethBalance,
+            balanceInTokens: channel.balances.tokenBalance,
           }
         }
 
         return {
-          wallet: { balanceInWei: balance },
+          wallet: {
+            balanceInWei: addressBalances.ethBalance,
+            balanceInTokens: addressBalances.tokenBalance ,
+          },
           channels
         }
       })

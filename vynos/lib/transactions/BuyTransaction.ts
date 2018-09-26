@@ -1,18 +1,19 @@
 import { Store } from 'redux'
-import VynosBuyResponse from './VynosBuyResponse'
+import VynosBuyResponse from '../VynosBuyResponse'
 import BN = require('bn.js')
 import * as semaphore from 'semaphore'
-import { Meta, ChannelType, PaymentObject, IConnext, VirtualChannel} from "./connext/ConnextTypes";
-import * as actions from '../worker/actions'
+import { Meta, ChannelType, PaymentObject, IConnext, VirtualChannel} from '../connext/ConnextTypes'
+import * as actions from '../../worker/actions'
 import { AtomicTransaction, TransactionInterface } from './AtomicTransaction'
-import { WorkerState, ChannelState,CurrencyType } from '../worker/WorkerState'
-import LockStateObserver from './LockStateObserver'
-import {closeAllVCs} from './connext/closeAllVCs'
-import {TEN_FINNEY} from './constants'
-import takeSem from './takeSem'
-import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
-import Currency from './Currency'
-import getChannels from './connext/getChannels';
+import { WorkerState, ChannelState,CurrencyType } from '../../worker/WorkerState'
+import LockStateObserver from '../LockStateObserver'
+import {closeAllVCs} from '../connext/closeAllVCs'
+import {TEN_FINNEY} from '../constants'
+import takeSem from '../takeSem'
+import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
+import Currency from '../currency/Currency'
+import getChannels from '../connext/getChannels'
+import Logger from '../Logger'
 
 /**
  * The BuyTransaction handles purchases and tips
@@ -24,16 +25,15 @@ import getChannels from './connext/getChannels';
  * Author: William Cory -- GitHub: roninjin10
  */
 
-
 export default class BuyTransaction implements TransactionInterface {
   static DEFAULT_DEPOSIT = new Currency(CurrencyType.WEI, TEN_FINNEY.toString(10))
 
-  private doBuyTransaction: AtomicTransaction
+  private doBuyTransaction: AtomicTransaction<VynosBuyResponse, [Currency, Meta]>
   private connext: IConnext
   private store: Store<WorkerState>
   private sem: semaphore.Semaphore
 
-  constructor (store: Store<WorkerState>, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore) {
+  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore) {
     this.store = store
     this.connext = connext
     this.sem = sem
@@ -44,7 +44,7 @@ export default class BuyTransaction implements TransactionInterface {
       this.updateBalance,
       this.updateStore,
     ]
-    this.doBuyTransaction = new AtomicTransaction(this.store, 'buy', methodOrder)
+    this.doBuyTransaction = new AtomicTransaction<VynosBuyResponse, [Currency, Meta]>(this.store, logger, 'buy', methodOrder)
 
     lockStateObserver.addUnlockHandler(this.restartTransaction)
     if (!lockStateObserver.isLocked()) {
@@ -52,14 +52,16 @@ export default class BuyTransaction implements TransactionInterface {
     }
   }
 
-  public startTransaction = async (priceWEI: Currency, meta: Meta): Promise<VynosBuyResponse> => {
-    return await this.doBuyTransaction.start(priceWEI, meta)
-  }
+  public startTransaction = (priceWEI: Currency, meta: Meta): Promise<VynosBuyResponse> => this.doBuyTransaction.start(priceWEI, meta)
 
-  public restartTransaction = async (): Promise<VynosBuyResponse|undefined> => {
-    if (this.isInProgress()) {
-      return takeSem<VynosBuyResponse>(this.sem, () => this.doBuyTransaction.restart())
+  public restartTransaction = async (): Promise<VynosBuyResponse|null> => {
+    if (!this.isInProgress()) {
+      return null
     }
+    return takeSem<VynosBuyResponse|null>(
+      this.sem, 
+      () => this.doBuyTransaction.restart()
+    )
   }
 
   public isInProgress = (): boolean => this.doBuyTransaction.isInProgress()
@@ -152,7 +154,7 @@ export default class BuyTransaction implements TransactionInterface {
     await closeAllVCs(this.store, this.connext)
 
     let newVCId: string
-    const ethDeposit: Currency = await this.getEthDepositAmountInWei(priceWEI)
+    const ethDeposit: Currency = await this.getEthDepositAmountInWEI(priceWEI)
 
     try {
       newVCId = await this.connext.openThread({
@@ -173,26 +175,26 @@ export default class BuyTransaction implements TransactionInterface {
     }
   }
 
-  private getEthDepositAmountInWei = async (priceWEI: Currency): Promise<Currency> => {
-    const AVAILABLE: Currency = await this.getAvailableLCBalanceInWEI()
-    const DEFAULT: Currency = BuyTransaction.DEFAULT_DEPOSIT
+  private getEthDepositAmountInWEI = async (priceWEI: Currency): Promise<Currency> => {
+    const availableWEI: Currency = await this.getAvailableLCBalanceInWEI()
+    const defaultWEI: Currency = BuyTransaction.DEFAULT_DEPOSIT
 
-    if (priceWEI.amountBN.gt(AVAILABLE.amountBN)) {
+    if (priceWEI.amountBN.gt(availableWEI.amountBN)) {
       throw new Error(`
         The price cannot be larger than the available LC balance when opening a new channel.
-        Price: ${priceWEI.amountBN.toString(10)} availableLcBalance: ${AVAILABLE.amountBN.toString(10)}
+        Price: ${priceWEI.amountBN.toString(10)} availableLcBalance: ${availableWEI.amountBN.toString(10)}
       `)
     }
 
-    if (AVAILABLE.amountBN.lt(DEFAULT.amountBN)) {
-      return AVAILABLE
+    if (availableWEI.amountBN.lt(defaultWEI.amountBN)) {
+      return availableWEI
     }
 
-    if (priceWEI.amountBN.gt(DEFAULT.amountBN)) {
+    if (priceWEI.amountBN.gt(defaultWEI.amountBN)) {
       return priceWEI
     }
 
-    return DEFAULT
+    return defaultWEI
   }
 
   private getAvailableLCBalanceInWEI = async (): Promise<Currency> => {

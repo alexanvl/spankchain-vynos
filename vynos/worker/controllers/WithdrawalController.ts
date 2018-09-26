@@ -1,10 +1,10 @@
 import {Store} from 'redux'
 import BN = require('bn.js')
 import AbstractController from './AbstractController'
-import aggregateVCBalances from '../../lib/aggregateVCBalances'
+import {aggregateVCBalancesETH} from '../../lib/aggregateVCBalances'
 import ChannelPopulator from '../../lib/ChannelPopulator'
 import {closeAllVCs} from '../../lib/connext/closeAllVCs'
-import Currency from '../../lib/Currency'
+import Currency from '../../lib/currency/Currency'
 import {
   IConnext,
   PurchaseMetaType,
@@ -55,12 +55,11 @@ export default class WithdrawalController extends AbstractController {
     if (VALUE_WEI.amountBN.gt(LC_BALANCE_WEI.amountBN)) {
       const vcs = await getVirtualChannels(lc.channelId)
 
-      const VC_BALANCES_WEI = Currency.WEI(
-        await aggregateVCBalances(
-          getAddress(this.store),
-          vcs
-        ).toString(10)
+      const VC_BALANCES_WEI = await aggregateVCBalancesETH(
+        getAddress(this.store),
+        vcs
       )
+
       const TOTAL_BALANCE_WEI = Currency.WEI(
         LC_BALANCE_WEI
           .amountBN
@@ -71,7 +70,7 @@ export default class WithdrawalController extends AbstractController {
 
       if (VALUE_WEI.amountBN.gt(TOTAL_BALANCE_WEI.amountBN)) {
         throw new Error(`
-          value is higher than aggregrate virtual channel and ledger channel balances
+          value is higher than aggregate virtual channel and ledger channel balances
           value in wei: ${VALUE_WEI.getDecimalString(0)}
           lcBalance in wei: ${LC_BALANCE_WEI.getDecimalString(0)}
           vcBalance in wei: ${VC_BALANCES_WEI.getDecimalString(0)}
