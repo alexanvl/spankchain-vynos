@@ -44,7 +44,7 @@ export function setFeatureFlagsHandler(state: WorkerState, featureFlags: Feature
   return { ...state,
     runtime: {
       ...state.runtime,
-      featureFlags,
+      featureFlags: {bootySupport: true},
       //...state.runtime, // uncomment this to let wallet's feature flags take presedence over hub's feature flag's (useful for local debugging)
     }
   }

@@ -66,8 +66,10 @@ export default class ChannelPopulator {
   }
 
   private doPopulate = async (): Promise<void> => {
-    this.store.dispatch(actions.setChannel(
-      await getChannels(this.connext, this.store)
-    ))
+    if (this.store.getState().runtime.wallet) {
+      this.store.dispatch(actions.setChannel(
+        await getChannels(this.connext, this.store)
+      ))
+    }
   }
 }
