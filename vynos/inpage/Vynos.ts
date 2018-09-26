@@ -10,8 +10,8 @@ import BN = require('bn.js')
 import {ICurrency} from '../lib/currency/Currency'
 
 export interface Balance {
-  balanceInWei: ICurrency|null
-  balanceInTokens: ICurrency|null
+  balanceInWei: string|null
+  balanceInTokens: string|null
 }
 
 export interface GetBalanceResponse {
