@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js'
+import * as BigNumber from 'bignumber.js'
 import {CurrencyType} from '../../worker/WorkerState'
 import BN = require('bn.js')
 
