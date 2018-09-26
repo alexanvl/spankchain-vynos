@@ -73,7 +73,6 @@ export default class AddressBalanceController extends  AbstractController implem
       ? await this.getTokenBalance(address)
       : Currency.BOOTY(0)
 
-    console.log('tokenBalance in balanceController', tokenBalance)
     this.store.dispatch(actions.setaddressBalances({
       ethBalance,
       tokenBalance,
@@ -88,7 +87,6 @@ export default class AddressBalanceController extends  AbstractController implem
     }
 
     if (this.bootySupport() && ethBalance.amountBN.lt(OPEN_CHANNEL_COST)) {
-      console.log('more eth needed')
       this.store.dispatch(actions.setMoreEthNeeded(true))
       return
     }
@@ -100,7 +98,7 @@ export default class AddressBalanceController extends  AbstractController implem
         .sub(OPEN_CHANNEL_COST)
         .toString(10)
     )
-      console.log('depositing...')
+
     await this.mpc.deposit({
       ethDeposit: ethDeposit.amount,
       tokenDeposit: this.bootySupport() 
@@ -127,7 +125,6 @@ export default class AddressBalanceController extends  AbstractController implem
 
   private getTokenBalance = async (address: string): Promise<Currency> => {
     try {
-      console.log('address', address)
       const amount = await this.bootyContract
          .methods
          .balanceOf(address)
@@ -135,7 +132,7 @@ export default class AddressBalanceController extends  AbstractController implem
       return  Currency.BOOTY(amount)
     } catch(e){
       console.error('unable to get ERC20 balance', {address, e})
-      return Currency.BOOTY(999999999999999999999999999999999999999999999999)
+      return Currency.BOOTY(0)
     }
   }
 
