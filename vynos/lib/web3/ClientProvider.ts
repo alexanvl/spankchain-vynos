@@ -8,7 +8,7 @@ const HookedWalletSubprovider = require('web3-provider-engine/subproviders/hooke
 const SanitizingSubprovider = require('web3-provider-engine/subproviders/sanitizer')
 const FetchSubprovider = require('web3-provider-engine/subproviders/fetch')
 
-import GaspriceSubprovider from './GaspriceSubprovider';
+import GaspriceSubprovider from './GaspriceSubprovider'
 
 export default function ClientProvider(opts: any): any {
   opts = opts || {}

@@ -33,7 +33,6 @@ export default class FrameServer extends JsonRpcServer {
     this.passThroughHandler(StatusRequest.method)
     this.passThroughHandler(SetNeedsCollateralRequest.method)
     this.passThroughHandler(SetIsPendingVerificationRequest.method)
-
     this.passThroughEvent(ReadyBroadcastEvent)
     this.passThroughEvent(ResetBroadcastEvent)
     this.passThroughEvent('__METRICS__')

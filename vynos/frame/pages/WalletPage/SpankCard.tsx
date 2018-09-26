@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { RouteComponentProps, withRouter } from 'react-router'
 import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
 import { FrameState } from '../../redux/FrameState'
@@ -11,9 +12,9 @@ import entireBalance from '../../lib/entireBalance'
 import BN = require('bn.js')
 import Tooltip from '../../components/Tooltip'
 import { BalanceTooltip } from '../../components/BalanceTooltip'
-
 const pageStyle = require('../UnlockPage.css')
 const s = require('./styles.css')
+
 
 export interface StateProps extends BrandingState {
   walletBalance: BN
@@ -27,6 +28,9 @@ export interface StateProps extends BrandingState {
   isFrameDisplayed: boolean
 }
 
+export interface UnlockPageProps extends StateProps, RouteComponentProps<any> {
+}
+
 enum ActiveButton {
   'NONE',
   'RECIEVE',
@@ -34,37 +38,14 @@ enum ActiveButton {
   'ACTIVITY',
 }
 
-let activeButton: ActiveButton = ActiveButton.NONE
 
 export interface SpankCardState {
   error: string
 }
 
-class SpankCard extends React.Component<StateProps, SpankCardState> {
-  constructor(props: StateProps) {
-    super(props)
-    this.state = { error: '' }
-  }
+class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
+  state = {error: ''} as SpankCardState
 
-  onClickRefill = async () => {
-    const amount = await entireBalance(this.props.workerProxy, this.props.walletBalance!)
-
-    try {
-      await this.props.workerProxy.deposit(amount)
-    } catch (e) {
-      this.setState({
-        error: e.code === -32603
-          ? 'Insufficient funds. Please deposit more ETH.'
-          : 'Failed to load up SpankCard. Please try again.'
-      })
-      return
-    }
-  }
-
-  setActiveButton = (_activeButton: ActiveButton) => {
-    activeButton = _activeButton
-    this.forceUpdate()
-  }
 
   render() {
     const {
@@ -78,13 +59,10 @@ class SpankCard extends React.Component<StateProps, SpankCardState> {
       textColor,
       hasActiveDeposit,
       isWithdrawing,
-      isFrameDisplayed,
+      location,
     } = this.props
 
     const reserveBalance = walletBalance
-    if (!isFrameDisplayed) {
-      activeButton = ActiveButton.NONE
-    }
 
     return (
       <div className={s.walletSpankCardWrapper}>
@@ -141,22 +119,19 @@ class SpankCard extends React.Component<StateProps, SpankCardState> {
               <div className={s.buttonSpacer} />
               <Button
                 to="/wallet/receive"
-                type={activeButton === ActiveButton.RECIEVE ? "primary" : "secondary"}
-                onClick={() => this.setActiveButton(ActiveButton.RECIEVE)}
+                type={(location && location.pathname) === "/wallet/receive" ? "primary" : "secondary"}
                 content="Receive"
                 isMini
               />
               <Button
                 to="/wallet/send"
-                type={activeButton === ActiveButton.SEND ? "primary" : "secondary"}
-                onClick={() => this.setActiveButton(ActiveButton.SEND)}
+                type={(location && location.pathname) === "/wallet/send" ? "primary" : "secondary"}
                 content="Send"
                 isMini
               />
               <Button
                 to="/wallet/activity"
-                type={activeButton === ActiveButton.ACTIVITY ? "primary" : "secondary"}
-                onClick={() => this.setActiveButton(ActiveButton.ACTIVITY)}
+                type={(location && location.pathname) === "/wallet/activity" ? "primary" : "secondary"}
                 content="Activity"
                 isMini
               />
@@ -191,9 +166,10 @@ class SpankCard extends React.Component<StateProps, SpankCardState> {
 }
 
 function mapStateToProps(state: FrameState): StateProps {
+  const walletBalance = state.shared.addressBalances
   return {
     ...state.shared.branding,
-    walletBalance: new BN(state.shared.balance),
+    walletBalance: new BN(walletBalance.ethBalance.amount),
     cardBalance: cardBalance(state.shared),
     isWithdrawing: state.shared.hasActiveWithdrawal,
     activeWithdrawalError: state.shared.activeWithdrawalError,
@@ -205,4 +181,4 @@ function mapStateToProps(state: FrameState): StateProps {
   }
 }
 
-export default connect(mapStateToProps)(SpankCard)
+export default withRouter(connect(mapStateToProps)(SpankCard))

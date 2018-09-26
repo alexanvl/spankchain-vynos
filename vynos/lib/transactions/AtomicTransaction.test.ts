@@ -1,9 +1,10 @@
 import { AtomicTransaction } from './AtomicTransaction'
-import { WorkerState, INITIAL_STATE } from '../worker/WorkerState'
+import { WorkerState, INITIAL_STATE } from '../../worker/WorkerState'
 import * as redux from 'redux'
 import {Store} from 'redux'
-import reducers from '../worker/reducers'
+import reducers from '../../worker/reducers'
 import { expect } from 'chai'
+import Logger from '../Logger'
 
 describe('AtomicTransaction', () => {
 
@@ -32,7 +33,7 @@ describe('AtomicTransaction', () => {
 
     const store = redux.createStore(reducers, INITIAL_STATE) as Store<WorkerState>
 
-    const atomicTransaction = new AtomicTransaction(store, 'deposit', [f1, f2, f3])
+    const atomicTransaction = new AtomicTransaction<string, [string]>(store, {} as Logger, 'deposit', [f1, f2, f3])
 
     await atomicTransaction.start(input)
     expect(output).to.equal('inputs: 123')
@@ -49,7 +50,7 @@ describe('AtomicTransaction', () => {
 
     const store  = redux.createStore(reducers, INITIAL_STATE) as Store<WorkerState>
 
-    const atomicTransaction = new AtomicTransaction(store, 'deposit', [f1,f2,f3])
+    const atomicTransaction = new AtomicTransaction<void>(store, {} as Logger, 'deposit', [f1,f2,f3])
 
     try {
       await atomicTransaction.start()
@@ -87,7 +88,7 @@ describe('AtomicTransaction', () => {
     }
     const store = redux.createStore(reducers, PERSISTED_STATE as any) as Store<WorkerState>
 
-    const atomicTransaction = new AtomicTransaction(store, 'deposit', [f1, f2, f3])
+    const atomicTransaction = new AtomicTransaction<void>(store, {} as Logger, 'deposit', [f1, f2, f3])
 
     await atomicTransaction.restart()
     expect(functionsDidRun[0]).to.equal(false)
@@ -103,7 +104,7 @@ describe('AtomicTransaction', () => {
 
     const store = redux.createStore(reducers, INITIAL_STATE) as Store<WorkerState>
 
-    const atomicTransaction = new AtomicTransaction(store, 'deposit', [() => {}], afterAll)
+    const atomicTransaction = new AtomicTransaction<void>(store, {} as Logger, 'deposit', [() => {}], afterAll)
 
     await atomicTransaction.start()
     expect(didRun).to.equal(1)
@@ -121,7 +122,7 @@ describe('AtomicTransaction', () => {
 
     const store = redux.createStore(reducers, INITIAL_STATE) as Store<WorkerState>
 
-    const atomicTransaction = new AtomicTransaction(store, 'deposit', [f], afterAll)
+    const atomicTransaction = new AtomicTransaction<void>(store, {} as Logger, 'deposit', [f], afterAll)
     try {
       await atomicTransaction.start()
     } catch(e) {

@@ -1,22 +1,23 @@
 import { Store } from 'redux'
-import { VynosPurchase } from './VynosPurchase'
-import VynosBuyResponse from './VynosBuyResponse'
+import { VynosPurchase } from '../VynosPurchase'
+import VynosBuyResponse from '../VynosBuyResponse'
 import BN = require('bn.js')
 import * as semaphore from 'semaphore'
+import * as actions from '../../worker/actions'
 import {
   PurchaseMeta, PaymentMeta, ChannelType, PaymentObject, IConnext,
   VirtualChannel, UpdateBalancesResult,
-} from "./connext/ConnextTypes";
-import * as actions from '../worker/actions'
+} from '../connext/ConnextTypes'
 import { AtomicTransaction, TransactionInterface } from './AtomicTransaction'
-import { WorkerState, ChannelState, CurrencyType as C } from '../worker/WorkerState'
-import LockStateObserver from './LockStateObserver'
-import {closeAllVCs} from './connext/closeAllVCs'
-import {INITIAL_DEPOSIT_BOOTY} from './constants'
-import takeSem from './takeSem'
-import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
-import Currency from './Currency'
-import getChannels from './connext/getChannels';
+import { WorkerState, ChannelState, CurrencyType as C } from '../../worker/WorkerState'
+import LockStateObserver from '../LockStateObserver'
+import {closeAllVCs} from '../connext/closeAllVCs'
+import {INITIAL_DEPOSIT_BOOTY} from '../constants'
+import takeSem from '../takeSem'
+import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
+import Currency from '../Currency'
+import getChannels from '../connext/getChannels'
+import Logger from '../Logger'
 
 /**
  * The BuyTransaction handles purchases and tips
@@ -30,15 +31,16 @@ import getChannels from './connext/getChannels';
 
 type _Args<T> = T extends (...args: infer U) => any ? U : never
 
+
 export default class BuyTransaction implements TransactionInterface {
   static DEFAULT_DEPOSIT = new Currency(C.BOOTY, INITIAL_DEPOSIT_BOOTY.toString())
 
-  private doBuyTransaction: AtomicTransaction
+  private doBuyTransaction: AtomicTransaction<VynosBuyResponse, _Args<BuyTransaction['getExistingChannel']>>
   private connext: IConnext
   private store: Store<WorkerState>
   private sem: semaphore.Semaphore
 
-  constructor (store: Store<WorkerState>, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore) {
+  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore) {
     this.store = store
     this.connext = connext
     this.sem = sem
@@ -49,7 +51,7 @@ export default class BuyTransaction implements TransactionInterface {
       this.updateBalance,
       this.updateStore,
     ]
-    this.doBuyTransaction = new AtomicTransaction(this.store, 'buy', methodOrder)
+    this.doBuyTransaction = new AtomicTransaction(this.store, logger, 'buy', methodOrder)
 
     lockStateObserver.addUnlockHandler(this.restartTransaction)
     if (!lockStateObserver.isLocked()) {
@@ -61,10 +63,14 @@ export default class BuyTransaction implements TransactionInterface {
     return await this.doBuyTransaction.start(purchase)
   }
 
-  public restartTransaction = async (): Promise<VynosBuyResponse|undefined> => {
-    if (this.isInProgress()) {
-      return takeSem<VynosBuyResponse>(this.sem, () => this.doBuyTransaction.restart())
+  public restartTransaction = async (): Promise<VynosBuyResponse|null> => {
+    if (!this.isInProgress()) {
+      return null
     }
+    return takeSem<VynosBuyResponse|null>(
+      this.sem, 
+      () => this.doBuyTransaction.restart()
+    )
   }
 
   public isInProgress = (): boolean => this.doBuyTransaction.isInProgress()
@@ -93,10 +99,10 @@ export default class BuyTransaction implements TransactionInterface {
       )
     }
 
-    if (recipients[0] != lcState.currentLC.partyI) {
+    if (recipients[0] != lcState.lc.partyI) {
       // As above, this constraint can be relaxed in the future.
       throw new Error(
-        `Expected the first recipient to be Ingrid ('${lcState.currentLC.partyI}') ` +
+        `Expected the first recipient to be Ingrid ('${lcState.lc.partyI}') ` +
         `but it is not: ${JSON.stringify(recipients)}`
       )
     }
@@ -120,8 +126,8 @@ export default class BuyTransaction implements TransactionInterface {
   ): Promise<_Args<BuyTransaction['updateStore']>> => {
     // As noted above, for now the first payment in the purchase is always
     // the LC payment and the second purchase is always the VC payment.
-    let [ lcPayment, vcPayment ] = purchase.payments
-    let lc = lcState.currentLC
+    const [ lcPayment, vcPayment ] = purchase.payments
+    const lc = lcState.lc
     const connextUpdate: PaymentObject[] = [
       {
         type: ChannelType.LEDGER,
@@ -196,15 +202,14 @@ export default class BuyTransaction implements TransactionInterface {
   ): Promise<VirtualChannel> => {
     await closeAllVCs(this.store, this.connext)
 
-    let newVCId: string
     const deposit: Currency = await this.getBootyDepositAmount(price)
-
     if (deposit.type != C.BOOTY) {
       // As above, for the moment, we're using exclusively BOOTY, so this is
       // a safe check. In the future this will need to be generalized.
       throw new Error('For now, VCs must be created with BOOTY (but got: ' + deposit.type + ')')
     }
 
+    let newVCId: string
     try {
       newVCId = await this.connext.openThread({
         to: receiver,
@@ -225,26 +230,24 @@ export default class BuyTransaction implements TransactionInterface {
   }
 
   private getBootyDepositAmount = async (priceBOOTY: Currency<C.BOOTY>): Promise<Currency> => {
-    const AVAILABLE = await this.getAvailableLCBalanceInBOOTY()
-    const DEFAULT = BuyTransaction.DEFAULT_DEPOSIT
+    const available = await this.getAvailableLCBalanceInBOOTY()
+    const dflt = BuyTransaction.DEFAULT_DEPOSIT
 
-    if (priceBOOTY.compare('gt', AVAILABLE)) {
+    if (priceBOOTY.compare('gt', available)) {
       throw new Error(
         `The price cannot be larger than the available LC balance when opening a new channel. ` +
         `Price (BOOTY): ${priceBOOTY.amountBigNumber.div('1e18').toFixed()} ` +
-        `availableLcBalance (BOOTY): ${AVAILABLE.amountBigNumber.div('1e18').toFixed()}`
+        `availableLcBalance (BOOTY): ${available.amountBigNumber.div('1e18').toFixed()}`
       )
     }
 
-    if (AVAILABLE.compare('lt', DEFAULT)) {
-      return AVAILABLE
-    }
+    if (available.compare('lt', dflt))
+      return available
 
-    if (priceBOOTY.compare('gt', DEFAULT)) {
+    if (priceBOOTY.compare('gt', dflt))
       return priceBOOTY
-    }
 
-    return DEFAULT
+    return dflt
   }
 
   private getAvailableLCBalanceInBOOTY = async (): Promise<Currency<C.BOOTY>> => {

@@ -1,4 +1,4 @@
-import BigNumber from 'bignumber.js';
+import BigNumber from 'bignumber.js'
 
 export const Subprovider = require('web3-provider-engine/subproviders/subprovider')
 

@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from 'react'
 import {FormEvent} from 'react'
 
 export interface SubmittableProps {

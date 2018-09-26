@@ -39,11 +39,11 @@ import ClientProvider from './lib/web3/ClientProvider'
 import Web3 = require('web3')
 import Connext = require('connext')
 import ChannelPopulator from './lib/ChannelPopulator'
-import BalanceController from './worker/controllers/BalanceController'
+import AddressBalanceController from './worker/controllers/AddressBalanceController'
 import WithdrawalController from './worker/controllers/WithdrawalController'
 import * as actions from './worker/actions'
-import { IConnext } from './lib/connext/ConnextTypes';
-import requestJson from './frame/lib/request';
+import { IConnext } from './lib/connext/ConnextTypes'
+import requestJson from './frame/lib/request'
 
 
 export class ClientWrapper implements WindowClient {
@@ -149,7 +149,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       watcherUrl: process.env.HUB_URL!,
       ingridUrl: process.env.HUB_URL!,
       contractAddress: process.env.CONTRACT_ADDRESS!
-    }) as any // as IConnext
+    }) as any as IConnext
 
     await new Promise((resolve) => persistStore(store, undefined, resolve))
 
@@ -178,14 +178,14 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const backgroundController = new BackgroundController(store, web3, logger)
     const frameController = new FrameController(store, logger)
     const hubController = new HubController(store, sharedStateView, logger)
-    const micropaymentsController = new MicropaymentsController(store, logger, connext, lockStateObserver, chanPopulator)
+    const micropaymentsController = new MicropaymentsController(store, logger, connext, lockStateObserver, chanPopulator, web3)
     const authController = new AuthController(store, backgroundController, sharedStateView, providerOpts, frameController, logger)
     const walletController = new WalletController(web3, store, sharedStateView, logger)
     const virtualChannelsController = new VirtualChannelsController(logger, lockStateObserver, chanPopulator)
-    const balanceController = new BalanceController(logger, lockStateObserver, sharedStateView, store, web3, micropaymentsController)
+    const addressBalanceController = new AddressBalanceController(sharedStateView, store, web3, micropaymentsController, logger, lockStateObserver)
     const withdrawalController = new WithdrawalController(logger, connext, store, lockStateObserver, chanPopulator)
 
-    await balanceController.start()
+    await addressBalanceController.start()
     await virtualChannelsController.start()
 
     hubController.registerHandlers(server)

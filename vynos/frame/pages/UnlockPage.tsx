@@ -34,28 +34,21 @@ export type UnlockPageState = {
 };
 
 export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState> {
-  constructor(props: UnlockPageProps) {
-    super(props)
-    this.state = {
-      password: '',
-      passwordError: null,
-      loading: false,
-      displayRestore: false,
-    }
-    this.handleChangePassword = this.handleChangePassword.bind(this)
-    this.handleSubmit = this.handleSubmit.bind(this)
-    this.doDisplayRestore = this.doDisplayRestore.bind(this)
-  }
+  state = {
+    password: '',
+    passwordError: null,
+    loading: false,
+    displayRestore: false,
+  } as UnlockPageState
 
-  handleChangePassword(event: ChangeEvent<HTMLInputElement>) {
-    let value = event.target.value
+  handleChangePassword = (event: ChangeEvent<HTMLInputElement>) => {
     this.setState({
-      password: value,
+      password: event.target.value,
       passwordError: null
     })
   }
 
-  async handleSubmit(ev: FormEvent<HTMLFormElement>) {
+  handleSubmit = async (ev: FormEvent<HTMLFormElement>) => {
     this.setState({ loading: true })
 
     const password = _.toString(this.state.password)
@@ -81,21 +74,19 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     this.props.history.push(next)
   }
 
-  doDisplayRestore() {
+  doDisplayRestore = () => {
     this.setState({
       displayRestore: true
     })
   }
 
-  doneDisplayRestorePage() {
+  doneDisplayRestorePage = () => {
     this.setState({
       displayRestore: false
     })
   }
 
-  closeView = () => {
-    this.props.workerProxy.toggleFrame(false)
-  }
+  closeView = () => this.props.workerProxy.toggleFrame(false)
 
   render() {
     if (this.state.displayRestore) {

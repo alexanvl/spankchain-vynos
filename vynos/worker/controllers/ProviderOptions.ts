@@ -3,7 +3,7 @@ import {WorkerState} from '../WorkerState'
 import ethUtil = require('ethereumjs-util')
 import sigUtil = require('eth-sig-util')
 import Tx = require('ethereumjs-tx')
-import { Buffer } from 'buffer';
+import {Buffer} from 'buffer'
 
 const networks = require('../../networks.json')
 const DEFAULT_NETWORK = 'ropsten'

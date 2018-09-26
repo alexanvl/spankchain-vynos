@@ -4777,6 +4777,10 @@ https-proxy-agent@1:
     debug "2"
     extend "3"
 
+human-standard-token-abi@2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/human-standard-token-abi/-/human-standard-token-abi-2.0.0.tgz#e0c2057596d0a1d4a110f91f974a37f4b904f008"
+
 human-standard-token-abi@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/human-standard-token-abi/-/human-standard-token-abi-1.0.2.tgz#207d7846796ee5bb85fdd336e769cb38045b2ae0"

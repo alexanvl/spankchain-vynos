@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import * as classnames from 'classnames'
-import { CurrencyType } from '../Currency';
+import {CurrencyType} from '../Currency'
 
 const s = require('./style.css')
 

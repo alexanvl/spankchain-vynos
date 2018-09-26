@@ -39,15 +39,11 @@ type NestedHistory = HistoryItem | HistoryItem[]
 type GroupOrHistory = HistoryItem | Group
 
 class Activity extends React.Component<ActivityProps, ActivityState> {
-  constructor(props: any) {
-    super(props)
-
-    this.state = {
-      isLoading: false,
-      detailRows: new Set<number>(),
-      error: ''
-    }
-  }
+  state = {
+    isLoading: false,
+    detailRows: new Set<number>(),
+    error: ''
+  } as ActivityState
 
   async componentDidMount() {
     this.setState({

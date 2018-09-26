@@ -1,10 +1,9 @@
 import * as React from 'react'
 import BN = require('bn.js')
 import { CurrencyType } from '../Currency'
-import CC from '../../../lib/CurrencyConvertable'
+import CC from '../../../lib/currency/CurrencyConvertable'
 import { ExchangeRates } from '../../../worker/WorkerState'
 import { TooltipRow } from './TooltipRow'
-import { setHasActiveDeposit } from '../../../worker/actions';
 
 const s = require('./style.css')
 

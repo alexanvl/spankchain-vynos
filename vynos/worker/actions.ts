@@ -8,8 +8,11 @@ import {
   AtomicTransactionState,
   INITIAL_STATE,
   FeatureFlags,
+  Balances,
 } from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
+import Currency, {ICurrency} from '../lib/currency/Currency'
+import currencyAsJSON from '../lib/currency/currencyAsJSON'
 
 const actionCreator = actionCreatorFactory('worker')
 
@@ -43,6 +46,15 @@ export function setFeatureFlagsHandler(state: WorkerState, featureFlags: Feature
       ...state.runtime,
       featureFlags,
       //...state.runtime, // uncomment this to let wallet's feature flags take presedence over hub's feature flag's (useful for local debugging)
+    }
+  }
+}
+
+export const setMoreEthNeeded: ActionCreator<boolean> = actionCreator<boolean>('runtime/setMoreEthNeeded')
+export function setMoreEthNeededHandler(state: WorkerState, moreEthNeeded: boolean): WorkerState {
+  return { ...state,
+    runtime: { ...state.runtime,
+      moreEthNeeded,
     }
   }
 }
@@ -247,13 +259,13 @@ export function toggleFrameHandler(state: WorkerState, payload: ToggleFrameParam
 
 export const setChannel: ActionCreator<ChannelState|null> = actionCreator<ChannelState|null>('runtime/setChannel')
 export function setChannelHandler(state: WorkerState, channel: ChannelState|null): WorkerState {
-  return {
+  return channel ? {
     ...state,
     runtime: {
       ...state.runtime,
       channel,
     }
-  }
+  } : state
 }
 
 export const setHistory: ActionCreator<HistoryItem[]> = actionCreator<HistoryItem[]>('runtime/setHistory')
@@ -267,15 +279,16 @@ export function setHistoryHandler(state: WorkerState, history: HistoryItem[]): W
   }
 }
 
-export const setBalance: ActionCreator<string> = actionCreator<string>('runtime/setBalance')
-export function setBalanceHandler(state: WorkerState, balance: string): WorkerState {
-  return {
-    ...state,
-    runtime: {
-      ...state.runtime,
-      balance
+export const setaddressBalances: ActionCreator<Balances> = actionCreator<Balances>('runtime/setaddressBalances')
+export function setaddressBalancesHandler(state: WorkerState, balances: Balances): WorkerState {
+  return {...state,
+    runtime: { ...state.runtime,
+      addressBalances: {
+        ethBalance: currencyAsJSON(balances.ethBalance),
+        tokenBalance: currencyAsJSON(balances.tokenBalance),
+      }
     }
-  }
+  } 
 }
 
 export const setPendingTransaction: ActionCreator<PendingTransaction|null> = actionCreator<PendingTransaction|null>('runtime/setPendingTransaction')

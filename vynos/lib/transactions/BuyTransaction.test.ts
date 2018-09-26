@@ -1,10 +1,10 @@
 import BuyTransaction from './BuyTransaction'
-import { WorkerState, INITIAL_STATE, CurrencyType } from '../worker/WorkerState'
+import { WorkerState, INITIAL_STATE, CurrencyType } from '../../worker/WorkerState'
 import * as redux from 'redux'
 import {Store} from 'redux'
-import reducers from '../worker/reducers'
+import reducers from '../../worker/reducers'
 import {expect, assert} from 'chai'
-import LockStateObserver from './LockStateObserver'
+import LockStateObserver from '../LockStateObserver'
 import * as semaphore from 'semaphore'
 import {
   PaymentMetaType,
@@ -14,14 +14,14 @@ import {
   LedgerChannel,
   ChannelType,
   UpdateBalancesResult,
-} from './connext/ConnextTypes'
-import { VynosPurchase } from './VynosPurchase'
+} from '../connext/ConnextTypes'
+import { VynosPurchase } from '../VynosPurchase'
 import Connext = require('connext')
 import Web3 = require('web3')
 import * as sinon from 'sinon'
-import Currency from './Currency'
+import Currency from '../Currency'
 import _BN = require('bn.js')
-import toFinney from './web3/toFinney';
+import toFinney from '../web3/toFinney';
 require('isomorphic-fetch')
 require('chai').use(require('chai-subset'))
 
@@ -405,7 +405,7 @@ describe('BuyTransaction', () => {
     await buyTransaction.startTransaction(mkPurchase(buyAmount))
 
     assert.equal(
-      store.getState().runtime.channel!.balanceToken,
+      store.getState().runtime.channel!.balances.tokenBalance,
       BN(initialBalance).sub(BN(buyAmount)).toString(),
     )
     expect(connext.openThreadCalls).to.equal(1)

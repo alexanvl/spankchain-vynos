@@ -4,8 +4,8 @@ export interface VirtualChannel {
   state: number
   ethBalanceA: string
   ethBalanceB: string
-  tokenBalanceA: string
-  tokenBalanceB: string
+  tokenBalanceA: string 
+  tokenBalanceB: string 
   channelId: string
   partyA: string
   partyB: string
@@ -34,7 +34,7 @@ export enum ChannelType {
 
 // Note: coppied from hub/src/domain/LedgerChannel.ts
 export interface LedgerChannel {
-  state: number // LcStatus
+  state: string // LcStatus
   ethBalanceA: string
   ethBalanceI: string
   tokenBalanceA: string
@@ -42,12 +42,11 @@ export interface LedgerChannel {
   channelId: string
   partyA: string
   partyI: string
-  token: string
-  nonce: number
-  openVcs: number
-  vcRootHash: string
-  openTimeout: number
-  updateTimeout: number
+  nonce: number 
+  openVcs: number 
+  vcRootHash: string 
+  openTimeout: any 
+  updateTimeout: any
 }
 
 export interface PurchaseMetaFields {

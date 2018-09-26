@@ -1,5 +1,5 @@
-import BigNumber from 'bignumber.js'
-import {CurrencyType} from '../worker/WorkerState';
+import * as BigNumber from 'bignumber.js'
+import {CurrencyType} from '../../worker/WorkerState'
 import BN = require('bn.js')
 
 export interface CurrencyFormatOptions {
@@ -13,7 +13,7 @@ export interface ICurrency<ThisType extends CurrencyType=any> {
   amount: string
 }
 
-type CmpType = 'lt' | 'lte' | 'gt' | 'gte' | 'eq'
+export type CmpType = 'lt' | 'lte' | 'gt' | 'gte' | 'eq'
 
 export default class Currency<ThisType extends CurrencyType=any> implements ICurrency<ThisType> {
   static typeToSymbol: {[key: string]: string} = {
@@ -24,16 +24,17 @@ export default class Currency<ThisType extends CurrencyType=any> implements ICur
     [CurrencyType.BOOTY]: 'BOO',
   }
 
-  static ETH = (amount: BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.ETH, amount)
-  static USD = (amount: BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.USD, amount)
-  static WEI = (amount: BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.WEI, amount)
-  static FIN = (amount: BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.FINNEY, amount)
-  // static SPANK = (amount: BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.SPANK, amount)
-  // static BOOTY = (amount: BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.BOOTY, amount)
+  static ETH = (amount: BN|BigNumber.BigNumber|string|number) => new Currency(CurrencyType.ETH, amount)
+  static USD = (amount: BN|BigNumber.BigNumber|string|number) => new Currency(CurrencyType.USD, amount)
+  static WEI = (amount: BN|BigNumber.BigNumber|string|number) => new Currency(CurrencyType.WEI, amount)
+  static FIN = (amount: BN|BigNumber.BigNumber|string|number) => new Currency(CurrencyType.FINNEY, amount)
+  // static SPANK = (amount: BN|BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.SPANK, amount)
+  static BOOTY = (amount: BN|BigNumber.BigNumber|string|number) => new Currency(CurrencyType.BOOTY, amount)
 
   private _type: ThisType
   private _amount: BigNumber.BigNumber
-  private _defaultOptions = {
+
+  static _defaultOptions = {
     [CurrencyType.USD]: {
       decimals: 2,
       withSymbol: true,
@@ -62,26 +63,28 @@ export default class Currency<ThisType extends CurrencyType=any> implements ICur
   }
 
   constructor(currency: ICurrency<ThisType>);
-  constructor(type: ThisType, amount: BigNumber.BigNumber|string|number);
+  constructor(type: ThisType, amount: BN|BigNumber.BigNumber|string|number);
 
   constructor(...args: any[]) {
     let [_type, _amount] = (
       args.length == 1 ? [ args[0].type, args[0].amount ] : args
     )
 
-    if (typeof _amount === 'string' || typeof _amount === 'number') {
-      try {
-        _amount = new BigNumber(_amount)
-      } catch(e) {
-        throw new Error(`Invalid amount: ${_amount} (original error: ${e}`)
-      }
-    }
-
-    if (!_amount)
-      throw new Error('Invalid amount: ' + _amount)
-
     this._type = _type
-    this._amount = _amount
+
+    try {
+      if (_amount instanceof BigNumber) {
+        this._amount = _amount
+      } else if (_amount instanceof BN) {
+        this._amount = new BigNumber(_amount.toString(10))
+      } else if (typeof _amount === 'string' || typeof _amount === 'number') {
+        this._amount = new BigNumber(_amount)
+      } else {
+        throw new Error('incorrect type')
+      }
+    } catch(e) {
+      throw new Error(`Invalid amount: ${_amount} amount must be BigNumber, string, number or BN (original error: ${e})`)
+    }
   }
 
   get type(): CurrencyType {
@@ -119,7 +122,7 @@ export default class Currency<ThisType extends CurrencyType=any> implements ICur
 
   public format = (_options?: CurrencyFormatOptions): string => {
     const options: CurrencyFormatOptions = {
-      ...this._defaultOptions[this._type] as any,
+      ...Currency._defaultOptions[this._type] as any,
       ..._options || {},
     }
 

@@ -1,6 +1,6 @@
 import Wallet from 'ethereumjs-wallet'
-import {PurchaseMetaFields, PurchaseMetaType, VirtualChannel} from '../lib/connext/ConnextTypes'
-import {LedgerChannel} from '../lib/connext/ConnextTypes'
+import {PurchaseMetaFields, PurchaseMetaType, VirtualChannel, LedgerChannel} from '../lib/connext/ConnextTypes'
+import { ICurrency } from '../lib/currency/Currency'
 
 export interface RuntimeState {
   wallet?: Wallet
@@ -15,16 +15,17 @@ export interface RuntimeState {
   isPendingVerification?: boolean
   forceRedirect?: string
   branding: BrandingState
-  channel: ChannelState | null
+  channel: ChannelState
   history: HistoryItem[]
-  balance: string
+  addressBalances: Balances
   pendingTransaction: PendingTransaction | null
   hasActiveWithdrawal: boolean
   activeWithdrawalError: string|null
   exchangeRates: ExchangeRates|null
-  username: string | null
-  baseCurrency: any
+  username: string|null
+  baseCurrency: CurrencyType
   featureFlags: FeatureFlags
+  moreEthNeeded: boolean
 }
 
 export interface AuthorizationRequestState {
@@ -32,12 +33,16 @@ export interface AuthorizationRequestState {
   authRealm: string
 }
 
+export interface Balances {
+  ethBalance: ICurrency
+  tokenBalance: ICurrency
+}
+
 export interface ChannelState {
   ledgerId: string
-  balanceEth: string
-  balanceToken: string
+  balances: Balances 
   currentVCs: VirtualChannel[]
-  currentLC: LedgerChannel
+  lc: LedgerChannel
 }
 
 export enum CurrencyType {
@@ -96,9 +101,9 @@ export interface SharedState {
   isPerformer?: boolean
   isPendingVerification?: boolean
   branding: BrandingState
-  channel: ChannelState | null
+  channel: ChannelState
   history: HistoryItem[]
-  balance: string
+  addressBalances: Balances
   pendingTransaction: PendingTransaction | null
   address: string | null
   hasActiveWithdrawal: boolean
@@ -108,6 +113,7 @@ export interface SharedState {
   baseCurrency: any
   exchangeRates: ExchangeRates|null
   featureFlags: FeatureFlags
+  moreEthNeeded: boolean
 }
 
 export interface AtomicTransactionState {
@@ -156,9 +162,46 @@ export const INITIAL_SHARED_STATE: SharedState = {
   branding: {
     address: ''
   },
-  channel: null,
+  channel: {
+    ledgerId: '',
+    balances: {
+      ethBalance: {
+        type: CurrencyType.ETH,
+        amount: '0',
+      },
+      tokenBalance: {
+        type: CurrencyType.BOOTY,
+        amount: '0',
+      }
+    },
+    currentVCs: [],
+    lc: {
+      channelId: '',
+      partyA: '',
+      partyI: '',
+      ethBalanceA: '',
+      ethBalanceI: '',
+      state: '',
+      tokenBalanceA: '',
+      tokenBalanceI: '',
+      nonce: 0,
+      openVcs: 0,
+      vcRootHash: '',
+      openTimeout: '',
+      updateTimeout: '',
+    }
+  },
   history: [],
-  balance: '0',
+  addressBalances: {
+    ethBalance: {
+      type: CurrencyType.ETH, 
+      amount: '0'
+    }, 
+    tokenBalance: {
+      type: CurrencyType.BOOTY, 
+      amount: '0'
+    }
+  },
   pendingTransaction: null,
   address: null,
   hasActiveWithdrawal: false,
@@ -168,6 +211,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   username: null,
   baseCurrency: null,
   featureFlags: {},
+  moreEthNeeded: false,
 }
 
 const initialTransactionState = () => ({
@@ -196,9 +240,46 @@ export const INITIAL_STATE: WorkerState = {
     branding: {
       address: ''
     },
-    channel: null,
+    channel: {
+      ledgerId: '',
+      balances: {
+        ethBalance: {
+          type: CurrencyType.ETH,
+          amount: '0',
+        },
+        tokenBalance: {
+          type: CurrencyType.BOOTY,
+          amount: '0',
+        }
+      },
+      currentVCs: [],
+      lc: {
+        channelId: '',
+        partyA: '',
+        partyI: '',
+        ethBalanceA: '',
+        ethBalanceI: '',
+        state: '',
+        tokenBalanceA: '',
+        tokenBalanceI: '',
+        nonce: 0,
+        openVcs: 0,
+        vcRootHash: '',
+        openTimeout: '',
+        updateTimeout: '',
+      }
+    },
     history: [],
-    balance: '0',
+    addressBalances: {
+      ethBalance: {
+        type: CurrencyType.ETH, 
+        amount: '0'
+      }, 
+      tokenBalance: {
+        type: CurrencyType.BOOTY, 
+        amount: '0'
+      }
+    },
     pendingTransaction: null,
     hasActiveWithdrawal: false,
     activeWithdrawalError: null,
@@ -206,6 +287,7 @@ export const INITIAL_STATE: WorkerState = {
     username: null,
     baseCurrency: CurrencyType.FINNEY,
     featureFlags: {bootySupport: false},
+    moreEthNeeded: false,
   }
 }
 
@@ -227,7 +309,7 @@ export function buildSharedState (state: WorkerState): SharedState {
     branding: state.runtime.branding,
     channel: state.runtime.channel,
     history: state.runtime.history,
-    balance: state.runtime.balance,
+    addressBalances: state.runtime.addressBalances,
     pendingTransaction: state.runtime.pendingTransaction,
     address: state.runtime.wallet ? state.runtime.wallet.getAddressString() : null,
     hasActiveWithdrawal: state.runtime.hasActiveWithdrawal,
@@ -237,5 +319,6 @@ export function buildSharedState (state: WorkerState): SharedState {
     username: state.runtime.username,
     baseCurrency: state.runtime.baseCurrency,
     featureFlags: state.runtime.featureFlags,
+    moreEthNeeded: false,
   }
 }

@@ -3,16 +3,15 @@ import { ChangeEvent } from 'react'
 import { connect } from 'react-redux'
 import { FrameState } from '../../../redux/FrameState'
 import { CurrencyType } from '../../../components/Currency/index'
-import * as BigNumber from 'bignumber.js';
+import * as BigNumber from 'bignumber.js'
 import WorkerProxy from '../../../WorkerProxy'
 import { PendingTransaction } from '../../../../worker/WorkerState'
 import { cardBalance } from '../../../redux/selectors/cardBalance'
-import CurrencyConvertable from '../../../../lib/CurrencyConvertable'
+import CurrencyConvertable from '../../../../lib/currency/CurrencyConvertable'
 import { AutoFillButtons } from './AutoFillButtons'
 import { SendCurrencyFooter } from './SendCurrencyFooter'
 import { SendCurrencyHeader } from './SendCurrencyHeader'
 import { SendCurrencyInputs } from './SendCurrencyInputs'
-import { setFeatureFlags } from '../../../../worker/actions';
 import { FeatureFlags } from '../../../../worker/WorkerState'
 
 const s = require('./index.css')
@@ -196,10 +195,9 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
       )
     } catch (e) {
       console.error('failed to send ether', e)
-      let balanceError = 'Failed to send Ether. Please try again.'
 
       this.setState({
-        balanceError,
+        balanceError: 'Failed to send Ether. Please try again.',
         disableSend: false,
         isConfirming: false
       })

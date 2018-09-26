@@ -9,7 +9,7 @@ import requestJson from '../../frame/lib/request'
 import {LifecycleAware} from './LifecycleAware'
 import debug from '../../lib/debug'
 import Logger from '../../lib/Logger'
-import Poller from '../../lib/Poller'
+import {BasePoller} from '../../lib/poller/BasePoller'
 import BigNumber from 'bignumber.js'
 import * as constants from '../../lib/constants'
 
@@ -37,21 +37,21 @@ const FIFTEEN_MINUTES = 15 * 60 * 1000
 export default class HubController extends AbstractController implements LifecycleAware {
   private store: Store<WorkerState>
   private sharedStateView: SharedStateView
-  private poller: Poller
+  private poller: BasePoller
   static INTERVAL_LENGTH: number = FIFTEEN_MINUTES
 
   constructor (store: Store<WorkerState>, sharedStateView: SharedStateView, logger: Logger) {
     super(logger)
     this.store = store
     this.sharedStateView = sharedStateView
-    this.poller = new Poller(logger)
+    this.poller = new BasePoller(logger)
   }
 
   public start = async (): Promise<void> => {
     await this.getHubBranding()
     this.poller.start(
+      this.setExchangeRate,
       HubController.INTERVAL_LENGTH,
-      this.setExchangeRate
     )
   }
 
