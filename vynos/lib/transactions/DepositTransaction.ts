@@ -142,7 +142,6 @@ export default class DepositTransaction implements TransactionInterface {
   )
 
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
-    console.log('maybe erc20 approve...')
     if (!depositObj.tokenDeposit || new BN(depositObj.tokenDeposit).eq(new BN(0))) {
       return {
         ...depositObj,
@@ -159,7 +158,6 @@ export default class DepositTransaction implements TransactionInterface {
       .send({from: getAddress(this.store)})
       .catch(console.error.bind(console))
 
-    console.log('approved')
     
     return depositObj
   }
@@ -171,7 +169,6 @@ export default class DepositTransaction implements TransactionInterface {
     }
 
     const startBal = channels[0].ethBalanceA
-    console.log('deposit exiting')
     await this.connext.deposit({
       ethDeposit: new BN(depositObj.ethDeposit), 
       tokenDeposit: depositObj.tokenDeposit === undefined 
@@ -203,7 +200,6 @@ export default class DepositTransaction implements TransactionInterface {
 
     let ledgerId: string
     try {
-      console.log('openChannel')
       ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
     } catch(e) {
       console.error('connext.openChannel failed', e)
