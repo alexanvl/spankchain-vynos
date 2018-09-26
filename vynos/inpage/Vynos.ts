@@ -57,15 +57,15 @@ export default class Vynos extends EventEmitter {
 
         if (channel) {
           channels[channel.ledgerId] = {
-            balanceInWei: channel.balances.ethBalance,
-            balanceInTokens: channel.balances.tokenBalance,
+            balanceInWei: channel.balances.ethBalance.amount,
+            balanceInTokens: channel.balances.tokenBalance.amount,
           }
         }
 
         return {
           wallet: {
-            balanceInWei: addressBalances.ethBalance,
-            balanceInTokens: addressBalances.tokenBalance ,
+            balanceInWei: addressBalances.ethBalance.amount,
+            balanceInTokens: addressBalances.tokenBalance.amount ,
           },
           channels
         }
