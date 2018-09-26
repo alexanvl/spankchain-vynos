@@ -173,7 +173,7 @@ export default class DepositTransaction implements TransactionInterface {
       tokenDeposit: depositObj.tokenDeposit === undefined 
         ? undefined
         : new BN(depositObj.tokenDeposit) 
-    })
+    }, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
 
     return [startBal]
   }
@@ -199,7 +199,7 @@ export default class DepositTransaction implements TransactionInterface {
 
     let ledgerId: string
     try {
-      ledgerId = await this.connext.openChannel(depositObj) as string
+      ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
     } catch(e) {
       console.error('connext.openChannel failed', e)
       throw e
@@ -237,7 +237,7 @@ export default class DepositTransaction implements TransactionInterface {
       if (!res || new BN(res[0].ethBalanceA).lte(bigStartAmount)) {
         throw new Error('Chainsaw has not caught up yet.')
       }
-    })
+    }, 48)
   }
 
   private maybeRequestDeposit = async (amount: string, ledgerId: string, needsCollateral: boolean): Promise<[string, string, boolean]> => {
