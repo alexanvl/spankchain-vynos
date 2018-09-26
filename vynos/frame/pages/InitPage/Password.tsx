@@ -35,21 +35,15 @@ export interface PasswordSubpageDispatchProps {
 export type PasswordSubpageProps = PasswordSubpageStateProps & PasswordSubpageDispatchProps
 
 export class Password extends React.Component<PasswordSubpageProps, PasswordState> {
-  constructor(props: PasswordSubpageProps) {
-    super(props)
-    this.state = {
-      password: '',
-      passwordConfirmation: '',
-      passwordError: null,
-      passwordConfirmationError: null,
-      displayRestore: false
-    }
-    this.handleChangePassword = this.handleChangePassword.bind(this)
-    this.handleChangePasswordConfirmation = this.handleChangePasswordConfirmation.bind(this)
-    this.handleSubmit = this.handleSubmit.bind(this)
-  }
+  state = {
+    password: '',
+    passwordConfirmation: '',
+    passwordError: null,
+    passwordConfirmationError: null,
+    displayRestore: false
+  } as PasswordState
 
-  isValid() {
+  isValid = () => {
     let passwordError = this.state.passwordError
     if (this.state.password.length < MINIMUM_PASSWORD_LENGTH) {
       passwordError = PASSWORD_HINT_TEXT
@@ -67,13 +61,13 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     return !(passwordError || passwordConfirmationError)
   }
 
-  handleSubmit(e: any) {
+  handleSubmit = (e: any) => {
     if (this.isValid() && this.state.password) {
       return this.props.genKeyring(this.props.workerProxy, this.state.password)
     }
   }
 
-  handleChangePassword(ev: ChangeEvent<EventTarget>) {
+  handleChangePassword = (ev: ChangeEvent<EventTarget>) => {
     let value = (ev.target as HTMLInputElement).value
     this.setState({
       password: value,
@@ -82,7 +76,7 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     })
   }
 
-  handleChangePasswordConfirmation(ev: ChangeEvent<EventTarget>) {
+  handleChangePasswordConfirmation = (ev: ChangeEvent<EventTarget>) => {
     let value = (ev.target as HTMLInputElement).value
     this.setState({
       passwordConfirmation: value,
@@ -91,17 +85,15 @@ export class Password extends React.Component<PasswordSubpageProps, PasswordStat
     })
   }
 
-  doneDisplayRestorePage() {
+  doneDisplayRestorePage = () => {
     this.setState({
       displayRestore: false
     })
   }
 
-  getText() {
-    return this.props.isPerformer
-      ? 'Welcome to your new SpankPay account! Before you can start getting paid with crypto, you\'ll need to protect your account with a password'
-      : 'Welcome to your new SpankPay account! Before you can start tipping with crypto, you\'ll need to protect your account with a password'
-  }
+  getText = () => this.props.isPerformer
+    ? 'Welcome to your new SpankPay account! Before you can start getting paid with crypto, you\'ll need to protect your account with a password'
+    : 'Welcome to your new SpankPay account! Before you can start tipping with crypto, you\'ll need to protect your account with a password'
 
   render() {
     const { isPerformer } = this.props

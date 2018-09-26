@@ -21,16 +21,10 @@ export interface PickAddressState {
 }
 
 export default class PickAddress extends React.Component<PickAddressProps, PickAddressState> {
-  constructor (props: PickAddressProps) {
-    super(props)
-
-    this.state = {
-      message: '',
-      chosenRestorationCandidate: null
-    }
-
-    this.onSubmit = this.onSubmit.bind(this)
-  }
+  state = {
+    message: '',
+    chosenRestorationCandidate: null
+  } as PickAddressState
 
   render () {
     return (
@@ -94,7 +88,7 @@ export default class PickAddress extends React.Component<PickAddressProps, PickA
     })
   }
 
-  onSubmit () {
+  onSubmit = () => {
     if (!this.state.chosenRestorationCandidate) {
       return this.setState({
         message: 'Please choose a wallet before continuing.'

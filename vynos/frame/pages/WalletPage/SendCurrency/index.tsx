@@ -196,10 +196,9 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
       )
     } catch (e) {
       console.error('failed to send ether', e)
-      let balanceError = 'Failed to send Ether. Please try again.'
 
       this.setState({
-        balanceError,
+        balanceError: 'Failed to send Ether. Please try again.',
         disableSend: false,
         isConfirming: false
       })

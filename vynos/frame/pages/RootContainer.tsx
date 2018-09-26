@@ -25,12 +25,6 @@ export interface RootStateProps extends RouteComponentProps<any>, StateProps {
 export type RootContainerProps = RootStateProps
 
 export class RootContainer extends React.Component<RootContainerProps, any> {
-  constructor(props: RootContainerProps) {
-    super(props)
-
-    this.lock = this.lock.bind(this)
-  }
-
   componentDidMount () {
     this.determineRoute()
     this.logErrors()
@@ -61,7 +55,7 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
     }
   }
 
-  lock (e: KeyboardEvent) {
+  lock = (e: KeyboardEvent) => {
     if (e.ctrlKey && e.which === 76) {
       this.props.workerProxy.doLock()
     }

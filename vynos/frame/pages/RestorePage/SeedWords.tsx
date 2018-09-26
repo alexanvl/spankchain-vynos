@@ -19,15 +19,9 @@ export interface SeedWordsState {
 const alpha = /^[a-z]*$/i
 
 export default class SeedWords extends React.Component<SeedWordsProps, SeedWordsState> {
-  constructor(props: SeedWordsProps) {
-    super(props)
-
-    this.state = {
-      seeds: []
-    }
-
-    this.onSubmit = this.onSubmit.bind(this)
-  }
+  state = {
+    seeds: []
+  } as SeedWordsState
 
   render() {
     return (
@@ -97,7 +91,7 @@ export default class SeedWords extends React.Component<SeedWordsProps, SeedWords
     return false
   }
 
-  onSubmit () {
+  onSubmit = () => {
     this.props.onSubmit(this.state.seeds)
   }
 

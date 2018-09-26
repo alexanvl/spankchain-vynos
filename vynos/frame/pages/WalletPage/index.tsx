@@ -31,13 +31,9 @@ export interface WalletPageState {
 }
 
 export class WalletPage extends React.Component<WalletPageStateProps, WalletPageState> {
-  constructor(props: WalletPageStateProps) {
-    super(props)
-
-    this.state = {
-      isPopulatingChannels: true,
-      channelPopulationError: ''
-    }
+  state = {
+    isPopulatingChannels: true,
+    channelPopulationError: ''
   }
 
   async componentDidMount() {

@@ -46,14 +46,10 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
 
   icon: any
 
-  constructor(props: WalletCardProps) {
-    super(props)
-
-    this.state = {
-      animated: true,
-      initial: true
-    }
-  }
+  state = {
+    animated: true,
+    initial: true
+  } as WalletCardState
 
   render() {
     const {
