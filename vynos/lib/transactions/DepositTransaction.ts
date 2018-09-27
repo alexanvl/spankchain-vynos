@@ -13,6 +13,7 @@ import {IConnext, Deposit} from '../connext/ConnextTypes'
 import Web3 = require('web3')
 import getAddress from '../getAddress'
 import Logger from '../Logger' 
+import {HumanStandardToken} from '../HumanStandardToken'
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -42,7 +43,7 @@ export default class DepositTransaction implements TransactionInterface {
   private deferredPopulate: DeferredPopulator | null
   private awaiter: Promise<void> | null = null
   private depSem: semaphore.Semaphore
-  private bootyContract: any
+  private bootyContract: HumanStandardToken
   private logger: Logger
 
   constructor (
@@ -63,7 +64,7 @@ export default class DepositTransaction implements TransactionInterface {
     this.depSem = semaphore(1)
     this.logger = logger
 
-    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS)
+    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
 
     this.deposit = this.makeDepositTransaction()
     this.depositExistingChannel = this.makeDepositExistingChannelTransaction()

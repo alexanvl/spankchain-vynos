@@ -12,6 +12,7 @@ import {LockablePoller} from '../../lib/poller/LockablePoller'
 import AbstractController from './AbstractController'
 import {LifecycleAware} from './LifecycleAware'
 import getAddress from '../../lib/getAddress'
+import {HumanStandardToken} from '../../lib/HumanStandardToken'
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -23,7 +24,7 @@ export default class AddressBalanceController extends  AbstractController implem
   private store: Store<WorkerState>
   private web3: Web3
   private mpc: MicropaymentsController
-  private bootyContract: any
+  private bootyContract: HumanStandardToken
 
   constructor(
     ssv: SharedStateView,
@@ -39,7 +40,7 @@ export default class AddressBalanceController extends  AbstractController implem
     this.web3 = web3
     this.mpc = mpc
 
-    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS)
+    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
 
     this.poller = new LockablePoller(logger, lso)
   }
