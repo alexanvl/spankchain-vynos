@@ -66,7 +66,10 @@ export type PurchaseMeta = {
 export type PaymentMeta = {
   fields?: WithdrawalFields
   receiver: string
-  type: PaymentMetaType
+  // Note: for backwards compatibility, allow payments to use purchase types
+  // to reduce the amount we'll need to change on the hub side. Eventually
+  // this type should come entirely from the purchase, though.
+  type: PaymentMetaType | PurchaseMetaType
 }
 
 export interface BalanceType {

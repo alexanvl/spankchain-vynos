@@ -157,8 +157,14 @@ export default class BuyTransaction implements TransactionInterface {
         type: ChannelType.VIRTUAL,
         meta: {
           receiver: vc.partyB,
-          type: vcPayment.type,
-          fields: vcPayment.fields,
+          // Note: for backwards compatibility, allow use the purchase' type to
+          // reduce the amount we'll need to change on the hub side. Eventually
+          // this type should come entirely from the purchase, though.
+          type: purchase.type,
+          fields: {
+            ...vcPayment.fields,
+            originalType: vcPayment.type,
+          } as any,
         },
         payment: {
           channelId: vc.channelId,
