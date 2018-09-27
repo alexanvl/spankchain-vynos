@@ -2,17 +2,17 @@ import {Store} from 'redux'
 import * as semaphore from 'semaphore'
 import takeSem from '../takeSem'
 import * as actions from '../../worker/actions'
-import {AtomicTransaction, TransactionInterface} from './AtomicTransaction'
+import {AtomicTransaction} from './AtomicTransaction'
 import {WorkerState} from '../../worker/WorkerState'
 import withRetries from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
-import LockStateObserver from '../LockStateObserver'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
 import BN = require('bn.js')
 import {IConnext, Deposit} from '../connext/ConnextTypes'
 import Web3 = require('web3')
 import getAddress from '../getAddress'
-import Logger from '../Logger' 
+import Logger from '../Logger'
+import {HumanStandardToken} from '../HumanStandardToken'
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -30,25 +30,23 @@ export interface DepositArgs {
   tokenDeposit?: string,
 }
 
-export default class DepositTransaction implements TransactionInterface {
+export default class DepositTransaction {
   private deposit: AtomicTransaction<void, [DepositArgs]>
   private depositExistingChannel: AtomicTransaction<void, [DepositArgs]>
   private connext: IConnext
   private store: Store<WorkerState>
   private needsCollateral: boolean = false
-  private lockStateObserver: LockStateObserver
   private sem: semaphore.Semaphore
   private chanPopulator: ChannelPopulator
   private deferredPopulate: DeferredPopulator | null
   private awaiter: Promise<void> | null = null
   private depSem: semaphore.Semaphore
-  private bootyContract: any
+  private bootyContract: HumanStandardToken
   private logger: Logger
 
   constructor (
     store: Store<WorkerState>,
     connext: IConnext,
-    lockStateObserver: LockStateObserver,
     sem: semaphore.Semaphore,
     chanPopulator: ChannelPopulator,
     web3: Web3,
@@ -56,24 +54,18 @@ export default class DepositTransaction implements TransactionInterface {
   ) {
     this.store = store
     this.connext = connext
-    this.lockStateObserver = lockStateObserver
     this.sem = sem
     this.chanPopulator = chanPopulator
     this.deferredPopulate = null
     this.depSem = semaphore(1)
     this.logger = logger
 
-    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS)
+    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
 
     this.deposit = this.makeDepositTransaction()
     this.depositExistingChannel = this.makeDepositExistingChannelTransaction()
-
-    lockStateObserver.addUnlockHandler(this.onUnlock)
-    if (!lockStateObserver.isLocked()) {
-      this.restartTransaction()
-    }
   }
-  
+
   public startTransaction = async (deposit: DepositArgs): Promise<void> => {
     try {
       this.awaiter = this.deposit.start(deposit)
@@ -148,17 +140,17 @@ export default class DepositTransaction implements TransactionInterface {
         tokenDeposit: undefined,
       }
     }
-    
+
     await this.bootyContract
       .methods
       .approve(
-        process.env.BOOTY_CONTRACT_ADDRESS, 
-        new BN(depositObj.tokenDeposit)
+        process.env.BOOTY_CONTRACT_ADDRESS!,
+        depositObj.tokenDeposit
       )
       .send({from: getAddress(this.store)})
       .catch(console.error.bind(console))
 
-    
+
     return depositObj
   }
 
@@ -170,10 +162,10 @@ export default class DepositTransaction implements TransactionInterface {
 
     const startBal = channels[0].ethBalanceA
     await this.connext.deposit({
-      ethDeposit: new BN(depositObj.ethDeposit), 
-      tokenDeposit: depositObj.tokenDeposit === undefined 
+      ethDeposit: new BN(depositObj.ethDeposit),
+      tokenDeposit: depositObj.tokenDeposit === undefined
         ? undefined
-        : new BN(depositObj.tokenDeposit) 
+        : new BN(depositObj.tokenDeposit)
     }, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
 
     return [startBal]
@@ -263,8 +255,8 @@ export default class DepositTransaction implements TransactionInterface {
       throw e
     }
     return [
-      amount, 
-      ledgerId, 
+      amount,
+      ledgerId,
       needsCollateral,
     ]
   }
@@ -274,7 +266,7 @@ export default class DepositTransaction implements TransactionInterface {
   }
 
   private maybeCollateralize = async (): Promise<void> => {
-    if (!this.needsCollateral || this.lockStateObserver.isLocked()) {
+    if (!this.needsCollateral) {
       return
     }
 

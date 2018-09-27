@@ -8,9 +8,9 @@ import {
   PurchaseMeta, PaymentMeta, ChannelType, PaymentObject, IConnext,
   VirtualChannel, UpdateBalancesResult,
 } from '../connext/ConnextTypes'
-import { AtomicTransaction, TransactionInterface } from './AtomicTransaction'
 import { WorkerState, ChannelState, CurrencyType as C } from '../../worker/WorkerState'
 import LockStateObserver from '../LockStateObserver'
+import { AtomicTransaction } from './AtomicTransaction'
 import {closeAllVCs} from '../connext/closeAllVCs'
 import {INITIAL_DEPOSIT_BOOTY} from '../constants'
 import takeSem from '../takeSem'
@@ -32,7 +32,7 @@ import Logger from '../Logger'
 type _Args<T> = T extends (...args: infer U) => any ? U : never
 
 
-export default class BuyTransaction implements TransactionInterface {
+export default class BuyTransaction {
   static DEFAULT_DEPOSIT = new Currency(C.BOOTY, INITIAL_DEPOSIT_BOOTY.toString())
 
   private doBuyTransaction: AtomicTransaction<VynosBuyResponse, _Args<BuyTransaction['getExistingChannel']>>
@@ -40,7 +40,7 @@ export default class BuyTransaction implements TransactionInterface {
   private store: Store<WorkerState>
   private sem: semaphore.Semaphore
 
-  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore) {
+  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, sem: semaphore.Semaphore) {
     this.store = store
     this.connext = connext
     this.sem = sem
@@ -52,11 +52,6 @@ export default class BuyTransaction implements TransactionInterface {
       this.updateStore,
     ]
     this.doBuyTransaction = new AtomicTransaction(this.store, logger, 'buy', methodOrder)
-
-    lockStateObserver.addUnlockHandler(this.restartTransaction)
-    if (!lockStateObserver.isLocked()) {
-      this.restartTransaction()
-    }
   }
 
   public startTransaction = async (purchase: VynosPurchase): Promise<VynosBuyResponse> => {

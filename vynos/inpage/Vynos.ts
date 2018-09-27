@@ -10,8 +10,8 @@ import BN = require('bn.js')
 import {ICurrency} from '../lib/currency/Currency'
 
 export interface Balance {
-  balanceInWei: ICurrency|null
-  balanceInTokens: ICurrency|null
+  balanceInWei: string|null
+  balanceInTokens: string|null
 }
 
 export interface GetBalanceResponse {
@@ -57,15 +57,15 @@ export default class Vynos extends EventEmitter {
 
         if (channel) {
           channels[channel.ledgerId] = {
-            balanceInWei: channel.balances.ethBalance,
-            balanceInTokens: channel.balances.tokenBalance,
+            balanceInWei: channel.balances.ethBalance.amount,
+            balanceInTokens: channel.balances.tokenBalance.amount,
           }
         }
 
         return {
           wallet: {
-            balanceInWei: addressBalances.ethBalance,
-            balanceInTokens: addressBalances.tokenBalance ,
+            balanceInWei: addressBalances.ethBalance.amount,
+            balanceInTokens: addressBalances.tokenBalance.amount ,
           },
           channels
         }

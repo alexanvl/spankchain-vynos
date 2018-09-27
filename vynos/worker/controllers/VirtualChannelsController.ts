@@ -1,22 +1,20 @@
 import AbstractController from './AbstractController'
-import {LifecycleAware} from './LifecycleAware'
 import Logger from '../../lib/Logger'
-import {LockablePoller} from '../../lib/poller/LockablePoller'
-import LockStateObserver from '../../lib/LockStateObserver'
 import ChannelPopulator from '../../lib/ChannelPopulator'
+import {BasePoller} from '../../lib/poller/BasePoller'
+import {Poller} from '../../lib/poller/Poller'
 
-export default class VirtualChannelsController extends AbstractController implements LifecycleAware {
-  private poller: LockablePoller
+export default class VirtualChannelsController extends AbstractController {
+  private poller: Poller
   private chanPopulator: ChannelPopulator
   static INTERVAL_LENGTH = 60000
 
   constructor (
     logger: Logger,
-    lockStateObserver: LockStateObserver,
     chanPopulator: ChannelPopulator
   ) {
     super(logger)
-    this.poller = new LockablePoller(logger, lockStateObserver)
+    this.poller = new BasePoller(logger)
     this.chanPopulator = chanPopulator
   }
 
@@ -24,13 +22,18 @@ export default class VirtualChannelsController extends AbstractController implem
     if (this.poller.isStarted()) {
       return
     }
+
     this.poller.start(
       this.populateChannels,
-      VirtualChannelsController.INTERVAL_LENGTH,
+      VirtualChannelsController.INTERVAL_LENGTH
     )
   }
 
   public stop = async (): Promise<void> => {
+    if (!this.poller.isStarted) {
+      return
+    }
+
     this.poller.stop()
   }
 

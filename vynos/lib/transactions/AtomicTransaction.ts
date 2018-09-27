@@ -30,11 +30,6 @@ import Logger from '../Logger'
 
 const noop = () => {}
 
-export interface TransactionInterface {
-  startTransaction(...args: any[]): Promise<any>
-  restartTransaction(): Promise<any>
-}
-
 export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   public name: string
   private store: Store<WorkerState>

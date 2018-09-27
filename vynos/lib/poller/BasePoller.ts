@@ -1,21 +1,23 @@
 import Logger from '../Logger'
-import {Poller} from './Poller' 
+import {Poller} from './Poller'
+import Timer = NodeJS.Timer
 
 export class BasePoller implements Poller {
   private polling = false
   private logger: Logger
+  private timeout: Timer|null = null
 
   constructor(logger: Logger) {
     this.logger = logger
   }
 
-  public async start (cb: Function, intervalLength: number): Promise<void> {
+  public start (cb: Function, intervalLength: number) {
     if (this.polling) {
       throw new Error('Poller was already started')
     }
 
     this.polling = true
-    let lastPolled: number 
+    let lastPolled: number
 
     const poll = async () => {
       if (!this.polling) {
@@ -40,7 +42,7 @@ export class BasePoller implements Poller {
       }
 
       const nextPoll = intervalLength - (Date.now() - lastPolled)
-      setTimeout(
+      this.timeout = setTimeout(
         poll,
         nextPoll,
       )
@@ -48,8 +50,12 @@ export class BasePoller implements Poller {
     poll()
   }
 
-  public stop = async (): Promise<void> => {
+  public stop = () => {
     this.polling = false
+
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+    }
   }
 
   public isStarted(): boolean {

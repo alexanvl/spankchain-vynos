@@ -33,16 +33,19 @@ export default class MicropaymentsController extends AbstractController {
   private depositTransaction: DepositTransaction
   private buyTransaction: BuyTransaction
 
-  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, lockStateObserver: LockStateObserver, chanPopulator: ChannelPopulator, web3: Web3) {
+  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, chanPopulator: ChannelPopulator, web3: Web3) {
     super(logger)
     this.store = store
     this.sem = semaphore(1)
     this.connext = connext
 
-    this.depositTransaction = new DepositTransaction(store, connext, lockStateObserver, this.sem, chanPopulator, web3, logger)
-    this.buyTransaction = new BuyTransaction(store, logger, connext, lockStateObserver, this.sem)
-    this.depositTransaction.restartTransaction()
-    this.buyTransaction.restartTransaction()
+    this.depositTransaction = new DepositTransaction(store, connext, this.sem, chanPopulator, web3, logger)
+    this.buyTransaction = new BuyTransaction(store, logger, connext, this.sem)
+  }
+
+  async start (): Promise<void> {
+    await this.depositTransaction.restartTransaction()
+    await this.buyTransaction.restartTransaction()
   }
 
   public async deposit (deposit: DepositArgs): Promise<void> {

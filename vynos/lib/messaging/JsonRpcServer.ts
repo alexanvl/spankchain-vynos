@@ -74,6 +74,14 @@ export default class JsonRpcServer extends EventEmitter {
     this.handlers[name] = handler
   }
 
+  public removeHandler(name: string) {
+    if (!this.handlers[name]) {
+      throw new Error(`Handler ${name} does not exist.`)
+    }
+
+    delete this.handlers[name]
+  }
+
   public findHandler(method: string): Handler|undefined {
     return this.handlers[method]
   }

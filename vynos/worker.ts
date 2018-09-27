@@ -169,54 +169,55 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     lockStateObserver.addUnlockHandler(async () => {
       try {
         store.dispatch(actions.setFeatureFlags(
-          await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`, {credentials: 'include'})
+          await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`)
         ))
       } catch(e) {
         console.error('unable to get feature flags', e)
       }
     })
+
+    // the below controllers do not need awareness of the lock state.
     const backgroundController = new BackgroundController(store, web3, logger)
     const frameController = new FrameController(store, logger)
     const hubController = new HubController(store, sharedStateView, logger)
-    const micropaymentsController = new MicropaymentsController(store, logger, connext, lockStateObserver, chanPopulator, web3)
+    const walletController = new WalletController(web3, store, logger)
     const authController = new AuthController(store, backgroundController, sharedStateView, providerOpts, frameController, logger)
-    const walletController = new WalletController(web3, store, sharedStateView, logger)
-    const virtualChannelsController = new VirtualChannelsController(logger, lockStateObserver, chanPopulator)
-    const addressBalanceController = new AddressBalanceController(sharedStateView, store, web3, micropaymentsController, logger, lockStateObserver)
-    const withdrawalController = new WithdrawalController(logger, connext, store, lockStateObserver, chanPopulator)
 
-    await addressBalanceController.start()
-    await virtualChannelsController.start()
 
-    hubController.registerHandlers(server)
-    micropaymentsController.registerHandlers(server)
+    // the ones below do.
+    let micropaymentsController: MicropaymentsController
+    let virtualChannelsController: VirtualChannelsController
+    let addressBalanceController: AddressBalanceController
+    let withdrawalController: WithdrawalController
+    lockStateObserver.addUnlockHandler(async () => {
+      micropaymentsController = new MicropaymentsController(store, logger, connext, chanPopulator, web3)
+      virtualChannelsController = new VirtualChannelsController(logger, chanPopulator)
+      addressBalanceController = new AddressBalanceController(sharedStateView, store, web3, micropaymentsController, logger)
+      withdrawalController = new WithdrawalController(logger, connext, store, chanPopulator)
+
+      await micropaymentsController.start()
+      await virtualChannelsController.start()
+      await addressBalanceController.start()
+      await withdrawalController.start()
+
+      micropaymentsController.registerHandlers(server)
+      withdrawalController.registerHandlers(server)
+    })
+    lockStateObserver.addLockHandler(async () => {
+      await micropaymentsController.stop()
+      await virtualChannelsController.stop()
+      await addressBalanceController.stop()
+      await withdrawalController.stop()
+    })
+
+    await authController.start()
     authController.registerHandlers(server)
+    backgroundController.registerHandlers(server)
+    hubController.registerHandlers(server)
     frameController.registerHandlers(server)
     walletController.registerHandlers(server)
-    backgroundController.registerHandlers(server)
-    withdrawalController.registerHandlers(server)
     backgroundController.didChangeSharedState(sharedState => server.broadcast(SharedStateBroadcastEvent, sharedState))
-
     server.addHandler(StatusRequest.method, (cb: ErrResCallback) => cb(null, status))
-    server.addHandler(ResetRequest.method, async (cb: ErrResCallback) => {
-      try {
-        await new Promise((resolve, reject) => {
-          const req = indexedDB.deleteDatabase('NeDB')
-          req.onerror = reject
-          // blocked is OK to resolve because we refresh the page
-          // in response to the reset broadcast event
-          req.onblocked = resolve
-          req.onsuccess = resolve
-        })
-
-        await localForage.clear()
-
-        server.broadcast(ResetBroadcastEvent)
-        cb(null, null)
-      } catch (e) {
-        cb(e, null)
-      }
-    })
 
     await hubController.start()
 
