@@ -132,7 +132,7 @@ export default class AddressBalanceController extends AbstractController {
       const amount = await this.bootyContract
          .methods
          .balanceOf(address)
-         .call({from: getAddress(this.store)})
+         .call({from: address})
       return  Currency.BOOTY(amount)
     } catch(e){
       console.error('unable to get ERC20 balance', {address, e})

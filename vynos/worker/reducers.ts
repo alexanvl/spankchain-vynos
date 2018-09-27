@@ -29,6 +29,7 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.removeTransactionState, actions.removeTransactionStateHandler)
   .case(actions.setInitialState, actions.setInitialStateHandler)
   .case(actions.setFeatureFlags, actions.setFeatureFlagsHandler)
+  .case(actions.setBaseCurrency, actions.setBaseCurrencyHandler)
   .case(actions.setaddressBalances, actions.setaddressBalancesHandler)
   .case(actions.setMoreEthNeeded, actions.setMoreEthNeededHandler)
   .case(actions.setIsMigrating, actions.setIsMigratingHandler)

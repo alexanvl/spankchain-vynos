@@ -4,14 +4,14 @@ import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
 import { FrameState } from '../../redux/FrameState'
 import { connect } from 'react-redux'
-import { BrandingState, ExchangeRates } from '../../../worker/WorkerState'
+import { BrandingState, ExchangeRates, FeatureFlags } from '../../../worker/WorkerState'
 import { cardBalance } from '../../redux/selectors/cardBalance'
 import WorkerProxy from '../../WorkerProxy'
 import Currency, { CurrencyType } from '../../components/Currency/index'
-import entireBalance from '../../lib/entireBalance'
 import BN = require('bn.js')
 import Tooltip from '../../components/Tooltip'
 import { BalanceTooltip } from '../../components/BalanceTooltip'
+
 const pageStyle = require('../UnlockPage.css')
 const s = require('./styles.css')
 
@@ -26,18 +26,11 @@ export interface StateProps extends BrandingState {
   hasActiveDeposit: boolean
   exchangeRates: ExchangeRates | null
   isFrameDisplayed: boolean
+  baseCurrency: CurrencyType
 }
 
 export interface UnlockPageProps extends StateProps, RouteComponentProps<any> {
 }
-
-enum ActiveButton {
-  'NONE',
-  'RECIEVE',
-  'SEND',
-  'ACTIVITY',
-}
-
 
 export interface SpankCardState {
   error: string
@@ -60,7 +53,9 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
       hasActiveDeposit,
       isWithdrawing,
       location,
+      baseCurrency,
     } = this.props
+
 
     const reserveBalance = walletBalance
 
@@ -85,6 +80,7 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
                 currencyValue={cardBalance}
                 className={s.walletSpankCard}
                 isLoading={hasActiveDeposit || isWithdrawing}
+                currencyType={baseCurrency}
                 gradient
               />
             </div>
@@ -100,6 +96,7 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
                     reserveBalanceType={CurrencyType.WEI}
                     exchangeRates={exchangeRates}
                     hasActiveDeposit={hasActiveDeposit}
+                    currencyType={baseCurrency}
                   />
                 }
               >
@@ -110,7 +107,8 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
                     outputType={CurrencyType.USD}
                     className={s.sendReceiveCurrency}
                     unitClassName={s.usdUnit}
-                    showUnit={true}
+                    showUnit
+                    showPlainTextUnit
                     big
                   />
                   <div className={s.downArrow} />
@@ -178,6 +176,7 @@ function mapStateToProps(state: FrameState): StateProps {
     hasActiveDeposit: state.shared.hasActiveDeposit,
     exchangeRates: state.shared.exchangeRates,
     isFrameDisplayed: state.shared.isFrameDisplayed,
+    baseCurrency: state.shared.baseCurrency,
   }
 }
 

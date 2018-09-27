@@ -16,7 +16,7 @@ import {ResetRequest, StatusRequest} from './lib/rpc/yns'
 import WorkerServer from './lib/rpc/WorkerServer'
 import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
-import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags} from './worker/WorkerState'
+import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags, CurrencyType} from './worker/WorkerState'
 import {ErrResCallback} from './lib/messaging/JsonRpcServer'
 import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
@@ -168,8 +168,12 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const lockStateObserver = new LockStateObserver(store)
     lockStateObserver.addUnlockHandler(async () => {
       try {
+        const featureFlags = await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`)
+
         store.dispatch(actions.setFeatureFlags(
-          await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`)
+          process.env.NODE_ENV === 'development'
+            ? {bootySupport: true}
+            : featureFlags
         ))
       } catch(e) {
         console.error('unable to get feature flags', e)

@@ -4,18 +4,19 @@ import * as classnames from 'classnames'
 import { connect } from 'react-redux'
 import { FrameState } from '../../../redux/FrameState'
 import WorkerProxy from '../../../WorkerProxy'
-import { HistoryItem } from '../../../../worker/WorkerState'
+import { HistoryItem, FeatureFlags } from '../../../../worker/WorkerState'
 import Currency, { CurrencyType } from '../../../components/Currency/index'
 import * as BigNumber from 'bignumber.js'
 import * as moment from 'moment'
-
 const s = require('./activity.css')
 const baseStyle = require('../styles.css')
+const unitStyles = require('../../../components/CurrencyIcon/style.css')
 
 export interface StateProps {
   workerProxy: WorkerProxy,
   history: HistoryItem[]
   address: string
+  baseCurrency: CurrencyType
 }
 
 export interface ActivityProps extends StateProps {
@@ -79,8 +80,21 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     })
   }
 
+  getUnitClassName = (ct: CurrencyType, isPositive: boolean) => {
+    const isBooty = ct === CurrencyType.BOOTY
+
+    return classnames({
+      activityBootySignPositive: isBooty && isPositive,
+      activityFinneySignPositive: !isBooty && isPositive,
+      activityBootySignNegative: isBooty && !isPositive,
+      activityFinneySignNegative: !isBooty && !isPositive,
+      [unitStyles.green]: isPositive,
+      [unitStyles.pink]: !isPositive,
+    })
+  }
+
   render() {
-    const { isLoading, error } = this.state
+    const currencyType = this.props.baseCurrency
 
     const groups = this.props.history.reduce(reduceByTipOrPurchase, [])
       .reduce((acc: GroupOrHistory[], curr: NestedHistory) => {
@@ -111,7 +125,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
           <T.TableBody>
             {
               groups.map((g: GroupOrHistory, i: number) =>
-                g.hasOwnProperty('type') ? this.renderWithdrawal(g as HistoryItem) : this.renderGroup(g as Group, i))
+                g.hasOwnProperty('type') ? this.renderWithdrawal(g as HistoryItem, currencyType) : this.renderGroup(g as Group, i, currencyType))
             }
           </T.TableBody>
         </T.Table>
@@ -119,7 +133,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     )
   }
 
-  renderWithdrawal(item: HistoryItem) {
+  renderWithdrawal(item: HistoryItem, currencyType: CurrencyType) {
     const mStart = moment(item.createdAt)
 
     return (
@@ -148,8 +162,8 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             <div className={s.walletActivityAmount}>
               <Currency
                 amount={item.price}
-                outputType={CurrencyType.FINNEY}
-                unitClassName={s.activityFinneySign}
+                outputType={currencyType}
+                unitClassName={this.getUnitClassName(currencyType, false)}
                 showUnit
               />
             </div>
@@ -160,7 +174,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     )
   }
 
-  renderGroup(group: Group, i: number) {
+  renderGroup(group: Group, i: number, currencyType: CurrencyType) {
     const startDate = group.startDate
     const endDate = group.endDate
 
@@ -215,8 +229,8 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             <div className={s.walletActivityAmount}>
               <Currency
                 amount={total.abs()}
-                outputType={CurrencyType.FINNEY}
-                unitClassName={s.activityFinneySign}
+                outputType={currencyType}
+                unitClassName={this.getUnitClassName(currencyType, !isNeg)}
                 showUnit
               />
             </div>
@@ -259,8 +273,8 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
               <div className={s.walletActivityAmount}>
                 <Currency
                   amount={item.price}
-                  outputType={CurrencyType.FINNEY}
-                  unitClassName={s.activityFinneySign}
+                  outputType={currencyType}
+                  unitClassName={this.getUnitClassName(currencyType, !isNeg)}
                   showUnit
                 />
               </div>
@@ -364,6 +378,7 @@ function mapStateToProps(state: FrameState): StateProps {
     workerProxy: state.temp.workerProxy,
     history: state.shared.history,
     address: state.shared.address!,
+    baseCurrency: state.shared.baseCurrency,
   }
 }
 

@@ -41,7 +41,7 @@ export interface Balances {
 
 export interface ChannelState {
   ledgerId: string
-  balances: Balances 
+  balances: Balances
   currentVCs: VirtualChannel[]
   lc: LedgerChannel
 }
@@ -51,7 +51,7 @@ export enum CurrencyType {
   ETH = 'ETH',
   WEI = 'WEI',
   FINNEY = 'FINNEY',
-  BOOTY = 'BOO'
+  BOOTY = 'BOOTY'
 }
 
 export type ExchangeRates = {[key: string/* in CurrencyType*/]: string}
@@ -111,7 +111,7 @@ export interface SharedState {
   hasActiveDeposit: boolean
   username: string | null
   activeWithdrawalError: string|null
-  baseCurrency: any
+  baseCurrency: CurrencyType
   exchangeRates: ExchangeRates|null
   featureFlags: FeatureFlags
   moreEthNeeded: boolean
@@ -195,11 +195,11 @@ export const INITIAL_SHARED_STATE: SharedState = {
   history: [],
   addressBalances: {
     ethBalance: {
-      type: CurrencyType.ETH, 
+      type: CurrencyType.ETH,
       amount: '0'
-    }, 
+    },
     tokenBalance: {
-      type: CurrencyType.BOOTY, 
+      type: CurrencyType.BOOTY,
       amount: '0'
     }
   },
@@ -210,7 +210,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   hasActiveDeposit: false,
   exchangeRates: null,
   username: null,
-  baseCurrency: null,
+  baseCurrency: CurrencyType.FINNEY,
   featureFlags: {},
   moreEthNeeded: false,
 }
@@ -273,11 +273,11 @@ export const INITIAL_STATE: WorkerState = {
     history: [],
     addressBalances: {
       ethBalance: {
-        type: CurrencyType.ETH, 
+        type: CurrencyType.ETH,
         amount: '0'
-      }, 
+      },
       tokenBalance: {
-        type: CurrencyType.BOOTY, 
+        type: CurrencyType.BOOTY,
         amount: '0'
       }
     },

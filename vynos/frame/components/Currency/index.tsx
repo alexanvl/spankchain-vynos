@@ -28,6 +28,8 @@ export interface CurrencyProps extends StateProps {
   alt?: boolean
   color?: string
   big?: boolean
+  baseCurrency?: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.BOOTY
+  showPlainTextUnit?: boolean
 }
 
 export class Currency extends React.Component<CurrencyProps, any> {
@@ -46,7 +48,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
       amount,
       decimals,
       inputType,
-      outputType
+      outputType,
     } = this.props
 
     let ret: string = ''
@@ -61,7 +63,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
         withSymbol: false,
         showTrailingZeros: outputType == CurrencyType.USD
       })
-      
+
     } catch (e) {
       console.error('unable to get currency', e)
       ret = '--'
@@ -74,6 +76,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
     let {
       outputType,
       showUnit,
+      showPlainTextUnit,
       unitClassName,
       className,
       inverse,
@@ -85,14 +88,24 @@ export class Currency extends React.Component<CurrencyProps, any> {
 
     return (
       <span className={classnames(s.currency, className)} style={{color: color || 'inherit'}}>
-        {renderUnit(showUnit, outputType, unitClassName, inverse, alt, color, big)} {this.formatAmount()}
+        {renderUnit(showUnit, outputType, unitClassName, inverse, alt, color, big, showPlainTextUnit)} {this.formatAmount()}
       </span>
     )
   }
 }
 
-const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string, inverse?: boolean, alt?: boolean, color?: string, big?: boolean) => (
-  showUnit && <CurrencyIcon className={unitClassName} currency={outputType} reverse={inverse} alt={alt} color={color} big={big} spaceAround />
+const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string, inverse?: boolean, alt?: boolean, color?: string, big?: boolean, showPlainTextUnit?: boolean) => (
+  showUnit &&
+  <CurrencyIcon
+    className={unitClassName}
+    currency={outputType}
+    reverse={inverse}
+    alt={alt}
+    color={color}
+    big={big}
+    spaceAround
+    showPlainText={showPlainTextUnit}
+  />
 )
 
 function mapStateToProps (state: FrameState, ownProps: any): StateProps {
