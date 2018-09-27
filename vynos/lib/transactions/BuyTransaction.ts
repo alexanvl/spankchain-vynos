@@ -140,7 +140,13 @@ export default class BuyTransaction implements TransactionInterface {
         meta: {
           receiver: lc.partyI,
           type: lcPayment.type,
-          fields: lcPayment.fields,
+          fields: {
+            ...lcPayment.fields,
+            // Note: for now, copy the purchase fields onto both the payments.
+            // Eventually this should be replaced with a first-class "purchase"
+            // type which will store the fields... but this will do for now.
+            ...purchase.fields,
+          } as any,
         },
         payment: {
           channelId: lc.channelId,
@@ -163,6 +169,10 @@ export default class BuyTransaction implements TransactionInterface {
           type: purchase.type,
           fields: {
             ...vcPayment.fields,
+            // Note: for now, copy the purchase fields onto both the payments.
+            // Eventually this should be replaced with a first-class "purchase"
+            // type which will store the fields... but this will do for now.
+            ...purchase.fields,
             originalType: vcPayment.type,
           } as any,
         },
