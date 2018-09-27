@@ -99,6 +99,13 @@ export default class BuyTransaction implements TransactionInterface {
       )
     }
 
+    // For now, to simplify the camsite, replace the magical value '$$HUB$$'
+    // with Ingrid's address (so the camsite doesn't need to know what it is)
+    if (recipients[0] == '$$HUB$$') {
+      recipients[0] = lcState.lc.partyI
+      purchase.payments[0].receiver = lcState.lc.partyI
+    }
+
     if (recipients[0] != lcState.lc.partyI) {
       // As above, this constraint can be relaxed in the future.
       throw new Error(
@@ -110,7 +117,6 @@ export default class BuyTransaction implements TransactionInterface {
     const existingVC: VirtualChannel|undefined = lcState.currentVCs
       .find((testVc: VirtualChannel) => recipients[1] == testVc.partyB)
 
-    // TODO: make sure the 'tokenBalanceA' is available
     let vcAmount = new Currency(purchase.payments[1].amount)
     const vc = existingVC && vcAmount.compare('lte', existingVC.tokenBalanceA, C.BOOTY)
       ? existingVC
@@ -163,7 +169,7 @@ export default class BuyTransaction implements TransactionInterface {
             tokenDeposit: new BN(vc.tokenBalanceB).add(new BN(vcPayment.amount.amount)),
           },
         },
-      }
+      },
     ]
 
     let res: any
