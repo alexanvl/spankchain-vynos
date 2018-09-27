@@ -1,5 +1,6 @@
+import deepmerge = require('deepmerge')
 import BuyTransaction from './BuyTransaction'
-import { WorkerState, INITIAL_STATE, CurrencyType } from '../../worker/WorkerState'
+import { WorkerState, GET_INITIAL_STATE, CurrencyType } from '../../worker/WorkerState'
 import * as redux from 'redux'
 import {Store} from 'redux'
 import reducers from '../../worker/reducers'
@@ -19,7 +20,7 @@ import { VynosPurchase } from '../VynosPurchase'
 import Connext = require('connext')
 import Web3 = require('web3')
 import * as sinon from 'sinon'
-import Currency from '../Currency'
+import Currency from '../Currency/Currency'
 import _BN = require('bn.js')
 import toFinney from '../web3/toFinney';
 require('isomorphic-fetch')
@@ -38,9 +39,9 @@ const FINBN = (amt: string | number): BN => BN(FIN(amt))
 const BOOTY = (amt: string | number): string => Web3.utils.toWei(amt.toString())
 const BOOTYBN = (amt: string | number): BN => BN(BOOTY(amt))
 
-const PURCHASE_AMOUNT = BOOTY(69)
-const PURCHASE_FEE = BOOTY(6)
-const PURCHASE_PRINCIPAL = BOOTY(9)
+const PURCHASE_AMOUNT = BOOTY(6.9)
+const PURCHASE_FEE = BOOTY(0.9)
+const PURCHASE_PRINCIPAL = BOOTY(6)
 
 const mkPurchase = (principal: string = PURCHASE_PRINCIPAL): VynosPurchase => ({
   fields: {
@@ -88,16 +89,49 @@ const mkVc = (overrides?: Partial<VirtualChannel>): VirtualChannel => ({
 })
 
 describe('BuyTransaction', () => {
-  let buyTransaction: BuyTransaction
-  let store: Store<WorkerState>
-  let lockStateObserver: LockStateObserver
-  let sem: semaphore.Semaphore
   let connext: any
 
+  function setupTest(storeState?: any) {
+    const store = redux.createStore(
+      reducers,
+      deepmerge(GET_INITIAL_STATE(), {
+        runtime: {
+          wallet: {
+            getAddressString: () => aliceAddress,
+          },
+        },
+      }, storeState || {})
+    ) as Store<WorkerState>
+    const sem = semaphore(1)
+    const lockStateObserver = new LockStateObserver(store)
+    const mockLogger = { logToApi: () => {} } as any
+    const buyTransaction = new BuyTransaction(store, mockLogger, connext, lockStateObserver, sem)
+
+    return  { store, sem, lockStateObserver, buyTransaction }
+  }
+
+  function assertUpdateBalances(updates: PaymentObject[], expected: any) {
+    if (updates.length != 2)
+      throw new Error('Bad updates length: ' + JSON.stringify(updates))
+
+    let [lc, vc] = updates
+    if (lc === undefined)
+      return
+
+    const actual = {
+      lc: {
+        a: lc.payment.balanceA.tokenDeposit!.toString(),
+        i: lc.payment.balanceB.tokenDeposit!.toString(),
+      },
+      vc: {
+        a: vc.payment.balanceA.tokenDeposit!.toString(),
+        b: vc.payment.balanceB.tokenDeposit!.toString(),
+      },
+    }
+    assert.containSubset(actual, expected)
+  }
+
   beforeEach(() => {
-    store = redux.createStore(reducers, INITIAL_STATE) as Store<WorkerState>
-    sem = semaphore(1)
-    lockStateObserver = new LockStateObserver(store)
 
     connext = new Connext({
       web3: new Web3(),
@@ -117,9 +151,11 @@ describe('BuyTransaction', () => {
       connext.openThreadCalls += 1
     }
 
-    connext.vcEthBalanceA = BuyTransaction.DEFAULT_DEPOSIT.amount
+    connext.vcEthBalanceA = '0'
+    connext.vcTokenBalanceA = BuyTransaction.DEFAULT_DEPOSIT.amount
     connext.getThreadById = async (): Promise<VirtualChannel> => mkVc({
       ethBalanceA: connext.vcEthBalanceA,
+      tokenBalanceA: connext.vcTokenBalanceA,
     })
 
     ;(global as any).fetch = () => {}
@@ -132,7 +168,7 @@ describe('BuyTransaction', () => {
     connext.lcTokenBalanceA = BOOTY(111)
     connext.lcTokenBalanceA = BOOTY(112)
     connext.getChannelByPartyA = (): LedgerChannel => ({
-      state: 1,
+      state: '',
       channelId: 'channelId',
       partyA: aliceAddress,
       partyI: ingridAddress,
@@ -140,7 +176,6 @@ describe('BuyTransaction', () => {
       ethBalanceI: connext.lcEthBalanceB,
       tokenBalanceA: connext.lcTokenBalanceA,
       tokenBalanceI: connext.lcTokenBalanceB,
-      token: '0xBOOTY',
       nonce: 1,
       openVcs: 0,
       vcRootHash: '',
@@ -159,11 +194,11 @@ describe('BuyTransaction', () => {
         ] as any,
       }
     }
-
-    buyTransaction = new BuyTransaction(store, connext, lockStateObserver, sem)
   })
 
   it('Should throw an error if no LC channel is open', async () => {
+    const { buyTransaction } = setupTest()
+    connext.getChannelByPartyA = () => null
     await buyTransaction.startTransaction(mkPurchase())
       .then(() => {
         throw new Error('should have thrown')
@@ -174,71 +209,23 @@ describe('BuyTransaction', () => {
   })
 
   it('should create a new vc if one doesn\'t already exist for default deposit', async () => {
-    const s = {
-      ...INITIAL_STATE,
-      runtime: {
-        ...INITIAL_STATE.runtime,
-        channel: {
-          currentVCs: [],
-          balance: toFinney(50).toString(),
-          ledgerId: 'ledgerId',
-        },
-        wallet: {
-          getAddressString: () => '',
-        },
-      },
-    }
-    store = redux.createStore(reducers, s) as Store<WorkerState>
-    buyTransaction = new BuyTransaction(store, connext, lockStateObserver, sem)
-
-    let openThreadCalls = 0
-    connext.openThread = ({to, deposit: {ethDeposit}}: {to: string, deposit: {ethDeposit: BN}}) => {
-      expect(to).to.equal(bobAddress)
-      expect(ethDeposit.toString()).to.equal(BuyTransaction.DEFAULT_DEPOSIT.amountBN.toString())
-      openThreadCalls++
-    }
-
-    connext.closeThreads = async () => {}
-    connext.getThreadById = async (): Promise<VirtualChannel> => mkVc({
-      ethBalanceA: BuyTransaction.DEFAULT_DEPOSIT.amount,
-      partyI: '',
-    })
-
-    ;(global as any).fetch = () => {}
-    let stubedFetch: any = sinon.stub(global, 'fetch' as any)
-    stubedFetch.resolves({json: () => []})
-
-    connext.getChannelByPartyA = () => ({
-      channelId: '1',
-      partyA: '',
-      partyI: '',
-      ethBalanceA: toFinney(50).toString(),
-      ethBalanceI: toFinney(50).toString(),
-    })
-
-    connext.updateBalances = (update: PaymentObject[]) => {
-      expect(update.length === 1)
-      expect(update[0].payment.balanceA.ethDeposit!.toString()).to.equal(toFinney(8).toString())
-      expect(update[0].payment.balanceB.ethDeposit!.toString()).to.equal(toFinney(2).toString())
-      expect(update[0].meta).to.equal({ TODO: true })
-      expect(update[0].type).to.equal(ChannelType.VIRTUAL)
-
-      return {
-      '0': {
-        id: {
-          toString: () => ''
-        }
-      }
-      }
-    }
-
+    const { store, buyTransaction } = setupTest()
     await buyTransaction.startTransaction(mkPurchase())
 
-    expect(store.getState().runtime.channel!.balanceEth).to.equal(toFinney(48).toString())
-
-    expect(openThreadCalls).to.equal(1)
+    assert.equal(connext.openThreadCalls, 1)
+    assertUpdateBalances(connext.lastBalanceUpdate, {
+      lc: {
+        a: BN(connext.lcTokenBalanceA).sub(BN(PURCHASE_FEE)).toString(),
+        i: BN(connext.lcTokenBalanceB).add(BN(PURCHASE_FEE)).toString(),
+      },
+      vc: {
+        a: BuyTransaction.DEFAULT_DEPOSIT.amountBN.sub(BN(PURCHASE_PRINCIPAL)).toString(),
+        b: PURCHASE_PRINCIPAL,
+      },
+    })
   })
 
+  /*
   it('should create a new vc if balanceA of currentvc is less than the price', async () => {
     const s = {
       ...INITIAL_STATE,
@@ -378,39 +365,17 @@ describe('BuyTransaction', () => {
 
     expect(openThreadCalls).to.equal(1)
   })
+  */
 
   it('should open a vc for the buy price if it is larger than the default', async () => {
-    let initialBalance = BN(PURCHASE_AMOUNT).add(FINBN(100)).toString()
-    const s = {
-      ...INITIAL_STATE,
-      runtime: {
-        ...INITIAL_STATE.runtime,
-        channel: {
-          currentVCs: [],
-          balanceToken: initialBalance,
-        },
-        wallet: {
-          getAddressString: () => '',
-        },
-      },
-    }
-    store = redux.createStore(reducers, s) as Store<WorkerState>
-    buyTransaction = new BuyTransaction(store, connext, lockStateObserver, sem)
-
+    const initialBalance = BN(PURCHASE_AMOUNT).add(FINBN(100)).toString()
     const buyAmount = BuyTransaction.DEFAULT_DEPOSIT.amountBN.add(FINBN(10)).toString()
+    const { store, buyTransaction } = setupTest()
 
     connext.expectedThreadOpenAmount = buyAmount
     connext.vcEthBalanceA = buyAmount
 
     await buyTransaction.startTransaction(mkPurchase(buyAmount))
-
-    assert.equal(
-      store.getState().runtime.channel!.balances.tokenBalance,
-      BN(initialBalance).sub(BN(buyAmount)).toString(),
-    )
-    expect(connext.openThreadCalls).to.equal(1)
-    assert.containSubset(connext.lastBalanceUpdate, {
-      TODO: true,
-    })
+    assert.equal(connext.openThreadCalls, 1)
   })
 })

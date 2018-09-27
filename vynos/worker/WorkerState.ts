@@ -219,7 +219,7 @@ const initialTransactionState = () => ({
   nextMethodArgs: []
 })
 
-export const INITIAL_STATE: WorkerState = {
+export const GET_INITIAL_STATE = (): WorkerState => ({
   persistent: {
     didInit: false,
     rememberPath: '/',
@@ -289,7 +289,9 @@ export const INITIAL_STATE: WorkerState = {
     featureFlags: {bootySupport: false},
     moreEthNeeded: false,
   }
-}
+})
+
+export const INITIAL_STATE = GET_INITIAL_STATE()
 
 export function buildSharedState (state: WorkerState): SharedState {
   return {

@@ -15,7 +15,7 @@ import {closeAllVCs} from '../connext/closeAllVCs'
 import {INITIAL_DEPOSIT_BOOTY} from '../constants'
 import takeSem from '../takeSem'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
-import Currency from '../Currency'
+import Currency from '../Currency/Currency'
 import getChannels from '../connext/getChannels'
 import Logger from '../Logger'
 
