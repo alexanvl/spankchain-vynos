@@ -50,6 +50,10 @@ export default class BackgroundController extends AbstractController {
     this.web3 = web3
   }
 
+  async start (): Promise<void> {
+    // noop
+  }
+
   awaitUnlock (fn: Function) {
     const attempt = () => {
       const isUnlocked = !this.isLocked()

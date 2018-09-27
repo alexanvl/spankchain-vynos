@@ -1,5 +1,4 @@
-import requestJson from '../frame/lib/request'
-import SharedStateView from '../worker/SharedStateView'
+import {postJson} from '../frame/lib/request'
 
 const API_URL = process.env.API_URL
 
@@ -39,13 +38,6 @@ export default class Logger {
       metrics: clonedMetrics
     })
 
-    return requestJson(`${API_URL}/metrics/store`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body
-    })
+    return postJson(`${API_URL}/metrics/store`, body)
   }
 }

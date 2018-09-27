@@ -1,5 +1,4 @@
 import Logger from '../../lib/Logger'
-import LockStateObserver from '../../lib/LockStateObserver'
 import * as actions from '../actions'
 import {Store} from 'redux'
 import SharedStateView from '../SharedStateView'
@@ -8,18 +7,18 @@ import {WorkerState} from '../WorkerState'
 import {OPEN_CHANNEL_COST, RESERVE_BALANCE} from '../../lib/constants'
 import MicropaymentsController from './MicropaymentsController'
 import Currency from '../../lib/currency/Currency'
-import {LockablePoller} from '../../lib/poller/LockablePoller'
 import AbstractController from './AbstractController'
-import {LifecycleAware} from './LifecycleAware'
 import getAddress from '../../lib/getAddress'
+import {BasePoller} from '../../lib/poller/BasePoller'
+import {Poller} from '../../lib/poller/Poller'
 import {HumanStandardToken} from '../../lib/HumanStandardToken'
 
 const tokenABI = require('human-standard-token-abi')
 
-export default class AddressBalanceController extends  AbstractController implements LifecycleAware {
+export default class AddressBalanceController extends AbstractController {
   static INTERVAL_LENGTH = 10000
 
-  private poller: LockablePoller
+  private poller: Poller
   private ssv: SharedStateView
   private store: Store<WorkerState>
   private web3: Web3
@@ -31,8 +30,7 @@ export default class AddressBalanceController extends  AbstractController implem
     store: Store<WorkerState>,
     web3: Web3,
     mpc: MicropaymentsController,
-    logger: Logger,
-    lso: LockStateObserver,
+    logger: Logger
   ) {
     super(logger)
     this.ssv = ssv
@@ -40,6 +38,8 @@ export default class AddressBalanceController extends  AbstractController implem
     this.web3 = web3
     this.mpc = mpc
 
+    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
+    this.poller = new BasePoller(logger)
     this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
 
     this.poller = new LockablePoller(logger, lso)
@@ -49,13 +49,16 @@ export default class AddressBalanceController extends  AbstractController implem
     if (this.poller.isStarted()) {
       return
     }
-    this.poller.start(
+
+    await this.poller.start(
       this.updateBalances,
       AddressBalanceController.INTERVAL_LENGTH,
     )
   }
 
-  public stop = () => this.poller.stop()
+  async stop (): Promise<void> {
+    this.poller.stop()
+  }
 
   private updateBalances = async () => {
     let address: string
@@ -70,7 +73,7 @@ export default class AddressBalanceController extends  AbstractController implem
     }
 
     const ethBalance: Currency = await this.getETHBalance(address)
-    const tokenBalance: Currency = this.bootySupport() 
+    const tokenBalance: Currency = this.bootySupport()
       ? await this.getTokenBalance(address)
       : Currency.BOOTY(0)
 
@@ -102,24 +105,24 @@ export default class AddressBalanceController extends  AbstractController implem
 
     await this.mpc.deposit({
       ethDeposit: ethDeposit.amount,
-      tokenDeposit: this.bootySupport() 
+      tokenDeposit: this.bootySupport()
         ? tokenBalance.amount
         : Currency.BOOTY(0).amount
     })
 
     this.store.dispatch(actions.setaddressBalances({
       ethBalance: await this.getETHBalance(address),
-      tokenBalance: this.bootySupport() 
+      tokenBalance: this.bootySupport()
         ? await this.getTokenBalance(address)
         : Currency.BOOTY(0),
     }))
   }
 
   private getETHBalance = (address: string): Promise<Currency> =>
-    new Promise<Currency>((resolve, reject) => 
-      this.web3.eth.getBalance(address, 'latest', 
+    new Promise<Currency>((resolve, reject) =>
+      this.web3.eth.getBalance(address, 'latest',
         (e: Error, balance: number) => e
-          ? reject(e) 
+          ? reject(e)
           : resolve(Currency.WEI(balance)),
       )
     )

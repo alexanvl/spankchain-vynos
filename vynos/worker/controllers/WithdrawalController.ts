@@ -22,22 +22,20 @@ import {WorkerState} from '../WorkerState'
 export default class WithdrawalController extends AbstractController {
   private store: Store<WorkerState>
   private connext: IConnext
-  private lso: LockStateObserver
   private populator: ChannelPopulator
 
-  constructor (logger: Logger, connext: IConnext, store: Store<WorkerState>, lso: LockStateObserver, populator: ChannelPopulator) {
+  constructor (logger: Logger, connext: IConnext, store: Store<WorkerState>, populator: ChannelPopulator) {
     super(logger)
     this.store = store
     this.connext = connext
-    this.lso = lso
     this.populator = populator
   }
 
-  public send = async (to: string, value: string): Promise<void> => {
-    if (this.lso.isLocked()) {
-      throw new Error('Wallet is locked.')
-    }
+  async start (): Promise<void> {
+    //noop
+  }
 
+  public send = async (to: string, value: string): Promise<void> => {
     await this.updateChannel(to, value)
     await this.populator.populate()
   }

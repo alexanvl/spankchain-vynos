@@ -26,6 +26,7 @@ export interface RuntimeState {
   baseCurrency: CurrencyType
   featureFlags: FeatureFlags
   moreEthNeeded: boolean
+  isMigrating: boolean
 }
 
 export interface AuthorizationRequestState {
@@ -288,6 +289,7 @@ export const INITIAL_STATE: WorkerState = {
     baseCurrency: CurrencyType.FINNEY,
     featureFlags: {bootySupport: false},
     moreEthNeeded: false,
+    isMigrating: false,
   }
 }
 

@@ -7,7 +7,7 @@ import FrameController from './FrameController'
 import SharedStateView from '../SharedStateView'
 import AbstractController from './AbstractController'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
-import requestJson from '../../frame/lib/request'
+import {postJson} from '../../frame/lib/request'
 import Logger from '../../lib/Logger'
 import BackgroundController from './BackgroundController'
 
@@ -45,6 +45,10 @@ export default class AuthController extends AbstractController {
     this.frame = frame
   }
 
+  async start (): Promise<void> {
+    //noop
+  }
+
   async authenticate (origin: string) {
     const isLocked = await this.sharedStateView.isLocked()
 
@@ -68,26 +72,15 @@ export default class AuthController extends AbstractController {
 
   private async doChallengeResponse (origin: string): Promise<string> {
     const addresses = await this.sharedStateView.getAccounts()
-    const res = await requestJson<NonceResponse>(this.authUrl('challenge'), {
-      method: 'POST',
-      mode: 'cors'
-    })
+    const res = await postJson<NonceResponse>(this.authUrl('challenge'))
     const nonce = res.nonce
     const signature = await this.signNonce(origin, nonce)
 
-    const responseRes = await requestJson<{ token: string }>(this.authUrl('response'), {
-      method: 'POST',
-      mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      credentials: 'include',
-      body: JSON.stringify({
-        signature,
-        origin,
-        nonce,
-        address: addresses[0]
-      })
+    const responseRes = await postJson<{ token: string }>(this.authUrl('response'), {
+      signature,
+      origin,
+      nonce,
+      address: addresses[0]
     })
 
     return responseRes.token

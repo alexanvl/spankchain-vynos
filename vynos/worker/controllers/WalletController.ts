@@ -10,9 +10,13 @@ import {WorkerState} from '../WorkerState'
 export default class WalletController extends AbstractController {
   private store: Store<WorkerState>
 
-  constructor (web3: any, store: Store<WorkerState>, sharedStateView: SharedStateView, logger: Logger) {
+  constructor (web3: any, store: Store<WorkerState>, logger: Logger) {
     super(logger)
     this.store = store
+  }
+
+  async start (): Promise<void> {
+    // noop
   }
 
   public async setUsername (username: string) {

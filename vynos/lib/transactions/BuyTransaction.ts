@@ -4,9 +4,8 @@ import BN = require('bn.js')
 import * as semaphore from 'semaphore'
 import { Meta, ChannelType, PaymentObject, IConnext, VirtualChannel} from '../connext/ConnextTypes'
 import * as actions from '../../worker/actions'
-import { AtomicTransaction, TransactionInterface } from './AtomicTransaction'
+import { AtomicTransaction } from './AtomicTransaction'
 import { WorkerState, ChannelState,CurrencyType } from '../../worker/WorkerState'
-import LockStateObserver from '../LockStateObserver'
 import {closeAllVCs} from '../connext/closeAllVCs'
 import {TEN_FINNEY} from '../constants'
 import takeSem from '../takeSem'
@@ -25,7 +24,7 @@ import Logger from '../Logger'
  * Author: William Cory -- GitHub: roninjin10
  */
 
-export default class BuyTransaction implements TransactionInterface {
+export default class BuyTransaction {
   static DEFAULT_DEPOSIT = new Currency(CurrencyType.WEI, TEN_FINNEY.toString(10))
 
   private doBuyTransaction: AtomicTransaction<VynosBuyResponse, [Currency, Meta]>
@@ -33,7 +32,7 @@ export default class BuyTransaction implements TransactionInterface {
   private store: Store<WorkerState>
   private sem: semaphore.Semaphore
 
-  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore) {
+  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, sem: semaphore.Semaphore) {
     this.store = store
     this.connext = connext
     this.sem = sem
@@ -45,11 +44,6 @@ export default class BuyTransaction implements TransactionInterface {
       this.updateStore,
     ]
     this.doBuyTransaction = new AtomicTransaction<VynosBuyResponse, [Currency, Meta]>(this.store, logger, 'buy', methodOrder)
-
-    lockStateObserver.addUnlockHandler(this.restartTransaction)
-    if (!lockStateObserver.isLocked()) {
-      this.restartTransaction()
-    }
   }
 
   public startTransaction = (priceWEI: Currency, meta: Meta): Promise<VynosBuyResponse> => this.doBuyTransaction.start(priceWEI, meta)

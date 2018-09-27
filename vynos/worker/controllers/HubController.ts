@@ -6,7 +6,6 @@ import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import AbstractController from './AbstractController'
 import {FetchHistoryRequest} from '../../lib/rpc/yns'
 import requestJson from '../../frame/lib/request'
-import {LifecycleAware} from './LifecycleAware'
 import debug from '../../lib/debug'
 import Logger from '../../lib/Logger'
 import {BasePoller} from '../../lib/poller/BasePoller'
@@ -34,7 +33,7 @@ const LOG = debug('HubController')
 
 const FIFTEEN_MINUTES = 15 * 60 * 1000
 
-export default class HubController extends AbstractController implements LifecycleAware {
+export default class HubController extends AbstractController {
   private store: Store<WorkerState>
   private sharedStateView: SharedStateView
   private poller: BasePoller
@@ -58,13 +57,11 @@ export default class HubController extends AbstractController implements Lifecyc
   public stop = async (): Promise<void> => {
     this.poller.stop()
   }
+
   public fetchHistory = async (): Promise<HistoryItem[]> => {
     const hubUrl = await this.sharedStateView.getHubUrl()
     const address = (await this.sharedStateView.getAccounts())[0]
-    const history = await requestJson<HistoryItem[]>(`${hubUrl}/accounts/${address}/payments`, {
-      credentials: 'include'
-    })
-
+    const history = await requestJson<HistoryItem[]>(`${hubUrl}/accounts/${address}/payments`)
     this.store.dispatch(actions.setHistory(history))
     return history
   }
@@ -74,9 +71,7 @@ export default class HubController extends AbstractController implements Lifecyc
 
     let res
     try {
-      res = await requestJson<ExchangeRateResponse>(`${hubUrl}/exchangeRate/`, {
-        credentials: 'include'
-      })
+      res = await requestJson<ExchangeRateResponse>(`${hubUrl}/exchangeRate/`)
     } catch (e) {
       LOG('Failed to fetch exchange rate:', e)
       return

@@ -11,7 +11,6 @@ import {
   Balances,
 } from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
-import Currency, {ICurrency} from '../lib/currency/Currency'
 import currencyAsJSON from '../lib/currency/currencyAsJSON'
 
 const actionCreator = actionCreatorFactory('worker')
@@ -288,7 +287,7 @@ export function setaddressBalancesHandler(state: WorkerState, balances: Balances
         tokenBalance: currencyAsJSON(balances.tokenBalance),
       }
     }
-  } 
+  }
 }
 
 export const setPendingTransaction: ActionCreator<PendingTransaction|null> = actionCreator<PendingTransaction|null>('runtime/setPendingTransaction')
@@ -340,3 +339,13 @@ export function setUsernameHandler(state: WorkerState, username: string): Worker
   }
 }
 
+export const setIsMigrating: ActionCreator<boolean> = actionCreator<boolean>('runtime/setIsMigrating')
+export function setIsMigratingHandler(state: WorkerState, isMigrating: boolean): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      isMigrating,
+    }
+  }
+}
