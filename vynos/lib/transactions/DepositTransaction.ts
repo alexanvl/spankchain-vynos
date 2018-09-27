@@ -12,7 +12,7 @@ import BN = require('bn.js')
 import {IConnext, Deposit} from '../connext/ConnextTypes'
 import Web3 = require('web3')
 import getAddress from '../getAddress'
-import Logger from '../Logger' 
+import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
 
 const tokenABI = require('human-standard-token-abi')
@@ -74,7 +74,7 @@ export default class DepositTransaction implements TransactionInterface {
       this.restartTransaction()
     }
   }
-  
+
   public startTransaction = async (deposit: DepositArgs): Promise<void> => {
     try {
       this.awaiter = this.deposit.start(deposit)
@@ -149,17 +149,17 @@ export default class DepositTransaction implements TransactionInterface {
         tokenDeposit: undefined,
       }
     }
-    
+
     await this.bootyContract
       .methods
       .approve(
-        process.env.BOOTY_CONTRACT_ADDRESS, 
-        new BN(depositObj.tokenDeposit)
+        process.env.BOOTY_CONTRACT_ADDRESS as string,
+        depositObj.tokenDeposit
       )
       .send({from: getAddress(this.store)})
       .catch(console.error.bind(console))
 
-    
+
     return depositObj
   }
 
@@ -171,10 +171,10 @@ export default class DepositTransaction implements TransactionInterface {
 
     const startBal = channels[0].ethBalanceA
     await this.connext.deposit({
-      ethDeposit: new BN(depositObj.ethDeposit), 
-      tokenDeposit: depositObj.tokenDeposit === undefined 
+      ethDeposit: new BN(depositObj.ethDeposit),
+      tokenDeposit: depositObj.tokenDeposit === undefined
         ? undefined
-        : new BN(depositObj.tokenDeposit) 
+        : new BN(depositObj.tokenDeposit)
     }, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
 
     return [startBal]
@@ -264,8 +264,8 @@ export default class DepositTransaction implements TransactionInterface {
       throw e
     }
     return [
-      amount, 
-      ledgerId, 
+      amount,
+      ledgerId,
       needsCollateral,
     ]
   }
