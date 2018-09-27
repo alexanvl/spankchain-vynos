@@ -42,7 +42,7 @@ export default class AddressBalanceController extends AbstractController {
     this.poller = new BasePoller(logger)
     this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
 
-    this.poller = new LockablePoller(logger, lso)
+    this.poller = new BasePoller(logger)
   }
 
   public start = async () => {
