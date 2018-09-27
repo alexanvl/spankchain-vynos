@@ -202,7 +202,7 @@ export const INITIAL_STATE: WorkerState = {
     exchangeRates: null,
     username: null,
     baseCurrency: null,
-    featureFlags: {bootySupport: true},
+    featureFlags: {bootySupport: false},
   }
 }
 
