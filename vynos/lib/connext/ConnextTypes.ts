@@ -4,8 +4,8 @@ export interface VirtualChannel {
   state: number
   ethBalanceA: string
   ethBalanceB: string
-  tokenBalanceA: string 
-  tokenBalanceB: string 
+  tokenBalanceA: string
+  tokenBalanceB: string
   channelId: string
   partyA: string
   partyB: string
@@ -25,6 +25,7 @@ export enum ChannelType {
   LEDGER = 'LEDGER',
   VIRTUAL = 'VIRTUAL',
   WITHDRAWAL = 'WITHDRAWAL',
+  EXCHANGE = 'EXCHANGE',
 }
 
 export interface LedgerChannel {
@@ -33,13 +34,13 @@ export interface LedgerChannel {
   partyI: string
   ethBalanceA: string
   ethBalanceI: string
-  state: string 
-  tokenBalanceA: string 
+  state: string
+  tokenBalanceA: string
   tokenBalanceI: string
-  nonce: number 
-  openVcs: number 
-  vcRootHash: string 
-  openTimeout: any 
+  nonce: number
+  openVcs: number
+  vcRootHash: string
+  openTimeout: any
   updateTimeout: any
 }
 
@@ -73,15 +74,31 @@ export interface PaymentObject {
   }
 }
 
+export interface ExchangeMeta {
+  exchangeRate: string
+}
+
+export interface ExchangeObject {
+  type: ChannelType.EXCHANGE
+  payment: {
+    channelId: string
+    balanceA: BalanceType
+    balanceB: BalanceType
+  }
+  meta: ExchangeMeta
+}
+
 export interface Deposit {
   ethDeposit: BN;
   tokenDeposit?: BN | null;
 }
 
+export type UpdateBalanceArgs = [ExchangeObject] | PaymentObject[]
+
 export interface IConnext {
   openChannel: (initialDeposits: Deposit, tokenAddresss?: string, sender?: string, challenge?: string) => Promise<string>
 
-  updateBalances: (update: PaymentObject[], sender?: string) => any
+  updateBalances: (update: UpdateBalanceArgs, sender?: string) => any
 
   openThread: (thread: {to: string, deposit: {ethDeposit: BN, tokenDeposit?: BN}}, sender?: string) => string
 

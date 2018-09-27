@@ -4,7 +4,7 @@ import Currency, { ICurrency } from "../currency/Currency";
 import CurrencyConvertable from "../currency/CurrencyConvertable";
 import { AtomicTransaction } from "./AtomicTransaction";
 import Logger from "../Logger";
-import { IConnext, LedgerChannel } from "../connext/ConnextTypes";
+import { IConnext, LedgerChannel, ChannelType } from "../connext/ConnextTypes";
 import withRetries from "../withRetries";
 import * as BigNumber from 'bignumber.js'
 
@@ -21,12 +21,12 @@ import * as BigNumber from 'bignumber.js'
 // proposed change to workerState.persistent (temporary)
 // blownLoads: {remainingLoad: ICurrency, totalLoadsBlown: number}
 
-function swapTransactionv0 (
+function exchangeTransactionv0 (
   store: Store<WorkerState>,
   logger: Logger,
   connext: IConnext,
 ) {
-  const getConnextArgs = () => {}
+  const getBalances = () => {}
   const getExpectedDeposit = (lc: LedgerChannel) => {}
   const hubDidUpdate = (newLc: LedgerChannel, oldLc: LedgerChannel, expectedDeposit: ICurrency) => {
     // or are we expecting the hub to returned the already updated nonce+1 update?
@@ -35,21 +35,38 @@ function swapTransactionv0 (
     return expectedTotal.amountBigNumber.eq(newLc.tokenBalanceI)
   }
 
-  async function makeOneNonceLaterSwap(sellAmount: ICurrency, buyAmount: ICurrency) {
+  async function makeOneNonceLaterSwap(sellAmount: ICurrency, buyAmount: ICurrency, exchangeRate: BigNumber.BigNumber) {
     const lc = await connext.getChannelByPartyA()
 
     if (!lc) {
       throw new Error('cannot make swap without ledger channels')
     }
     const expectedDeposit = getExpectedDeposit(lc)
-    const connextArgs = getConnextArgs()
 
-    await (connext as any).methodThatMakesOneNonceLaterSwap(connextArgs)
+    const {balanceAETH, balanceABOOTY, balanceBETH, balanceBBOOTY} = this.getBalances(lc, expectedDeposit)
+
+    await connext.updateBalances([
+      {
+        type: ChannelType.EXCHANGE,
+        payment: {
+          channelId: lc.channelId,
+          balanceA: {
+            ethDeposit: balanceAETH.amountBN,
+            tokenDeposit: balanceABOOTY.amountBN,
+          },
+          balanceB: {
+            ethDeposit: balanceBETH.amountBN,
+            tokenDeposit: balanceBBOOTY.amountBN,
+          }
+        },
+        meta: {exchangeRate: exchangeRate.toString(10)}
+      },
+    ], /*partyAAddress (don't think I'll need this)*/)
 
     return [sellAmount, buyAmount, expectedDeposit, lc]
   }
 
-  async function waitForHubDeposit(sellAmount: ICurrency, buyAmount: ICurrency, expectedDeposit: ICurrency, oldLc: LedgerChannel) {
+  async function waitForHubDeposit(expectedDeposit: ICurrency, oldLc: LedgerChannel) {
     await withRetries(async () => {
       const newLc = await connext.getChannelByPartyA()
       if (!hubDidUpdate(newLc, oldLc, expectedDeposit)) {
@@ -66,9 +83,9 @@ function swapTransactionv0 (
   )
 }
 
-export default class Swap {
+export default class Exchange {
   private store: Store<WorkerState>
-  private swapTransaction: AtomicTransaction<void, [ICurrency, ICurrency]> = doSwapTransaction
+  private exchangeTransaction: AtomicTransaction<void, [ICurrency, ICurrency]>
   private connext: IConnext
 
   constructor (
@@ -78,16 +95,16 @@ export default class Swap {
   ) {
     this.store = store
     this.connext = connext
-    this.swapTransaction = swapTransactionv0(store, logger, connext)
+    this.exchangeTransaction = exchangeTransactionv0(store, logger, connext)
   }
 
   public swap = async () => {
     const sellAmount = await this.getSellAmount()
     const buyAmount = this.getBuyAmount(sellAmount, CurrencyType.BOOTY)
-    await this.swapTransaction.start(sellAmount, buyAmount)
+    await this.exchangeTransaction.start(sellAmount, buyAmount)
   }
 
-  public restartSwap = () => this.swapTransaction.restart()
+  public restartSwap = () => this.exchangeTransaction.restart()
 
   private getSellAmount = async (): Promise<CurrencyConvertable> => {
     // logic for blown loads and such goes here
