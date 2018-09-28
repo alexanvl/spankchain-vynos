@@ -20,6 +20,7 @@ export default class Currency implements ICurrency {
     [CurrencyType.WEI]: 'WEI',
     [CurrencyType.FINNEY]: 'FIN',
     [CurrencyType.BOOTY]: 'BOO',
+    [CurrencyType.BEI]: 'BEI',
   }
 
   static ETH = (amount: BN|BigNumber.BigNumber|string|number) => new Currency(CurrencyType.ETH, amount)
@@ -28,6 +29,7 @@ export default class Currency implements ICurrency {
   static FIN = (amount: BN|BigNumber.BigNumber|string|number) => new Currency(CurrencyType.FINNEY, amount)
   // static SPANK = (amount: BN|BigNumber.BigNumber|string|number): Currency => new Currency(CurrencyType.SPANK, amount)
   static BOOTY = (amount: BN|BigNumber.BigNumber|string|number) => new Currency(CurrencyType.BOOTY, amount)
+  static BEI = (amount: BN|BigNumber.BigNumber|string|number) => new Currency(CurrencyType.BEI, amount)
 
   static _defaultOptions = {
     [CurrencyType.USD]: {
@@ -51,6 +53,11 @@ export default class Currency implements ICurrency {
       showTrailingZeros: false,
     } as CurrencyFormatOptions,
     [CurrencyType.BOOTY]: {
+      decimals: 0,
+      withSymbol: true,
+      showTrailingZeros: false,
+    } as CurrencyFormatOptions,
+    [CurrencyType.BEI]: {
       decimals: 0,
       withSymbol: true,
       showTrailingZeros: false,

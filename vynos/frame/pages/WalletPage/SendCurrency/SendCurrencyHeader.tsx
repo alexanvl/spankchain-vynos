@@ -2,7 +2,7 @@ import * as React from 'react'
 
 const baseStyle = require('../styles.css')
 
-export const SendCurrencyHeader = ({bootySupport}:any) => (
+export const SendCurrencyHeader = ({bootySupport}: {bootySupport: boolean|undefined}) => null /* (
   <React.Fragment>
     <div className={baseStyle.header}>Send Ether</div>
     {bootySupport && <div className={baseStyle.description}>
@@ -13,4 +13,4 @@ export const SendCurrencyHeader = ({bootySupport}:any) => (
       <br />
     </div>}
   </React.Fragment>
-)
+) */

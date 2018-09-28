@@ -3,7 +3,7 @@ import * as semaphore from 'semaphore'
 import takeSem from '../takeSem'
 import * as actions from '../../worker/actions'
 import {AtomicTransaction} from './AtomicTransaction'
-import {WorkerState} from '../../worker/WorkerState'
+import {WorkerState, CurrencyType, ExchangeRates} from '../../worker/WorkerState'
 import withRetries from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
@@ -13,6 +13,7 @@ import Web3 = require('web3')
 import getAddress from '../getAddress'
 import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
+import CurrencyConvertable from '../currency/CurrencyConvertable';
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -99,7 +100,6 @@ export default class DepositTransaction {
 
   public isInProgress = (): boolean => this.deposit.isInProgress() || this.depositExistingChannel.isInProgress()
 
-
   public depositIntoExistingChannel = async (deposit: DepositArgs): Promise<void> => {
     try {
       await this.depositExistingChannel.start(deposit)
@@ -126,11 +126,12 @@ export default class DepositTransaction {
         return
       }
 
-      const amountBn = new BN(chan.ethBalanceA)
+      const amountBOOTY = new CurrencyConvertable(CurrencyType.BOOTY, chan.ethBalanceA, () => this.store.getState().runtime.exchangeRates!)
+
       await this.connext.requestHubDeposit({
         channelId: chan.channelId,
         deposit: {
-          ethDeposit: amountBn
+          ethDeposit: amountBOOTY.toBEI().amountBN
         }
       })
     })
@@ -157,6 +158,8 @@ export default class DepositTransaction {
     this.onRestart,
   )
 
+  private exchangeRates: () => ExchangeRates = CurrencyConvertable.getExchangeRatesWorker(this.store)
+
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
     if (!depositObj.tokenDeposit || new BN(depositObj.tokenDeposit).eq(new BN(0))) {
       return {
@@ -165,11 +168,13 @@ export default class DepositTransaction {
       }
     }
 
+    const bootyDeposit = new CurrencyConvertable(CurrencyType.BOOTY, depositObj.tokenDeposit, this.exchangeRates)
+
     await this.bootyContract
       .methods
       .approve(
         process.env.CONTRACT_ADDRESS!,
-        depositObj.tokenDeposit
+        bootyDeposit.toBEI().amount
       )
       .send({
         from: getAddress(this.store), 
@@ -270,14 +275,15 @@ export default class DepositTransaction {
     }
 
     const ethDeposit = new BN(depositArgs.ethDeposit)
-    const tokenDeposit = new BN(depositArgs.tokenDeposit || 0)
+    
+    const tokenDeposit = new CurrencyConvertable(CurrencyType.BOOTY, depositArgs.tokenDeposit || 0, this.exchangeRates)
 
     try {
       await this.connext.requestHubDeposit({
         channelId: ledgerId,
         deposit: {
           ethDeposit,
-          tokenDeposit,
+          tokenDeposit: tokenDeposit.amountBN,
         }
       })
     } catch(e) {

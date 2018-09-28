@@ -24,7 +24,7 @@ export interface StateProps extends BrandingState {
   activeWithdrawalError: string | null
   isPendingVerification: boolean | undefined
   hasActiveDeposit: boolean
-  exchangeRates: ExchangeRates | null
+  exchangeRates: ExchangeRates
   isFrameDisplayed: boolean
   baseCurrency: CurrencyType
 }
@@ -174,7 +174,7 @@ function mapStateToProps(state: FrameState): StateProps {
     workerProxy: state.temp.workerProxy,
     isPendingVerification: state.shared.isPendingVerification,
     hasActiveDeposit: state.shared.hasActiveDeposit,
-    exchangeRates: state.shared.exchangeRates,
+    exchangeRates: state.shared.exchangeRates!,
     isFrameDisplayed: state.shared.isFrameDisplayed,
     baseCurrency: state.shared.baseCurrency,
   }

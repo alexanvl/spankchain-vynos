@@ -12,7 +12,7 @@ const s = require('./style.css')
 
 export interface StateProps {
   workerProxy: WorkerProxy
-  exchangeRates: ExchangeRates|null
+  exchangeRates: ExchangeRates
 }
 
 export interface CurrencyProps extends StateProps {
@@ -110,7 +110,7 @@ const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName
 function mapStateToProps (state: FrameState, ownProps: any): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
-    exchangeRates: state.shared.exchangeRates || null,
+    exchangeRates: state.shared.exchangeRates!,
   }
 }
 

@@ -11,7 +11,7 @@ export interface BalanceTooltipProps {
   inputType: CurrencyType
   reserveBalance: BN
   reserveBalanceType: CurrencyType
-  exchangeRates: ExchangeRates | null
+  exchangeRates: ExchangeRates 
   hasActiveDeposit?: boolean
   currencyType: CurrencyType
 }

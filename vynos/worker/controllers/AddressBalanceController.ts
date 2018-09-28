@@ -12,6 +12,8 @@ import getAddress from '../../lib/getAddress'
 import {BasePoller} from '../../lib/poller/BasePoller'
 import {Poller} from '../../lib/poller/Poller'
 import {HumanStandardToken} from '../../lib/HumanStandardToken'
+import CurrencyConvertable from '../../lib/currency/CurrencyConvertable';
+import { CurrencyType } from '../../frame/components/Currency';
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -39,9 +41,6 @@ export default class AddressBalanceController extends AbstractController {
     this.mpc = mpc
 
     this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
-    this.poller = new BasePoller(logger)
-    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
-
     this.poller = new BasePoller(logger)
   }
 
@@ -138,7 +137,12 @@ export default class AddressBalanceController extends AbstractController {
          .balanceOf(address)
          .call({from: address})
 
-      return  Currency.BOOTY(amount)
+      const balanceBEI = new CurrencyConvertable(CurrencyType.BEI, amount, () => this.store.getState().runtime.exchangeRates!)
+   
+      const balanceBooty = balanceBEI.toBOOTY()
+  
+      return  balanceBooty
+
     } catch(e){
       console.error('unable to get ERC20 balance', {address, e})
       return Currency.BOOTY(0)

@@ -2,23 +2,23 @@ import BigNumber from 'bignumber.js'
 import {WorkerState, ExchangeRates, CurrencyType} from '../../worker/WorkerState'
 import Currency from './Currency'
 import {Store} from 'redux'
+import BN = require('bn.js')
 
 export type AllConversions = {[key in CurrencyType]: CurrencyConvertable}
 
 export default class CurrencyConvertable extends Currency {
-  static getExchangeRatesWorker = (store: Store<WorkerState, any>) => () => store.getState().runtime.exchangeRates
+  static getExchangeRatesWorker = (store: Store<WorkerState>) => () => store.getState().runtime.exchangeRates!
 
-  protected getExchangeRates: () => ExchangeRates
+  protected exchangeRates: () => ExchangeRates
 
-  constructor(type: CurrencyType, amount: BigNumber.BigNumber|string|number, exchangeRates: ExchangeRates|(() => ExchangeRates|null)) {
+  constructor(type: CurrencyType, amount: BN|BigNumber.BigNumber|string|number, exchangeRates: () => ExchangeRates) {
     super(type, amount)
-
-    this.getExchangeRates = (): ExchangeRates => {
-      const rates = typeof exchangeRates === 'function' ? exchangeRates() : exchangeRates
-      if (!rates) {
-        throw new Error('no exchange rates are set')
+    this.exchangeRates = () => {
+      const er = exchangeRates()
+      if (!er) {
+        throw new Error('exchange rates not set!')
       }
-      return rates
+      return er
     }
   }
 
@@ -31,11 +31,12 @@ export default class CurrencyConvertable extends Currency {
   public toETH = (): CurrencyConvertable => this._convert(CurrencyType.ETH)
   public toWEI = (): CurrencyConvertable => this._convert(CurrencyType.WEI)
   public toFIN = (): CurrencyConvertable => this._convert(CurrencyType.FINNEY)
-  // public toSPANK: (): Currency => this._convert(this, 'SPANK')
-  // public toBOOTY: (): Currency => this._convert(this, 'BOOTY')
+  // public toSPANK = (): CurrencyConvertable => this._convert(CurrencyType.SPANK)
+  public toBOOTY = (): CurrencyConvertable => this._convert(CurrencyType.BOOTY)
+  public toBEI = (): CurrencyConvertable => this._convert(CurrencyType.BEI)
 
   private _convert = (toType: CurrencyType): CurrencyConvertable => {
-    const rates: ExchangeRates = this.getExchangeRates()
+    const rates: ExchangeRates = this.exchangeRates()
 
     const weiPerFromType = rates[this.type]
     const weiPerToType = rates[toType]
@@ -46,7 +47,7 @@ export default class CurrencyConvertable extends Currency {
     return new CurrencyConvertable(
       toType, 
       amountInToType, 
-      this.getExchangeRates
+      this.exchangeRates
     )
   }
 }

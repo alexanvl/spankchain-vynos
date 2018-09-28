@@ -251,7 +251,6 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
     return (
       <div className={s.container}>
         <div className={si.subpageWrapper}>
-          <SendCurrencyHeader bootySupport={featureFlags.bootySupport}/>
           <SendCurrencyInputs
             address={address}
             addressError={addressError}
@@ -287,8 +286,8 @@ function mapStateToProps(state: FrameState): MapStateToProps {
   return {
     workerProxy: state.temp.workerProxy,
     walletAddress: state.shared.address,
-    cardBalance: new CurrencyConvertable(CurrencyType.WEI, cardBalance(state.shared).toString(10), () => state.shared.exchangeRates),
-    currencyConvertable: (type: CurrencyType, amount: string | number | BigNumber.BigNumber) => new CurrencyConvertable(type, amount, () => state.shared.exchangeRates),
+    cardBalance: new CurrencyConvertable(CurrencyType.WEI, cardBalance(state.shared).toString(10), () => state.shared.exchangeRates!),
+    currencyConvertable: (type: CurrencyType, amount: string | number | BigNumber.BigNumber) => new CurrencyConvertable(type, amount, () => state.shared.exchangeRates!),
     pendingTransaction: state.shared.pendingTransaction,
     featureFlags: state.shared.featureFlags,
   }
