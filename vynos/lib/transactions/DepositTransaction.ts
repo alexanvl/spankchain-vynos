@@ -68,6 +68,9 @@ export default class DepositTransaction {
   }
 
   public startTransaction = async ({ethDeposit, tokenDeposit}: DepositArgs): Promise<void> => {
+    if (this.awaiter) {
+      throw new Error('A deposit is already in process')
+    }
     try {
       this.awaiter = this.deposit.start({ethDeposit: currencyAsJSON(ethDeposit), tokenDeposit: tokenDeposit && currencyAsJSON(tokenDeposit)})
       await this.awaiter

@@ -68,7 +68,7 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
 
 
   public restart = async (): Promise<T1|null> => {
-    if (!this.isInProgress()) {
+    if (this.isInProgress()) {
       return null
     }
     await this.onRestart()
