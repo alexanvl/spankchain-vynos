@@ -172,7 +172,10 @@ export default class DepositTransaction {
         process.env.BOOTY_CONTRACT_ADDRESS!,
         depositObj.tokenDeposit
       )
-      .send({from: getAddress(this.store)})
+      .send({
+        from: getAddress(this.store), 
+        gas: 750000,
+      })
       .catch(console.error.bind(console))
 
 
