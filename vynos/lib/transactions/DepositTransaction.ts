@@ -136,6 +136,10 @@ export default class DepositTransaction {
     })
   }
 
+
+  public changeDepositTransactionName = (name: string) => this.deposit.name = name
+  public changeDepositExistingTransactionName = (name: string) => this.depositExistingChannel.name = name
+
   private needsCollateral = () => this.store.getState().runtime.needsCollateral
 
   private makeDepositExistingChannelTransaction = () => new AtomicTransaction<void, [DepositArgs]>(
