@@ -126,12 +126,12 @@ export default class DepositTransaction {
         return
       }
 
-      const amountBOOTY = new CurrencyConvertable(CurrencyType.BOOTY, chan.ethBalanceA, () => this.store.getState().runtime.exchangeRates!)
+      const amountBOOTY = new CurrencyConvertable(CurrencyType.BOOTY, chan.ethBalanceA, this.exchangeRates)
 
       await this.connext.requestHubDeposit({
         channelId: chan.channelId,
         deposit: {
-          ethDeposit: amountBOOTY.toBEI().amountBN
+          ethDeposit: amountBOOTY.to(CurrencyType.BEI).amountBN
         }
       })
     })

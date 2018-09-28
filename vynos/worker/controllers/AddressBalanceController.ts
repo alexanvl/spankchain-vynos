@@ -139,7 +139,7 @@ export default class AddressBalanceController extends AbstractController {
 
       const balanceBEI = new CurrencyConvertable(CurrencyType.BEI, amount, () => this.store.getState().runtime.exchangeRates!)
    
-      const balanceBooty = balanceBEI.toBOOTY()
+      const balanceBooty = balanceBEI.to(CurrencyType.BOOTY)
   
       return  balanceBooty
 
