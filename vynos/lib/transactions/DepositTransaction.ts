@@ -169,15 +169,13 @@ export default class DepositTransaction {
     await this.bootyContract
       .methods
       .approve(
-        process.env.BOOTY_CONTRACT_ADDRESS!,
+        process.env.CONTRACT_ADDRESS!,
         depositObj.tokenDeposit
       )
       .send({
         from: getAddress(this.store), 
         gas: 750000,
       })
-      .catch(console.error.bind(console))
-
 
     return depositObj
   }
@@ -224,6 +222,7 @@ export default class DepositTransaction {
 
     let ledgerId: string
     try {
+      console.log('calling openChannel', {depositObj, bootyAddress: process.env.BOOTY_CONTRACT_ADDRESS, ethDeposit: depositObj.ethDeposit.toString(10), tokenDeposit: depositObj.tokenDeposit!.toString(10)})
       ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
     } catch(e) {
       console.error('connext.openChannel failed', e)
