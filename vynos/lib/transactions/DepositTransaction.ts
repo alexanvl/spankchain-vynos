@@ -158,7 +158,6 @@ export default class DepositTransaction {
   )
 
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
-    console.log('maybeErc20Approve..')
     if (!depositObj.tokenDeposit || new BN(depositObj.tokenDeposit).eq(new BN(0))) {
       return {
         ...depositObj,
@@ -181,7 +180,6 @@ export default class DepositTransaction {
   }
 
   private doDepositExisting = async (depositObj: DepositArgs): Promise<[string]> => {
-    console.log('doDepositExisting...')
     const channels = await getCurrentLedgerChannels(this.connext, this.store)
     if (!channels) {
       throw new Error('Expected to find ledger channels.')
@@ -199,7 +197,6 @@ export default class DepositTransaction {
   }
 
   private onStart = async () => {
-    console.log('onStart...')
     this.store.dispatch(actions.setHasActiveDeposit(true))
     this.deferredPopulate = await this.chanPopulator.populateDeferred()
   }
@@ -222,7 +219,6 @@ export default class DepositTransaction {
 
     let ledgerId: string
     try {
-      console.log('calling openChannel', {depositObj, bootyAddress: process.env.BOOTY_CONTRACT_ADDRESS, ethDeposit: depositObj.ethDeposit.toString(10), tokenDeposit: depositObj.tokenDeposit!.toString(10)})
       ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
     } catch(e) {
       console.error('connext.openChannel failed', e)

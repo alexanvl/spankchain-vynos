@@ -132,13 +132,12 @@ export default class AddressBalanceController extends AbstractController {
     )
 
   private getTokenBalance = async (address: string): Promise<Currency> => {
-    console.log('getting token balance')
     try {
       const amount = await this.bootyContract
          .methods
          .balanceOf(address)
          .call({from: address})
-      console.log('tokenBalance amount', amount)
+
       return  Currency.BOOTY(amount)
     } catch(e){
       console.error('unable to get ERC20 balance', {address, e})
