@@ -8,6 +8,7 @@ import {
   AtomicTransactionState,
   INITIAL_STATE,
   FeatureFlags,
+  CurrencyType,
   Balances,
 } from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
@@ -40,11 +41,27 @@ export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): 
 
 export const setFeatureFlags: ActionCreator<FeatureFlags> = actionCreator<FeatureFlags>('runtime/setFeatureFlags')
 export function setFeatureFlagsHandler(state: WorkerState, featureFlags: FeatureFlags): WorkerState {
-  return { ...state,
+  const withFeatureFlags = { ...state,
     runtime: {
       ...state.runtime,
       featureFlags,
       //...state.runtime, // uncomment this to let wallet's feature flags take presedence over hub's feature flag's (useful for local debugging)
+    }
+  }
+  const baseCurrency = featureFlags && featureFlags.bootySupport
+    ? CurrencyType.BOOTY
+    : CurrencyType.FINNEY // change this back to BOOTY to make baseCurrency always booty when developing
+
+  const withBaseCurrencyAndFeatureFlags = setBaseCurrencyHandler(withFeatureFlags, baseCurrency)
+
+  return withBaseCurrencyAndFeatureFlags
+}
+
+export const setBaseCurrency: ActionCreator<CurrencyType> = actionCreator<CurrencyType>('runtime/setBaseCurrency')
+export function setBaseCurrencyHandler(state: WorkerState, baseCurrency: CurrencyType): WorkerState {
+  return { ...state,
+    runtime: { ...state.runtime,
+      baseCurrency,
     }
   }
 }
@@ -63,6 +80,15 @@ export function setIsPendingVerificationHandler(state: WorkerState, isPendingVer
   return { ...state,
     runtime: {...state.runtime,
       isPendingVerification,
+    }
+  }
+}
+
+export const setNeedsCollateral: ActionCreator<boolean> = actionCreator<boolean>('runtime/setNeedsCollateral')
+export function setNeedsCollateralHandler(state: WorkerState, needsCollateral: boolean): WorkerState {
+  return { ...state,
+    runtime: {...state.runtime,
+      needsCollateral,
     }
   }
 }

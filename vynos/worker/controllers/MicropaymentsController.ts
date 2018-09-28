@@ -4,20 +4,16 @@ import {WorkerState, CurrencyType} from '../WorkerState'
 import {Store} from 'redux'
 import * as semaphore from 'semaphore'
 import AbstractController from './AbstractController'
-import * as actions from '../actions'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import {
   BuyRequest,
   DepositRequest,
-  SetIsPendingVerificationRequest,
-  SetNeedsCollateralRequest
 } from '../../lib/rpc/yns'
 import Logger from '../../lib/Logger'
 import takeSem from '../../lib/takeSem'
 import DepositTransaction, { DepositArgs } from '../../lib/transactions/DepositTransaction'
 import BuyTransaction from '../../lib/transactions/BuyTransaction'
 import getCurrentLedgerChannels from '../../lib/connext/getCurrentLedgerChannels'
-import LockStateObserver from '../../lib/LockStateObserver'
 import ChannelPopulator from '../../lib/ChannelPopulator'
 import Currency from '../../lib/currency/Currency'
 import {IConnext} from '../../lib/connext/ConnextTypes'
@@ -44,6 +40,7 @@ export default class MicropaymentsController extends AbstractController {
   }
 
   async start (): Promise<void> {
+    await this.depositTransaction.maybeCollateralize()
     await this.depositTransaction.restartTransaction()
     await this.buyTransaction.restartTransaction()
   }
@@ -66,19 +63,11 @@ export default class MicropaymentsController extends AbstractController {
     })
   }
 
-  private async setNeedsCollateral (needsCollateral: boolean): Promise<void> {
-    this.depositTransaction.setNeedsCollateral(needsCollateral)
-  }
 
-  private setIsPendingVerification (isPendingVerification: boolean): void {
-    actions.setIsPendingVerification(isPendingVerification)
-  }
 
   public registerHandlers (server: JsonRpcServer) {
     this.registerHandler(server, DepositRequest.method, this.deposit)
     this.registerHandler(server, BuyRequest.method, this.buy)
-    this.registerHandler(server, SetNeedsCollateralRequest.method, this.setNeedsCollateral)
-    this.registerHandler(server, SetIsPendingVerificationRequest.method, this.setIsPendingVerification)
   }
 
   private async doDeposit (deposit: DepositArgs): Promise<void> {

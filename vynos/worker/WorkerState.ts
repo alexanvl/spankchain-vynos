@@ -12,7 +12,8 @@ export interface RuntimeState {
   authorizationRequest: AuthorizationRequestState | null
   isFrameDisplayed: boolean
   isPerformer?: boolean
-  isPendingVerification?: boolean
+  isPendingVerification: boolean
+  needsCollateral: boolean
   forceRedirect?: string
   branding: BrandingState
   channel: ChannelState
@@ -41,7 +42,7 @@ export interface Balances {
 
 export interface ChannelState {
   ledgerId: string
-  balances: Balances 
+  balances: Balances
   currentVCs: VirtualChannel[]
   lc: LedgerChannel
 }
@@ -74,7 +75,8 @@ export interface HistoryItem {
   }
   createdAt: number
   type: PurchaseMetaType
-  price: string
+  priceWei: string
+  priceToken: string
   receiver: string
 }
 
@@ -100,7 +102,8 @@ export interface SharedState {
   isFrameDisplayed: boolean
   forceRedirect?: string
   isPerformer?: boolean
-  isPendingVerification?: boolean
+  isPendingVerification: boolean
+  needsCollateral: boolean
   branding: BrandingState
   channel: ChannelState
   history: HistoryItem[]
@@ -111,7 +114,7 @@ export interface SharedState {
   hasActiveDeposit: boolean
   username: string | null
   activeWithdrawalError: string|null
-  baseCurrency: any
+  baseCurrency: CurrencyType
   exchangeRates: ExchangeRates|null
   featureFlags: FeatureFlags
   moreEthNeeded: boolean
@@ -160,6 +163,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   isFrameDisplayed: false,
   isPerformer: false,
   isPendingVerification: false,
+  needsCollateral: false,
   branding: {
     address: ''
   },
@@ -195,11 +199,11 @@ export const INITIAL_SHARED_STATE: SharedState = {
   history: [],
   addressBalances: {
     ethBalance: {
-      type: CurrencyType.ETH, 
+      type: CurrencyType.ETH,
       amount: '0'
-    }, 
+    },
     tokenBalance: {
-      type: CurrencyType.BOOTY, 
+      type: CurrencyType.BOOTY,
       amount: '0'
     }
   },
@@ -210,7 +214,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   hasActiveDeposit: false,
   exchangeRates: null,
   username: null,
-  baseCurrency: null,
+  baseCurrency: CurrencyType.FINNEY,
   featureFlags: {},
   moreEthNeeded: false,
 }
@@ -237,6 +241,7 @@ export const GET_INITIAL_STATE = (): WorkerState => ({
     isFrameDisplayed: false,
     isPerformer: false,
     isPendingVerification: false,
+    needsCollateral: false,
     forceRedirect: undefined,
     branding: {
       address: ''
@@ -273,11 +278,11 @@ export const GET_INITIAL_STATE = (): WorkerState => ({
     history: [],
     addressBalances: {
       ethBalance: {
-        type: CurrencyType.ETH, 
+        type: CurrencyType.ETH,
         amount: '0'
-      }, 
+      },
       tokenBalance: {
-        type: CurrencyType.BOOTY, 
+        type: CurrencyType.BOOTY,
         amount: '0'
       }
     },
@@ -309,6 +314,7 @@ export function buildSharedState (state: WorkerState): SharedState {
     isFrameDisplayed: state.runtime.isFrameDisplayed,
     forceRedirect: state.runtime.forceRedirect,
     isPerformer: state.runtime.isPerformer,
+    needsCollateral: state.runtime.needsCollateral,
     isPendingVerification: state.runtime.isPendingVerification,
     branding: state.runtime.branding,
     channel: state.runtime.channel,

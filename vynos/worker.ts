@@ -16,7 +16,7 @@ import {ResetRequest, StatusRequest} from './lib/rpc/yns'
 import WorkerServer from './lib/rpc/WorkerServer'
 import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
-import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags} from './worker/WorkerState'
+import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags, CurrencyType} from './worker/WorkerState'
 import {ErrResCallback} from './lib/messaging/JsonRpcServer'
 import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
@@ -33,7 +33,6 @@ import VirtualChannelsController from './worker/controllers/VirtualChannelsContr
 import LockStateObserver from './lib/LockStateObserver'
 import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import debug from './lib/debug'
-import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
 import localForage = require('localforage')
 import ClientProvider from './lib/web3/ClientProvider'
 import Web3 = require('web3')
@@ -127,7 +126,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       storage: localForage
     }
 
-    const reduxMiddleware = process.env.NODE_ENV === 'development' && process.env.DEBUG
+    const reduxMiddleware = process.env.NODE_ENV === 'development'
       ? redux.applyMiddleware(createLogger())
       : undefined
 
@@ -168,8 +167,12 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const lockStateObserver = new LockStateObserver(store)
     lockStateObserver.addUnlockHandler(async () => {
       try {
+        const featureFlags = await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`)
+
         store.dispatch(actions.setFeatureFlags(
-          await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`)
+          process.env.NODE_ENV === 'development'
+            ? {bootySupport: true}
+            : featureFlags
         ))
       } catch(e) {
         console.error('unable to get feature flags', e)

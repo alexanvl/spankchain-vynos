@@ -148,18 +148,24 @@
   display: inline-block;
 }
 
-.walletActivityAmount .activityFinneySign {
+.walletActivityAmount.activityBootySign .activityFinneySign {
   color: transparent;
   margin: 2px;
   height: 14px;
   background-size: contain;
 }
 
-.walletActivitySignNegative .activityFinneySign {
+.activityBootySignNegative {
+}
+
+.activityBootySignPositive {
+}
+
+.activityFinneySignNegative {
   background-image: url('../../../styles/images/fin-duo-pink.svg');
 }
 
-.walletActivitySignPositive .activityFinneySign {
+.activityFinneySignPositive {
   background-image: url('../../../styles/images/fin-duo-green.svg');
 }
 

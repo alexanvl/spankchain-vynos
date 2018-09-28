@@ -10,6 +10,7 @@ import RevealPrivateKey from './RevealPrivateKey'
 import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import BN = require('bn.js')
+import { FeatureFlags } from '../../../worker/WorkerState';
 
 const s = require('./styles.css')
 const st = require('./index.css')
@@ -18,7 +19,8 @@ export interface WalletPageStateProps {
   workerProxy: WorkerProxy
   address: string | null
   cardBalance: BN
-  location?: any
+  location?: string
+  featureFlags: FeatureFlags|null
 }
 
 export interface WalletPageState {
@@ -58,7 +60,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 
   renderSubPage() {
-    const { address } = this.props
+    const { address, featureFlags } = this.props
 
     return (
       <Switch>
@@ -135,12 +137,8 @@ function mapStateToProps(state: FrameState): WalletPageStateProps {
   return {
     workerProxy: workerProxy,
     address: state.shared.address,
-<<<<<<< HEAD
-    walletBalance: new BN(state.shared.balance),
-    cardBalance: new BN(state.shared.channel ? state.shared.channel.balanceEth : 0),
-=======
+    featureFlags: state.shared.featureFlags,
     cardBalance: new BN(channel.balances.ethBalance.amount),
->>>>>>> origin/develop
   }
 }
 

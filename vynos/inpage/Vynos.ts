@@ -236,6 +236,12 @@ export default class Vynos extends EventEmitter {
     }
   }
 
+  private async requireUnlock() {
+    if (!this.client || !(await this.client.getSharedState()).isLocked) {
+      throw new Error('Wallet is not unlocked yet')
+    }
+  }
+
   private domReady (): Promise<any> {
     return new Promise((resolve) => {
       const state = document.readyState
