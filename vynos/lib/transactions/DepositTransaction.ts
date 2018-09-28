@@ -14,6 +14,8 @@ import getAddress from '../getAddress'
 import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
 import CurrencyConvertable from '../currency/CurrencyConvertable';
+import Currency, { ICurrency } from '../currency/Currency';
+import currencyAsJSON from '../currency/currencyAsJSON';
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -27,8 +29,8 @@ const tokenABI = require('human-standard-token-abi')
  */
 
 export interface DepositArgs {
-  ethDeposit: string,
-  tokenDeposit?: string,
+  ethDeposit: ICurrency,
+  tokenDeposit?: ICurrency,
 }
 
 export default class DepositTransaction {
@@ -66,9 +68,9 @@ export default class DepositTransaction {
     this.depositExistingChannel = this.makeDepositExistingChannelTransaction()
   }
 
-  public startTransaction = async (deposit: DepositArgs): Promise<void> => {
+  public startTransaction = async ({ethDeposit, tokenDeposit}: DepositArgs): Promise<void> => {
     try {
-      this.awaiter = this.deposit.start(deposit)
+      this.awaiter = this.awaiter || this.deposit.start({ethDeposit: currencyAsJSON(ethDeposit), tokenDeposit: tokenDeposit && currencyAsJSON(tokenDeposit)})
       await this.awaiter
     } catch (e) {
       this.releaseDeferred()
@@ -158,23 +160,23 @@ export default class DepositTransaction {
     this.onRestart,
   )
 
-  private exchangeRates: () => ExchangeRates = CurrencyConvertable.getExchangeRatesWorker(this.store)
+  private exchangeRates = () => this.store.getState().runtime.exchangeRates!
 
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
-    if (!depositObj.tokenDeposit || new BN(depositObj.tokenDeposit).eq(new BN(0))) {
+    const tokenDeposit = depositObj.tokenDeposit
+    console.log({tokenDeposit})
+    if (!tokenDeposit || new BN(tokenDeposit.amount).eq(new BN(0))) {
       return {
         ...depositObj,
         tokenDeposit: undefined,
       }
     }
-
-    const bootyDeposit = new CurrencyConvertable(CurrencyType.BOOTY, depositObj.tokenDeposit, this.exchangeRates)
-
+    console.log('token amount', tokenDeposit.amount)
     await this.bootyContract
       .methods
       .approve(
         process.env.CONTRACT_ADDRESS!,
-        bootyDeposit.toBEI().amount
+        tokenDeposit.amount
       )
       .send({
         from: getAddress(this.store), 
@@ -184,7 +186,7 @@ export default class DepositTransaction {
     return depositObj
   }
 
-  private doDepositExisting = async (depositObj: DepositArgs): Promise<[string]> => {
+  private doDepositExisting = async ({tokenDeposit, ethDeposit}: DepositArgs): Promise<[string]> => {
     const channels = await getCurrentLedgerChannels(this.connext, this.store)
     if (!channels) {
       throw new Error('Expected to find ledger channels.')
@@ -192,10 +194,10 @@ export default class DepositTransaction {
 
     const startBal = channels[0].ethBalanceA
     await this.connext.deposit({
-      ethDeposit: new BN(depositObj.ethDeposit),
-      tokenDeposit: depositObj.tokenDeposit === undefined
+      ethDeposit: new BN(ethDeposit.amount),
+      tokenDeposit: tokenDeposit === undefined
         ? undefined
-        : new BN(depositObj.tokenDeposit)
+        : new BN(tokenDeposit.amount)
     }, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
 
     return [startBal]
@@ -213,25 +215,26 @@ export default class DepositTransaction {
     this.deferredPopulate = null
   }
 
-  private openChannel = async (depositArgs: DepositArgs): Promise<[DepositArgs, string, boolean]> => {
-    const ethDeposit = new BN(depositArgs.ethDeposit)
-    const tokenDeposit = new BN(depositArgs.tokenDeposit || 0)
-
-    const depositObj: Deposit = {
-      ethDeposit,
-      tokenDeposit,
+  private openChannel = async ({ethDeposit, tokenDeposit}: DepositArgs): Promise<[DepositArgs, string, boolean]> => {
+    if (!tokenDeposit || new BN(tokenDeposit.amount).eq(new BN(0))) {
+      throw new Error('cannot open a channel without a token Deposit')
     }
 
+    const depositObj: Deposit = {
+      ethDeposit: new BN(ethDeposit.amount),
+      tokenDeposit: tokenDeposit && new BN(tokenDeposit.amount),
+    }
+console.log('calling openChannel', depositObj)
     let ledgerId: string
     try {
       ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
     } catch(e) {
-      console.error('connext.openChannel failed', e)
+      console.error('connext.openChannel failed', {e, eth: ethDeposit.amount, tokens: tokenDeposit && tokenDeposit.amount})
       throw e
     }
 
     return [
-      depositArgs,
+      {tokenDeposit, ethDeposit},
       ledgerId,
       this.needsCollateral(),
     ]
@@ -260,30 +263,27 @@ export default class DepositTransaction {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
       if (!res || new BN(res[0].ethBalanceA).lte(bigStartAmount)) {
+        console.info('Chainsaw has not caught up yet.')
         throw new Error('Chainsaw has not caught up yet.')
       }
     }, 48)
   }
 
-  private maybeRequestDeposit = async (depositArgs: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
+  private maybeRequestDeposit = async ({ethDeposit, tokenDeposit}: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
     if (!this.needsCollateral()) {
       return [
-        depositArgs,
+        {ethDeposit, tokenDeposit},
         ledgerId,
         needsCollateral,
       ]
     }
 
-    const ethDeposit = new BN(depositArgs.ethDeposit)
-    
-    const tokenDeposit = new CurrencyConvertable(CurrencyType.BOOTY, depositArgs.tokenDeposit || 0, this.exchangeRates)
-
     try {
       await this.connext.requestHubDeposit({
         channelId: ledgerId,
         deposit: {
-          ethDeposit,
-          tokenDeposit: tokenDeposit.amountBN,
+          ethDeposit: new BN(ethDeposit.amount),
+          tokenDeposit: tokenDeposit && new BN(tokenDeposit.amount),
         }
       })
     } catch(e) {
@@ -291,7 +291,7 @@ export default class DepositTransaction {
       throw e
     }
     return [
-      depositArgs,
+      {ethDeposit, tokenDeposit},
       ledgerId,
       needsCollateral,
     ]

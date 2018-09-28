@@ -66,6 +66,7 @@ export default class Currency implements ICurrency {
 
   private _type: CurrencyType
   private _amount: BigNumber.BigNumber
+  private _amountBN?: BN
   
   constructor(_type: CurrencyType, _amount: BigNumber.BigNumber|string|number|BN) {
     this._type = _type
@@ -75,6 +76,7 @@ export default class Currency implements ICurrency {
         this._amount = _amount
       } else if (_amount instanceof BN) {
         this._amount = new BigNumber(_amount.toString(10))
+        this._amountBN = _amount
       } else { // string or number
         this._amount = new BigNumber(_amount)
       }
@@ -99,7 +101,7 @@ export default class Currency implements ICurrency {
   }
 
   get amount(): string {
-    return this._amount.toString(10)
+    return this._amountBN ? this._amountBN.toString(10) : this._amount.toString(10)
   }
 
   get amountBigNumber(): BigNumber.BigNumber {
@@ -107,7 +109,7 @@ export default class Currency implements ICurrency {
   }
 
   get amountBN(): BN {
-    return new BN(this._amount.round(0).toString(10))
+    return this._amountBN || new BN(this._amount.round(0).toString(10))
   }
 
   public getDecimalString = (decimals: number) => this.format({

@@ -3,6 +3,7 @@ import {WorkerState, ExchangeRates, CurrencyType} from '../../worker/WorkerState
 import Currency from './Currency'
 import {Store} from 'redux'
 import BN = require('bn.js')
+import { BEI_PER_BOOTY } from '../constants';
 
 export type AllConversions = {[key in CurrencyType]: CurrencyConvertable}
 
@@ -36,6 +37,22 @@ export default class CurrencyConvertable extends Currency {
   public toBEI = (): CurrencyConvertable => this._convert(CurrencyType.BEI)
 
   private _convert = (toType: CurrencyType): CurrencyConvertable => {
+    if (this.type === CurrencyType.BEI && toType === CurrencyType.BOOTY) {
+      return new CurrencyConvertable(
+        toType,
+        this.amountBigNumber.div(BEI_PER_BOOTY),
+        this.exchangeRates,
+      )
+    }
+
+    if (this.type === CurrencyType.BOOTY && toType === CurrencyType.BEI) {
+      return new CurrencyConvertable(
+        toType,
+        this.amountBigNumber.mul(BEI_PER_BOOTY),
+        this.exchangeRates,
+      )
+    }
+
     const rates: ExchangeRates = this.exchangeRates()
 
     const weiPerFromType = rates[this.type]

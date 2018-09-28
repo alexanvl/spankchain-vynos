@@ -82,7 +82,7 @@ export default class HubController extends AbstractController {
       .toString(10)
 
     const BEI_RATE: string = new BigNumber(USD_RATE)
-      .div(constants.BEI_PER_BOOTY.toString(10))
+      .div(constants.BEI_PER_BOOTY)
       .toString(10)
 
     this.store.dispatch(actions.setExchangeRates({
