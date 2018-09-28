@@ -13,8 +13,7 @@ import Web3 = require('web3')
 import getAddress from '../getAddress'
 import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
-import CurrencyConvertable from '../currency/CurrencyConvertable';
-import Currency, { ICurrency } from '../currency/Currency';
+import { ICurrency } from '../currency/Currency';
 import currencyAsJSON from '../currency/currencyAsJSON';
 
 const tokenABI = require('human-standard-token-abi')
