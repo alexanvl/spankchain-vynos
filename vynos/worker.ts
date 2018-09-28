@@ -33,7 +33,6 @@ import VirtualChannelsController from './worker/controllers/VirtualChannelsContr
 import LockStateObserver from './lib/LockStateObserver'
 import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import debug from './lib/debug'
-import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
 import localForage = require('localforage')
 import ClientProvider from './lib/web3/ClientProvider'
 import Web3 = require('web3')
@@ -127,7 +126,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       storage: localForage
     }
 
-    const reduxMiddleware = process.env.NODE_ENV === 'development' && process.env.DEBUG
+    const reduxMiddleware = process.env.NODE_ENV === 'development'
       ? redux.applyMiddleware(createLogger())
       : undefined
 

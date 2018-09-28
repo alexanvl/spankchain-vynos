@@ -12,7 +12,8 @@ export interface RuntimeState {
   authorizationRequest: AuthorizationRequestState | null
   isFrameDisplayed: boolean
   isPerformer?: boolean
-  isPendingVerification?: boolean
+  isPendingVerification: boolean
+  needsCollateral: boolean
   forceRedirect?: string
   branding: BrandingState
   channel: ChannelState
@@ -100,7 +101,8 @@ export interface SharedState {
   isFrameDisplayed: boolean
   forceRedirect?: string
   isPerformer?: boolean
-  isPendingVerification?: boolean
+  isPendingVerification: boolean
+  needsCollateral: boolean
   branding: BrandingState
   channel: ChannelState
   history: HistoryItem[]
@@ -160,6 +162,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   isFrameDisplayed: false,
   isPerformer: false,
   isPendingVerification: false,
+  needsCollateral: false,
   branding: {
     address: ''
   },
@@ -237,6 +240,7 @@ export const INITIAL_STATE: WorkerState = {
     isFrameDisplayed: false,
     isPerformer: false,
     isPendingVerification: false,
+    needsCollateral: false,
     forceRedirect: undefined,
     branding: {
       address: ''
@@ -307,6 +311,7 @@ export function buildSharedState (state: WorkerState): SharedState {
     isFrameDisplayed: state.runtime.isFrameDisplayed,
     forceRedirect: state.runtime.forceRedirect,
     isPerformer: state.runtime.isPerformer,
+    needsCollateral: state.runtime.needsCollateral,
     isPendingVerification: state.runtime.isPendingVerification,
     branding: state.runtime.branding,
     channel: state.runtime.channel,

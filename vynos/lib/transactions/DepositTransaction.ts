@@ -35,7 +35,6 @@ export default class DepositTransaction {
   private depositExistingChannel: AtomicTransaction<void, [DepositArgs]>
   private connext: IConnext
   private store: Store<WorkerState>
-  private needsCollateral: boolean = false
   private sem: semaphore.Semaphore
   private chanPopulator: ChannelPopulator
   private deferredPopulate: DeferredPopulator | null
@@ -100,10 +99,6 @@ export default class DepositTransaction {
 
   public isInProgress = (): boolean => this.deposit.isInProgress() || this.depositExistingChannel.isInProgress()
 
-  public setNeedsCollateral = (needsCollateral: boolean): void => {
-    this.needsCollateral = needsCollateral
-    this.maybeCollateralize().catch(console.error.bind(console))
-  }
 
   public depositIntoExistingChannel = async (deposit: DepositArgs): Promise<void> => {
     try {
@@ -114,159 +109,8 @@ export default class DepositTransaction {
     }
   }
 
-  private makeDepositExistingChannelTransaction = () => new AtomicTransaction<void, [DepositArgs]>(
-    this.store,
-    this.logger,
-    'deposit:existingChannel',
-    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.finishTransaction],
-    this.afterAll,
-    this.onStart,
-    this.onRestart
-  )
-
-  private makeDepositTransaction = () => new AtomicTransaction<void, [DepositArgs]>(
-    this.store,
-    this.logger,
-    'deposit',
-    [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.maybeRequestDeposit, this.finishTransaction],
-    this.afterAll,
-    this.onRestart,
-  )
-
-  private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
-    if (!depositObj.tokenDeposit || new BN(depositObj.tokenDeposit).eq(new BN(0))) {
-      return {
-        ...depositObj,
-        tokenDeposit: undefined,
-      }
-    }
-
-    await this.bootyContract
-      .methods
-      .approve(
-        process.env.BOOTY_CONTRACT_ADDRESS!,
-        depositObj.tokenDeposit
-      )
-      .send({from: getAddress(this.store)})
-      .catch(console.error.bind(console))
-
-
-    return depositObj
-  }
-
-  private doDepositExisting = async (depositObj: DepositArgs): Promise<[string]> => {
-    const channels = await getCurrentLedgerChannels(this.connext, this.store)
-    if (!channels) {
-      throw new Error('Expected to find ledger channels.')
-    }
-
-    const startBal = channels[0].ethBalanceA
-    await this.connext.deposit({
-      ethDeposit: new BN(depositObj.ethDeposit),
-      tokenDeposit: depositObj.tokenDeposit === undefined
-        ? undefined
-        : new BN(depositObj.tokenDeposit)
-    }, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
-
-    return [startBal]
-  }
-
-  private onStart = async () => {
-    this.store.dispatch(actions.setHasActiveDeposit(true))
-    this.deferredPopulate = await this.chanPopulator.populateDeferred()
-  }
-
-  private onRestart = this.onStart
-
-  private afterAll = (): void => {
-    this.store.dispatch(actions.setHasActiveDeposit(false))
-    this.deferredPopulate = null
-  }
-
-  private openChannel = async (amount: string): Promise<[string, string, boolean]> => {
-    const amountBn = new BN(amount)
-    const depositObj: Deposit = {
-      ethDeposit: amountBn,
-      tokenDeposit: null
-    }
-
-    let ledgerId: string
-    try {
-      ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
-    } catch(e) {
-      console.error('connext.openChannel failed', e)
-      throw e
-    }
-
-    return [
-      amount,
-      ledgerId,
-      this.needsCollateral,
-    ]
-  }
-
-  private awaitChainsaw = async (amount: string, ledgerId: string, needsCollateral: boolean): Promise<[string, string, boolean]> => {
-    await withRetries(async () => {
-      const res = await getCurrentLedgerChannels(this.connext, this.store)
-
-      if (!res) {
-        throw new Error('Chainsaw has not caught up yet.')
-      }
-    }, 48)
-
-    return [
-      amount,
-      ledgerId,
-      needsCollateral,
-    ]
-  }
-
-  private awaitChainsawBalanceChange = async (startAmount: string): Promise<void> => {
-    const bigStartAmount = new BN(startAmount)
-
-    await withRetries(async () => {
-      const res = await getCurrentLedgerChannels(this.connext, this.store)
-
-      if (!res || new BN(res[0].ethBalanceA).lte(bigStartAmount)) {
-        throw new Error('Chainsaw has not caught up yet.')
-      }
-    }, 48)
-  }
-
-  private maybeRequestDeposit = async (amount: string, ledgerId: string, needsCollateral: boolean): Promise<[string, string, boolean]> => {
-    if (!this.needsCollateral) {
-      return [
-        amount,
-        ledgerId,
-        needsCollateral,
-      ]
-    }
-
-    const amountBn = new BN(amount)
-    try {
-      await this.connext.requestHubDeposit({
-        channelId: ledgerId,
-        deposit: {
-          ethDeposit: amountBn
-        }
-      })
-    } catch(e) {
-      console.error('connext.requestHubDeposit failed', e)
-      throw e
-    }
-    return [
-      amount,
-      ledgerId,
-      needsCollateral,
-    ]
-  }
-
-  private finishTransaction = async (): Promise<void> => {
-    await this.deferredPopulate!.populate()
-  }
-
-  private maybeCollateralize = async (): Promise<void> => {
-    if (!this.needsCollateral) {
+  public maybeCollateralize = async (): Promise<void> => {
+    if (!this.needsCollateral()) {
       return
     }
 
@@ -292,10 +136,165 @@ export default class DepositTransaction {
     })
   }
 
-  private onUnlock = (): void => {
-    this.deposit.restart()
-      .then(this.maybeCollateralize)
-      .catch((e) => console.error(e))
+  private needsCollateral = () => this.store.getState().runtime.needsCollateral
+
+  private makeDepositExistingChannelTransaction = () => new AtomicTransaction<void, [DepositArgs]>(
+    this.store,
+    this.logger,
+    'deposit:existingChannel',
+    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.finishTransaction],
+    this.afterAll,
+    this.onStart,
+    this.onRestart
+  )
+
+  private makeDepositTransaction = () => new AtomicTransaction<void, [DepositArgs]>(
+    this.store,
+    this.logger,
+    'deposit',
+    [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.maybeRequestDeposit, this.finishTransaction],
+    this.afterAll,
+    this.onRestart,
+  )
+
+  private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
+    console.log('maybeErc20Approve..')
+    if (!depositObj.tokenDeposit || new BN(depositObj.tokenDeposit).eq(new BN(0))) {
+      return {
+        ...depositObj,
+        tokenDeposit: undefined,
+      }
+    }
+
+    await this.bootyContract
+      .methods
+      .approve(
+        process.env.BOOTY_CONTRACT_ADDRESS!,
+        depositObj.tokenDeposit
+      )
+      .send({from: getAddress(this.store)})
+      .catch(console.error.bind(console))
+
+
+    return depositObj
+  }
+
+  private doDepositExisting = async (depositObj: DepositArgs): Promise<[string]> => {
+    console.log('doDepositExisting...')
+    const channels = await getCurrentLedgerChannels(this.connext, this.store)
+    if (!channels) {
+      throw new Error('Expected to find ledger channels.')
+    }
+
+    const startBal = channels[0].ethBalanceA
+    await this.connext.deposit({
+      ethDeposit: new BN(depositObj.ethDeposit),
+      tokenDeposit: depositObj.tokenDeposit === undefined
+        ? undefined
+        : new BN(depositObj.tokenDeposit)
+    }, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
+
+    return [startBal]
+  }
+
+  private onStart = async () => {
+    console.log('onStart...')
+    this.store.dispatch(actions.setHasActiveDeposit(true))
+    this.deferredPopulate = await this.chanPopulator.populateDeferred()
+  }
+
+  private onRestart = this.onStart
+
+  private afterAll = (): void => {
+    this.store.dispatch(actions.setHasActiveDeposit(false))
+    this.deferredPopulate = null
+  }
+
+  private openChannel = async (depositArgs: DepositArgs): Promise<[DepositArgs, string, boolean]> => {
+    const ethDeposit = new BN(depositArgs.ethDeposit)
+    const tokenDeposit = new BN(depositArgs.tokenDeposit || 0)
+
+    const depositObj: Deposit = {
+      ethDeposit,
+      tokenDeposit,
+    }
+
+    let ledgerId: string
+    try {
+      ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
+    } catch(e) {
+      console.error('connext.openChannel failed', e)
+      throw e
+    }
+
+    return [
+      depositArgs,
+      ledgerId,
+      this.needsCollateral(),
+    ]
+  }
+
+  private awaitChainsaw = async (depositArgs: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
+    await withRetries(async () => {
+      const res = await getCurrentLedgerChannels(this.connext, this.store)
+
+      if (!res) {
+        throw new Error('Chainsaw has not caught up yet.')
+      }
+    }, 48)
+
+    return [
+      depositArgs,
+      ledgerId,
+      needsCollateral,
+    ]
+  }
+
+  private awaitChainsawBalanceChange = async (startAmount: string): Promise<void> => {
+    const bigStartAmount = new BN(startAmount)
+
+    await withRetries(async () => {
+      const res = await getCurrentLedgerChannels(this.connext, this.store)
+
+      if (!res || new BN(res[0].ethBalanceA).lte(bigStartAmount)) {
+        throw new Error('Chainsaw has not caught up yet.')
+      }
+    }, 48)
+  }
+
+  private maybeRequestDeposit = async (depositArgs: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
+    if (!this.needsCollateral()) {
+      return [
+        depositArgs,
+        ledgerId,
+        needsCollateral,
+      ]
+    }
+
+    const ethDeposit = new BN(depositArgs.ethDeposit)
+    const tokenDeposit = new BN(depositArgs.tokenDeposit || 0)
+
+    try {
+      await this.connext.requestHubDeposit({
+        channelId: ledgerId,
+        deposit: {
+          ethDeposit,
+          tokenDeposit,
+        }
+      })
+    } catch(e) {
+      console.error('connext.requestHubDeposit failed', e)
+      throw e
+    }
+    return [
+      depositArgs,
+      ledgerId,
+      needsCollateral,
+    ]
+  }
+
+  private finishTransaction = async (): Promise<void> => {
+    await this.deferredPopulate!.populate()
   }
 
   private releaseDeferred () {

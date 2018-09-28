@@ -84,6 +84,15 @@ export function setIsPendingVerificationHandler(state: WorkerState, isPendingVer
   }
 }
 
+export const setNeedsCollateral: ActionCreator<boolean> = actionCreator<boolean>('runtime/setNeedsCollateral')
+export function setNeedsCollateralHandler(state: WorkerState, needsCollateral: boolean): WorkerState {
+  return { ...state,
+    runtime: {...state.runtime,
+      needsCollateral,
+    }
+  }
+}
+
 // Persistent
 export const setKeyring: ActionCreator<string> = actionCreator<string>('persistent/setKeyring')
 export function setKeyringHandler(state: WorkerState, keyring: string): WorkerState {
