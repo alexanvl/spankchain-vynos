@@ -95,13 +95,17 @@ export default class AddressBalanceController extends AbstractController {
       return
     }
 
-    const ethDeposit = Currency.WEI(
+    let ethDeposit = Currency.WEI(
       ethBalance
         .amountBN
         .sub(RESERVE_BALANCE)
         .sub(OPEN_CHANNEL_COST)
         .toString(10)
     )
+
+    if (ethDeposit.amountBigNumber.lt(0)) {
+      ethDeposit = Currency.WEI(0)
+    }
 
     await this.mpc.deposit({
       ethDeposit: ethDeposit.amount,
