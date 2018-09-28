@@ -164,14 +164,13 @@ export default class DepositTransaction {
 
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
     const tokenDeposit = depositObj.tokenDeposit
-    console.log({tokenDeposit})
     if (!tokenDeposit || new BN(tokenDeposit.amount).eq(new BN(0))) {
       return {
         ...depositObj,
         tokenDeposit: undefined,
       }
     }
-    console.log('token amount', tokenDeposit.amount)
+
     await this.bootyContract
       .methods
       .approve(
@@ -224,7 +223,6 @@ export default class DepositTransaction {
       ethDeposit: new BN(ethDeposit.amount),
       tokenDeposit: tokenDeposit && new BN(tokenDeposit.amount),
     }
-console.log('calling openChannel', depositObj)
     let ledgerId: string
     try {
       ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
@@ -263,7 +261,6 @@ console.log('calling openChannel', depositObj)
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
       if (!res || new BN(res[0].ethBalanceA).lte(bigStartAmount)) {
-        console.info('Chainsaw has not caught up yet.')
         throw new Error('Chainsaw has not caught up yet.')
       }
     }, 48)
