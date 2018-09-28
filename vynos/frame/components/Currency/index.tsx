@@ -5,7 +5,6 @@ import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
 import CurrencyIcon from '../CurrencyIcon/index'
 import {ExchangeRates, CurrencyType} from '../../../worker/WorkerState'
-export {CurrencyType} // refactoring so this type is only defined once
 import BN = require('bn.js')
 import CurrencyConvertable from '../../../lib/currency/CurrencyConvertable'
 

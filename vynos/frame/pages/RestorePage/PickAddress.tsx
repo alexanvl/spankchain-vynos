@@ -2,8 +2,9 @@ import * as React from 'react'
 import TextBox from '../../components/TextBox/index'
 import Button from '../../components/Button/index'
 import RestorationCandidate from '../../../lib/RestorationCandidate'
-import Currency, {CurrencyType} from '../../components/Currency'
+import Currency from '../../components/Currency'
 import * as classnames from 'classnames';
+import { CurrencyType } from '../../../worker/WorkerState';
 
 const style = require('../../styles/ynos.css')
 const finneyInverse = require('../../components/CurrencyIcon/style.css').inverse

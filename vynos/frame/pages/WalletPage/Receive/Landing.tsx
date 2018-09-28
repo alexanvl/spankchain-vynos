@@ -2,8 +2,9 @@ import * as React from "react"
 import BN = require('bn.js')
 import { connect } from 'react-redux'
 import Button from "../../../components/Button"
-import Currency, { CurrencyType } from '../../../components/Currency'
+import Currency from '../../../components/Currency'
 import { Link } from 'react-router-dom'
+import { CurrencyType } from "../../../../worker/WorkerState";
 
 const s = require('./receive.css')
 const vs = require('../../../styles/ynos.css')

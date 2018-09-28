@@ -5,8 +5,8 @@ import * as classnames from 'classnames'
 import { Link } from 'react-router-dom'
 import Input from "../../../components/Input"
 import Button from "../../../components/Button"
-import Currency, { CurrencyType } from '../../../components/Currency'
-import { FeatureFlags } from "../../../../worker/WorkerState";
+import Currency from '../../../components/Currency'
+import { CurrencyType } from "../../../../worker/WorkerState";
 
 const s = require('./receive.css')
 const baseStyle = require('../styles.css')
