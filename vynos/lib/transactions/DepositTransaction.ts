@@ -70,7 +70,7 @@ export default class DepositTransaction {
 
   public startTransaction = async ({ethDeposit, tokenDeposit}: DepositArgs): Promise<void> => {
     try {
-      this.awaiter = this.awaiter || this.deposit.start({ethDeposit: currencyAsJSON(ethDeposit), tokenDeposit: tokenDeposit && currencyAsJSON(tokenDeposit)})
+      this.awaiter = this.deposit.start({ethDeposit: currencyAsJSON(ethDeposit), tokenDeposit: tokenDeposit && currencyAsJSON(tokenDeposit)})
       await this.awaiter
     } catch (e) {
       this.releaseDeferred()
@@ -128,12 +128,11 @@ export default class DepositTransaction {
         return
       }
 
-      const amountBOOTY = new CurrencyConvertable(CurrencyType.BOOTY, chan.ethBalanceA, this.exchangeRates)
-
       await this.connext.requestHubDeposit({
         channelId: chan.channelId,
         deposit: {
-          ethDeposit: amountBOOTY.to(CurrencyType.BEI).amountBN
+          ethDeposit: new BN(chan.ethBalanceA),
+          tokenDeposit: new BN(chan.tokenBalanceA),
         }
       })
     })

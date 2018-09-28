@@ -1,7 +1,7 @@
 import { Store } from 'redux'
 import { WorkerState } from '../../worker/WorkerState'
-import LedgerChannel from './LedgerChannel'
 import getAddress from '../getAddress'
+import {LedgerChannel} from './ConnextTypes'
 
 export default async function getCurrentLedgerChannels (connext: any, store: Store<WorkerState>, state?: string): Promise<LedgerChannel[] | null> {
   let lcs
