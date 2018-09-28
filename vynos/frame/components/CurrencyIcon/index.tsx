@@ -1,35 +1,30 @@
 import * as React from 'react'
 import { connect } from 'react-redux'
 import * as classnames from 'classnames'
-import { CurrencyType } from '../Currency';
+import { FrameState } from '../../redux/FrameState'
+import { CurrencyType } from '../../../worker/WorkerState';
 
 const s = require('./style.css')
-
-export enum CurrencyIconType {
-  FINNEY = 'FIN',
-  USD = 'USD',
-  ETH = 'ETH',
-  UNKNOWN = '?',
-}
 
 export interface Props {
   className?: string
   reverse?: boolean
   alt?: boolean
   currency?: CurrencyType
-  baseCurrency?: CurrencyType
+  baseCurrency: CurrencyType
   color?: string
   big?: boolean
   spaceAround?: boolean
+  showPlainText?: boolean
 }
 
 export class CurrencyIcon extends React.Component<Props, any> {
   render() {
-    let { baseCurrency, currency, big, spaceAround, color, alt, reverse, className  } = this.props
+    let {baseCurrency, currency, big, spaceAround, color, alt, reverse, className, showPlainText} = this.props
 
-    currency = currency || baseCurrency
+    const c = currency || baseCurrency
 
-    const c = currency === CurrencyType.FINNEY ? CurrencyIconType.FINNEY : CurrencyIconType.UNKNOWN
+    const isUnknownCurrency = c && !(c in CurrencyType)
 
     return (
       <div
@@ -40,15 +35,21 @@ export class CurrencyIcon extends React.Component<Props, any> {
           [s.inverse]: reverse,
           [s.pink]: color === "#ff3b81",
           [s.alt]: alt,
-          [s.finney]: c === CurrencyIconType.FINNEY,
-          [s.unknown]: c === CurrencyIconType.UNKNOWN,
+          [s.pink]: color === 'pink',
+          [s.green]: color === 'green',
+          [s.finney]: c === CurrencyType.FINNEY,
+          [s.boo]: c === CurrencyType.BOOTY,
+          [s.usd]: c === CurrencyType.USD,
+          [s.unknown]: isUnknownCurrency,
         })}
-      >{c == CurrencyIconType.UNKNOWN && currency}</div>
+      >
+        {isUnknownCurrency || showPlainText ? currency : null}
+      </div>
     )
   }
 }
 
-function mapStateToProps(state: any): any {
+function mapStateToProps(state: FrameState)  {
   return {
     baseCurrency: state.shared.baseCurrency
   }

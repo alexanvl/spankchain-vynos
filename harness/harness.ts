@@ -11,7 +11,7 @@ window.addEventListener('load', function () {
 
   let vynos = new Vynos({
     scriptElement: document.getElementById('vynos-script') as HTMLScriptElement,
-    window: _window
+    window: _window,
   })
 
   vynos.setMetricLogFunc((m) => console.log(`Logged metric: ${m[0].name}`, m))
@@ -98,6 +98,40 @@ window.addEventListener('load', function () {
   const lockButton = document.getElementById('lock')
   if (lockButton) {
     lockButton.onclick = () => vynos.lock()
+  }
+
+  const hideChannels = document.getElementById('hide-channels')
+  if (hideChannels) {
+    hideChannels.onclick = () => {
+      document.getElementById('channels')!.innerText = ''
+    }
+  }
+
+  const hideState = document.getElementById('hide-state')
+  if (hideState) {
+    hideState.onclick = () => {
+      document.getElementById('shared-state')!.innerText = ''
+    }
+  }
+
+  const refreshChannelsButton = document.getElementById('refresh-channels')
+  if (refreshChannelsButton) {
+    refreshChannelsButton.onclick = () => 
+      vynos
+        .getBalance()
+        .then((balance: any) => 
+          document.getElementById('channels')!.innerText = JSON.stringify(balance, null, 2)
+        )
+  }
+
+  const showEntireSharedState = document.getElementById('refresh-shared-state')
+  if (showEntireSharedState) {
+    showEntireSharedState.onclick = () => 
+      vynos
+        .getSharedState()
+        .then((state: any) => 
+          document.getElementById('shared-state')!.innerText = JSON.stringify(state, null, 2)
+        )
   }
 
   const performerMode = document.getElementById('performer-mode') as HTMLInputElement

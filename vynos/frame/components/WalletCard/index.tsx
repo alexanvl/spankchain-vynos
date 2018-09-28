@@ -1,17 +1,19 @@
 import * as React from 'react'
 import * as classnames from 'classnames'
-import Currency, { CurrencyType } from '../Currency/index'
-import CurrencyIcon, { CurrencyIconType } from '../CurrencyIcon'
+import Currency from '../Currency/index'
+import CurrencyIcon from '../CurrencyIcon'
 import { FrameState } from '../../redux/FrameState'
 import { connect } from 'react-redux'
 import BN = require('bn.js')
-import LoadingSpinner from '../LoadingSpinner';
+import LoadingSpinner from '../LoadingSpinner'
 import Tooltip from '../Tooltip'
+import { CurrencyType } from '../../../worker/WorkerState';
 
 const s = require('./style.css')
 
 export interface StateProps {
   name?: string
+  currencyType?: CurrencyType
 }
 
 export interface WalletCardProps extends StateProps {
@@ -46,14 +48,10 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
 
   icon: any
 
-  constructor(props: WalletCardProps) {
-    super(props)
-
-    this.state = {
-      animated: true,
-      initial: true
-    }
-  }
+  state = {
+    animated: true,
+    initial: true
+  } as WalletCardState
 
   render() {
     const {
@@ -67,6 +65,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
       width,
       currencyValue,
       isLoading,
+      currencyType,
     } = this.props
 
     const height = width! * (18 / 30)
@@ -124,14 +123,14 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
             >
               {name}
             </div>
-            {currencyValue ? this.renderCurrencyValue() : null}
+            {currencyValue ? this.renderCurrencyValue(currencyType!) : null}
           </div>
         </div>
       </div >
     )
   }
 
-  renderCurrencyValue() {
+  renderCurrencyValue(currencyType: CurrencyType) {
     return (
       <div
         className={s.currency}
@@ -144,13 +143,13 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
         <CurrencyIcon
           className={classnames(s.currencyIcon, {
             [s.animating]: this.state.animated,
-            [s.initial]: this.state.initial
+            [s.initial]: this.state.initial,
           })}
-          currency={CurrencyType.FINNEY}
+          currency={currencyType}
           reverse
           big
         />
-        <Currency key="value" amount={this.props.currencyValue} outputType={CurrencyType.FINNEY} decimals={0} />
+        <Currency key="value" amount={this.props.currencyValue} outputType={currencyType} decimals={0} />
       </div>
     )
   }
@@ -158,7 +157,8 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
 
 function mapStateToProps(state: FrameState, ownProps: WalletCardProps): StateProps {
   return {
-    name: ownProps.name || (state.shared.username || '')
+    name: ownProps.name || (state.shared.username || ''),
+    currencyType: state.shared.baseCurrency,
   }
 }
 

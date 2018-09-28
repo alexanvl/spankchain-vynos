@@ -5,16 +5,14 @@ import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
 import CurrencyIcon from '../CurrencyIcon/index'
 import {ExchangeRates, CurrencyType} from '../../../worker/WorkerState'
-export {CurrencyType} // refactoring so this type is only defined once
 import BN = require('bn.js')
-import CurrencyConvertable from '../../../lib/CurrencyConvertable'
+import CurrencyConvertable from '../../../lib/currency/CurrencyConvertable'
 
 const s = require('./style.css')
 
 export interface StateProps {
   workerProxy: WorkerProxy
   exchangeRates: ExchangeRates|null
-  baseCurrency?: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.BOOTY
 }
 
 export interface CurrencyProps extends StateProps {
@@ -30,6 +28,7 @@ export interface CurrencyProps extends StateProps {
   color?: string
   big?: boolean
   baseCurrency?: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.BOOTY
+  showPlainTextUnit?: boolean
 }
 
 export class Currency extends React.Component<CurrencyProps, any> {
@@ -48,7 +47,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
       amount,
       decimals,
       inputType,
-      outputType
+      outputType,
     } = this.props
 
     let ret: string = ''
@@ -63,7 +62,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
         withSymbol: false,
         showTrailingZeros: outputType == CurrencyType.USD
       })
-      
+
     } catch (e) {
       console.error('unable to get currency', e)
       ret = '--'
@@ -76,33 +75,42 @@ export class Currency extends React.Component<CurrencyProps, any> {
     let {
       outputType,
       showUnit,
+      showPlainTextUnit,
       unitClassName,
       className,
       inverse,
       alt,
       color,
       big,
-      baseCurrency,
     } = this.props
 
 
     return (
       <span className={classnames(s.currency, className)} style={{color: color || 'inherit'}}>
-        {renderUnit(showUnit, outputType, unitClassName, inverse, alt, color, big)} {this.formatAmount()}
+        {renderUnit(showUnit, outputType, unitClassName, inverse, alt, color, big, showPlainTextUnit)} {this.formatAmount()}
       </span>
     )
   }
 }
 
-const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string, inverse?: boolean, alt?: boolean, color?: string, big?: boolean) => (
-  showUnit && <CurrencyIcon className={unitClassName} currency={outputType} reverse={inverse} alt={alt} color={color} big={big} spaceAround />
+const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string, inverse?: boolean, alt?: boolean, color?: string, big?: boolean, showPlainTextUnit?: boolean) => (
+  showUnit &&
+  <CurrencyIcon
+    className={unitClassName}
+    currency={outputType}
+    reverse={inverse}
+    alt={alt}
+    color={color}
+    big={big}
+    spaceAround
+    showPlainText={showPlainTextUnit}
+  />
 )
 
 function mapStateToProps (state: FrameState, ownProps: any): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
     exchangeRates: state.shared.exchangeRates || null,
-    baseCurrency: state.shared.baseCurrency
   }
 }
 

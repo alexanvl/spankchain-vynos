@@ -4,6 +4,8 @@ export interface VirtualChannel {
   state: number
   ethBalanceA: string
   ethBalanceB: string
+  tokenBalanceA: string 
+  tokenBalanceB: string 
   channelId: string
   partyA: string
   partyB: string
@@ -31,6 +33,14 @@ export interface LedgerChannel {
   partyI: string
   ethBalanceA: string
   ethBalanceI: string
+  state: string 
+  tokenBalanceA: string 
+  tokenBalanceI: string
+  nonce: number 
+  openVcs: number 
+  vcRootHash: string 
+  openTimeout: any 
+  updateTimeout: any
 }
 
 export interface MetaFields {

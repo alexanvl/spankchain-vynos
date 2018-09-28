@@ -7,9 +7,11 @@ import Web3 = require('web3')
 import VynosBuyResponse from '../lib/VynosBuyResponse'
 import * as metrics from '../lib/metrics'
 import BN = require('bn.js')
+import {ICurrency} from '../lib/currency/Currency'
 
 export interface Balance {
-  balanceInWei: string
+  balanceInWei: string|null
+  balanceInTokens: string|null
 }
 
 export interface GetBalanceResponse {
@@ -42,23 +44,29 @@ export default class Vynos extends EventEmitter {
     this.handleSharedStateUpdate = this.handleSharedStateUpdate.bind(this)
   }
 
+  public getSharedState = () => this.client!.getSharedState()
+
   public async getBalance(): Promise<GetBalanceResponse> {
     this.requireReady()
 
     return this.client!.getSharedState()
       .then(state => {
-        const { balance, channel } = state
+        const { addressBalances, channel } = state
 
         const channels = {} as any
 
         if (channel) {
           channels[channel.ledgerId] = {
-            balanceInWei: channel.balance,
+            balanceInWei: channel.balances.ethBalance.amount,
+            balanceInTokens: channel.balances.tokenBalance.amount,
           }
         }
 
         return {
-          wallet: { balanceInWei: balance },
+          wallet: {
+            balanceInWei: addressBalances.ethBalance.amount,
+            balanceInTokens: addressBalances.tokenBalance.amount ,
+          },
           channels
         }
       })
@@ -225,6 +233,12 @@ export default class Vynos extends EventEmitter {
   private requireReady() {
     if (!this.ready) {
       throw new Error('Wallet not ready yet.')
+    }
+  }
+
+  private async requireUnlock() {
+    if (!this.client || !(await this.client.getSharedState()).isLocked) {
+      throw new Error('Wallet is not unlocked yet')
     }
   }
 

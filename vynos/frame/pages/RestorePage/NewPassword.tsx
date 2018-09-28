@@ -24,19 +24,14 @@ export interface NewPasswordState {
 }
 
 export default class NewPassword extends React.Component<NewPasswordProps, NewPasswordState> {
-  constructor(props: NewPasswordProps) {
-    super(props)
+  state = {
+    message: '',
+    password: '',
+    passwordError: '',
+    passwordConfirmation: '',
+    passwordConfirmationError: ''
+  } as NewPasswordState
 
-    this.state = {
-      message: '',
-      password: '',
-      passwordError: '',
-      passwordConfirmation: '',
-      passwordConfirmationError: ''
-    };
-
-    this.onSubmit = this.onSubmit.bind(this)
-  }
 
   componentWillReceiveProps(nextProps: NewPasswordProps) {
     if (nextProps.message) {
@@ -90,13 +85,11 @@ export default class NewPassword extends React.Component<NewPasswordProps, NewPa
     )
   }
 
-  fieldUpdater (name: string) {
-    return {
-      onChange: (e: ChangeEvent<HTMLInputElement>) => this.setState({ [name]: e.target.value })
-    }
-  }
+  fieldUpdater = (name: string) => ({
+    onChange: (e: ChangeEvent<HTMLInputElement>) => this.setState({ [name]: e.target.value })
+  })
 
-  onSubmit () {
+  onSubmit = () => {
     if (!this.state.password || this.state.password.length < MINIMUM_PASSWORD_LENGTH) {
       return this.setState({
         passwordError: 'Password is too short.'

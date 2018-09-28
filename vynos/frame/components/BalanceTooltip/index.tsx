@@ -1,10 +1,8 @@
 import * as React from 'react'
 import BN = require('bn.js')
-import { CurrencyType } from '../Currency'
-import CC from '../../../lib/CurrencyConvertable'
-import { ExchangeRates } from '../../../worker/WorkerState'
+import CC from '../../../lib/currency/CurrencyConvertable'
+import { ExchangeRates, CurrencyType } from '../../../worker/WorkerState'
 import { TooltipRow } from './TooltipRow'
-import { setHasActiveDeposit } from '../../../worker/actions';
 
 const s = require('./style.css')
 
@@ -15,12 +13,21 @@ export interface BalanceTooltipProps {
   reserveBalanceType: CurrencyType
   exchangeRates: ExchangeRates | null
   hasActiveDeposit?: boolean
+  currencyType: CurrencyType
 }
 
 let amountReservedWei: CC
 let canUpdateAmountReserved = true
 
-export const BalanceTooltip = ({ amount, inputType, reserveBalance, reserveBalanceType, exchangeRates, hasActiveDeposit }: BalanceTooltipProps) => {
+export const BalanceTooltip = ({
+  amount,
+  inputType,
+  reserveBalance,
+  reserveBalanceType,
+  exchangeRates,
+  hasActiveDeposit,
+  currencyType
+}: BalanceTooltipProps) => {
   if (!amountReservedWei) {
     amountReservedWei = new CC(CurrencyType.WEI, '0', () => exchangeRates)
   }
@@ -59,7 +66,7 @@ export const BalanceTooltip = ({ amount, inputType, reserveBalance, reserveBalan
     <div className={s.balanceTipLayout}>
       <TooltipRow
         amount={amountWEI}
-        outputType={CurrencyType.FINNEY}
+        outputType={currencyType}
       />
       <TooltipRow
         amount={amountReservedWei}
@@ -71,7 +78,7 @@ export const BalanceTooltip = ({ amount, inputType, reserveBalance, reserveBalan
       <TooltipRow
         className={s.totalRow}
         amount={totalWEI}
-        outputType={CurrencyType.FINNEY}
+        outputType={currencyType}
       />
     </div>
   )

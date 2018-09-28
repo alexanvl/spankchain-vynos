@@ -1,39 +1,30 @@
-import Logger from '../lib/Logger'
+import Logger from '../Logger'
+import {Poller} from './Poller'
+import Timer = NodeJS.Timer
 
-/**
- * Poller hnadles a function that needs to be run once every intervalLength time
- *
- * @public start
- * @param {number} intervalLength - how long after last completion should the function be ran again
- * @param {function} cb - the function that should be run once every intervalLength
- * @example
- *
- * Author: William Cory -- GitHub: roninjin10
- */
-
-export default class Poller {
+export class BasePoller implements Poller {
   private polling = false
   private logger: Logger
+  private timeout: Timer|null = null
 
   constructor(logger: Logger) {
     this.logger = logger
   }
 
-  public start = async (intervalLength: number, cb: Function): Promise<void> => {
+  public start (cb: Function, intervalLength: number) {
     if (this.polling) {
       throw new Error('Poller was already started')
     }
 
     this.polling = true
-    await cb()
-    let lastPolled: number = Date.now()
+    let lastPolled: number
 
     const poll = async () => {
       if (!this.polling) {
         return
       }
 
-      if (this.isReadyToPoll(lastPolled, intervalLength)) {
+      if (!lastPolled || this.isReadyToPoll(lastPolled, intervalLength)) {
         try {
           await cb()
         } catch(e) {
@@ -51,7 +42,7 @@ export default class Poller {
       }
 
       const nextPoll = intervalLength - (Date.now() - lastPolled)
-      setTimeout(
+      this.timeout = setTimeout(
         poll,
         nextPoll,
       )
@@ -59,8 +50,12 @@ export default class Poller {
     poll()
   }
 
-  public stop = async (): Promise<void> => {
+  public stop = () => {
     this.polling = false
+
+    if (this.timeout) {
+      clearTimeout(this.timeout)
+    }
   }
 
   public isStarted(): boolean {

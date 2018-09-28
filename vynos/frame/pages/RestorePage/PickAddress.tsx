@@ -2,8 +2,9 @@ import * as React from 'react'
 import TextBox from '../../components/TextBox/index'
 import Button from '../../components/Button/index'
 import RestorationCandidate from '../../../lib/RestorationCandidate'
-import Currency, {CurrencyType} from '../../components/Currency'
+import Currency from '../../components/Currency'
 import * as classnames from 'classnames';
+import { CurrencyType } from '../../../worker/WorkerState';
 
 const style = require('../../styles/ynos.css')
 const finneyInverse = require('../../components/CurrencyIcon/style.css').inverse
@@ -21,16 +22,10 @@ export interface PickAddressState {
 }
 
 export default class PickAddress extends React.Component<PickAddressProps, PickAddressState> {
-  constructor (props: PickAddressProps) {
-    super(props)
-
-    this.state = {
-      message: '',
-      chosenRestorationCandidate: null
-    }
-
-    this.onSubmit = this.onSubmit.bind(this)
-  }
+  state = {
+    message: '',
+    chosenRestorationCandidate: null
+  } as PickAddressState
 
   render () {
     return (
@@ -94,7 +89,7 @@ export default class PickAddress extends React.Component<PickAddressProps, PickA
     })
   }
 
-  onSubmit () {
+  onSubmit = () => {
     if (!this.state.chosenRestorationCandidate) {
       return this.setState({
         message: 'Please choose a wallet before continuing.'

@@ -1,6 +1,6 @@
 import {assert} from 'chai'
 import Currency from './Currency'
-import {CurrencyType} from '../worker/WorkerState'
+import {CurrencyType} from '../../worker/WorkerState'
 
 describe('Currency', () => {
   it('should return formatted currency', () => {

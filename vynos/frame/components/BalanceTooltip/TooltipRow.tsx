@@ -1,7 +1,7 @@
 import * as React from 'react'
-import {CurrencyType} from '../Currency'
 import CurrencyIcon from '../CurrencyIcon'
-import CC from '../../../lib/CurrencyConvertable'
+import CC from '../../../lib/currency/CurrencyConvertable'
+import { CurrencyType } from '../../../worker/WorkerState';
 
 const s = require('./style.css')
 

@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Route, Switch } from 'react-router'
 import { connect } from 'react-redux'
-import Web3 = require('web3')
 import Activity from './Activity'
 import AddFundsCallout from './AddFundsCallout'
 import SpankCard from './SpankCard'
@@ -11,18 +10,17 @@ import RevealPrivateKey from './RevealPrivateKey'
 import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import BN = require('bn.js')
+import { FeatureFlags } from '../../../worker/WorkerState';
 
 const s = require('./styles.css')
 const st = require('./index.css')
 
 export interface WalletPageStateProps {
-  path: string
-  web3: Web3
   workerProxy: WorkerProxy
   address: string | null
-  walletBalance: BN
   cardBalance: BN
-  location?: any
+  location?: string
+  featureFlags: FeatureFlags|null
 }
 
 export interface WalletPageState {
@@ -31,13 +29,9 @@ export interface WalletPageState {
 }
 
 export class WalletPage extends React.Component<WalletPageStateProps, WalletPageState> {
-  constructor(props: WalletPageStateProps) {
-    super(props)
-
-    this.state = {
-      isPopulatingChannels: true,
-      channelPopulationError: ''
-    }
+  state = {
+    isPopulatingChannels: true,
+    channelPopulationError: ''
   }
 
   async componentDidMount() {
@@ -66,7 +60,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 
   renderSubPage() {
-    const { address } = this.props
+    const { address, featureFlags } = this.props
 
     return (
       <Switch>
@@ -138,14 +132,13 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
 }
 
 function mapStateToProps(state: FrameState): WalletPageStateProps {
-  let workerProxy = state.temp.workerProxy!
+  const workerProxy = state.temp.workerProxy!
+  const channel = state.shared.channel
   return {
-    path: state.shared.rememberPath,
-    web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
     address: state.shared.address,
-    walletBalance: new BN(state.shared.balance),
-    cardBalance: new BN(state.shared.channel ? state.shared.channel.balance : 0),
+    featureFlags: state.shared.featureFlags,
+    cardBalance: new BN(channel.balances.ethBalance.amount),
   }
 }
 

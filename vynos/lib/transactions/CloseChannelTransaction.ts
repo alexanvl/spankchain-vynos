@@ -1,14 +1,13 @@
 import {Store} from 'redux'
 import * as semaphore from 'semaphore'
-import takeSem from './takeSem'
-import * as actions from '../worker/actions'
-import {AtomicTransaction, TransactionInterface} from './AtomicTransaction'
-import {WorkerState} from '../worker/WorkerState'
-import withRetries from './withRetries'
-import getCurrentLedgerChannels from './connext/getCurrentLedgerChannels'
-import LockStateObserver from './LockStateObserver'
-import ChannelPopulator, {DeferredPopulator} from './ChannelPopulator'
-import {IConnext} from './connext/ConnextTypes'
+import * as actions from '../../worker/actions'
+import {AtomicTransaction} from './AtomicTransaction'
+import {WorkerState} from '../../worker/WorkerState'
+import withRetries from '../withRetries'
+import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
+import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
+import {IConnext} from '../connext/ConnextTypes'
+import Logger from '../Logger'
 
 /**
  * The CloseChannelTransaction handles starting new withdrawals as well
@@ -19,16 +18,18 @@ import {IConnext} from './connext/ConnextTypes'
  * Author: William Cory -- GitHub: roninjin10
  */
 
-export default class CloseChannelTransaction implements TransactionInterface {
-  private doCloseChannel: AtomicTransaction
+export default class CloseChannelTransaction {
+  private doCloseChannel: AtomicTransaction<void>
   private connext: IConnext
   private store: Store<WorkerState>
   private sem: semaphore.Semaphore
   private chanPopulator: ChannelPopulator
-  private deferredPopulate: DeferredPopulator | null
+  private deferredPopulate: DeferredPopulator|null
+  private logger: Logger
 
-  constructor (store: Store<WorkerState>, connext: IConnext, lockStateObserver: LockStateObserver, sem: semaphore.Semaphore, chanPopulator: ChannelPopulator) {
+  constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, sem: semaphore.Semaphore, chanPopulator: ChannelPopulator) {
     this.store = store
+    this.logger = logger
     this.connext = connext
     this.sem = sem
     this.chanPopulator = chanPopulator
@@ -41,37 +42,21 @@ export default class CloseChannelTransaction implements TransactionInterface {
       this.updateRedux
     ]
 
-    this.doCloseChannel = new AtomicTransaction(this.store, 'withdrawal', methodOrder, this.afterAll, this.setHasActiveWithdrawal, this.setHasActiveWithdrawal)
-
-    lockStateObserver.addUnlockHandler(this.restartTransaction)
-    if (!lockStateObserver.isLocked()) {
-      this.restartTransaction()
-    }
+    this.doCloseChannel = new AtomicTransaction(this.store, logger, 'withdrawal', methodOrder, this.afterAll, this.setHasActiveWithdrawal, this.setHasActiveWithdrawal)
   }
 
-  public startTransaction = async (): Promise<void> => {
+  public execute = async (): Promise<void> => {
     try {
+      if (this.doCloseChannel.isInProgress()) {
+        await this.doCloseChannel.restart()
+      }
+
       await this.doCloseChannel.start()
     } catch (e) {
       this.releaseDeferred()
       throw e
     }
   }
-
-  public restartTransaction = async (): Promise<void> => {
-    if (!this.isInProgress()) {
-      return
-    }
-
-    try {
-      return takeSem<void>(this.sem, () => this.doCloseChannel.restart())
-    } catch (e) {
-      this.releaseDeferred()
-      throw e
-    }
-  }
-
-  public isInProgress = (): boolean => this.doCloseChannel.isInProgress()
 
   private setHasActiveWithdrawal = async () => {
     this.store.dispatch(actions.setHasActiveWithdrawal(true))

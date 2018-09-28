@@ -1,12 +1,12 @@
 import BigNumber from 'bignumber.js'
-import {WorkerState, ExchangeRates, CurrencyType} from '../worker/WorkerState'
+import {WorkerState, ExchangeRates, CurrencyType} from '../../worker/WorkerState'
 import Currency from './Currency'
 import {Store} from 'redux'
 
 export type AllConversions = {[key in CurrencyType]: CurrencyConvertable}
 
 export default class CurrencyConvertable extends Currency {
-  static getExchangeRatesWorker = (store: Store<WorkerState>) => () => store.getState().runtime.exchangeRates
+  static getExchangeRatesWorker = (store: Store<WorkerState, any>) => () => store.getState().runtime.exchangeRates
 
   protected getExchangeRates: () => ExchangeRates
 
@@ -14,11 +14,11 @@ export default class CurrencyConvertable extends Currency {
     super(type, amount)
 
     this.getExchangeRates = (): ExchangeRates => {
-      const er = typeof exchangeRates === 'function' ? exchangeRates() : exchangeRates
-      if (!er) {
+      const rates = typeof exchangeRates === 'function' ? exchangeRates() : exchangeRates
+      if (!rates) {
         throw new Error('no exchange rates are set')
       }
-      return er
+      return rates
     }
   }
 
@@ -35,14 +35,19 @@ export default class CurrencyConvertable extends Currency {
   // public toBOOTY: (): Currency => this._convert(this, 'BOOTY')
 
   private _convert = (toType: CurrencyType): CurrencyConvertable => {
-    const exchangeRates: ExchangeRates = this.getExchangeRates()
+    const rates: ExchangeRates = this.getExchangeRates()
 
-    const fromCurrencyRate = exchangeRates[this.type]
-    const amountWei = this.amountBigNumber.mul(fromCurrencyRate)
-    const toConversionRate = exchangeRates[toType]
-    const amountInToType = amountWei.div(toConversionRate)
+    const weiPerFromType = rates[this.type]
+    const weiPerToType = rates[toType]
+    
+    const amountInWei = this.amountBigNumber.mul(weiPerFromType)
+    const amountInToType = amountInWei.div(weiPerToType)
 
-    return new CurrencyConvertable(toType, amountInToType, this.getExchangeRates)
+    return new CurrencyConvertable(
+      toType, 
+      amountInToType, 
+      this.getExchangeRates
+    )
   }
 }
 
