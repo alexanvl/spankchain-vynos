@@ -1867,9 +1867,9 @@ connect-history-api-fallback@^1.3.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/connect-history-api-fallback/-/connect-history-api-fallback-1.5.0.tgz#b06873934bc5e344fef611a196a6faae0aee015a"
 
-connext@0.0.66:
-  version "0.0.66"
-  resolved "https://registry.yarnpkg.com/connext/-/connext-0.0.66.tgz#2f1c199a41a9fceadf6dfa8e5e3fd702b12c2276"
+connext@0.0.67:
+  version "0.0.67"
+  resolved "https://registry.yarnpkg.com/connext/-/connext-0.0.67.tgz#b65e4b40d394d611b535c8206226641d1eae1156"
   dependencies:
     axios "^0.16.2"
     babel-runtime "^6.26.0"
