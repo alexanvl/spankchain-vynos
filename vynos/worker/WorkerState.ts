@@ -291,7 +291,7 @@ export const INITIAL_STATE: WorkerState = {
     activeWithdrawalError: null,
     exchangeRates: null,
     username: null,
-    baseCurrency: null,
+    baseCurrency: CurrencyType.FINNEY,
     featureFlags: {bootySupport: false},
     moreEthNeeded: false,
     isMigrating: false,
