@@ -15,16 +15,9 @@ import { IConnext } from '../lib/connext/ConnextTypes';
  * of ETH for BOOTY in channel
  */
 
-// PSEUDOCODING to some degree
-
 const BLOWN_LOAD = Currency.BEI(new BN(BEI_PER_BOOTY).mul(new BN(69)))
 
-// function that does not exist yet that will just hit a endpoint on the hub
-const getBootyLimit = async () => BLOWN_LOAD
-
 export default class ExchangeMigration extends BaseMigration {
-  // should this be hardcoded string?
-  private erc20Address = process.env.BOOTY_CONTRACT_ADDRESS!
   private exchangeTx: any // ExchangeTransaction
   private connext: IConnext 
 
@@ -52,10 +45,8 @@ export default class ExchangeMigration extends BaseMigration {
 
     const ethBalance = Currency.ETH(lc.ethBalanceA)
 
-    const bootyLimit = await getBootyLimit()
-
-    if (ethBalance.amountBN.gt(bootyLimit.amountBN)) {
-      return bootyLimit
+    if (ethBalance.amountBN.gt(BLOWN_LOAD.amountBN)) {
+      return BLOWN_LOAD
     }
     return ethBalance
   }
