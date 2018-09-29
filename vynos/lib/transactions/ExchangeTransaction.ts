@@ -7,7 +7,6 @@ import Logger from "../Logger";
 import { IConnext, LedgerChannel, ChannelType } from "../connext/ConnextTypes";
 import withRetries from "../withRetries";
 import * as BigNumber from 'bignumber.js'
-import Web3 = require('web3')
 import BN = require('bn.js')
 import getAddress from "../getAddress";
 import { SIXTY_NINE_BEI } from "../constants";
@@ -171,6 +170,7 @@ export default class Exchange {
   }
 
   private getMaxLoad = (): Currency => {
+    // TODO there will be an endpoint on the hub to get the max load
     return Currency.BEI(SIXTY_NINE_BEI)
   }
 
