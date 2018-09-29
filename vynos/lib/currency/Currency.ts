@@ -67,7 +67,7 @@ export default class Currency implements ICurrency {
   private _type: CurrencyType
   private _amount: BigNumber.BigNumber
   private _amountBN?: BN
-  
+
   constructor(_type: CurrencyType, _amount: BigNumber.BigNumber|string|number|BN) {
     this._type = _type
 
