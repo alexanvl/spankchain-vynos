@@ -36,23 +36,23 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   private store: Store<WorkerState>
   private logger: Logger
   private methodOrder: Function[]
-  private onStart: Function 
+  private onStart: Function
   private onRestart: Function
   private afterAll: Function
-  
+
   constructor(
-    store: Store<WorkerState>, 
+    store: Store<WorkerState>,
     logger: Logger,
-    name: string, 
-    methodOrder: Function[], 
-    afterAll: Function = noop, 
-    onStart = noop, 
+    name: string,
+    methodOrder: Function[],
+    afterAll: Function = noop,
+    onStart = noop,
     onRestart = noop
   ) {
     this.name = name
     this.store = store
     this.methodOrder = methodOrder
-    this.onStart = onStart 
+    this.onStart = onStart
     this.onRestart = onRestart
     this.afterAll = afterAll
     this.logger = logger
@@ -85,16 +85,16 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
       return await this.persistAndRun(nextMethodArgs, nextMethodIndex)
     } catch(e) {
       const data = {
-        message: 'there was an error running an AtomicTransaction', 
-        name: this.name, 
-        state: this.getState(), 
+        message: 'there was an error running an AtomicTransaction',
+        name: this.name,
+        state: this.getState(),
         account: getAddress(this.store),
         e
       }
 
       console.error(data.message, data)
       this.logError(data)
-      
+
       throw e
     } finally {
       this.removeState()
@@ -124,7 +124,7 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   }
 
   private getState = (): AtomicTransactionState => this.store.getState().persistent.transactions[this.name]
-  
+
   private setState = (newState: AtomicTransactionState): void => {
     this.store.dispatch(actions.setTransactionState({name: this.name, newState}))
     this.logNewState(newState)
@@ -143,6 +143,9 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
       data: {
         message: `${this.name}-transaction: account ${account} is executing step ${newState.nextMethodIndex + 1} of ${this.methodOrder.length}`,
         type: 'info',
+        account,
+        nextMethodArgs: newState.nextMethodArgs,
+        nextMethodIndex: newState.nextMethodIndex,
       }
     }]).catch((e) => console.warn('failed to log transaction state to API', {e, newState}))
   }
@@ -154,7 +157,10 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
       data: {
         message: `${this.name}-transaction: there was an error executing step ${state.nextMethodIndex + 1} of ${this.methodOrder.length}.  Account: ${account}.  NextMethodArgs: ${JSON.stringify(state.nextMethodArgs)}`,
         type: 'error',
-        stack: e.stack || e
+        stack: e.stack || e,
+        account,
+        nextMethodArgs: state.nextMethodArgs,
+        nextMethodIndex: state.nextMethodIndex
       }
     }]).catch((e) => console.warn('failed to log AtomicTransaction state to API', {e, state}))
   }
