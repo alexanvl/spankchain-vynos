@@ -40,7 +40,7 @@ export default class Exchange {
     this.exchangeTransaction = exchangeTransaction(store, logger, connext)
   }
 
-  public swapOnDeposit = async () => {
+  public swapEthForBooty = async () => {
     // we should only call exchangeRates once so they are consistent throughout entire swap
     const {beiPerWei, bootyLimit} = await this.getExchangeRateAndLoadLimit()
 
@@ -55,7 +55,9 @@ export default class Exchange {
     await this.exchangeTransaction.start(sellAmount, buyAmount)
   }
 
-  public restartSwaps = () => this.exchangeTransaction.isInProgress() && this.exchangeTransaction.restart()
+  public restartSwap = () => this.exchangeTransaction.restart()
+
+  public isInProgress = () => this.exchangeTransaction.isInProgress()
 
   private getSellAmount = async (exchangeRates: ExchangeRates, sellCurrencyType: CurrencyType, bootyLimit: Currency): Promise<CurrencyConvertable> => {
     // logic for blown loads and such goes here

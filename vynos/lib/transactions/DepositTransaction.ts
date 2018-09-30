@@ -3,7 +3,7 @@ import * as semaphore from 'semaphore'
 import takeSem from '../takeSem'
 import * as actions from '../../worker/actions'
 import {AtomicTransaction} from './AtomicTransaction'
-import {WorkerState, CurrencyType, ExchangeRates} from '../../worker/WorkerState'
+import {WorkerState} from '../../worker/WorkerState'
 import withRetries from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
@@ -13,8 +13,9 @@ import Web3 = require('web3')
 import getAddress from '../getAddress'
 import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
-import { ICurrency } from '../currency/Currency';
-import currencyAsJSON from '../currency/currencyAsJSON';
+import {ICurrency} from '../currency/Currency'
+import currencyAsJSON from '../currency/currencyAsJSON'
+import Exchange from './Exchange'
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -35,6 +36,7 @@ export interface DepositArgs {
 export default class DepositTransaction {
   private deposit: AtomicTransaction<void, [DepositArgs]>
   private depositExistingChannel: AtomicTransaction<void, [DepositArgs]>
+  private exchange: Exchange
   private connext: IConnext
   private store: Store<WorkerState>
   private sem: semaphore.Semaphore
@@ -65,6 +67,8 @@ export default class DepositTransaction {
 
     this.deposit = this.makeDepositTransaction()
     this.depositExistingChannel = this.makeDepositExistingChannelTransaction()
+
+    this.exchange = new Exchange(store, logger, connext)
   }
 
   public startTransaction = async ({ethDeposit, tokenDeposit}: DepositArgs): Promise<void> => {
@@ -146,7 +150,7 @@ export default class DepositTransaction {
     this.store,
     this.logger,
     'deposit:existingChannel',
-    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.finishTransaction],
+    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.inChannelExchange, this.finishTransaction],
     this.afterAll,
     this.onStart,
     this.onRestart
@@ -156,12 +160,10 @@ export default class DepositTransaction {
     this.store,
     this.logger,
     'deposit',
-    [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.maybeRequestDeposit, this.finishTransaction],
+    [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.inChannelExchange, this.maybeRequestDeposit, this.finishTransaction],
     this.afterAll,
     this.onRestart,
   )
-
-  private exchangeRates = () => this.store.getState().runtime.exchangeRates!
 
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
     const tokenDeposit = depositObj.tokenDeposit
@@ -179,7 +181,7 @@ export default class DepositTransaction {
         tokenDeposit.amount
       )
       .send({
-        from: getAddress(this.store), 
+        from: getAddress(this.store),
         gas: 750000,
       })
 
@@ -265,6 +267,14 @@ export default class DepositTransaction {
         throw new Error('Chainsaw has not caught up yet.')
       }
     }, 48)
+  }
+
+  private inChannelExchange = async (): Promise<void> => {
+    if (this.exchange.isInProgress()) {
+      this.exchange.restartSwap()
+      return
+    }
+    this.exchange.swapEthForBooty()
   }
 
   private maybeRequestDeposit = async ({ethDeposit, tokenDeposit}: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
