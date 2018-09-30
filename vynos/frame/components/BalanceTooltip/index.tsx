@@ -1,7 +1,7 @@
 import * as React from 'react'
 import BN = require('bn.js')
 import CC from '../../../lib/currency/CurrencyConvertable'
-import { ExchangeRates, CurrencyType } from '../../../worker/WorkerState'
+import { ExchangeRates, CurrencyType, Balances } from '../../../worker/WorkerState'
 import { TooltipRow } from './TooltipRow'
 
 const s = require('./style.css')
@@ -11,47 +11,58 @@ export interface BalanceTooltipProps {
   inputType: CurrencyType
   reserveBalance: BN
   reserveBalanceType: CurrencyType
-  exchangeRates: ExchangeRates 
+  exchangeRates: ExchangeRates
   hasActiveDeposit?: boolean
   currencyType: CurrencyType
+  cardBalances: Balances
 }
 
 let amountReservedWei: CC
 let canUpdateAmountReserved = true
 
 export const BalanceTooltip = ({
-  amount,
-  inputType,
   reserveBalance,
   reserveBalanceType,
   exchangeRates,
   hasActiveDeposit,
-  currencyType
+  currencyType,
+  cardBalances
 }: BalanceTooltipProps) => {
   if (!amountReservedWei) {
     amountReservedWei = new CC(CurrencyType.WEI, '0', () => exchangeRates)
   }
 
-  const reserveBalanceWEI = new CC(
+  const reserveBalanceFIN = new CC(
     reserveBalanceType,
     reserveBalance.toString(10),
     () => exchangeRates,
-  ).toWEI()
+  ).toFIN()
 
-  const amountWEI = new CC(
-    inputType,
-    amount.toString(10),
-    () => exchangeRates,
-  ).toWEI()
+  console.log('eth balance', cardBalances.ethBalance.type, cardBalances.ethBalance.amount)
 
-  const totalWEI = new CC(
-    CurrencyType.WEI,
-    amountWEI.amountBigNumber.add(reserveBalanceWEI.amountBigNumber),
+  const ethBalanceFIN = new CC(
+    cardBalances.ethBalance.type,
+    cardBalances.ethBalance.amount,
     () => exchangeRates,
-  ).toWEI()
+  ).toFIN()
+
+  const bootyBalanceBOOTY = new CC(
+    cardBalances.tokenBalance.type,
+    cardBalances.tokenBalance.amount,
+    () => exchangeRates,
+  ).to(CurrencyType.BOOTY)
+
+  const total = new CC(
+    CurrencyType.FINNEY,
+    ethBalanceFIN
+      .amountBigNumber
+      .add(reserveBalanceFIN.amountBigNumber)
+      .add(bootyBalanceBOOTY.toFIN().amountBigNumber),
+    () => exchangeRates,
+  ).to(currencyType)
 
   if (!hasActiveDeposit && canUpdateAmountReserved) {
-    amountReservedWei = reserveBalanceWEI
+    amountReservedWei = reserveBalanceFIN
   }
   canUpdateAmountReserved = !!hasActiveDeposit
 
@@ -65,11 +76,15 @@ export const BalanceTooltip = ({
   return (
     <div className={s.balanceTipLayout}>
       <TooltipRow
-        amount={amountWEI}
-        outputType={currencyType}
+        amount={ethBalanceFIN}
+        outputType={CurrencyType.FINNEY}
       />
       <TooltipRow
-        amount={amountReservedWei}
+        amount={bootyBalanceBOOTY}
+        outputType={CurrencyType.BOOTY}
+      />
+      <TooltipRow
+        amount={reserveBalanceFIN}
         outputType={CurrencyType.FINNEY}
       />
       <div className={s.reserveBalanceTip}>
@@ -77,11 +92,10 @@ export const BalanceTooltip = ({
       </div>
       <TooltipRow
         className={s.totalRow}
-        amount={totalWEI}
+        amount={total}
         outputType={currencyType}
       />
     </div>
   )
 }
-
 

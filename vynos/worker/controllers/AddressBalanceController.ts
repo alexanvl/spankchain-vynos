@@ -8,12 +8,10 @@ import {OPEN_CHANNEL_COST, RESERVE_BALANCE} from '../../lib/constants'
 import MicropaymentsController from './MicropaymentsController'
 import Currency from '../../lib/currency/Currency'
 import AbstractController from './AbstractController'
-import getAddress from '../../lib/getAddress'
 import {BasePoller} from '../../lib/poller/BasePoller'
 import {Poller} from '../../lib/poller/Poller'
 import {HumanStandardToken} from '../../lib/HumanStandardToken'
 import CurrencyConvertable from '../../lib/currency/CurrencyConvertable';
-import { Deposit } from '../../frame/pages/InitPage/Deposit';
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -97,7 +95,7 @@ export default class AddressBalanceController extends AbstractController {
       this.store.dispatch(actions.setMoreEthNeeded(true))
       return
     }
-    
+
     await this.deposit(ethBalance, tokenBalanceInBEI)
   }
 
@@ -140,9 +138,9 @@ export default class AddressBalanceController extends AbstractController {
          .call({from: address})
 
       const tokenBalanceInBEI = new CurrencyConvertable(CurrencyType.BEI, amount, () => this.store.getState().runtime.exchangeRates!)
-   
+
       const tokenBalanceInBOOTY = tokenBalanceInBEI.to(CurrencyType.BOOTY)
-  
+
       return  {tokenBalanceInBOOTY, tokenBalanceInBEI}
 
     } catch(e){
