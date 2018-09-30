@@ -150,7 +150,7 @@ export default class DepositTransaction {
     this.store,
     this.logger,
     'deposit:existingChannel',
-    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.inChannelExchange, this.finishTransaction],
+    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.exchangeForBooty, this.finishTransaction],
     this.afterAll,
     this.onStart,
     this.onRestart
@@ -160,7 +160,7 @@ export default class DepositTransaction {
     this.store,
     this.logger,
     'deposit',
-    [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.inChannelExchange, this.maybeRequestDeposit, this.finishTransaction],
+    [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.exchangeForBooty, this.maybeRequestDeposit, this.finishTransaction],
     this.afterAll,
     this.onRestart,
   )
@@ -269,12 +269,18 @@ export default class DepositTransaction {
     }, 48)
   }
 
-  private inChannelExchange = async (): Promise<void> => {
-    if (this.exchange.isInProgress()) {
-      this.exchange.restartSwap()
+  private exchangeForBooty = async (): Promise<void> => {
+    if (!this.isBootySupport) {
       return
     }
-    this.exchange.swapEthForBooty()
+
+    if (this.exchange.isInProgress()) {
+      await this.exchange.restartSwap()
+      return
+    }
+
+    // ExchangeTransaction handles how much (because blown loads is a thing)
+    await this.exchange.swapEthForBooty()
   }
 
   private maybeRequestDeposit = async ({ethDeposit, tokenDeposit}: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
@@ -317,4 +323,6 @@ export default class DepositTransaction {
     this.deferredPopulate.release()
     this.deferredPopulate = null
   }
+
+  private isBootySupport = () => !!this.store.getState().runtime.featureFlags.bootySupport
 }

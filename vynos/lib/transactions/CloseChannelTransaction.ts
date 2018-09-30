@@ -8,6 +8,7 @@ import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
 import {IConnext} from '../connext/ConnextTypes'
 import Logger from '../Logger'
+import Exchange from './Exchange'
 
 /**
  * The CloseChannelTransaction handles starting new withdrawals as well
@@ -22,27 +23,35 @@ export default class CloseChannelTransaction {
   private doCloseChannel: AtomicTransaction<void>
   private connext: IConnext
   private store: Store<WorkerState>
-  private sem: semaphore.Semaphore
   private chanPopulator: ChannelPopulator
   private deferredPopulate: DeferredPopulator|null
-  private logger: Logger
+  private exchange: Exchange
 
   constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, sem: semaphore.Semaphore, chanPopulator: ChannelPopulator) {
     this.store = store
-    this.logger = logger
     this.connext = connext
-    this.sem = sem
     this.chanPopulator = chanPopulator
     this.deferredPopulate = null
 
     const methodOrder = [
       this.closeAllVCs,
+      this.swapForEth,
       this.withdraw,
       this.pingChainsaw,
       this.updateRedux
     ]
 
-    this.doCloseChannel = new AtomicTransaction(this.store, logger, 'withdrawal', methodOrder, this.afterAll, this.setHasActiveWithdrawal, this.setHasActiveWithdrawal)
+    this.doCloseChannel = new AtomicTransaction(
+      this.store,
+      logger,
+      'withdrawal',
+      methodOrder,
+      this.afterAll,
+      this.setHasActiveWithdrawal,
+      this.setHasActiveWithdrawal
+    )
+
+    this.exchange = new Exchange(store, logger, connext)
   }
 
   public execute = async (): Promise<void> => {
@@ -76,6 +85,13 @@ export default class CloseChannelTransaction {
       console.error('connext.closeThreads failed', e)
       throw e
     }
+  }
+
+  private swapForEth = () => {
+    if (!this.isBootySupport()) {
+      return
+    }
+    this.exchange.swapBootyForEth()
   }
 
   private withdraw = async (): Promise<void> => {
@@ -123,4 +139,6 @@ export default class CloseChannelTransaction {
     this.deferredPopulate.release()
     this.deferredPopulate = null
   }
+
+  private isBootySupport = () => !!this.store.getState().runtime.featureFlags.bootySupport
 }

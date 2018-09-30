@@ -40,17 +40,25 @@ export default class Exchange {
     this.exchangeTransaction = exchangeTransaction(store, logger, connext)
   }
 
+  // figures out exact parameters of a swap based on exchange rate, channel state, and load limit (ran after a deposit)
   public swapEthForBooty = async () => {
-    // we should only call exchangeRates once so they are consistent throughout entire swap
-    const {beiPerWei, bootyLimit} = await this.getExchangeRateAndLoadLimit()
+    // we should only get exchangeRates once so they are consistent throughout entire swap
+    const {exchangeRates, bootyLimit} = await this.getExchangeRateAndLoadLimit()
 
-    const updatedExchangeRates = {
-      ...this.store.getState().runtime.exchangeRates,
-      [CurrencyType.BEI]: beiPerWei,
-    }
+    const sellAmount = await this.getSellAmount(exchangeRates, CurrencyType.WEI, bootyLimit)
+    const buyAmount = this.getBuyAmount(sellAmount, CurrencyType.BOOTY, exchangeRates)
 
-    let sellAmount = await this.getSellAmount(updatedExchangeRates, CurrencyType.WEI, bootyLimit)
-    let buyAmount = this.getBuyAmount(sellAmount, CurrencyType.BOOTY, updatedExchangeRates)
+    await this.exchangeTransaction.start(sellAmount, buyAmount)
+  }
+
+  // swaps all booty for eth (ran before a ConsensusClose)
+  public swapBootyForEth = async () => {
+    const {exchangeRates} = await this.getExchangeRateAndLoadLimit()
+
+    const lc = await this.connext.getChannelByPartyA()
+
+    const sellAmount = new CurrencyConvertable(CurrencyType.BEI, lc.tokenBalanceA, () => exchangeRates)
+    const buyAmount = sellAmount.to(CurrencyType.WEI)
 
     await this.exchangeTransaction.start(sellAmount, buyAmount)
   }
@@ -84,21 +92,26 @@ export default class Exchange {
     ).to(buyCurrencyType)
   }
 
-  private getExchangeRateAndLoadLimit = async (): Promise<{bootyLimit: Currency, beiPerWei: string}> => {
+  private getExchangeRateAndLoadLimit = async (): Promise<{bootyLimit: Currency, exchangeRates: ExchangeRates}> => {
     const HUB_URL = this.store.getState().runtime.authorizationRequest!.hubUrl
 
     const {bootyLimit, ethPrice} = await requestJson<HubBootyLoadResponse>(`${HUB_URL}/payments/booty-load-limit/`)
 
     console.log('I am guessing this bootyLimit to be in BEI and not BOOTY, is it?', bootyLimit)
 
-    const beiPerWei = new BigNumber(1).div(new BigNumber(ethPrice)).mul(ETHER.toString(10))
+    const beiPerWei = new BigNumber(1).div(new BigNumber(ethPrice)).mul(ETHER.toString(10)).toString(10)
 
     console.log('beiPerWei')
+
+    const updatedExchangeRates = {
+      ...this.store.getState().runtime.exchangeRates,
+      [CurrencyType.BEI]: beiPerWei,
+    }
 
     return {
       bootyLimit: Currency.BEI(bootyLimit),
       // we want this exchange rate instead of the one in the store to guarantee we have the latest exchange rate
-      beiPerWei: beiPerWei.toString(10),
+      exchangeRates: updatedExchangeRates,
     }
   }
 }
