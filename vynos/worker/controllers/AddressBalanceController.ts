@@ -135,7 +135,7 @@ export default class AddressBalanceController extends AbstractController {
       const amount = await this.bootyContract
          .methods
          .balanceOf(address)
-         .call({from: address})
+         .call()
 
       const tokenBalanceInBEI = new CurrencyConvertable(CurrencyType.BEI, amount, () => this.store.getState().runtime.exchangeRates!)
 

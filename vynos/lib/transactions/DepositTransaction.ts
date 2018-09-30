@@ -15,7 +15,6 @@ import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
 import {ICurrency} from '../currency/Currency'
 import currencyAsJSON from '../currency/currencyAsJSON'
-import Exchange from './Exchange'
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -36,7 +35,6 @@ export interface DepositArgs {
 export default class DepositTransaction {
   private deposit: AtomicTransaction<void, [DepositArgs]>
   private depositExistingChannel: AtomicTransaction<void, [DepositArgs]>
-  private exchange: Exchange
   private connext: IConnext
   private store: Store<WorkerState>
   private sem: semaphore.Semaphore
@@ -67,8 +65,6 @@ export default class DepositTransaction {
 
     this.deposit = this.makeDepositTransaction()
     this.depositExistingChannel = this.makeDepositExistingChannelTransaction()
-
-    this.exchange = new Exchange(store, logger, connext)
   }
 
   public startTransaction = async ({ethDeposit, tokenDeposit}: DepositArgs): Promise<void> => {
@@ -88,16 +84,16 @@ export default class DepositTransaction {
 
   public restartTransaction = async (): Promise<void> => {
     try {
-      this.awaiter =
-        (this.deposit.isInProgress && takeSem<void>(this.sem, () => { this.deposit.restart()})) ||
-        (this.depositExistingChannel.isInProgress && takeSem<void>(this.sem, () => {this.deposit.restart()})) ||
-        null
-
-      if (!this.awaiter) {
-        return
+      if (this.deposit.isInProgress) {
+        this.awaiter = takeSem<void>(this.sem, () => { this.deposit.restart()})
+      } else if (this.depositExistingChannel.isInProgress) {
+        this.awaiter = takeSem<void>(this.sem, () => {this.deposit.restart()})
       }
 
-      await this.awaiter
+      if (this.awaiter) {
+        await this.awaiter
+      }
+
     } catch (e) {
       this.releaseDeferred()
       throw e
@@ -150,7 +146,7 @@ export default class DepositTransaction {
     this.store,
     this.logger,
     'deposit:existingChannel',
-    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.exchangeForBooty, this.finishTransaction],
+    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.finishTransaction],
     this.afterAll,
     this.onStart,
     this.onRestart
@@ -160,7 +156,7 @@ export default class DepositTransaction {
     this.store,
     this.logger,
     'deposit',
-    [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.exchangeForBooty, this.maybeRequestDeposit, this.finishTransaction],
+    [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.maybeRequestDeposit, this.finishTransaction],
     this.afterAll,
     this.onRestart,
   )
@@ -189,12 +185,14 @@ export default class DepositTransaction {
   }
 
   private doDepositExisting = async ({tokenDeposit, ethDeposit}: DepositArgs): Promise<[string]> => {
+    console.log('doDepositExisting')
     const channels = await getCurrentLedgerChannels(this.connext, this.store)
     if (!channels) {
       throw new Error('Expected to find ledger channels.')
     }
 
     const startBal = channels[0].ethBalanceA
+    console.log('calling deposit', ethDeposit.amount)
     await this.connext.deposit({
       ethDeposit: new BN(ethDeposit.amount),
       tokenDeposit: tokenDeposit === undefined
@@ -267,20 +265,6 @@ export default class DepositTransaction {
         throw new Error('Chainsaw has not caught up yet.')
       }
     }, 48)
-  }
-
-  private exchangeForBooty = async (): Promise<void> => {
-    if (!this.isBootySupport) {
-      return
-    }
-
-    // on a restart of DepositTransaction we might need to restart the exchange.
-    if (this.exchange.isInProgress()) {
-      await this.exchange.restartSwap()
-      return
-    }
-
-    await this.exchange.swapEthForBooty()
   }
 
   private maybeRequestDeposit = async ({ethDeposit, tokenDeposit}: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {

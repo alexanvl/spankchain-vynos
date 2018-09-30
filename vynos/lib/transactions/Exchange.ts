@@ -63,7 +63,11 @@ export default class Exchange {
     await this.exchangeTransaction.start(sellAmount, buyAmount)
   }
 
-  public restartSwap = () => this.exchangeTransaction.restart()
+  public restartSwap = () => {
+    if (this.isInProgress()) {
+      this.exchangeTransaction.restart()
+    }
+   }
 
   public isInProgress = () => this.exchangeTransaction.isInProgress()
 
@@ -93,9 +97,9 @@ export default class Exchange {
   }
 
   private getExchangeRateAndLoadLimit = async (): Promise<{bootyLimit: Currency, exchangeRates: ExchangeRates}> => {
-    const HUB_URL = this.store.getState().runtime.authorizationRequest!.hubUrl
-
-    const {bootyLimit, ethPrice} = await requestJson<HubBootyLoadResponse>(`${HUB_URL}/payments/booty-load-limit/`)
+    const {bootyLimit, ethPrice} = await requestJson<HubBootyLoadResponse>(
+      `${process.env.HUB_URL}/payments/booty-load-limit/`
+    )
 
     console.log('I am guessing this bootyLimit to be in BEI and not BOOTY, is it?', bootyLimit)
 

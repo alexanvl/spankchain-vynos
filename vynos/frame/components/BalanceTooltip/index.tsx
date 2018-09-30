@@ -38,13 +38,13 @@ export const BalanceTooltip = ({
     () => exchangeRates,
   ).toFIN()
 
-  console.log('eth balance', cardBalances.ethBalance.type, cardBalances.ethBalance.amount)
-
   const ethBalanceFIN = new CC(
     cardBalances.ethBalance.type,
     cardBalances.ethBalance.amount,
     () => exchangeRates,
   ).toFIN()
+
+  console.log('cardBalance', cardBalances)
 
   const bootyBalanceBOOTY = new CC(
     cardBalances.tokenBalance.type,
