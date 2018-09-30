@@ -1,19 +1,34 @@
-import { Store } from "redux";
-import { WorkerState, ExchangeRates, CurrencyType } from "../../worker/WorkerState";
-import Currency, { ICurrency } from "../currency/Currency";
-import CurrencyConvertable from "../currency/CurrencyConvertable";
-import { AtomicTransaction } from "./AtomicTransaction";
-import Logger from "../Logger";
-import { IConnext, LedgerChannel, ChannelType } from "../connext/ConnextTypes";
-import withRetries from "../withRetries";
+import {Store} from 'redux'
+import {WorkerState, CurrencyType} from '../../worker/WorkerState'
+import Currency, {ICurrency} from '../currency/Currency'
+import {AtomicTransaction} from './AtomicTransaction'
+import Logger from '../Logger'
+import {IConnext, LedgerChannel} from '../connext/ConnextTypes'
+import withRetries from '../withRetries'
 import * as BigNumber from 'bignumber.js'
 import BN = require('bn.js')
-import getAddress from "../getAddress";
-import { SIXTY_NINE_BEI } from "../constants";
+import getAddress from '../getAddress'
 
 const ZERO = new BN('0')
 
-function exchangeTransactionV0 (
+/*
+ * exchange transaction atomically does the critical parts of the exchange which need to be atomic
+ * This is the connext.updateBalance call and waiting for the hub to lcDeposit and complete the exchange
+ *
+ * it also handles the logic behind createing the Exchange balances that connext.UpdateBalances needs given a sell amount, a buy amount and the exchangeRate.
+ *
+ * note that actions we would want to redo on a restart such as fetching the exchange rate and load limit are in Exchange and not the AtomicTransaction
+ *
+ * We should think harder about what should and shouldn't be Atomic in the other transactions and seperate the atomic parts out so we don't have any stale "NextMethodArgs" in
+ * the AtomicTransaction.
+ */
+
+export type HubBootyLoadResponse = {
+  bootyLimit: string, // decimal string
+  ethPrice: string, // decimal string
+}
+
+export default function exchangeTransactionV0 (
   store: Store<WorkerState>,
   logger: Logger,
   connext: IConnext,
@@ -106,94 +121,4 @@ function exchangeTransactionV0 (
     'doSwapv0',
     [makeSwap, waitForHubDeposit]
   )
-}
-
-export default class Exchange {
-  private store: Store<WorkerState>
-  private exchangeTransaction: AtomicTransaction<void, [ICurrency, ICurrency]>
-  private connext: IConnext
-
-  constructor (
-    store: Store<WorkerState>,
-    logger: Logger,
-    connext: IConnext,
-  ) {
-    this.store = store
-    this.connext = connext
-    this.exchangeTransaction = exchangeTransactionV0(store, logger, connext)
-  }
-
-  public swap = async () => {
-    // we should only call exchangeRates once so they are consistent throughout entire swap
-    const exchangeRates = this.exchangeRates()
-
-    let sellAmount = await this.getSellAmount(exchangeRates, CurrencyType.WEI)
-    let buyAmount = this.getBuyAmount(sellAmount, CurrencyType.BOOTY, exchangeRates)
-
-    await this.exchangeTransaction.start(sellAmount, buyAmount)
-  }
-
-  public restartSwap = () => this.exchangeTransaction.restart()
-
-  private getSellAmount = async (exchangeRates: ExchangeRates, sellCurrency: CurrencyType): Promise<CurrencyConvertable> => {
-    // logic for blown loads and such goes here
-    const lc = await this.connext.getChannelByPartyA()
-
-    const lcWeiBalance = new CurrencyConvertable(CurrencyType.WEI, lc.ethBalanceA, this.exchangeRates)
-
-    const remainingLoad = new CurrencyConvertable(
-      CurrencyType.BOOTY,
-      this.getMaxLoad().amountBigNumber,
-      () => exchangeRates,
-    ).to(sellCurrency)
-
-    return lcWeiBalance.amountBigNumber.gt(remainingLoad.amountBigNumber)
-      ? remainingLoad
-      : lcWeiBalance
-  }
-
-  private getBuyAmount = (sellAmount: ICurrency, to: CurrencyType, exchangeRates: ExchangeRates) => {
-    return new CurrencyConvertable(
-      sellAmount.type,
-      sellAmount.amount,
-      () => exchangeRates
-    ).to(to)
-  }
-
-  private exchangeRates = (): ExchangeRates => {
-    // wc: is an extra network request worth guaranteeing we have the latest exchange rates?
-    const out = this.store.getState().runtime.exchangeRates
-    if (!out) {
-      throw new Error('cannot perform swap if exchange rates are not set')
-    }
-    return out
-  }
-
-  private getMaxLoad = (): Currency => {
-    // TODO there will be an endpoint on the hub to get the max load
-    return Currency.BEI(SIXTY_NINE_BEI)
-  }
-
-  // thought I needed this but then I didn't.  Will likely delete
-  private verifyExchangeRate = (
-    sellAmount: ICurrency,
-    buyAmount: ICurrency,
-    exchangeRate: BigNumber.BigNumber
-  ) => {
-    if (!exchangeRate.div(buyAmount.amount).eq(exchangeRate)) {
-      throw new Error('sell amount and buy amount don\'t match provided exchange rate')
-    }
-    // if getting exchange rate from someone else could imagine an acceptable delta here
-    const exchangeRates = this.store.getState().runtime.exchangeRates
-
-    if (!exchangeRates) {
-      throw new Error('cannot swap without exchange rates set')
-    }
-
-    const sellAmountConvertable = new CurrencyConvertable(sellAmount.type, sellAmount.amount, () => exchangeRates)
-    const expectedBuyAmount = sellAmountConvertable.to(buyAmount.type)
-    if (sellAmount.amount !== expectedBuyAmount.amount) {
-      throw new Error('trade does not match current exchange rates.')
-    }
-  }
 }
