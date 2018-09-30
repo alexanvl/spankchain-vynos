@@ -274,12 +274,12 @@ export default class DepositTransaction {
       return
     }
 
+    // on a restart of DepositTransaction we might need to restart the exchange.
     if (this.exchange.isInProgress()) {
       await this.exchange.restartSwap()
       return
     }
 
-    // ExchangeTransaction handles how much (because blown loads is a thing)
     await this.exchange.swapEthForBooty()
   }
 

@@ -91,6 +91,13 @@ export default class CloseChannelTransaction {
     if (!this.isBootySupport()) {
       return
     }
+
+    // on a restart of CloseChannelTransaction we might need to restart the exchange
+    if (this.exchange.isInProgress()) {
+      this.exchange.restartSwap()
+      return
+    }
+
     this.exchange.swapBootyForEth()
   }
 
