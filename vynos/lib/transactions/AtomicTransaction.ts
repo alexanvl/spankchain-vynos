@@ -2,6 +2,7 @@ import {Store} from 'redux'
 import * as actions from '../../worker/actions'
 import { WorkerState, AtomicTransactionState } from '../../worker/WorkerState'
 import Logger from '../Logger'
+import getAddress from '../getAddress';
 
 /**
  * AtomicTransaction handles long running multi step transactions
@@ -35,23 +36,23 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   private store: Store<WorkerState>
   private logger: Logger
   private methodOrder: Function[]
-  private onStart: Function 
+  private onStart: Function
   private onRestart: Function
   private afterAll: Function
-  
+
   constructor(
-    store: Store<WorkerState>, 
+    store: Store<WorkerState>,
     logger: Logger,
-    name: string, 
-    methodOrder: Function[], 
-    afterAll: Function = noop, 
-    onStart = noop, 
+    name: string,
+    methodOrder: Function[],
+    afterAll: Function = noop,
+    onStart = noop,
     onRestart = noop
   ) {
     this.name = name
     this.store = store
     this.methodOrder = methodOrder
-    this.onStart = onStart 
+    this.onStart = onStart
     this.onRestart = onRestart
     this.afterAll = afterAll
     this.logger = logger
@@ -78,22 +79,22 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   public isInProgress = (): boolean => !!this.getState()
 
   private doTransaction = async () => {
+    const {nextMethodArgs, nextMethodIndex} = this.getState()
+
     try {
-      const {nextMethodArgs, nextMethodIndex} = this.getState()
       return await this.persistAndRun(nextMethodArgs, nextMethodIndex)
     } catch(e) {
       const data = {
-        message: 'there was an error running an AtomicTransaction', 
-        name: this.name, 
-        state: this.getState(), 
+        message: 'there was an error running an AtomicTransaction',
+        name: this.name,
+        state: this.getState(),
+        account: getAddress(this.store),
         e
       }
+
       console.error(data.message, data)
-      this.logger.logToApi([{
-        name: `${this.logger.source}:${this.name}`,
-        ts: new Date(),
-        data
-      }])
+      this.logError(data)
+
       throw e
     } finally {
       this.removeState()
@@ -123,12 +124,44 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   }
 
   private getState = (): AtomicTransactionState => this.store.getState().persistent.transactions[this.name]
-  
+
   private setState = (newState: AtomicTransactionState): void => {
     this.store.dispatch(actions.setTransactionState({name: this.name, newState}))
+    this.logNewState(newState)
   }
 
   private removeState = (): void => {
     this.store.dispatch(actions.removeTransactionState(this.name))
+  }
+
+  private logNewState = async (newState: AtomicTransactionState): Promise<void> => {
+    const account: string = getAddress(this.store)
+
+    await this.logger.logToApi([{
+      name: `${this.logger.source}:`,
+      ts: new Date(),
+      data: {
+        message: `${this.name}-transaction: account ${account} is executing step ${newState.nextMethodIndex + 1} of ${this.methodOrder.length}`,
+        type: 'info',
+        account,
+        nextMethodArgs: newState.nextMethodArgs,
+        nextMethodIndex: newState.nextMethodIndex,
+      }
+    }]).catch((e) => console.warn('failed to log transaction state to API', {e, newState}))
+  }
+
+  private logError = async ({state, account, e}: {name: string, state: AtomicTransactionState, account: string, e: Error}): Promise<void> => {
+    this.logger.logToApi([{
+      name: `${this.logger.source}:`,
+      ts: new Date(),
+      data: {
+        message: `${this.name}-transaction: there was an error executing step ${state.nextMethodIndex + 1} of ${this.methodOrder.length}.  Account: ${account}.  NextMethodArgs: ${JSON.stringify(state.nextMethodArgs)}`,
+        type: 'error',
+        stack: e.stack || e,
+        account,
+        nextMethodArgs: state.nextMethodArgs,
+        nextMethodIndex: state.nextMethodIndex
+      }
+    }]).catch((e) => console.warn('failed to log AtomicTransaction state to API', {e, state}))
   }
 }
