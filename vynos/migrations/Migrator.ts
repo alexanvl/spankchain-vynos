@@ -3,14 +3,21 @@ import requestJson, {postJson} from '../frame/lib/request'
 import {Store} from 'redux'
 import {WorkerState} from '../worker/WorkerState'
 import * as actions from '../worker/actions'
+import CloseChannelMigration from './CloseChannelMigration'
 
 export interface MigrationMap {
   [name: string]: Migration
 }
 
+export interface MigrationResponse {
+  migrationId: number
+  migrationName: string
+  appliedAt: number|null
+}
+
 export interface MigrationsResponse {
-  applied: string[]
-  unapplied: string[]
+  applied: MigrationResponse[]
+  unapplied: MigrationResponse[]
 }
 
 export default class Migrator {
@@ -35,7 +42,9 @@ export default class Migrator {
     this.store.dispatch(actions.setIsMigrating(true))
     try {
       for (let i = 0; i < res.unapplied.length; i++) {
-        const name = res.unapplied[i]
+        const unapplied = res.unapplied[i]
+        const id = unapplied.migrationId
+        const name = unapplied.migrationName
         const mig = this.migrations[name]
 
         if (!mig) {
@@ -44,7 +53,7 @@ export default class Migrator {
 
         await mig.execute()
         await postJson<void>(url, {
-          migrationName: name
+          ids: [id]
         })
       }
     } finally {

@@ -16,3 +16,5 @@ export const OPEN_CHANNEL_COST = GWEI.mul(RESERVE_GAS_PRICE).mul(OPEN_CHANNEL_GA
 const actionsBeforeRefill = new BN(3)
 export const RESERVE_BALANCE = actionsBeforeRefill.mul(OPEN_CHANNEL_COST)
 export const INITIAL_DEPOSIT_BOOTY = (new BN('10')).mul(new BN('1000000000000000000'))
+export const ZERO = new BN(0)
+export const WEI_PER_ETH = new BN('1000000000000000000')

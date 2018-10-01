@@ -3,7 +3,7 @@ import * as semaphore from 'semaphore'
 import * as actions from '../../worker/actions'
 import {AtomicTransaction} from './AtomicTransaction'
 import {WorkerState} from '../../worker/WorkerState'
-import withRetries from '../withRetries'
+import withRetries, {DoneFunc} from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
 import {IConnext} from '../connext/ConnextTypes'
@@ -24,7 +24,7 @@ export default class CloseChannelTransaction {
   private store: Store<WorkerState>
   private sem: semaphore.Semaphore
   private chanPopulator: ChannelPopulator
-  private deferredPopulate: DeferredPopulator|null
+  private deferredPopulate: DeferredPopulator | null
   private logger: Logger
 
   constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, sem: semaphore.Semaphore, chanPopulator: ChannelPopulator) {
@@ -69,16 +69,23 @@ export default class CloseChannelTransaction {
     if (!channel || channel.currentVCs.length === 0) {
       return
     }
-    try{
+
+    try {
       this.connext.closeThreads(channel.currentVCs.map((vc) => vc.channelId) as any)
       return
-    } catch(e) {
+    } catch (e) {
       console.error('connext.closeThreads failed', e)
       throw e
     }
   }
 
   private withdraw = async (): Promise<void> => {
+    const chans = await getCurrentLedgerChannels(this.connext, this.store)
+
+    if (!chans) {
+      return
+    }
+
     try {
       await this.connext.closeChannel()
     } catch (e) {
@@ -97,11 +104,11 @@ export default class CloseChannelTransaction {
   }
 
   private pingChainsaw = async (): Promise<void> => {
-    await withRetries(async () => {
+    await withRetries(async (done: DoneFunc) => {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
-      if (res !== null) {
-        throw new Error('Chainsaw has not caught up yet.')
+      if (res === null) {
+        done()
       }
     }, 24)
   }

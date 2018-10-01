@@ -4,22 +4,22 @@ import takeSem from '../takeSem'
 import * as actions from '../../worker/actions'
 import {AtomicTransaction} from './AtomicTransaction'
 import {WorkerState} from '../../worker/WorkerState'
-import withRetries from '../withRetries'
+import withRetries, {DoneFunc} from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
-import BN = require('bn.js')
-import {IConnext, Deposit} from '../connext/ConnextTypes'
-import Web3 = require('web3')
+import {Deposit, IConnext} from '../connext/ConnextTypes'
 import getAddress from '../getAddress'
 import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
+import BN = require('bn.js')
+import Web3 = require('web3')
 
 const tokenABI = require('human-standard-token-abi')
 
 /**
  * The DepositTransaction handles starting new deposits as well
  * as automatically restarting new deposits.  DepositTransaction
- * hasa AtomicTransaction which allows deposits to restart should
+ * has an AtomicTransaction which allows deposits to restart should
  * a user close their browser.
  *
  * Author: William Cory -- GitHub: roninjin10
@@ -49,7 +49,7 @@ export default class DepositTransaction {
     sem: semaphore.Semaphore,
     chanPopulator: ChannelPopulator,
     web3: Web3,
-    logger: Logger,
+    logger: Logger
   ) {
     this.store = store
     this.connext = connext
@@ -80,8 +80,12 @@ export default class DepositTransaction {
   public restartTransaction = async (): Promise<void> => {
     try {
       this.awaiter =
-        (this.deposit.isInProgress && takeSem<void>(this.sem, () => { this.deposit.restart()})) ||
-        (this.depositExistingChannel.isInProgress && takeSem<void>(this.sem, () => {this.deposit.restart()})) ||
+        (this.deposit.isInProgress && takeSem<void>(this.sem, () => {
+          this.deposit.restart()
+        })) ||
+        (this.depositExistingChannel.isInProgress && takeSem<void>(this.sem, () => {
+          this.deposit.restart()
+        })) ||
         null
 
       if (!this.awaiter) {
@@ -96,9 +100,6 @@ export default class DepositTransaction {
       this.awaiter = null
     }
   }
-
-  public isInProgress = (): boolean => this.deposit.isInProgress() || this.depositExistingChannel.isInProgress()
-
 
   public depositIntoExistingChannel = async (deposit: DepositArgs): Promise<void> => {
     try {
@@ -158,7 +159,7 @@ export default class DepositTransaction {
     'deposit',
     [this.maybeErc20Approve, this.openChannel, this.awaitChainsaw, this.maybeRequestDeposit, this.finishTransaction],
     this.afterAll,
-    this.onRestart,
+    this.onRestart
   )
 
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
@@ -166,19 +167,30 @@ export default class DepositTransaction {
     if (!depositObj.tokenDeposit || new BN(depositObj.tokenDeposit).eq(new BN(0))) {
       return {
         ...depositObj,
-        tokenDeposit: undefined,
+        tokenDeposit: undefined
       }
     }
 
-    await this.bootyContract
+    const depoBn = new BN(depositObj.tokenDeposit)
+    const addr = getAddress(this.store)
+    const allowance = await this.bootyContract
       .methods
-      .approve(
-        process.env.BOOTY_CONTRACT_ADDRESS!,
-        depositObj.tokenDeposit
+      .allowance(
+        addr,
+        process.env.BOOTY_CONTRACT_ADDRESS!
       )
-      .send({from: getAddress(this.store)})
-      .catch(console.error.bind(console))
-
+      .call()
+    const allowanceBn = new BN(allowance)
+    if (allowanceBn.lte(depoBn)) {
+      await this.bootyContract
+        .methods
+        .approve(
+          process.env.BOOTY_CONTRACT_ADDRESS!,
+          new BN(Number.MAX_VALUE).toString()
+        )
+        .send({from: getAddress(this.store)})
+        .catch(console.error.bind(console))
+    }
 
     return depositObj
   }
@@ -220,13 +232,13 @@ export default class DepositTransaction {
 
     const depositObj: Deposit = {
       ethDeposit,
-      tokenDeposit,
+      tokenDeposit
     }
 
     let ledgerId: string
     try {
       ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
-    } catch(e) {
+    } catch (e) {
       console.error('connext.openChannel failed', e)
       throw e
     }
@@ -234,34 +246,34 @@ export default class DepositTransaction {
     return [
       depositArgs,
       ledgerId,
-      this.needsCollateral(),
+      this.needsCollateral()
     ]
   }
 
   private awaitChainsaw = async (depositArgs: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
-    await withRetries(async () => {
+    await withRetries(async (done: DoneFunc) => {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
-      if (!res) {
-        throw new Error('Chainsaw has not caught up yet.')
+      if (res) {
+        done()
       }
     }, 48)
 
     return [
       depositArgs,
       ledgerId,
-      needsCollateral,
+      needsCollateral
     ]
   }
 
   private awaitChainsawBalanceChange = async (startAmount: string): Promise<void> => {
     const bigStartAmount = new BN(startAmount)
 
-    await withRetries(async () => {
+    await withRetries(async (done: DoneFunc) => {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
-      if (!res || new BN(res[0].ethBalanceA).lte(bigStartAmount)) {
-        throw new Error('Chainsaw has not caught up yet.')
+      if (res && new BN(res[0].ethBalanceA).gt(bigStartAmount)) {
+        done()
       }
     }, 48)
   }
@@ -271,7 +283,7 @@ export default class DepositTransaction {
       return [
         depositArgs,
         ledgerId,
-        needsCollateral,
+        needsCollateral
       ]
     }
 
@@ -283,17 +295,17 @@ export default class DepositTransaction {
         channelId: ledgerId,
         deposit: {
           ethDeposit,
-          tokenDeposit,
+          tokenDeposit
         }
       })
-    } catch(e) {
+    } catch (e) {
       console.error('connext.requestHubDeposit failed', e)
       throw e
     }
     return [
       depositArgs,
       ledgerId,
-      needsCollateral,
+      needsCollateral
     ]
   }
 

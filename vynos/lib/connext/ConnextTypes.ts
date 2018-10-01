@@ -30,6 +30,7 @@ export enum ChannelType {
   LEDGER = 'LEDGER',
   VIRTUAL = 'VIRTUAL',
   WITHDRAWAL = 'WITHDRAWAL',
+  EXCHANGE = 'EXCHANGE'
 }
 
 // Note: coppied from hub/src/domain/LedgerChannel.ts
@@ -79,7 +80,7 @@ export interface BalanceType {
 
 export interface PaymentObject {
   type: ChannelType
-  meta: PaymentMeta
+  meta: PaymentMeta|any
   payment: {
     channelId: string
     balanceA: BalanceType

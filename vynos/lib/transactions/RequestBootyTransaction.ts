@@ -3,7 +3,7 @@ import {WorkerState} from '../../worker/WorkerState'
 import {Store} from 'redux'
 import Logger from '../Logger'
 import requestJson, {postJson} from '../../frame/lib/request'
-import withRetries from '../withRetries'
+import withRetries, {DoneFunc} from '../withRetries'
 
 export interface RequestBootyDisbursementResponse {
   id: number
@@ -11,7 +11,7 @@ export interface RequestBootyDisbursementResponse {
 
 export interface BootyDisbursementStatus {
   id: number,
-  status: 'NEW' | 'PENDING' | 'COMPLETE' | 'FAILED'
+  status: 'NEW' | 'PENDING' | 'CONFIRMED' | 'FAILED'
 }
 
 export default class RequestBootyTransaction {
@@ -28,20 +28,20 @@ export default class RequestBootyTransaction {
 
   requestDisbursement = async (): Promise<[string, number]> => {
     const addr = this.store.getState().runtime.wallet!.getAddressString()
-    const res = await postJson<RequestBootyDisbursementResponse>(`${process.env.HUB_URL}/accounts/${addr}/requestBootyDisbursement`)
+    const res = await postJson<RequestBootyDisbursementResponse>(`${process.env.HUB_URL}/disbursement/address/${addr}/requestBootyDisbursement`)
     return [addr, res.id]
   }
 
   pollDisbursementStatus = async (addr: string, id: number): Promise<void> => {
-    await withRetries(async () => {
-      const res = await requestJson<BootyDisbursementStatus>(`${process.env.HUB_URL}/accounts/${addr}/bootyDisbursements/${id}`)
+    await withRetries(async (done: DoneFunc) => {
+      const res = await requestJson<BootyDisbursementStatus>(`${process.env.HUB_URL}/disbursement/address/${addr}/bootyDisbursement/${id}`)
 
       if (res.status === 'FAILED') {
         throw new Error('Disbursement failed.')
       }
 
-      if (res.status !== 'COMPLETE') {
-        throw new Error('Chainsaw has not caught up yet.')
+      if (res.status === 'CONFIRMED') {
+        done()
       }
     })
   }

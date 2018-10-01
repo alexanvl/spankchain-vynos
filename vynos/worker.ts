@@ -43,6 +43,14 @@ import WithdrawalController from './worker/controllers/WithdrawalController'
 import * as actions from './worker/actions'
 import { IConnext } from './lib/connext/ConnextTypes'
 import requestJson from './frame/lib/request'
+import Migrator, {MigrationMap} from './migrations/Migrator'
+import CloseChannelMigration from './migrations/CloseChannelMigration'
+import RequestBootyMigration from './migrations/RequestBootyMigration'
+import CloseChannelTransaction from './lib/transactions/CloseChannelTransaction'
+import semaphore = require('semaphore')
+import RequestBootyTransaction from './lib/transactions/RequestBootyTransaction'
+import DepositMigration from './migrations/DepositMigration'
+import DepositTransaction from './lib/transactions/DepositTransaction'
 
 
 export class ClientWrapper implements WindowClient {
@@ -193,6 +201,52 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     let addressBalanceController: AddressBalanceController
     let withdrawalController: WithdrawalController
     lockStateObserver.addUnlockHandler(async () => {
+      const address = store.getState().runtime.wallet!.getAddressString()
+
+      const migrations: MigrationMap = {
+        close_channel: new CloseChannelMigration(
+          logger,
+          'close_channel',
+          address,
+          new CloseChannelTransaction(
+            store,
+            logger,
+            connext,
+            semaphore(1),
+            chanPopulator,
+          )
+        ),
+        request_booty_disbursement: new RequestBootyMigration(
+          logger,
+          'request_booty_disbursement',
+          address,
+          new RequestBootyTransaction(
+            store,
+            logger
+          )
+        ),
+        open_channel: new DepositMigration(
+          logger,
+          'open_channel',
+          address,
+          new DepositTransaction(
+            store,
+            connext,
+            semaphore(1),
+            chanPopulator,
+            web3,
+            logger
+          ),
+          web3
+        ),
+        exchange_booty: {
+          execute: async () => {}
+        }
+      }
+
+      const migrator = new Migrator(store, migrations, address)
+      await migrator.catchUp()
+
       micropaymentsController = new MicropaymentsController(store, logger, connext, chanPopulator, web3)
       virtualChannelsController = new VirtualChannelsController(logger, chanPopulator)
       addressBalanceController = new AddressBalanceController(sharedStateView, store, web3, micropaymentsController, logger)
