@@ -6,7 +6,7 @@ import {AtomicTransaction} from './AtomicTransaction'
 import Logger from '../Logger'
 import {IConnext} from '../connext/ConnextTypes'
 import * as BigNumber from 'bignumber.js'
-import {ETHER} from '../constants'
+import {ETHER, BEI_PER_BOOTY} from '../constants'
 import requestJson from '../../frame/lib/request'
 
 import exchangeTransaction from './ExchangeTransaction'
@@ -19,6 +19,8 @@ import exchangeTransaction from './ExchangeTransaction'
  * The actual Exchange itself is handled by ExchangeTransaction
  *
  */
+
+const WEI_PER_ETH = ETHER
 
 export type HubBootyLoadResponse = {
   bootyLimit: string, // decimal string
@@ -103,7 +105,9 @@ export default class Exchange {
 
     console.log('I am guessing this bootyLimit to be in BEI and not BOOTY, is it?', bootyLimit)
 
-    const beiPerWei = new BigNumber(1).div(new BigNumber(ethPrice)).mul(ETHER.toString(10)).toString(10)
+    const beiPerWei = new BigNumber(BEI_PER_BOOTY)
+      .mul(ethPrice)
+      .div(WEI_PER_ETH.toString(10))
 
     console.log('beiPerWei')
 
