@@ -78,14 +78,16 @@ export interface BalanceType {
   tokenDeposit?: BN
 }
 
+export interface PaymentType {
+  channelId: string
+  balanceA: BalanceType
+  balanceB: BalanceType
+}
+
 export interface PaymentObject {
   type: ChannelType
   meta: PaymentMeta|any
-  payment: {
-    channelId: string
-    balanceA: BalanceType
-    balanceB: BalanceType
-  }
+  payment: PaymentType
 }
 
 export interface Deposit {

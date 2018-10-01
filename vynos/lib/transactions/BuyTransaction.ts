@@ -9,15 +9,17 @@ import {
   VirtualChannel, UpdateBalancesResult,
 } from '../connext/ConnextTypes'
 import { WorkerState, ChannelState, CurrencyType as C } from '../../worker/WorkerState'
+import { LedgerChannel, PaymentType} from '../connext/ConnextTypes'
+import { CurrencyType } from '../../worker/WorkerState'
 import LockStateObserver from '../LockStateObserver'
 import { AtomicTransaction } from './AtomicTransaction'
 import {closeAllVCs} from '../connext/closeAllVCs'
-import {INITIAL_DEPOSIT_BOOTY} from '../constants'
+import {INITIAL_DEPOSIT_BOOTY, INITIAL_DEPOSIT_ETH} from '../constants'
 import takeSem from '../takeSem'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import getChannels from '../connext/getChannels'
 import Logger from '../Logger'
-import Currency from '../currency/Currency'
+import Currency, { ICurrency } from '../currency/Currency'
 
 /**
  * The BuyTransaction handles purchases and tips
@@ -31,9 +33,60 @@ import Currency from '../currency/Currency'
 
 type _Args<T> = T extends (...args: infer U) => any ? U : never
 
+/**
+ * Returns a function which will accept a currency pair and reutrn the currency
+ * of type ``type``.
+ */
+function typeGetter<T extends C>(type: T): ((p: CurrencyPair) => Currency<T>) & { idx: number } {
+  const typeIdx = (
+    type == 'ETH' ? 0 :
+    type == 'BOOTY' ? 1 :
+    null
+  )
+  if (typeIdx === null)
+    throw new Error('Unexpected purchase currency type (must be ETH or BOOTY): ' + type)
+  const res: any = (p: CurrencyPair) => p[typeIdx]
+  res.idx = typeIdx
+  return res
+}
+
+/**
+ * Accepts an amount and returns a tuple of [BN, BN], where one BN is 0 and
+ * the other is the ``amount``:
+ *
+ * > amountPair({ type: 'BOOTY', amount: '10' })
+ * [0, '10']
+ */
+function amountPair(amount: ICurrency): [BN, BN] {
+  const curType = typeGetter(amount.type)
+  return [
+    new BN(curType.idx == 0 ? '0' : amount.amount),
+    new BN(curType.idx == 1 ? '0' : amount.amount),
+  ]
+}
+
+/**
+ * Accepts an amount and returns a CurrencyPair, where one is 0 and the other
+ * is the ``amount``.
+ *
+ * > currencyPair({ type: 'ETH', amount: '69' })
+ * [Currency('ETH', 69), Currency('BOOTY', 0)]
+ */
+function currencyPair(amount: ICurrency): CurrencyPair {
+  const pair = amountPair(amount)
+  return [
+    new Currency(C.ETH, pair[0]),
+    new Currency(C.BOOTY, pair[1]),
+  ]
+}
+
+type CurrencyPair = [Currency<C.ETH>, Currency<C.BOOTY>]
 
 export default class BuyTransaction {
-  static DEFAULT_DEPOSIT = new Currency(C.BOOTY, INITIAL_DEPOSIT_BOOTY.toString())
+  static DEFAULT_DEPOSIT: CurrencyPair = [
+    new Currency(C.ETH, INITIAL_DEPOSIT_ETH.toString()),
+    new Currency(C.BOOTY, INITIAL_DEPOSIT_BOOTY.toString()),
+  ]
 
   private doBuyTransaction: AtomicTransaction<VynosBuyResponse, _Args<BuyTransaction['getExistingChannel']>>
   private connext: IConnext
@@ -70,7 +123,7 @@ export default class BuyTransaction {
 
   public isInProgress = (): boolean => this.doBuyTransaction.isInProgress()
 
-  private getExistingChannel = async (purchase: VynosPurchase<C.BOOTY>): Promise<_Args<BuyTransaction['getVC']>> => {
+  private getExistingChannel = async (purchase: VynosPurchase): Promise<_Args<BuyTransaction['getVC']>> => {
     const lcState = await getChannels(this.connext, this.store)
     if (!lcState) {
       throw new Error('A channel must be open')
@@ -112,23 +165,64 @@ export default class BuyTransaction {
     const existingVC: VirtualChannel|undefined = lcState.currentVCs
       .find((testVc: VirtualChannel) => recipients[1] == testVc.partyB)
 
-    let vcAmount = new Currency(purchase.payments[1].amount)
-    const vc = existingVC && vcAmount.compare('lte', existingVC.tokenBalanceA, C.BOOTY)
-      ? existingVC
-      : await this.createNewVC(recipients[1], vcAmount)
+    const purchaseAmountTypes = purchase.payments.map(p => p.amount.type)
+    if (purchaseAmountTypes[0] != purchaseAmountTypes[1])
+      throw new Error('Purchase amount types do not match: ' + JSON.stringify(purchaseAmountTypes))
 
-      return [purchase, lcState, vc]
+    const vcAmount = new Currency(purchase.payments[1].amount)
+    const useExistingVc = (
+      existingVC &&
+      vcAmount.compare('lte', [
+        existingVC.ethBalanceA,
+        existingVC.tokenBalanceA,
+      ][typeGetter(purchaseAmountTypes[0]).idx])
+    )
+    const vc = (
+      existingVC && useExistingVc ? existingVC
+      : await this.createNewVC(recipients[1], vcAmount)
+    )
+
+    return [purchase, lcState, vc]
   }
 
   private updateBalance = async (
-    purchase: VynosPurchase<C.BOOTY>,
+    purchase: VynosPurchase,
     lcState: ChannelState,
     vc: VirtualChannel,
   ): Promise<_Args<BuyTransaction['updateStore']>> => {
     // As noted above, for now the first payment in the purchase is always
     // the LC payment and the second purchase is always the VC payment.
-    const [ lcPayment, vcPayment ] = purchase.payments
     const lc = lcState.lc
+
+    const makePayment = (chan: LedgerChannel | VirtualChannel): PaymentType  => {
+      const payment =  'openVcs' in chan ? purchase.payments[0] : purchase.payments[1]
+      const curType = typeGetter(payment.amount.type)
+      const payments = amountPair(payment.amount)
+      const balances = {
+        A: [
+          new BN(chan.ethBalanceA),
+          new BN(chan.tokenBalanceA),
+        ],
+        B: [
+          new BN('openVcs' in chan ? chan.ethBalanceI : chan.ethBalanceB),
+          new BN('openVcs' in chan ? chan.tokenBalanceI : chan.tokenBalanceB),
+        ],
+      }
+
+      return {
+        channelId: chan.channelId,
+        balanceA: {
+          ethDeposit: balances.A[0].sub(payments[0]),
+          tokenDeposit: balances.A[1].sub(payments[1]),
+        },
+        balanceB: {
+          ethDeposit: balances.A[0].add(payments[0]),
+          tokenDeposit: balances.A[1].add(payments[1]),
+        },
+      }
+    }
+
+    const [ lcPayment, vcPayment ] = purchase.payments
     const connextUpdate: PaymentObject[] = [
       {
         type: ChannelType.LEDGER,
@@ -143,15 +237,7 @@ export default class BuyTransaction {
             ...purchase.fields,
           } as any,
         },
-        payment: {
-          channelId: lc.channelId,
-          balanceA: {
-            tokenDeposit: new BN(lc.tokenBalanceA).sub(new BN(lcPayment.amount.amount)),
-          },
-          balanceB: {
-            tokenDeposit: new BN(lc.tokenBalanceI).add(new BN(lcPayment.amount.amount)),
-          },
-        },
+        payment: makePayment(lc),
       },
 
       {
@@ -171,15 +257,7 @@ export default class BuyTransaction {
             originalType: vcPayment.type,
           } as any,
         },
-        payment: {
-          channelId: vc.channelId,
-          balanceA: {
-            tokenDeposit: new BN(vc.tokenBalanceA).sub(new BN(vcPayment.amount.amount)),
-          },
-          balanceB: {
-            tokenDeposit: new BN(vc.tokenBalanceB).add(new BN(vcPayment.amount.amount)),
-          },
-        },
+        payment: makePayment(vc),
       },
     ]
 
@@ -215,27 +293,23 @@ export default class BuyTransaction {
   // helpers
   private createNewVC = async (
     receiver: string,
-    price: Currency<C.BOOTY>,
+    price: Currency,
   ): Promise<VirtualChannel> => {
     await closeAllVCs(this.store, this.connext)
 
-    const deposit: Currency = await this.getBootyDepositAmount(price)
-    if (deposit.type != C.BOOTY) {
-      // As above, for the moment, we're using exclusively BOOTY, so this is
-      // a safe check. In the future this will need to be generalized.
-      throw new Error('For now, VCs must be created with BOOTY (but got: ' + deposit.type + ')')
-    }
+    const depositAmounts = await this.getDepositAmounts(price)
 
     let newVCId: string
     try {
       newVCId = await this.connext.openThread({
         to: receiver,
         deposit: {
-          tokenDeposit: deposit.amountBN,
+          ethDeposit: depositAmounts[0].amountBN,
+          tokenDeposit: depositAmounts[1].amountBN,
         }
       })
     } catch(e) {
-      console.error('connext.openThread failed', e)
+      console.error('connext.openThread with', depositAmounts, 'failed:', e)
       throw e
     }
     try {
@@ -246,33 +320,37 @@ export default class BuyTransaction {
     }
   }
 
-  private getBootyDepositAmount = async (priceBOOTY: Currency<C.BOOTY>): Promise<Currency> => {
-    const available = await this.getAvailableLCBalanceInBOOTY()
-    const dflt = BuyTransaction.DEFAULT_DEPOSIT
+  private getDepositAmounts = async (price: Currency): Promise<CurrencyPair> => {
+    const curType = typeGetter(price.type)
+    const available = curType(await this.getAvailableLCBalances())
+    const dflt = curType(BuyTransaction.DEFAULT_DEPOSIT)
 
-    if (priceBOOTY.compare('gt', available)) {
+    if (price.compare('gt', available)) {
       throw new Error(
         `The price cannot be larger than the available LC balance when opening a new channel. ` +
-        `Price (BOOTY): ${priceBOOTY.amountBigNumber.div('1e18').toFixed()} ` +
-        `availableLcBalance (BOOTY): ${available.amountBigNumber.div('1e18').toFixed()}`
+        `Price (${price.type}): ${price.amountBigNumber.div('1e18').toFixed()} ` +
+        `availableLcBalance (${price.type}): ${available.amountBigNumber.div('1e18').toFixed()}`
       )
     }
 
     if (available.compare('lt', dflt))
-      return available
+      return currencyPair(available)
 
-    if (priceBOOTY.compare('gt', dflt))
-      return priceBOOTY
+    if (price.compare('gt', dflt))
+      return currencyPair(price)
 
-    return dflt
+    return currencyPair(dflt)
   }
 
-  private getAvailableLCBalanceInBOOTY = async (): Promise<Currency<C.BOOTY>> => {
+  private getAvailableLCBalances = async (): Promise<CurrencyPair> => {
     const channels = await getCurrentLedgerChannels(this.connext, this.store)
     if (!channels) {
       throw new Error('Expected to find ledger channels.')
     }
 
-    return new Currency(C.BOOTY, channels[0].tokenBalanceA)
+    return [
+      new Currency(C.ETH, channels[0].ethBalanceA),
+      new Currency(C.BOOTY, channels[0].tokenBalanceA),
+    ]
   }
 }
