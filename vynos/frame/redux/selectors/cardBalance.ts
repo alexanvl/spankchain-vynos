@@ -3,5 +3,5 @@ import BN = require('bn.js')
 
 export function cardBalance (sharedState: SharedState): BN {
   const channel = sharedState.channel
-  return new BN(channel.balances.ethBalance.amount)
+  return new BN(channel ? channel.balances.ethBalance.amount : 0)
 }

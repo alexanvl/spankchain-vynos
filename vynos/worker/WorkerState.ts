@@ -1,5 +1,5 @@
 import Wallet from 'ethereumjs-wallet'
-import {MetaFields, PurchaseMetaType, VirtualChannel, LedgerChannel} from '../lib/connext/ConnextTypes'
+import {PurchaseMetaFields, PurchaseMetaType, VirtualChannel, LedgerChannel} from '../lib/connext/ConnextTypes'
 import { ICurrency } from '../lib/currency/Currency'
 
 export interface RuntimeState {
@@ -60,7 +60,7 @@ export type ExchangeRates = {[key: string/* in CurrencyType*/]: string}
 export interface HistoryItem {
   payment: {
     channelId: string,
-    meta: MetaFields,
+    meta: PurchaseMetaFields,
     token: string
   }
   fields: {
@@ -224,7 +224,7 @@ const initialTransactionState = () => ({
   nextMethodArgs: []
 })
 
-export const INITIAL_STATE: WorkerState = {
+export const GET_INITIAL_STATE = (): WorkerState => ({
   persistent: {
     didInit: false,
     rememberPath: '/',
@@ -296,7 +296,9 @@ export const INITIAL_STATE: WorkerState = {
     moreEthNeeded: false,
     isMigrating: false,
   }
-}
+})
+
+export const INITIAL_STATE = GET_INITIAL_STATE()
 
 export function buildSharedState (state: WorkerState): SharedState {
   return {

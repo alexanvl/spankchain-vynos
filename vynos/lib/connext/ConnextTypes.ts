@@ -21,21 +21,27 @@ export enum PurchaseMetaType {
   WITHDRAWAL = 'WITHDRAWAL'
 }
 
+export enum PaymentMetaType {
+  FEE = 'FEE',
+  PRINCIPAL = 'PRINCIPAL'
+}
+
 export enum ChannelType {
   LEDGER = 'LEDGER',
   VIRTUAL = 'VIRTUAL',
   WITHDRAWAL = 'WITHDRAWAL',
 }
 
+// Note: coppied from hub/src/domain/LedgerChannel.ts
 export interface LedgerChannel {
+  state: string // LcStatus
+  ethBalanceA: string
+  ethBalanceI: string
+  tokenBalanceA: string
+  tokenBalanceI: string
   channelId: string
   partyA: string
   partyI: string
-  ethBalanceA: string
-  ethBalanceI: string
-  state: string 
-  tokenBalanceA: string 
-  tokenBalanceI: string
   nonce: number 
   openVcs: number 
   vcRootHash: string 
@@ -43,7 +49,7 @@ export interface LedgerChannel {
   updateTimeout: any
 }
 
-export interface MetaFields {
+export interface PurchaseMetaFields {
   streamId: string
   streamName: string
   peformerId: string
@@ -52,10 +58,18 @@ export interface MetaFields {
 
 export interface WithdrawalFields {recipient: string}
 
-export type Meta = {
-  fields: MetaFields|WithdrawalFields
-  receiver: string
+export type PurchaseMeta = {
+  fields: PurchaseMetaFields
   type: PurchaseMetaType
+}
+
+export type PaymentMeta = {
+  fields?: WithdrawalFields
+  receiver: string
+  // Note: for backwards compatibility, allow payments to use purchase types
+  // to reduce the amount we'll need to change on the hub side. Eventually
+  // this type should come entirely from the purchase, though.
+  type: PaymentMetaType | PurchaseMetaType
 }
 
 export interface BalanceType {
@@ -65,7 +79,7 @@ export interface BalanceType {
 
 export interface PaymentObject {
   type: ChannelType
-  meta: Meta
+  meta: PaymentMeta
   payment: {
     channelId: string
     balanceA: BalanceType
@@ -78,12 +92,53 @@ export interface Deposit {
   tokenDeposit?: BN | null;
 }
 
+// Note: coppied from hub/src/domain/VirtualChannel.ts
+export interface VcStateUpdate {
+  id: number
+  channelId: string
+  nonce: number
+  ethBalanceA: string
+  ethBalanceB: string
+  tokenBalanceA: string
+  tokenBalanceB: string
+  price?: string
+  sigA?: string
+  sigB?: string
+  createdAt: number
+}
+
+// Note: coppied from hub/src/domain/LedgerChannel.ts
+export interface LcStateUpdate {
+  id: number
+  channelId: string
+  isClose: boolean
+  nonce: number
+  openVcs: number
+  vcRootHash: string
+  ethBalanceA: string
+  ethBalanceI: string
+  tokenBalanceA: string
+  tokenBalanceI: string
+  price?: string
+  sigA?: string
+  sigI?: string
+}
+
+
+export interface UpdateBalancesResult {
+  purchaseId: string
+  receipts: Array<
+    ({ type: ChannelType.LEDGER } & LcStateUpdate) |
+    ({ type: ChannelType.VIRTUAL } & VcStateUpdate)
+  >
+}
+
 export interface IConnext {
   openChannel: (initialDeposits: Deposit, tokenAddresss?: string, sender?: string, challenge?: string) => Promise<string>
 
-  updateBalances: (update: PaymentObject[], sender?: string) => any
+  updateBalances: (update: PaymentObject[], sender?: string) => UpdateBalancesResult
 
-  openThread: (thread: {to: string, deposit: {ethDeposit: BN, tokenDeposit?: BN}}, sender?: string) => string
+  openThread: (thread: {to: string, deposit: {ethDeposit: BN} | {tokenDeposit: BN}}, sender?: string) => string
 
   getThreadById: (threadId: string) => VirtualChannel
 

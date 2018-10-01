@@ -1,16 +1,21 @@
 import { Store } from 'redux'
+import { VynosPurchase } from '../VynosPurchase'
 import VynosBuyResponse from '../VynosBuyResponse'
 import BN = require('bn.js')
 import * as semaphore from 'semaphore'
-import { Meta, ChannelType, PaymentObject, IConnext, VirtualChannel} from '../connext/ConnextTypes'
 import * as actions from '../../worker/actions'
+import {
+  PurchaseMeta, PaymentMeta, ChannelType, PaymentObject, IConnext,
+  VirtualChannel, UpdateBalancesResult,
+} from '../connext/ConnextTypes'
+import { WorkerState, ChannelState, CurrencyType as C } from '../../worker/WorkerState'
+import LockStateObserver from '../LockStateObserver'
 import { AtomicTransaction } from './AtomicTransaction'
-import { WorkerState, ChannelState,CurrencyType } from '../../worker/WorkerState'
 import {closeAllVCs} from '../connext/closeAllVCs'
-import {TEN_FINNEY} from '../constants'
+import {INITIAL_DEPOSIT_BOOTY} from '../constants'
 import takeSem from '../takeSem'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
-import Currency from '../currency/Currency'
+import Currency from '../Currency/Currency'
 import getChannels from '../connext/getChannels'
 import Logger from '../Logger'
 
@@ -24,10 +29,13 @@ import Logger from '../Logger'
  * Author: William Cory -- GitHub: roninjin10
  */
 
-export default class BuyTransaction {
-  static DEFAULT_DEPOSIT = new Currency(CurrencyType.WEI, TEN_FINNEY.toString(10))
+type _Args<T> = T extends (...args: infer U) => any ? U : never
 
-  private doBuyTransaction: AtomicTransaction<VynosBuyResponse, [Currency, Meta]>
+
+export default class BuyTransaction {
+  static DEFAULT_DEPOSIT = new Currency(C.BOOTY, INITIAL_DEPOSIT_BOOTY.toString())
+
+  private doBuyTransaction: AtomicTransaction<VynosBuyResponse, _Args<BuyTransaction['getExistingChannel']>>
   private connext: IConnext
   private store: Store<WorkerState>
   private sem: semaphore.Semaphore
@@ -43,10 +51,12 @@ export default class BuyTransaction {
       this.updateBalance,
       this.updateStore,
     ]
-    this.doBuyTransaction = new AtomicTransaction<VynosBuyResponse, [Currency, Meta]>(this.store, logger, 'buy', methodOrder)
+    this.doBuyTransaction = new AtomicTransaction(this.store, logger, 'buy', methodOrder)
   }
 
-  public startTransaction = (priceWEI: Currency, meta: Meta): Promise<VynosBuyResponse> => this.doBuyTransaction.start(priceWEI, meta)
+  public startTransaction = async (purchase: VynosPurchase): Promise<VynosBuyResponse> => {
+    return await this.doBuyTransaction.start(purchase)
+  }
 
   public restartTransaction = async (): Promise<VynosBuyResponse|null> => {
     if (!this.isInProgress()) {
@@ -60,51 +70,117 @@ export default class BuyTransaction {
 
   public isInProgress = (): boolean => this.doBuyTransaction.isInProgress()
 
-  private getExistingChannel = async (priceWEI: Currency, meta: Meta): Promise<[Currency, Meta, ChannelState]> => {
-    const existingChannel = await getChannels(this.connext, this.store)
-    if (!existingChannel) {
+  private getExistingChannel = async (purchase: VynosPurchase<C.BOOTY>): Promise<_Args<BuyTransaction['getVC']>> => {
+    const lcState = await getChannels(this.connext, this.store)
+    if (!lcState) {
       throw new Error('A channel must be open')
     }
-    return [priceWEI, meta, existingChannel]
+    return [purchase, lcState]
   }
 
-  private getVC = async (priceWEI: Currency, meta: Meta, existingChannel: ChannelState): Promise<[Currency, Meta, VirtualChannel]> => {
-    const existingVC: VirtualChannel|undefined = existingChannel.currentVCs
-      .find((testVc: VirtualChannel) => testVc.partyB === meta.receiver)
+  private getVC = async (
+    purchase: VynosPurchase,
+    lcState: ChannelState,
+  ): Promise<_Args<BuyTransaction['updateBalance']>> => {
+    const recipients = purchase.payments.map(p => p.receiver)
+    if (recipients.length != 2) {
+      // For now, assume that payments have exactly two recipients: Ingrid and
+      // Bob (in that order). In the future we'll need to relax this constraint
+      // (to handle LC-only, VC-only, and non-custodial payments), but it's
+      // safe to make this assumption for now.
+      throw new Error(
+        'Incorrect number of purcahse recipients; 2 expected, but got: ' +
+        JSON.stringify(recipients)
+      )
+    }
 
-    const vc = existingVC && priceWEI.amountBN.lte(new BN(existingVC.ethBalanceA))
+    // For now, to simplify the camsite, replace the magical value '$$HUB$$'
+    // with Ingrid's address (so the camsite doesn't need to know what it is)
+    if (recipients[0] == '$$HUB$$') {
+      recipients[0] = lcState.lc.partyI
+      purchase.payments[0].receiver = lcState.lc.partyI
+    }
+
+    if (recipients[0] != lcState.lc.partyI) {
+      // As above, this constraint can be relaxed in the future.
+      throw new Error(
+        `Expected the first recipient to be Ingrid ('${lcState.lc.partyI}') ` +
+        `but it is not: ${JSON.stringify(recipients)}`
+      )
+    }
+
+    const existingVC: VirtualChannel|undefined = lcState.currentVCs
+      .find((testVc: VirtualChannel) => recipients[1] == testVc.partyB)
+
+    let vcAmount = new Currency(purchase.payments[1].amount)
+    const vc = existingVC && vcAmount.compare('lte', existingVC.tokenBalanceA, C.BOOTY)
       ? existingVC
-      : await this.createNewVC(meta.receiver, priceWEI)
+      : await this.createNewVC(recipients[1], vcAmount)
 
-      return [
-      priceWEI,
-      meta,
-      vc,
-    ]
+      return [purchase, lcState, vc]
   }
 
   private updateBalance = async (
-    priceWEI: Currency,
-    meta: Meta,
-    vc: VirtualChannel
-  ): Promise<[VirtualChannel, string]> => {
-    const balA = new BN(vc.ethBalanceA).sub(priceWEI.amountBN)
-    const balB = new BN(vc.ethBalanceB).add(priceWEI.amountBN)
-
+    purchase: VynosPurchase<C.BOOTY>,
+    lcState: ChannelState,
+    vc: VirtualChannel,
+  ): Promise<_Args<BuyTransaction['updateStore']>> => {
+    // As noted above, for now the first payment in the purchase is always
+    // the LC payment and the second purchase is always the VC payment.
+    const [ lcPayment, vcPayment ] = purchase.payments
+    const lc = lcState.lc
     const connextUpdate: PaymentObject[] = [
       {
+        type: ChannelType.LEDGER,
+        meta: {
+          receiver: lc.partyI,
+          type: lcPayment.type,
+          fields: {
+            ...lcPayment.fields,
+            // Note: for now, copy the purchase fields onto both the payments.
+            // Eventually this should be replaced with a first-class "purchase"
+            // type which will store the fields... but this will do for now.
+            ...purchase.fields,
+          } as any,
+        },
         payment: {
+          channelId: lc.channelId,
           balanceA: {
-            ethDeposit: balA
+            tokenDeposit: new BN(lc.tokenBalanceA).sub(new BN(lcPayment.amount.amount)),
           },
           balanceB: {
-            ethDeposit: balB
+            tokenDeposit: new BN(lc.tokenBalanceI).add(new BN(lcPayment.amount.amount)),
           },
-          channelId: vc.channelId,
         },
-        meta,
-        type: ChannelType.VIRTUAL // this is hardcoded atm
-      }
+      },
+
+      {
+        type: ChannelType.VIRTUAL,
+        meta: {
+          receiver: vc.partyB,
+          // Note: for backwards compatibility, allow use the purchase' type to
+          // reduce the amount we'll need to change on the hub side. Eventually
+          // this type should come entirely from the purchase, though.
+          type: purchase.type,
+          fields: {
+            ...vcPayment.fields,
+            // Note: for now, copy the purchase fields onto both the payments.
+            // Eventually this should be replaced with a first-class "purchase"
+            // type which will store the fields... but this will do for now.
+            ...purchase.fields,
+            originalType: vcPayment.type,
+          } as any,
+        },
+        payment: {
+          channelId: vc.channelId,
+          balanceA: {
+            tokenDeposit: new BN(vc.tokenBalanceA).sub(new BN(vcPayment.amount.amount)),
+          },
+          balanceB: {
+            tokenDeposit: new BN(vc.tokenBalanceB).add(new BN(vcPayment.amount.amount)),
+          },
+        },
+      },
     ]
 
     let res: any
@@ -116,45 +192,46 @@ export default class BuyTransaction {
       throw e
     }
 
-    const vcCopy: VirtualChannel = JSON.parse(JSON.stringify(vc))
-    vcCopy.ethBalanceA = balA.toString()
-    vcCopy.ethBalanceB = balB.toString()
-
     return [
-      vcCopy,
-      res[0].id.toString()
+      vc.channelId,
+      res,
     ]
   }
 
   private updateStore = async (
-    vc: VirtualChannel,
-    id: string
-  ): Promise<{channelId: string, token: string}> => {
+    vcId: string,
+    result: UpdateBalancesResult,
+  ): Promise<{channelId: string, result: UpdateBalancesResult}> => {
     this.store.dispatch(actions.setChannel(
       await getChannels(this.connext, this.store)
     ))
 
     return {
-      channelId: vc.channelId,
-      token: id,
+      channelId: vcId,
+      result,
     }
   }
 
   // helpers
   private createNewVC = async (
     receiver: string,
-    priceWEI: Currency
+    price: Currency<C.BOOTY>,
   ): Promise<VirtualChannel> => {
     await closeAllVCs(this.store, this.connext)
 
-    let newVCId: string
-    const ethDeposit: Currency = await this.getEthDepositAmountInWEI(priceWEI)
+    const deposit: Currency = await this.getBootyDepositAmount(price)
+    if (deposit.type != C.BOOTY) {
+      // As above, for the moment, we're using exclusively BOOTY, so this is
+      // a safe check. In the future this will need to be generalized.
+      throw new Error('For now, VCs must be created with BOOTY (but got: ' + deposit.type + ')')
+    }
 
+    let newVCId: string
     try {
       newVCId = await this.connext.openThread({
         to: receiver,
         deposit: {
-          ethDeposit: ethDeposit.amountBN
+          tokenDeposit: deposit.amountBN,
         }
       })
     } catch(e) {
@@ -169,34 +246,33 @@ export default class BuyTransaction {
     }
   }
 
-  private getEthDepositAmountInWEI = async (priceWEI: Currency): Promise<Currency> => {
-    const availableWEI: Currency = await this.getAvailableLCBalanceInWEI()
-    const defaultWEI: Currency = BuyTransaction.DEFAULT_DEPOSIT
+  private getBootyDepositAmount = async (priceBOOTY: Currency<C.BOOTY>): Promise<Currency> => {
+    const available = await this.getAvailableLCBalanceInBOOTY()
+    const dflt = BuyTransaction.DEFAULT_DEPOSIT
 
-    if (priceWEI.amountBN.gt(availableWEI.amountBN)) {
-      throw new Error(`
-        The price cannot be larger than the available LC balance when opening a new channel.
-        Price: ${priceWEI.amountBN.toString(10)} availableLcBalance: ${availableWEI.amountBN.toString(10)}
-      `)
+    if (priceBOOTY.compare('gt', available)) {
+      throw new Error(
+        `The price cannot be larger than the available LC balance when opening a new channel. ` +
+        `Price (BOOTY): ${priceBOOTY.amountBigNumber.div('1e18').toFixed()} ` +
+        `availableLcBalance (BOOTY): ${available.amountBigNumber.div('1e18').toFixed()}`
+      )
     }
 
-    if (availableWEI.amountBN.lt(defaultWEI.amountBN)) {
-      return availableWEI
-    }
+    if (available.compare('lt', dflt))
+      return available
 
-    if (priceWEI.amountBN.gt(defaultWEI.amountBN)) {
-      return priceWEI
-    }
+    if (priceBOOTY.compare('gt', dflt))
+      return priceBOOTY
 
-    return defaultWEI
+    return dflt
   }
 
-  private getAvailableLCBalanceInWEI = async (): Promise<Currency> => {
+  private getAvailableLCBalanceInBOOTY = async (): Promise<Currency<C.BOOTY>> => {
     const channels = await getCurrentLedgerChannels(this.connext, this.store)
     if (!channels) {
       throw new Error('Expected to find ledger channels.')
     }
 
-    return new Currency(CurrencyType.WEI, channels[0].ethBalanceA)
+    return new Currency(C.BOOTY, channels[0].tokenBalanceA)
   }
 }

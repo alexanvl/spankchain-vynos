@@ -34,10 +34,11 @@ const aggregateBalance = (
   address: string,
   vcs: VirtualChannel[],
   balanceType: 'ethBalance'|'tokenBalance'
-): BN => vcs.reduce((acc: BN, curr: VirtualChannel) => 
-  acc.add(getSubBalanceAmountBN(address, curr, balanceType))
-  , new BN(0)
-)
+): BN => {
+  return vcs.reduce((acc: BN, curr: VirtualChannel) => {
+    return acc.add(getSubBalanceAmountBN(address, curr, balanceType))
+  }, new BN(0))
+}
 
 const getSubBalanceAmountBN = (address: string, vc: VirtualChannel, balanceType: ConnextBalanceType): BN => {
   if (address !== vc.partyA && address !== vc.partyB) {

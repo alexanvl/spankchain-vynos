@@ -1,3 +1,4 @@
+import { VynosPurchase } from '../../lib/VynosPurchase'
 import VynosBuyResponse from '../../lib/VynosBuyResponse'
 import {WorkerState, CurrencyType} from '../WorkerState'
 import {Store} from 'redux'
@@ -51,17 +52,14 @@ export default class MicropaymentsController extends AbstractController {
     return takeSem<void>(this.sem, () => this.doDeposit(deposit))
   }
 
-  public async buy (priceStrWEI: string, meta: any): Promise<VynosBuyResponse> {
+  public async buy (purchase: VynosPurchase<CurrencyType.BOOTY>): Promise<VynosBuyResponse> {
     if (!this.sem.available(1)) {
       throw new Error('Cannot tip. Another operation is in progress.')
     }
-    const priceWEI = new Currency(CurrencyType.WEI, priceStrWEI)
+
     return takeSem<VynosBuyResponse>(this.sem, () => {
-      this.logToApi('doBuy', {
-        priceStrWEI,
-        meta
-      })
-      return this.buyTransaction.startTransaction(priceWEI, meta)
+      this.logToApi('doBuy', purchase)
+      return this.buyTransaction.startTransaction(purchase)
     })
   }
 
