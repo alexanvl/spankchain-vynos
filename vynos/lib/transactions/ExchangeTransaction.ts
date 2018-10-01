@@ -92,7 +92,6 @@ export default function exchangeTransactionV0 (
 
     const {tokenBalanceA, tokenBalanceI, ethBalanceA, ethBalanceI} = getNewBalancesBN(lc, sellAmount, buyAmount)
 
-    // ******please change this back to not any now that the types are updated from DW deposit pull request****
     await connext.updateBalances(
       [
         {
