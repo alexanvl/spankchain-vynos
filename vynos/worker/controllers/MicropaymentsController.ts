@@ -49,7 +49,9 @@ export default class MicropaymentsController extends AbstractController {
   async start (): Promise<void> {
     await this.depositTransaction.maybeCollateralize()
 
-    this.exchange.isInProgress() && await this.exchange.restartSwap()
+    if (this.exchange.isInProgress()) {
+      await this.exchange.restartSwap()
+    }
 
     if (this.depositTransaction.isInProgress()) {
       await this.depositTransaction.restartTransaction()
@@ -64,7 +66,10 @@ export default class MicropaymentsController extends AbstractController {
       throw new Error('Cannot deposit. Another operation is in progress.')
     }
     await takeSem<void>(this.sem, () => this.doDeposit(deposit))
-    this.bootySupport() && await takeSem<void>(this.sem, () => this.exchange.swapEthForBooty())
+
+    if (this.bootySupport()) {
+      await takeSem<void>(this.sem, () => this.exchange.swapEthForBooty())
+    }
   }
 
   public async buy (priceStrWEI: string, meta: any): Promise<VynosBuyResponse> {
@@ -87,15 +92,14 @@ export default class MicropaymentsController extends AbstractController {
       throw new Error('Cannot close channels.  Another operation is in progress.')
     }
 
-    this.bootySupport() && await takeSem<void>(this.sem, () => {
-      return this.exchange.swapBootyForEth()
-    })
+    if (this.bootySupport()) {
+      await takeSem<void>(this.sem, () => this.exchange.swapBootyForEth())
+    }
 
     await takeSem<void>(this.sem, () => {
       this.logToApi('doCloseChannel', {})
       return this.closeChannelTransaction.execute()
     })
-
   }
 
   public registerHandlers (server: JsonRpcServer) {
