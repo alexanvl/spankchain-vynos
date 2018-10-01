@@ -185,14 +185,12 @@ export default class DepositTransaction {
   }
 
   private doDepositExisting = async ({tokenDeposit, ethDeposit}: DepositArgs): Promise<[string]> => {
-    console.log('doDepositExisting')
     const channels = await getCurrentLedgerChannels(this.connext, this.store)
+
     if (!channels) {
       throw new Error('Expected to find ledger channels.')
     }
 
-    const startBal = channels[0].ethBalanceA
-    console.log('calling deposit', ethDeposit.amount)
     await this.connext.deposit({
       ethDeposit: new BN(ethDeposit.amount),
       tokenDeposit: tokenDeposit === undefined
@@ -200,7 +198,7 @@ export default class DepositTransaction {
         : new BN(tokenDeposit.amount)
     }, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
 
-    return [startBal]
+    return [channels[0].ethBalanceA]
   }
 
   private onStart = async () => {
@@ -307,6 +305,4 @@ export default class DepositTransaction {
     this.deferredPopulate.release()
     this.deferredPopulate = null
   }
-
-  private isBootySupport = () => !!this.store.getState().runtime.featureFlags.bootySupport
 }

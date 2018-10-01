@@ -30,7 +30,7 @@ export default class MicropaymentsController extends AbstractController {
   private connext: IConnext
   private depositTransaction: DepositTransaction
   private buyTransaction: BuyTransaction
-  private closeChannelTransaction: CloseChannelTransaction
+  private withdrawTransaction: AtomicTransaction<void>
   private exchange: Exchange
 
   constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, chanPopulator: ChannelPopulator, web3: Web3) {
@@ -43,7 +43,27 @@ export default class MicropaymentsController extends AbstractController {
 
     this.depositTransaction = new DepositTransaction(store, connext, this.sem, chanPopulator, web3, logger)
     this.buyTransaction = new BuyTransaction(store, logger, connext, this.sem)
-    this.closeChannelTransaction = new CloseChannelTransaction(store, logger, connext, this.sem, chanPopulator)
+
+    const closeChannel = async () => {
+      const cct = new CloseChannelTransaction(store, logger, connext, this.sem, chanPopulator)
+      await cct.execute()
+    }
+
+    const exchangeForEth = async () => {
+      if (this.exchange.isInProgress()) {
+        return await this.exchange.restartSwap()
+      }
+      return await this.exchange.swapBootyForEth()
+    }
+
+    this.withdrawTransaction =  new AtomicTransaction(
+      store,
+      logger,
+      'exchange-then-close',
+      [exchangeForEth, closeChannel]
+    )
+    
+    
   }
 
   async start (): Promise<void> {
@@ -58,7 +78,13 @@ export default class MicropaymentsController extends AbstractController {
       await this.exchange.swapEthForBooty()
     }
 
-    await this.buyTransaction.restartTransaction()
+    if (this.withdrawTransaction.isInProgress()) {
+      await this.withdrawTransaction.restart()
+    }
+
+    if (this.buyTransaction.isInProgress()) {
+      await this.buyTransaction.restartTransaction()
+    }
   }
 
   public async deposit (deposit: DepositArgs): Promise<void> {
@@ -98,7 +124,7 @@ export default class MicropaymentsController extends AbstractController {
 
     await takeSem<void>(this.sem, () => {
       this.logToApi('doCloseChannel', {})
-      return this.closeChannelTransaction.execute()
+      return this.withdrawTransaction.start()
     })
   }
 

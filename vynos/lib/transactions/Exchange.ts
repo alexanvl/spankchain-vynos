@@ -113,7 +113,7 @@ export default class Exchange {
 
     const updatedExchangeRates = {
       ...this.store.getState().runtime.exchangeRates,
-      [CurrencyType.BEI]: beiPerWei,
+      [CurrencyType.BEI]: beiPerWei.toString(10),
     }
 
     return {

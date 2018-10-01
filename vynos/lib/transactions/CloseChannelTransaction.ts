@@ -58,6 +58,8 @@ export default class CloseChannelTransaction {
     }
   }
 
+  public isInProgress = async () => this.doCloseChannel.isInProgress()
+
   private setHasActiveWithdrawal = async () => {
     this.store.dispatch(actions.setHasActiveWithdrawal(true))
     this.deferredPopulate = await this.chanPopulator.populateDeferred()
