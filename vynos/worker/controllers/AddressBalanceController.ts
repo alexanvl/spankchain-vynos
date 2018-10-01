@@ -3,15 +3,15 @@ import * as actions from '../actions'
 import {Store} from 'redux'
 import SharedStateView from '../SharedStateView'
 import Web3 from 'web3'
-import {WorkerState} from '../WorkerState'
+import {WorkerState, CurrencyType} from '../WorkerState'
 import {OPEN_CHANNEL_COST, RESERVE_BALANCE} from '../../lib/constants'
 import MicropaymentsController from './MicropaymentsController'
 import Currency from '../../lib/currency/Currency'
 import AbstractController from './AbstractController'
-import getAddress from '../../lib/getAddress'
 import {BasePoller} from '../../lib/poller/BasePoller'
 import {Poller} from '../../lib/poller/Poller'
 import {HumanStandardToken} from '../../lib/HumanStandardToken'
+import CurrencyConvertable from '../../lib/currency/CurrencyConvertable';
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -40,9 +40,6 @@ export default class AddressBalanceController extends AbstractController {
 
     this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
     this.poller = new BasePoller(logger)
-    this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
-
-    this.poller = new BasePoller(logger)
   }
 
   public start = async () => {
@@ -60,7 +57,7 @@ export default class AddressBalanceController extends AbstractController {
     this.poller.stop()
   }
 
-  private updateBalances = async () => {
+  private updateBalances = async (onlyUpdate = false) => {
     let address: string
     try {
       address = (await this.ssv.getAccounts())[0]
@@ -73,17 +70,21 @@ export default class AddressBalanceController extends AbstractController {
     }
 
     const ethBalance: Currency = await this.getETHBalance(address)
-    const tokenBalance: Currency = this.bootySupport()
+    const {tokenBalanceInBOOTY, tokenBalanceInBEI} = this.bootySupport()
       ? await this.getTokenBalance(address)
-      : Currency.BOOTY(0)
+      : {tokenBalanceInBOOTY: Currency.BOOTY(0), tokenBalanceInBEI: Currency.BEI(0)}
 
     this.store.dispatch(actions.setaddressBalances({
       ethBalance,
-      tokenBalance,
+      tokenBalance: tokenBalanceInBOOTY,
     }))
 
+    if (onlyUpdate) {
+      return
+    }
+
     if (
-      (!this.bootySupport() || tokenBalance.amountBigNumber.eq(0)) &&
+      (!this.bootySupport() || tokenBalanceInBEI.amountBigNumber.eq(0)) &&
       (ethBalance.amountBN.lt(RESERVE_BALANCE) ||
       ethBalance.amountBN.sub(OPEN_CHANNEL_COST).lt(RESERVE_BALANCE))
     ) {
@@ -95,12 +96,15 @@ export default class AddressBalanceController extends AbstractController {
       return
     }
 
+    await this.deposit(ethBalance, tokenBalanceInBEI)
+  }
+
+  private deposit = async (ethBalanceInWEI: Currency, tokenBalanceInBEI: Currency) => {
     let ethDeposit = Currency.WEI(
-      ethBalance
-        .amountBN
-        .sub(RESERVE_BALANCE)
-        .sub(OPEN_CHANNEL_COST)
-        .toString(10)
+      ethBalanceInWEI
+        .amountBigNumber
+        .sub(RESERVE_BALANCE.toString(10))
+        .sub(OPEN_CHANNEL_COST.toString(10))
     )
 
     if (ethDeposit.amountBigNumber.lt(0)) {
@@ -108,18 +112,13 @@ export default class AddressBalanceController extends AbstractController {
     }
 
     await this.mpc.deposit({
-      ethDeposit: ethDeposit.amount,
+      ethDeposit: ethDeposit,
       tokenDeposit: this.bootySupport()
-        ? tokenBalance.amount
-        : Currency.BOOTY(0).amount
+        ? tokenBalanceInBEI
+        : Currency.BOOTY(0),
     })
 
-    this.store.dispatch(actions.setaddressBalances({
-      ethBalance: await this.getETHBalance(address),
-      tokenBalance: this.bootySupport()
-        ? await this.getTokenBalance(address)
-        : Currency.BOOTY(0),
-    }))
+    await this.updateBalances(true)
   }
 
   private getETHBalance = (address: string): Promise<Currency> =>
@@ -131,16 +130,22 @@ export default class AddressBalanceController extends AbstractController {
       )
     )
 
-  private getTokenBalance = async (address: string): Promise<Currency> => {
+  private getTokenBalance = async (address: string): Promise<{tokenBalanceInBOOTY: Currency, tokenBalanceInBEI: Currency}> => {
     try {
       const amount = await this.bootyContract
          .methods
          .balanceOf(address)
-         .call({from: address})
-      return  Currency.BOOTY(amount)
+         .call()
+
+      const tokenBalanceInBEI = new CurrencyConvertable(CurrencyType.BEI, amount, () => this.store.getState().runtime.exchangeRates!)
+
+      const tokenBalanceInBOOTY = tokenBalanceInBEI.to(CurrencyType.BOOTY)
+
+      return  {tokenBalanceInBOOTY, tokenBalanceInBEI}
+
     } catch(e){
       console.error('unable to get ERC20 balance', {address, e})
-      return Currency.BOOTY(0)
+      return {tokenBalanceInBOOTY: Currency.BOOTY(0), tokenBalanceInBEI: Currency.BEI(0)}
     }
   }
 

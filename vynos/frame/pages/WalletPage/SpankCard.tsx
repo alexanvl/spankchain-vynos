@@ -4,7 +4,7 @@ import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
 import { FrameState } from '../../redux/FrameState'
 import { connect } from 'react-redux'
-import { BrandingState, ExchangeRates, CurrencyType } from '../../../worker/WorkerState'
+import { BrandingState, ExchangeRates, CurrencyType, Balances } from '../../../worker/WorkerState'
 import { cardBalance } from '../../redux/selectors/cardBalance'
 import WorkerProxy from '../../WorkerProxy'
 import Currency from '../../components/Currency/index'
@@ -24,9 +24,10 @@ export interface StateProps extends BrandingState {
   activeWithdrawalError: string | null
   isPendingVerification: boolean | undefined
   hasActiveDeposit: boolean
-  exchangeRates: ExchangeRates | null
+  exchangeRates: ExchangeRates
   isFrameDisplayed: boolean
   baseCurrency: CurrencyType
+  cardBalances: Balances
 }
 
 export interface UnlockPageProps extends StateProps, RouteComponentProps<any> {
@@ -54,6 +55,7 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
       isWithdrawing,
       location,
       baseCurrency,
+      cardBalances,
     } = this.props
 
 
@@ -97,6 +99,7 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
                     exchangeRates={exchangeRates}
                     hasActiveDeposit={hasActiveDeposit}
                     currencyType={baseCurrency}
+                    cardBalances={cardBalances}
                   />
                 }
               >
@@ -174,9 +177,10 @@ function mapStateToProps(state: FrameState): StateProps {
     workerProxy: state.temp.workerProxy,
     isPendingVerification: state.shared.isPendingVerification,
     hasActiveDeposit: state.shared.hasActiveDeposit,
-    exchangeRates: state.shared.exchangeRates,
+    exchangeRates: state.shared.exchangeRates!,
     isFrameDisplayed: state.shared.isFrameDisplayed,
     baseCurrency: state.shared.baseCurrency,
+    cardBalances: state.shared.channel.balances,
   }
 }
 

@@ -53,6 +53,7 @@ export enum CurrencyType {
   WEI = 'WEI',
   FINNEY = 'FINNEY',
   BOOTY = 'BOOTY',
+  BEI = 'BEI',
 }
 
 export type ExchangeRates = {[key: string/* in CurrencyType*/]: string}

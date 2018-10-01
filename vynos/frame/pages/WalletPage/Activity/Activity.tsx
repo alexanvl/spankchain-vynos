@@ -202,7 +202,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
       }
     })
 
-    const converted = new CurrencyConvertable(CurrencyType.WEI, totalWei, this.props.exchangeRates)
+    const converted = new CurrencyConvertable(CurrencyType.WEI, totalWei, () => this.props.exchangeRates)
     const total = converted.toUSD().amountBigNumber.plus(totalBooty)
     const isNeg = total.isNegative()
 

@@ -190,7 +190,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     // the below controllers do not need awareness of the lock state.
     const backgroundController = new BackgroundController(store, web3, logger)
     const frameController = new FrameController(store, logger)
-    const hubController = new HubController(store, sharedStateView, logger)
+    const hubController = new HubController(store, sharedStateView, logger) 
     const walletController = new WalletController(web3, store, logger)
     const authController = new AuthController(store, backgroundController, sharedStateView, providerOpts, frameController, logger)
 
