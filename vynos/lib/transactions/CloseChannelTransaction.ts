@@ -22,12 +22,16 @@ export default class CloseChannelTransaction {
   private doCloseChannel: AtomicTransaction<void>
   private connext: IConnext
   private store: Store<WorkerState>
+  private sem: semaphore.Semaphore
   private chanPopulator: ChannelPopulator
   private deferredPopulate: DeferredPopulator|null
+  private logger: Logger
 
   constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, sem: semaphore.Semaphore, chanPopulator: ChannelPopulator) {
     this.store = store
+    this.logger = logger
     this.connext = connext
+    this.sem = sem
     this.chanPopulator = chanPopulator
     this.deferredPopulate = null
 
@@ -38,15 +42,7 @@ export default class CloseChannelTransaction {
       this.updateRedux
     ]
 
-    this.doCloseChannel = new AtomicTransaction(
-      this.store,
-      logger,
-      'withdrawal',
-      methodOrder,
-      this.afterAll,
-      this.setHasActiveWithdrawal,
-      this.setHasActiveWithdrawal
-    )
+    this.doCloseChannel = new AtomicTransaction(this.store, logger, 'withdrawal', methodOrder, this.afterAll, this.setHasActiveWithdrawal, this.setHasActiveWithdrawal)
   }
 
   public execute = async (): Promise<void> => {
@@ -73,7 +69,7 @@ export default class CloseChannelTransaction {
     if (!channel || channel.currentVCs.length === 0) {
       return
     }
-    try {
+    try{
       this.connext.closeThreads(channel.currentVCs.map((vc) => vc.channelId) as any)
       return
     } catch(e) {
@@ -127,6 +123,4 @@ export default class CloseChannelTransaction {
     this.deferredPopulate.release()
     this.deferredPopulate = null
   }
-
-  private isBootySupport = () => !!this.store.getState().runtime.featureFlags.bootySupport
 }

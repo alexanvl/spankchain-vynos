@@ -1,5 +1,6 @@
 import BN = require('bn.js')
 import toFinney from './web3/toFinney'
+import { CurrencyType } from '../worker/WorkerState';
 
 export const GWEI = new BN('1000000000')
 export const FINNEY = toFinney(1)
@@ -16,5 +17,12 @@ export const OPEN_CHANNEL_COST = GWEI.mul(RESERVE_GAS_PRICE).mul(OPEN_CHANNEL_GA
 const actionsBeforeRefill = new BN(2)
 export const RESERVE_BALANCE = actionsBeforeRefill.mul(OPEN_CHANNEL_COST)
 
-export const BEI_PER_BOOTY = '1000000000000000000'
-export const SIXTY_NINE_BEI = '69000000000000000000'
+export const BOOTY = {
+  amount: '1000000000000000000',
+  type: CurrencyType.BEI,
+}
+
+export const SIXTY_NINE_BOOTY = {
+  amount: '69000000000000000000',
+  type: CurrencyType.BEI,
+}

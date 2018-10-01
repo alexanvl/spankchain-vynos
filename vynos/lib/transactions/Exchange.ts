@@ -6,7 +6,7 @@ import {AtomicTransaction} from './AtomicTransaction'
 import Logger from '../Logger'
 import {IConnext} from '../connext/ConnextTypes'
 import * as BigNumber from 'bignumber.js'
-import {ETHER, BEI_PER_BOOTY} from '../constants'
+import {ETHER, BOOTY} from '../constants'
 import requestJson from '../../frame/lib/request'
 
 import exchangeTransaction from './ExchangeTransaction'
@@ -105,7 +105,7 @@ export default class Exchange {
 
     console.log('I am guessing this bootyLimit to be in BEI and not BOOTY, is it?', bootyLimit)
 
-    const beiPerWei = new BigNumber(BEI_PER_BOOTY)
+    const beiPerWei = new BigNumber(BOOTY.amount)
       .mul(ethPrice)
       .div(WEI_PER_ETH.toString(10))
 

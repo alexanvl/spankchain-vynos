@@ -3,7 +3,7 @@ import {WorkerState, ExchangeRates, CurrencyType} from '../../worker/WorkerState
 import Currency from './Currency'
 import {Store} from 'redux'
 import BN = require('bn.js')
-import { BEI_PER_BOOTY } from '../constants';
+import {BOOTY} from '../constants';
 
 export type AllConversions = {[key in CurrencyType]: CurrencyConvertable}
 
@@ -15,11 +15,11 @@ export default class CurrencyConvertable extends Currency {
   constructor(type: CurrencyType, amount: BN|BigNumber.BigNumber|string|number, exchangeRates: () => ExchangeRates) {
     super(type, amount)
     this.exchangeRates = () => {
-      const er = exchangeRates()
-      if (!er) {
+      const rates = exchangeRates()
+      if (!rates) {
         throw new Error('exchange rates not set!')
       }
-      return er
+      return rates
     }
   }
 
@@ -37,10 +37,13 @@ export default class CurrencyConvertable extends Currency {
   public toBEI = (): CurrencyConvertable => this._convert(CurrencyType.BEI)
 
   private _convert = (toType: CurrencyType): CurrencyConvertable => {
+    // guaranteeing precision until more tests are written
+    // since exchange rates are based on WEI and BN and BIgNumber are mixed 
+    // more testing should be done specifically with BEI to BOOTY converstions
     if (this.type === CurrencyType.BEI && toType === CurrencyType.BOOTY) {
       return new CurrencyConvertable(
         toType,
-        this.amountBigNumber.div(BEI_PER_BOOTY),
+        this.amountBigNumber.div(BOOTY.amount),
         this.exchangeRates,
       )
     }
@@ -48,7 +51,7 @@ export default class CurrencyConvertable extends Currency {
     if (this.type === CurrencyType.BOOTY && toType === CurrencyType.BEI) {
       return new CurrencyConvertable(
         toType,
-        this.amountBigNumber.mul(BEI_PER_BOOTY),
+        this.amountBigNumber.mul(BOOTY.amount),
         this.exchangeRates,
       )
     }

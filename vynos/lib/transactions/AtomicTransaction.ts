@@ -35,23 +35,23 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   private store: Store<WorkerState>
   private logger: Logger
   private methodOrder: Function[]
-  private onStart: Function
+  private onStart: Function 
   private onRestart: Function
   private afterAll: Function
-
+  
   constructor(
-    store: Store<WorkerState>,
+    store: Store<WorkerState>, 
     logger: Logger,
-    name: string,
-    methodOrder: Function[],
-    afterAll: Function = noop,
-    onStart = noop,
+    name: string, 
+    methodOrder: Function[], 
+    afterAll: Function = noop, 
+    onStart = noop, 
     onRestart = noop
   ) {
     this.name = name
     this.store = store
     this.methodOrder = methodOrder
-    this.onStart = onStart
+    this.onStart = onStart 
     this.onRestart = onRestart
     this.afterAll = afterAll
     this.logger = logger
@@ -83,9 +83,9 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
       return await this.persistAndRun(nextMethodArgs, nextMethodIndex)
     } catch(e) {
       const data = {
-        message: 'there was an error running an AtomicTransaction',
-        name: this.name,
-        state: this.getState(),
+        message: 'there was an error running an AtomicTransaction', 
+        name: this.name, 
+        state: this.getState(), 
         e
       }
       console.error(data.message, data)
@@ -123,7 +123,7 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   }
 
   private getState = (): AtomicTransactionState => this.store.getState().persistent.transactions[this.name]
-
+  
   private setState = (newState: AtomicTransactionState): void => {
     this.store.dispatch(actions.setTransactionState({name: this.name, newState}))
   }
