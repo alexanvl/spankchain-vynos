@@ -13,6 +13,7 @@ import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
 import BN = require('bn.js')
 import Web3 = require('web3')
+import {ZERO} from '../constants'
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -139,7 +140,6 @@ export default class DepositTransaction {
 
 
   public changeDepositTransactionName = (name: string) => this.deposit.name = name
-  public changeDepositExistingTransactionName = (name: string) => this.depositExistingChannel.name = name
 
   private needsCollateral = () => this.store.getState().runtime.needsCollateral
 
@@ -164,14 +164,7 @@ export default class DepositTransaction {
 
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
     console.log('maybeErc20Approve..')
-    if (!depositObj.tokenDeposit || new BN(depositObj.tokenDeposit).eq(new BN(0))) {
-      return {
-        ...depositObj,
-        tokenDeposit: undefined
-      }
-    }
 
-    const depoBn = new BN(depositObj.tokenDeposit)
     const addr = getAddress(this.store)
     const allowance = await this.bootyContract
       .methods
@@ -181,7 +174,9 @@ export default class DepositTransaction {
       )
       .call()
     const allowanceBn = new BN(allowance)
-    if (allowanceBn.lte(depoBn)) {
+    console.log('allowance is', allowanceBn.toString())
+    if (allowanceBn.lte(ZERO)) {
+      console.log('not approved, approving.')
       await this.bootyContract
         .methods
         .approve(
@@ -189,7 +184,6 @@ export default class DepositTransaction {
           new BN(Number.MAX_VALUE).toString()
         )
         .send({from: getAddress(this.store)})
-        .catch(console.error.bind(console))
     }
 
     return depositObj

@@ -49,7 +49,7 @@ import RequestBootyMigration from './migrations/RequestBootyMigration'
 import CloseChannelTransaction from './lib/transactions/CloseChannelTransaction'
 import semaphore = require('semaphore')
 import RequestBootyTransaction from './lib/transactions/RequestBootyTransaction'
-import DepositMigration from './migrations/DepositMigration'
+import OpenChannelMigration from './migrations/OpenChannelMigration'
 import DepositTransaction from './lib/transactions/DepositTransaction'
 
 
@@ -225,7 +225,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
             logger
           )
         ),
-        open_channel: new DepositMigration(
+        open_channel: new OpenChannelMigration(
           logger,
           'open_channel',
           address,

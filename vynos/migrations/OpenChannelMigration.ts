@@ -9,7 +9,7 @@ import {OPEN_CHANNEL_COST, RESERVE_BALANCE} from '../lib/constants'
 
 const GAS_PLUS_RESERVE = OPEN_CHANNEL_COST.add(RESERVE_BALANCE)
 
-export default class DepositMigration extends BaseMigration {
+export default class OpenChannelMigration extends BaseMigration {
   private erc20Address = process.env.BOOTY_CONTRACT_ADDRESS!
   private depositTx: DepositTransaction
   private web3: Web3
@@ -33,6 +33,7 @@ export default class DepositMigration extends BaseMigration {
   async execute (): Promise<void> {
     const ethDepositWEI = await this.getEthDeposit()
     const tokenDepositBEI = await getTokenBalance(this.web3, this.erc20Address)
+    console.log(tokenDepositBEI.toString())
 
     return this.depositTx.startTransaction({
       tokenDeposit: tokenDepositBEI.amount,

@@ -19,7 +19,6 @@ export default async function getTokenBalance(
        .call({from: address})
 
     return  Currency.BOOTY(amount)
-  
   } catch(e){
     throw new Error(`unable to get ERC20 balance ${address} ${e}`)
   }
