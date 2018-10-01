@@ -65,11 +65,13 @@ export default function exchangeTransactionV0 (
     }
   }
 
-  const hubDidUpdate = (newLc: LedgerChannel, oldLc: LedgerChannel, expectedDeposit: ICurrency) => {
-    // or are we expecting the hub to returned the already updated nonce+1 update?
-    // if so then we are doing this for tokenBalanceA instead of tokenBalanceI
-    const expectedTotal = Currency.BOOTY(new BigNumber(expectedDeposit.amount).plus(oldLc.tokenBalanceI))
-    return expectedTotal.amountBigNumber.eq(newLc.tokenBalanceI)
+  const hubDidUpdate = (lc: LedgerChannel, tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) => {
+    return (
+      new BN(lc.ethBalanceA).eq(ethBalanceA) &&
+      new BN(lc.ethBalanceI).eq(ethBalanceI) &&
+      new BN(lc.tokenBalanceA).eq(tokenBalanceA) &&
+      new BN(lc.tokenBalanceI).eq(tokenBalanceI)
+    )
   }
 
   async function makeSwap(sellAmount: ICurrency, buyAmount: ICurrency, exchangeRate: BigNumber.BigNumber) {
@@ -103,13 +105,13 @@ export default function exchangeTransactionV0 (
       getAddress(store)
     )
 
-    return [sellAmount, buyAmount, lc]
+    return [tokenBalanceA, tokenBalanceI, ethBalanceA, ethBalanceI]
   }
 
-  async function waitForHubDeposit(expectedDeposit: ICurrency, oldLc: LedgerChannel) {
+  async function waitForHubDeposit(tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) {
     await withRetries(async () => {
       const newLc = await connext.getChannelByPartyA()
-      if (!hubDidUpdate(newLc, oldLc, expectedDeposit)) {
+      if (!hubDidUpdate(newLc, tokenBalanceA, tokenBalanceI, ethBalanceA, ethBalanceI)) {
         throw new Error('Chainsaw has not caught up yet')
       }
     }, 48)
