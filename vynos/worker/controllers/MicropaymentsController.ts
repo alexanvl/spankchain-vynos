@@ -50,6 +50,9 @@ export default class MicropaymentsController extends AbstractController {
     }
 
     const exchangeForEth = async () => {
+      if (!this.bootySupport()) {
+        return
+      }
       if (this.exchange.isInProgress()) {
         return await this.exchange.restartSwap()
       }
@@ -116,10 +119,6 @@ export default class MicropaymentsController extends AbstractController {
   public async closeChannel (): Promise<void> {
     if (!this.sem.available(1)) {
       throw new Error('Cannot close channels.  Another operation is in progress.')
-    }
-
-    if (this.bootySupport()) {
-      await takeSem<void>(this.sem, () => this.exchange.swapBootyForEth())
     }
 
     await takeSem<void>(this.sem, () => {
