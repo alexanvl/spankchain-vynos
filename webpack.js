@@ -17,6 +17,8 @@ const NODE_ENV = process.env.NODE_ENV
 
 const NETWORK_NAME = process.env.NETWORK_NAME || 'rinkeby'
 
+console.log(HUB_URL, NODE_ENV, NETWORK_NAME);
+
 function resolvePath(dir) {
   return path.resolve.apply(path, [__dirname].concat(dir.split('/')));
 }
