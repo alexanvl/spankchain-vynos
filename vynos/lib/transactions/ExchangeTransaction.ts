@@ -1,9 +1,9 @@
 import {Store} from 'redux'
 import {WorkerState, CurrencyType} from '../../worker/WorkerState'
-import Currency, {ICurrency} from '../currency/Currency'
+import {ICurrency} from '../currency/Currency'
 import {AtomicTransaction} from './AtomicTransaction'
 import Logger from '../Logger'
-import {IConnext, LedgerChannel} from '../connext/ConnextTypes'
+import {IConnext, LedgerChannel, ChannelType} from '../connext/ConnextTypes'
 import withRetries from '../withRetries'
 import * as BigNumber from 'bignumber.js'
 import BN = require('bn.js')
@@ -33,8 +33,16 @@ export default function exchangeTransactionV0 (
   logger: Logger,
   connext: IConnext,
 ) {
-
-  const getNewBalancesBN = (lc: LedgerChannel, sellAmount: ICurrency, buyAmount: ICurrency) => {
+  const exchangeTransaction = new AtomicTransaction<void, [ICurrency, ICurrency]>(
+    store,
+    logger,
+    'doSwapv0',
+    [makeSwap, waitForHubDeposit]
+  )
+  
+  function getNewBalancesBN (lc: LedgerChannel, sellAmount: ICurrency, buyAmount: ICurrency) {
+    // add to balance if we are buying it
+    // subtract from balance if we are selling it
     let ethBalanceA = new BN(lc.ethBalanceA)
       .add(new BN(buyAmount.type === CurrencyType.ETH ? sellAmount.amount : '0'))
       .sub(new BN(sellAmount.type === CurrencyType.ETH ? sellAmount.amount : '0'))
@@ -51,7 +59,7 @@ export default function exchangeTransactionV0 (
       .add(new BN(sellAmount.type === CurrencyType.BOOTY ? sellAmount.amount : '0'))
       .sub(new BN(buyAmount.type === CurrencyType.BOOTY ? sellAmount.amount : '0'))
 
-
+    // if any balance is negative that means we are expecting a 0 balance after a LC deposit is made
     ethBalanceA = ethBalanceA.gt(ZERO) ? ethBalanceA : ZERO
     ethBalanceI = ethBalanceI.gt(ZERO) ? ethBalanceI : ZERO
     tokenBalanceA = tokenBalanceA.gt(ZERO) ? tokenBalanceA : ZERO
@@ -65,7 +73,8 @@ export default function exchangeTransactionV0 (
     }
   }
 
-  const hubDidUpdate = (lc: LedgerChannel, tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) => {
+  // hub updated when the balances reflect the new ones after the lc deposit 
+  function hubDidUpdate(lc: LedgerChannel, tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) {
     return (
       new BN(lc.ethBalanceA).eq(ethBalanceA) &&
       new BN(lc.ethBalanceI).eq(ethBalanceI) &&
@@ -84,10 +93,10 @@ export default function exchangeTransactionV0 (
     const {tokenBalanceA, tokenBalanceI, ethBalanceA, ethBalanceI} = getNewBalancesBN(lc, sellAmount, buyAmount)
 
     // ******please change this back to not any now that the types are updated from DW deposit pull request****
-    await (connext.updateBalances as any)(
+    await connext.updateBalances(
       [
         {
-          type: 'EXCHANGE',
+          type: ChannelType.EXCHANGE,
           payment: {
             channelId: lc.channelId,
             balanceA: {
@@ -99,7 +108,7 @@ export default function exchangeTransactionV0 (
               ethDeposit: ethBalanceI,
             },
           },
-          meta: { exchangeRate }
+          meta: { exchangeRate: exchangeRate.toString(10) }
         }
       ],
       getAddress(store)
@@ -117,10 +126,5 @@ export default function exchangeTransactionV0 (
     }, 48)
   }
 
-  return new AtomicTransaction<void, [ICurrency, ICurrency]>(
-    store,
-    logger,
-    'doSwapv0',
-    [makeSwap, waitForHubDeposit]
-  )
+  return exchangeTransaction
 }
