@@ -10,7 +10,8 @@ import RevealPrivateKey from './RevealPrivateKey'
 import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import BN = require('bn.js')
-import { FeatureFlags } from '../../../worker/WorkerState';
+import {FeatureFlags, MigrationState} from '../../../worker/WorkerState'
+import {ReactChild} from 'react'
 
 const s = require('./styles.css')
 const st = require('./index.css')
@@ -21,6 +22,7 @@ export interface WalletPageStateProps {
   cardBalance: BN
   location?: string
   featureFlags: FeatureFlags|null
+  migrationState: MigrationState
 }
 
 export interface WalletPageState {
@@ -96,6 +98,10 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       return <noscript />
     }
 
+    if (this.props.migrationState !== 'DONE') {
+      return this.renderMigrationStatus()
+    }
+
     return (
       <div className={s.walletWrapper}>
         <div className={s.cover} onClick={this.closeFrame} />
@@ -104,6 +110,48 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
           {this.renderSubPage()}
         </div>
       </div>
+    )
+  }
+
+  renderMigrationStatus () {
+    let content: ReactChild|null
+
+    if (this.props.migrationState === 'MIGRATING') {
+      content = this.renderMigrating()
+    } else if (this.props.migrationState === 'AWAITING_ETH') {
+      content = this.renderAwaitingEth()
+    } else {
+      content = null
+    }
+
+    return (
+      <div className={s.walletWrapper}>
+        <div className={s.cover} onClick={this.closeFrame} />
+        <div className={s.walletContentContainer}>
+          {content}
+        </div>
+      </div>
+    );
+  }
+
+  renderMigrating () {
+    return (
+      <React.Fragment>
+        <div className={s.walletMigrationContainer}>
+          We got your ETH! Setting up your wallet now...
+        </div>
+      </React.Fragment>
+    )
+  }
+
+  renderAwaitingEth () {
+    return (
+      <React.Fragment>
+        <div className={s.walletMigrationContainer}>
+          Welcome to your SpankWallet! Send some ETH to the address below to get started.
+        </div>
+        <Receive address={this.props.address!} location={this.props.location} showRevealPrivateKey={false} />
+      </React.Fragment>
     )
   }
 
@@ -139,6 +187,7 @@ function mapStateToProps(state: FrameState): WalletPageStateProps {
     address: state.shared.address,
     featureFlags: state.shared.featureFlags,
     cardBalance: new BN(channel.balances.ethBalance.amount),
+    migrationState: state.shared.migrationState
   }
 }
 

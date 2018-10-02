@@ -9,7 +9,7 @@ import {
   INITIAL_STATE,
   FeatureFlags,
   CurrencyType,
-  Balances,
+  Balances, MigrationState
 } from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
 import currencyAsJSON from '../lib/currency/currencyAsJSON'
@@ -365,13 +365,13 @@ export function setUsernameHandler(state: WorkerState, username: string): Worker
   }
 }
 
-export const setIsMigrating: ActionCreator<boolean> = actionCreator<boolean>('runtime/setIsMigrating')
-export function setIsMigratingHandler(state: WorkerState, isMigrating: boolean): WorkerState {
+export const setMigrationState: ActionCreator<MigrationState> = actionCreator<MigrationState>('runtime/setMigrationState')
+export function setMigrationStatehandler(state: WorkerState, migrationState: MigrationState): WorkerState {
   return {
     ...state,
     runtime: {
       ...state.runtime,
-      isMigrating,
+      migrationState,
     }
   }
 }

@@ -244,7 +244,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
         }
       }
 
-      const migrator = new Migrator(store, migrations, address)
+      const migrator = new Migrator(store, migrations, address, web3, logger)
       await migrator.catchUp()
 
       micropaymentsController = new MicropaymentsController(store, logger, connext, chanPopulator, web3)

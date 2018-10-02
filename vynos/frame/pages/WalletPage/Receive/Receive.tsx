@@ -15,6 +15,7 @@ const baseStyle = require('../styles.css')
 export interface Props {
   address: string | null
   bootySupport?: boolean
+  showRevealPrivateKey?: boolean
 }
 
 export interface State {
@@ -37,8 +38,16 @@ function renderQR(address: string | null) {
 export class Receive extends React.Component<Props, State> {
   timeout: any
 
+  static defaultProps = {
+    showRevealPrivateKey: true
+  }
+
   state = {
     isCopied: false,
+  }
+
+  constructor(props: Props) {
+    super(props)
   }
 
   componentWillUnmount() {
@@ -146,13 +155,23 @@ export class Receive extends React.Component<Props, State> {
           </div>
 
         </div>
-        <div className={s.recoverText}>
-          <Link
-            to="/wallet/reveal"
-          >
-            Reveal Private Key (Advanced)
-          </Link>
-        </div>
+        {this.renderRevealPrivateKey()}
+      </div>
+    )
+  }
+
+  renderRevealPrivateKey () {
+    if (!this.props.showRevealPrivateKey) {
+      return null
+    }
+
+    return (
+      <div className={s.recoverText}>
+        <Link
+          to="/wallet/reveal"
+        >
+          Reveal Private Key (Advanced)
+        </Link>
       </div>
     )
   }

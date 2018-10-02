@@ -4,6 +4,11 @@ import {Store} from 'redux'
 import {WorkerState} from '../worker/WorkerState'
 import * as actions from '../worker/actions'
 import CloseChannelMigration from './CloseChannelMigration'
+import getETHBalance from '../lib/web3/getETHBalance'
+import Web3 = require('web3')
+import {ZERO} from '../lib/constants'
+import {BasePoller} from '../lib/poller/BasePoller'
+import Logger from '../lib/Logger'
 
 export interface MigrationMap {
   [name: string]: Migration
@@ -24,11 +29,15 @@ export default class Migrator {
   private store: Store<WorkerState>
   private migrations: MigrationMap
   private address: string
+  private web3: Web3
+  private logger: Logger
 
-  constructor (store: Store<WorkerState>, migrations: MigrationMap, address: string) {
+  constructor (store: Store<WorkerState>, migrations: MigrationMap, address: string, web3: Web3, logger: Logger) {
     this.store = store
     this.migrations = migrations
     this.address = address
+    this.web3 = web3
+    this.logger = logger
   }
 
   async catchUp (): Promise<void> {
@@ -39,7 +48,13 @@ export default class Migrator {
       return
     }
 
-    this.store.dispatch(actions.setIsMigrating(true))
+    const bal = await getETHBalance(this.address, this.web3)
+    if (bal.amountBN.eq(ZERO)) {
+      this.store.dispatch(actions.setMigrationState('AWAITING_ETH'))
+      await this.hasEth()
+    }
+
+    this.store.dispatch(actions.setMigrationState('MIGRATING'))
     try {
       for (let i = 0; i < res.unapplied.length; i++) {
         const unapplied = res.unapplied[i]
@@ -57,7 +72,20 @@ export default class Migrator {
         })
       }
     } finally {
-      this.store.dispatch(actions.setIsMigrating(false))
+      this.store.dispatch(actions.setMigrationState('DONE'))
     }
+  }
+
+  private hasEth() {
+    return new Promise((resolve) => {
+      const poller = new BasePoller(this.logger)
+      poller.start(async () => {
+        const bal = await getETHBalance(this.address, this.web3)
+        if (bal.amountBN.gt(ZERO)) {
+          poller.stop()
+          resolve()
+        }
+      }, 5000)
+    })
   }
 }

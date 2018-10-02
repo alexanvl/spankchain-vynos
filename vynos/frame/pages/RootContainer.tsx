@@ -8,6 +8,7 @@ import WalletPage from './WalletPage'
 import {RouteComponentProps} from 'react-router'
 import WorkerProxy from '../WorkerProxy'
 import Logger from '../../lib/Logger'
+import {MigrationState} from '../../worker/WorkerState'
 
 export interface StateProps {
   isWalletExpected: boolean

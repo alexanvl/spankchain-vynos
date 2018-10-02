@@ -2,6 +2,8 @@ import Wallet from 'ethereumjs-wallet'
 import {PurchaseMetaFields, PurchaseMetaType, VirtualChannel, LedgerChannel} from '../lib/connext/ConnextTypes'
 import { ICurrency } from '../lib/currency/Currency'
 
+export type MigrationState = 'AWAITING_ETH' | 'MIGRATING' | 'DONE'
+
 export interface RuntimeState {
   wallet?: Wallet
   isTransactionPending: number
@@ -27,7 +29,7 @@ export interface RuntimeState {
   baseCurrency: CurrencyType
   featureFlags: FeatureFlags
   moreEthNeeded: boolean
-  isMigrating: boolean
+  migrationState: MigrationState
 }
 
 export interface AuthorizationRequestState {
@@ -119,6 +121,7 @@ export interface SharedState {
   exchangeRates: ExchangeRates|null
   featureFlags: FeatureFlags
   moreEthNeeded: boolean
+  migrationState: MigrationState
 }
 
 export interface AtomicTransactionState {
@@ -218,6 +221,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   baseCurrency: CurrencyType.FINNEY,
   featureFlags: {},
   moreEthNeeded: false,
+  migrationState: 'DONE'
 }
 
 const initialTransactionState = () => ({
@@ -295,7 +299,7 @@ export const GET_INITIAL_STATE = (): WorkerState => ({
     baseCurrency: CurrencyType.FINNEY,
     featureFlags: {bootySupport: false},
     moreEthNeeded: false,
-    isMigrating: false,
+    migrationState: 'DONE',
   }
 })
 
@@ -331,5 +335,6 @@ export function buildSharedState (state: WorkerState): SharedState {
     baseCurrency: state.runtime.baseCurrency,
     featureFlags: state.runtime.featureFlags,
     moreEthNeeded: false,
+    migrationState: state.runtime.migrationState,
   }
 }
