@@ -251,6 +251,7 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
     return (
       <div className={s.container}>
         <div className={si.subpageWrapper}>
+          <SendCurrencyHeader bootySupport={featureFlags.bootySupport}/>
           <SendCurrencyInputs
             address={address}
             addressError={addressError}
