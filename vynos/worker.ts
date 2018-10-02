@@ -16,7 +16,7 @@ import {ResetRequest, StatusRequest} from './lib/rpc/yns'
 import WorkerServer from './lib/rpc/WorkerServer'
 import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
-import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags, CurrencyType} from './worker/WorkerState'
+import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags, developmentFlags} from './worker/WorkerState'
 import {ErrResCallback} from './lib/messaging/JsonRpcServer'
 import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
@@ -178,7 +178,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
 
         store.dispatch(actions.setFeatureFlags(
           process.env.NODE_ENV === 'development'
-            ? {bootySupport: true}
+            ? developmentFlags
             : featureFlags
         ))
       } catch(e) {
