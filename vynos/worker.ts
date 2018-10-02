@@ -52,7 +52,6 @@ import RequestBootyTransaction from './lib/transactions/RequestBootyTransaction'
 import OpenChannelMigration from './migrations/OpenChannelMigration'
 import DepositTransaction from './lib/transactions/DepositTransaction'
 import ExchangeMigration from './migrations/ExchangeMigration'
-import ExchangeTransaction from './lib/transactions/ExchangeTransaction'
 import BuyBootyTransaction from './lib/transactions/BuyBootyTransaction'
 
 

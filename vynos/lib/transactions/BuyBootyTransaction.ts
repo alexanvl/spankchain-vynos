@@ -1,10 +1,11 @@
-import {WorkerState} from '../../worker/WorkerState'
+import {CurrencyType, WorkerState} from '../../worker/WorkerState'
 import {Store} from 'redux'
 import {ChannelType, IConnext, LedgerChannel} from '../connext/ConnextTypes'
 import {AtomicTransaction} from './AtomicTransaction'
-import {ICurrency} from '../currency/Currency'
 import Logger from '../Logger'
 import {BOOTY, ZERO} from '../constants'
+import CurrencyConvertable from '../currency/CurrencyConvertable'
+import Currency from '../currency/Currency'
 import BN = require('bn.js')
 
 export interface Balances {
@@ -12,7 +13,7 @@ export interface Balances {
   tokenBalanceI: BN
   ethBalanceA: BN
   ethBalanceI: BN
-  rate: BN
+  rate: string
 }
 
 export default class BuyBootyTransaction {
@@ -67,30 +68,31 @@ export default class BuyBootyTransaction {
             ethDeposit: ethBalanceI
           }
         },
-        meta: {exchangeRate: rate}
+        meta: {
+          exchangeRate: rate.toString(),
+          receiver: process.env.INGRID_ADDRESS
+        }
       }
     ])
   }
 
   private generateBalances (lc: LedgerChannel) {
     const rates = this.store.getState().runtime.exchangeRates!
-    let ethToSell = new BN('69').div().mul(new BN(BOOTY.amount))
-    if (ethToSell.gt(new BN(lc.ethBalanceA))) {
-      ethToSell = new BN(lc.ethBalanceA)
+    const ethBalanace = Currency.WEI(lc.ethBalanceA)
+    let payableWei = new CurrencyConvertable(CurrencyType.BOOTY, '69', () => rates)
+      .toWEI()
+    if (payableWei.compare('gt', ethBalanace)) {
+      payableWei = new CurrencyConvertable(CurrencyType.WEI, lc.ethBalanceA, () => rates)
     }
 
-    const bootyToBuy = ethToSell.mul(new BN(rates.ETH)).mul(new BN(BOOTY.amount))
-    let iBal = new BN(lc.tokenBalanceI).sub(bootyToBuy)
-    if (iBal.lt(ZERO)) {
-      iBal = ZERO
-    }
+    const purchasedBei = payableWei.toBEI()
 
     return {
-      tokenBalanceA: new BN(lc.tokenBalanceA).add(bootyToBuy),
-      tokenBalanceI: iBal,
-      ethBalanceA: new BN(lc.ethBalanceA).sub(ethToSell),
-      ethBalanceI: new BN(lc.ethBalanceI).add(ethToSell),
-      rate: new BN(rates.ETH)
+      tokenBalanceA: new BN(lc.tokenBalanceA).add(purchasedBei.amountBN),
+      tokenBalanceI: ZERO,
+      ethBalanceA: new BN(lc.ethBalanceA).sub(payableWei.amountBN),
+      ethBalanceI: new BN(lc.ethBalanceI).add(payableWei.amountBN),
+      rate: rates.ETH
     }
   }
 
