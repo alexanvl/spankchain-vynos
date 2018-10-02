@@ -8,6 +8,7 @@ import withRetries, {DoneFunc} from '../withRetries'
 import * as BigNumber from 'bignumber.js'
 import getAddress from '../getAddress'
 import BN = require('bn.js')
+import * as actions from '../../worker/actions'
 
 const ZERO = new BN('0')
 
@@ -37,7 +38,10 @@ export default function exchangeTransactionV0 (
     store,
     logger,
     'doSwapv0',
-    [makeSwap, waitForHubDeposit]
+    [makeSwap, waitForHubDeposit],
+    () => store.dispatch(actions.setHasActiveExchange(false)),
+    () => store.dispatch(actions.setHasActiveExchange(true)),
+    () => store.dispatch(actions.setHasActiveExchange(true)),
   )
 
   function getNewBalancesBN (lc: LedgerChannel, sellAmount: ICurrency, buyAmount: ICurrency) {
@@ -73,7 +77,7 @@ export default function exchangeTransactionV0 (
     }
   }
 
-  // hub updated when the balances reflect the new ones after the lc deposit 
+  // hub updated when the balances reflect the new ones after the lc deposit
   function hubDidUpdate (lc: LedgerChannel, tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) {
     return (
       new BN(lc.ethBalanceA).eq(ethBalanceA) &&

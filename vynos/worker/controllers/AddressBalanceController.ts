@@ -91,7 +91,11 @@ export default class AddressBalanceController extends AbstractController {
       return
     }
 
-    if (this.bootySupport() && ethBalance.amountBN.lt(OPEN_CHANNEL_COST)) {
+    if (
+      this.bootySupport() &&
+      ethBalance.amountBN.lt(OPEN_CHANNEL_COST) &&
+      !this.store.getState().runtime.moreEthNeeded
+    ) {
       this.store.dispatch(actions.setMoreEthNeeded(true))
       return
     }

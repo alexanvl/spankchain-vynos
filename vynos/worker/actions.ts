@@ -125,9 +125,20 @@ export const setHasActiveDeposit: ActionCreator<boolean> = actionCreator<boolean
 export function setHasActiveDepositHandler(state: WorkerState, hasActiveDeposit: boolean): WorkerState {
   return {
     ...state,
-      persistent: {
-        ...state.persistent,
+      runtime: {
+        ...state.runtime,
         hasActiveDeposit,
+      }
+  }
+}
+
+export const setHasActiveExchange: ActionCreator<boolean> = actionCreator<boolean>('persistent/hasActiveExchange')
+export function setHasActiveExchangeHandler(state: WorkerState, hasActiveExchange: boolean): WorkerState {
+  return {
+    ...state,
+      runtime: {
+        ...state.runtime,
+        hasActiveExchange,
       }
   }
 }

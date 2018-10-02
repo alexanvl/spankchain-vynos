@@ -4,7 +4,7 @@ import {aggregateVCAndLCBalances} from '../aggregateVCBalances'
 import {Store} from 'redux'
 import {WorkerState, ChannelState} from '../../worker/WorkerState'
 import currencyAsJSON from '../currency/currencyAsJSON'
-import getAddress from '../getAddress' 
+import getAddress from '../getAddress'
 
 export default async function getChannels(connext: IConnext, store: Store<WorkerState>): Promise<ChannelState|null> {
   if (!getAddress(store)) {

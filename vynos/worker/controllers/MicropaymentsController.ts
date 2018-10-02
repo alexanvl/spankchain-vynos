@@ -21,6 +21,8 @@ import Exchange from '../../lib/transactions/Exchange'
 import { AtomicTransaction } from '../../lib/transactions/AtomicTransaction';
 import CloseChannelTransaction from '../../lib/transactions/CloseChannelTransaction';
 import {VynosPurchase} from '../../lib/VynosPurchase'
+import * as actions from '../actions'
+import getChannels from '../../lib/connext/getChannels';
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -66,11 +68,13 @@ export default class MicropaymentsController extends AbstractController {
       'exchange-then-close',
       [exchangeForEth, closeChannel]
     )
-    
-    
   }
 
   async start (): Promise<void> {
+    this.store.dispatch(actions.setChannel(
+      await getChannels(this.connext, this.store)
+    ))
+
     await this.depositTransaction.maybeCollateralize()
 
     if (this.exchange.isInProgress()) {

@@ -23,6 +23,8 @@ export interface RuntimeState {
   addressBalances: Balances
   pendingTransaction: PendingTransaction | null
   hasActiveWithdrawal: boolean
+  hasActiveDeposit: boolean
+  hasActiveExchange: boolean
   activeWithdrawalError: string|null
   exchangeRates: ExchangeRates|null
   username: string|null
@@ -115,6 +117,7 @@ export interface SharedState {
   address: string | null
   hasActiveWithdrawal: boolean
   hasActiveDeposit: boolean
+  hasActiveExchange: boolean
   username: string | null
   activeWithdrawalError: string|null
   baseCurrency: CurrencyType
@@ -137,7 +140,6 @@ export interface PersistentState {
   didInit: boolean,
   keyring?: string,
   rememberPath: string
-  hasActiveDeposit: boolean
   transactions: TransactionsState
 }
 
@@ -216,6 +218,7 @@ export const INITIAL_SHARED_STATE: SharedState = {
   hasActiveWithdrawal: false,
   activeWithdrawalError: null,
   hasActiveDeposit: false,
+  hasActiveExchange: false,
   exchangeRates: null,
   username: null,
   baseCurrency: CurrencyType.FINNEY,
@@ -233,7 +236,6 @@ export const GET_INITIAL_STATE = (): WorkerState => ({
   persistent: {
     didInit: false,
     rememberPath: '/',
-    hasActiveDeposit: false,
     transactions: {}
   },
   runtime: {
@@ -293,6 +295,8 @@ export const GET_INITIAL_STATE = (): WorkerState => ({
     },
     pendingTransaction: null,
     hasActiveWithdrawal: false,
+    hasActiveDeposit: false,
+    hasActiveExchange: false,
     activeWithdrawalError: null,
     exchangeRates: null,
     username: null,
@@ -329,7 +333,8 @@ export function buildSharedState (state: WorkerState): SharedState {
     address: state.runtime.wallet ? state.runtime.wallet.getAddressString() : null,
     hasActiveWithdrawal: state.runtime.hasActiveWithdrawal,
     activeWithdrawalError: state.runtime.activeWithdrawalError,
-    hasActiveDeposit: state.persistent.hasActiveDeposit,
+    hasActiveDeposit: state.runtime.hasActiveDeposit,
+    hasActiveExchange: state.runtime.hasActiveExchange,
     exchangeRates: state.runtime.exchangeRates,
     username: state.runtime.username,
     baseCurrency: state.runtime.featureFlags.bootySupport ? CurrencyType.BOOTY : CurrencyType.FINNEY,

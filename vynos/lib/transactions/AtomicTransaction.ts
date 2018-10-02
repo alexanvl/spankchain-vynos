@@ -81,9 +81,14 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   private doTransaction = async () => {
     const {nextMethodArgs, nextMethodIndex} = this.getState()
 
+    let out: T1
+
     try {
-      return await this.persistAndRun(nextMethodArgs, nextMethodIndex)
+      out = await this.persistAndRun(nextMethodArgs, nextMethodIndex)
     } catch(e) {
+      this.removeState()
+      this.afterAll()
+
       const data = {
         message: 'there was an error running an AtomicTransaction',
         name: this.name,
@@ -93,13 +98,15 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
       }
 
       console.error(data.message, data)
-      this.logError(data)
+      this.logError(data).catch(console.error.bind(console))
 
       throw e
-    } finally {
-      this.removeState()
-      this.afterAll()
     }
+
+    this.removeState()
+    this.afterAll()
+
+    return out
   }
 
   private persistAndRun = async (nextMethodArgs: any, nextMethodIndex: number): Promise<T1> => {
