@@ -20,6 +20,7 @@ import Web3 = require('web3')
 import Exchange from '../../lib/transactions/Exchange'
 import { AtomicTransaction } from '../../lib/transactions/AtomicTransaction';
 import CloseChannelTransaction from '../../lib/transactions/CloseChannelTransaction';
+import {VynosPurchase} from '../../lib/VynosPurchase'
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -101,18 +102,14 @@ export default class MicropaymentsController extends AbstractController {
     }
   }
 
-  public async buy (priceStrWEI: string, meta: any): Promise<VynosBuyResponse> {
+  public async buy (purchase: VynosPurchase<CurrencyType.BOOTY>): Promise<VynosBuyResponse> {
     if (!this.sem.available(1)) {
       throw new Error('Cannot tip. Another operation is in progress.')
     }
-    const priceWEI = new Currency(CurrencyType.WEI, priceStrWEI)
 
     return await takeSem<VynosBuyResponse>(this.sem, () => {
-      this.logToApi('doBuy', {
-        priceStrWEI,
-        meta
-      })
-      return this.buyTransaction.startTransaction(priceWEI, meta)
+      this.logToApi('doBuy', purchase)
+      return this.buyTransaction.startTransaction(purchase)
     })
   }
 

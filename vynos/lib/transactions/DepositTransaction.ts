@@ -15,6 +15,7 @@ import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
 import {ICurrency} from '../currency/Currency'
 import currencyAsJSON from '../currency/currencyAsJSON'
+import {BOOTY, ZERO} from '../constants'
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -140,7 +141,9 @@ export default class DepositTransaction {
     })
   }
 
+  public changeDepositTransactionName = (name: string) => this.deposit.name = name
   private needsCollateral = () => this.store.getState().runtime.needsCollateral
+  public changeDepositExistingTransactionName = (name: string) => this.depositExistingChannel.name = name
 
   private makeDepositExistingChannelTransaction = () => new AtomicTransaction<void, [DepositArgs]>(
     this.store,
@@ -180,9 +183,10 @@ export default class DepositTransaction {
         .methods
         .approve(
           process.env.BOOTY_CONTRACT_ADDRESS!,
-          new BN(Number.MAX_VALUE).toString()
+          new BN(BOOTY.amount).mul(new BN('10000')).toString()
         )
         .send({from: getAddress(this.store)})
+      console.log('done approving')
     }
 
     return depositObj
@@ -218,6 +222,8 @@ export default class DepositTransaction {
   }
 
   private openChannel = async ({ethDeposit, tokenDeposit}: DepositArgs): Promise<[DepositArgs, string, boolean]> => {
+    console.log('opening channel')
+
     if (!tokenDeposit || new BN(tokenDeposit.amount).eq(new BN(0))) {
       throw new Error('cannot open a channel without a token Deposit')
     }

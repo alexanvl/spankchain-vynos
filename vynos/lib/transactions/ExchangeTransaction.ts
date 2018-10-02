@@ -1,13 +1,13 @@
 import {Store} from 'redux'
-import {WorkerState, CurrencyType} from '../../worker/WorkerState'
+import {CurrencyType, WorkerState} from '../../worker/WorkerState'
 import {ICurrency} from '../currency/Currency'
 import {AtomicTransaction} from './AtomicTransaction'
 import Logger from '../Logger'
-import {IConnext, LedgerChannel, ChannelType} from '../connext/ConnextTypes'
-import withRetries from '../withRetries'
+import {ChannelType, IConnext, LedgerChannel} from '../connext/ConnextTypes'
+import withRetries, {DoneFunc} from '../withRetries'
 import * as BigNumber from 'bignumber.js'
-import BN = require('bn.js')
 import getAddress from '../getAddress'
+import BN = require('bn.js')
 
 const ZERO = new BN('0')
 
@@ -31,7 +31,7 @@ export type HubBootyLoadResponse = {
 export default function exchangeTransactionV0 (
   store: Store<WorkerState>,
   logger: Logger,
-  connext: IConnext,
+  connext: IConnext
 ) {
   const exchangeTransaction = new AtomicTransaction<void, [ICurrency, ICurrency]>(
     store,
@@ -39,7 +39,7 @@ export default function exchangeTransactionV0 (
     'doSwapv0',
     [makeSwap, waitForHubDeposit]
   )
-  
+
   function getNewBalancesBN (lc: LedgerChannel, sellAmount: ICurrency, buyAmount: ICurrency) {
     // add to balance if we are buying it
     // subtract from balance if we are selling it
@@ -69,12 +69,12 @@ export default function exchangeTransactionV0 (
       tokenBalanceA: tokenBalanceA,
       tokenBalanceI: tokenBalanceI,
       ethBalanceA: ethBalanceA,
-      ethBalanceI: ethBalanceI,
+      ethBalanceI: ethBalanceI
     }
   }
 
   // hub updated when the balances reflect the new ones after the lc deposit 
-  function hubDidUpdate(lc: LedgerChannel, tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) {
+  function hubDidUpdate (lc: LedgerChannel, tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) {
     return (
       new BN(lc.ethBalanceA).eq(ethBalanceA) &&
       new BN(lc.ethBalanceI).eq(ethBalanceI) &&
@@ -83,7 +83,7 @@ export default function exchangeTransactionV0 (
     )
   }
 
-  async function makeSwap(sellAmount: ICurrency, buyAmount: ICurrency, exchangeRate: BigNumber.BigNumber) {
+  async function makeSwap (sellAmount: ICurrency, buyAmount: ICurrency, exchangeRate: BigNumber.BigNumber) {
     const lc = await connext.getChannelByPartyA()
 
     if (!lc) {
@@ -100,14 +100,14 @@ export default function exchangeTransactionV0 (
             channelId: lc.channelId,
             balanceA: {
               tokenDeposit: tokenBalanceA,
-              ethDeposit: ethBalanceA,
+              ethDeposit: ethBalanceA
             },
             balanceB: {
               tokenDeposit: tokenBalanceI,
-              ethDeposit: ethBalanceI,
-            },
+              ethDeposit: ethBalanceI
+            }
           },
-          meta: { exchangeRate: exchangeRate.toString(10) }
+          meta: {exchangeRate: exchangeRate.toString(10)}
         }
       ],
       getAddress(store)
@@ -116,8 +116,8 @@ export default function exchangeTransactionV0 (
     return [tokenBalanceA, tokenBalanceI, ethBalanceA, ethBalanceI]
   }
 
-  async function waitForHubDeposit(tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) {
-    await withRetries(async () => {
+  async function waitForHubDeposit (tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) {
+    await withRetries(async (done: DoneFunc) => {
       const newLc = await connext.getChannelByPartyA()
       if (hubDidUpdate(newLc, tokenBalanceA, tokenBalanceI, ethBalanceA, ethBalanceI)) {
         done()

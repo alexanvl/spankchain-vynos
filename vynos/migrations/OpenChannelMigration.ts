@@ -36,8 +36,8 @@ export default class OpenChannelMigration extends BaseMigration {
     console.log(tokenDepositBEI.toString())
 
     return this.depositTx.startTransaction({
-      tokenDeposit: tokenDepositBEI.amount,
-      ethDeposit: ethDepositWEI.amount
+      tokenDeposit: tokenDepositBEI,
+      ethDeposit: ethDepositWEI
     })
   }
 
