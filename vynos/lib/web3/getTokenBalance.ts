@@ -16,7 +16,7 @@ export default async function getTokenBalance(
     const amount = await contract
        .methods
        .balanceOf(address)
-       .call({from: address})
+       .call()
 
     return  Currency.BOOTY(amount)
   } catch(e){

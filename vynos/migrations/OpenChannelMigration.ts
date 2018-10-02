@@ -32,8 +32,7 @@ export default class OpenChannelMigration extends BaseMigration {
 
   async execute (): Promise<void> {
     const ethDepositWEI = await this.getEthDeposit()
-    const tokenDepositBEI = await getTokenBalance(this.web3, this.erc20Address)
-    console.log(tokenDepositBEI.toString())
+    const tokenDepositBEI = await getTokenBalance(this.web3, this.address)
 
     return this.depositTx.startTransaction({
       tokenDeposit: tokenDepositBEI,
