@@ -51,6 +51,9 @@ import semaphore = require('semaphore')
 import RequestBootyTransaction from './lib/transactions/RequestBootyTransaction'
 import OpenChannelMigration from './migrations/OpenChannelMigration'
 import DepositTransaction from './lib/transactions/DepositTransaction'
+import ExchangeMigration from './migrations/ExchangeMigration'
+import ExchangeTransaction from './lib/transactions/ExchangeTransaction'
+import BuyBootyTransaction from './lib/transactions/BuyBootyTransaction'
 
 
 export class ClientWrapper implements WindowClient {
@@ -238,9 +241,16 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
           ),
           web3
         ),
-        exchange_booty: {
-          execute: async () => {}
-        }
+        exchange_booty: new ExchangeMigration(
+          logger,
+          'exchange_booty',
+          address,
+          new BuyBootyTransaction(
+            store,
+            connext,
+            logger
+          )
+        )
       }
 
       const migrator = new Migrator(store, migrations, address, web3, logger)

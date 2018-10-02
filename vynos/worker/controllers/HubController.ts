@@ -77,21 +77,17 @@ export default class HubController extends AbstractController {
       return
     }
 
-    const USD_RATE: string = new BigNumber(constants.ETHER.toString(10))
-      .div(res.rates.USD)
-      .toString(10)
-
-    const BEI_RATE: string = new BigNumber(USD_RATE)
+    const BEI_RATE: string = new BigNumber('1')
       .div(constants.BOOTY.amount)
-      .toString(10)
+      .toFixed()
 
     this.store.dispatch(actions.setExchangeRates({
-      [CurrencyType.USD]: USD_RATE,
-      [CurrencyType.BOOTY]: USD_RATE,
+      [CurrencyType.USD]: '1',
+      [CurrencyType.BOOTY]: '1',
       [CurrencyType.BEI]: BEI_RATE,
-      [CurrencyType.ETH]: constants.ETHER.toString(10),
-      [CurrencyType.WEI]: '1',
-      [CurrencyType.FINNEY]: constants.FINNEY.toString(10),
+      [CurrencyType.ETH]: res.rates.USD,
+      [CurrencyType.WEI]: new BigNumber(res.rates.USD).div('1e18').toFixed(),
+      [CurrencyType.FINNEY]: new BigNumber(res.rates.USD).div(constants.FINNEY.toString()).toFixed(),
     }))
   }
 

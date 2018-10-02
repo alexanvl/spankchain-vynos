@@ -24,11 +24,11 @@ export default class WalletController extends AbstractController {
   }
 
   private async setNeedsCollateral (needsCollateral: boolean): Promise<void> {
-    actions.setNeedsCollateral(needsCollateral)
+    this.store.dispatch(actions.setNeedsCollateral(needsCollateral))
   }
 
   private setIsPendingVerification (isPendingVerification: boolean): void {
-    actions.setIsPendingVerification(isPendingVerification)
+    this.store.dispatch(actions.setIsPendingVerification(isPendingVerification))
   }
 
   public registerHandlers (server: JsonRpcServer) {

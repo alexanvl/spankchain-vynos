@@ -127,7 +127,7 @@ export default class DepositTransaction {
       const chans = await getCurrentLedgerChannels(this.connext, this.store)
       const chan = chans && chans[0]
 
-      if (!chan || chan.ethBalanceI !== '0') {
+      if (!chan) {
         return
       }
 

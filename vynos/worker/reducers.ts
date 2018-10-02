@@ -33,5 +33,6 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.setaddressBalances, actions.setaddressBalancesHandler)
   .case(actions.setMoreEthNeeded, actions.setMoreEthNeededHandler)
   .case(actions.setMigrationState, actions.setMigrationStatehandler)
+  .case(actions.setNeedsCollateral, actions.setNeedsCollateralHandler)
 
 export default reducers
