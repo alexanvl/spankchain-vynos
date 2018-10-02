@@ -8,7 +8,7 @@ import withRetries, {DoneFunc} from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
 import BN = require('bn.js')
-import {IConnext, Deposit} from '../connext/ConnextTypes'
+import {IConnext, Deposit, LedgerChannel} from '../connext/ConnextTypes'
 import Web3 = require('web3')
 import getAddress from '../getAddress'
 import Logger from '../Logger'
@@ -149,7 +149,7 @@ export default class DepositTransaction {
     this.store,
     this.logger,
     'deposit:existingChannel',
-    [this.maybeErc20Approve, this.doDepositExisting, this.awaitChainsawBalanceChange, this.finishTransaction],
+    [this.maybeErc20Approve, this.doEthDeposit, this.doTokenDeposit,this.awaitChainsawBalanceChange, this.finishTransaction],
     this.afterAll,
     this.onStart,
     this.onRestart
@@ -191,7 +191,27 @@ export default class DepositTransaction {
     return depositObj
   }
 
-  private doDepositExisting = async ({tokenDeposit, ethDeposit}: DepositArgs): Promise<[string]> => {
+  // we must do eth adn token deposits in seperate contract calls/connext client calls
+  private doEthDeposit = async ({tokenDeposit, ethDeposit}: DepositArgs): Promise<[DepositArgs, LedgerChannel]> => {
+    console.log('doEthDeposit', tokenDeposit, ethDeposit)
+    const startingLc = await this.connext.getChannelByPartyA()
+
+    if (ethDeposit.amount !== '0') {
+      await this.doDepositExisting({ethDeposit})
+    }
+    return [{tokenDeposit, ethDeposit}, startingLc]
+  }
+
+  private doTokenDeposit = async ({tokenDeposit, ethDeposit}: DepositArgs, startingLc: LedgerChannel): Promise<[DepositArgs, LedgerChannel]> => {
+    console.log('doTokenDeposit')
+    if (tokenDeposit && tokenDeposit.amount !== '0') {
+      await this.doDepositExisting({tokenDeposit})
+    }
+    return [{tokenDeposit, ethDeposit}, startingLc]
+  }
+
+  private doDepositExisting = async ({tokenDeposit, ethDeposit}: {tokenDeposit?: ICurrency, ethDeposit?: ICurrency}): Promise<[LedgerChannel]> => {
+    console.log('doDepositExisting', tokenDeposit, ethDeposit)
     const channels = await getCurrentLedgerChannels(this.connext, this.store)
 
     if (!channels) {
@@ -199,13 +219,13 @@ export default class DepositTransaction {
     }
 
     await this.connext.deposit({
-      ethDeposit: new BN(ethDeposit.amount),
+      ethDeposit: ethDeposit && new BN(ethDeposit.amount),
       tokenDeposit: tokenDeposit === undefined
         ? undefined
         : new BN(tokenDeposit.amount)
-    }, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
+    } as any, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
 
-    return [channels[0].ethBalanceA]
+    return [channels[0]]
   }
 
   private onStart = async () => {
@@ -263,13 +283,22 @@ export default class DepositTransaction {
     ]
   }
 
-  private awaitChainsawBalanceChange = async (startAmount: string): Promise<void> => {
-    const bigStartAmount = new BN(startAmount)
+  private awaitChainsawBalanceChange = async ({ethDeposit, tokenDeposit}: DepositArgs, startingLc: LedgerChannel): Promise<void> => {
+    let waitingForTokens = tokenDeposit && tokenDeposit.amount !== '0'
+    let waitingForEth = ethDeposit && ethDeposit.amount !== '0'
 
     await withRetries(async (done: DoneFunc) => {
-      const res = await getCurrentLedgerChannels(this.connext, this.store)
+      const res = await this.connext.getChannelByPartyA()
 
-      if (res && new BN(res[0].ethBalanceA).lte(bigStartAmount)) {
+      if (res && new BN(res.ethBalanceA).gt(new BN(startingLc.ethBalanceA))) {
+        waitingForEth = false
+      }
+
+      if (res && new BN(res.tokenBalanceA).gt(new BN(startingLc.tokenBalanceA))) {
+        waitingForTokens = false
+      }
+
+      if (!waitingForTokens && !waitingForEth) {
         done()
       }
     }, 48)
