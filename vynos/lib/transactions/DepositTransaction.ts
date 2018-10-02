@@ -4,7 +4,7 @@ import takeSem from '../takeSem'
 import * as actions from '../../worker/actions'
 import {AtomicTransaction} from './AtomicTransaction'
 import {WorkerState} from '../../worker/WorkerState'
-import withRetries from '../withRetries'
+import withRetries, {DoneFunc} from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
 import BN = require('bn.js')
@@ -165,28 +165,27 @@ export default class DepositTransaction {
   )
 
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
-    console.log('maybeErc20Approve..')
-
     const addr = getAddress(this.store)
     const allowance = await this.bootyContract
       .methods
       .allowance(
         addr,
-        process.env.BOOTY_CONTRACT_ADDRESS!
+        process.env.CONTRACT_ADDRESS!
       )
       .call()
     const allowanceBn = new BN(allowance)
-    console.log('allowance is', allowanceBn.toString())
-    if (allowanceBn.lte(ZERO)) {
-      console.log('not approved, approving.')
+    const min = new BN(BOOTY.amount).mul(new BN('10000'))
+    if (allowanceBn.lte(min)) {
       await this.bootyContract
         .methods
         .approve(
-          process.env.BOOTY_CONTRACT_ADDRESS!,
-          new BN(BOOTY.amount).mul(new BN('10000')).toString()
+          process.env.CONTRACT_ADDRESS!,
+          min.toString()
         )
-        .send({from: getAddress(this.store)})
-      console.log('done approving')
+        .send({
+          from: getAddress(this.store),
+          gas: 4000000
+        })
     }
 
     return depositObj
@@ -234,6 +233,7 @@ export default class DepositTransaction {
     }
     let ledgerId: string
     try {
+      console.log('attempting deposit with', depositObj)
       ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
     } catch(e) {
       console.error('connext.openChannel failed', {e, eth: ethDeposit.amount, tokens: tokenDeposit && tokenDeposit.amount})
@@ -248,11 +248,11 @@ export default class DepositTransaction {
   }
 
   private awaitChainsaw = async (depositArgs: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
-    await withRetries(async () => {
+    await withRetries(async (done: DoneFunc) => {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
-      if (!res) {
-        throw new Error('Chainsaw has not caught up yet.')
+      if (res) {
+        done()
       }
     }, 48)
 
@@ -266,11 +266,11 @@ export default class DepositTransaction {
   private awaitChainsawBalanceChange = async (startAmount: string): Promise<void> => {
     const bigStartAmount = new BN(startAmount)
 
-    await withRetries(async () => {
+    await withRetries(async (done: DoneFunc) => {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
-      if (!res || new BN(res[0].ethBalanceA).lte(bigStartAmount)) {
-        throw new Error('Chainsaw has not caught up yet.')
+      if (res && new BN(res[0].ethBalanceA).lte(bigStartAmount)) {
+        done()
       }
     }, 48)
   }
