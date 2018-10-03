@@ -33,6 +33,14 @@ export interface DepositArgs {
   tokenDeposit?: ICurrency,
 }
 
+function valMap(obj: any, f: any): any {
+  let res: any = {}
+  Object.keys(obj).forEach(k => {
+    res[k] = f(obj[k])
+  })
+  return res
+}
+
 export default class DepositTransaction {
   private deposit: AtomicTransaction<void, [DepositArgs]>
   private depositExistingChannel: AtomicTransaction<void, [DepositArgs]>
@@ -73,12 +81,17 @@ export default class DepositTransaction {
       throw new Error('A deposit is already in process')
     }
     try {
+      console.log("START:")
       this.awaiter = this.deposit.start({ethDeposit: currencyAsJSON(ethDeposit), tokenDeposit: tokenDeposit && currencyAsJSON(tokenDeposit)})
+      console.log("B")
       await this.awaiter
+      console.log("C")
     } catch (e) {
       this.releaseDeferred()
+      console.log("E:", e)
       throw e
     } finally {
+      console.log("D")
       this.awaiter = null
     }
   }
@@ -166,6 +179,13 @@ export default class DepositTransaction {
 
   private maybeErc20Approve = async (depositObj: DepositArgs): Promise<DepositArgs> => {
     const addr = getAddress(this.store)
+    const balance = await this.bootyContract
+      .methods
+      .balanceOf(addr)
+      .call()
+
+    console.log('Token balance:', balance.toString())
+
     const allowance = await this.bootyContract
       .methods
       .allowance(
@@ -186,6 +206,11 @@ export default class DepositTransaction {
           from: getAddress(this.store),
           gas: 4000000
         })
+        .on('error', function(error){ console.error('ERROR:', error) })
+        .on('transactionHash', function(transactionHash){ console.log('TXHASH:',transactionHash) })
+        .on('receipt', function(receipt){
+           console.log('RECEIPT:', receipt.contractAddress) // contains the new contract address
+        })
     }
 
     return depositObj
@@ -193,7 +218,7 @@ export default class DepositTransaction {
 
   // we must do eth adn token deposits in seperate contract calls/connext client calls
   private doEthDeposit = async ({tokenDeposit, ethDeposit}: DepositArgs): Promise<[DepositArgs, LedgerChannel]> => {
-    console.log('doEthDeposit', tokenDeposit, ethDeposit)
+    console.log('doEthDeposit', tokenDeposit && tokenDeposit.toString(), ethDeposit && ethDeposit.toString())
     const startingLc = await this.connext.getChannelByPartyA()
 
     if (ethDeposit.amount !== '0') {
@@ -253,7 +278,7 @@ export default class DepositTransaction {
     }
     let ledgerId: string
     try {
-      console.log('attempting deposit with', depositObj)
+      console.log('attempting deposit with', valMap(depositObj, (x: any) => x && x.toString()))
       ledgerId = await this.connext.openChannel(depositObj, process.env.BOOTY_CONTRACT_ADDRESS) as string
     } catch(e) {
       console.error('connext.openChannel failed', {e, eth: ethDeposit.amount, tokens: tokenDeposit && tokenDeposit.amount})

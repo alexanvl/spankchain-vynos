@@ -96,6 +96,8 @@ export default function exchangeTransactionV0 (
 
     const {tokenBalanceA, tokenBalanceI, ethBalanceA, ethBalanceI} = getNewBalancesBN(lc, sellAmount, buyAmount)
 
+    throw new Error('uhoh')
+    /*
     await connext.updateBalances(
       [
         {
@@ -117,7 +119,9 @@ export default function exchangeTransactionV0 (
       getAddress(store)
     )
 
+
     return [tokenBalanceA, tokenBalanceI, ethBalanceA, ethBalanceI]
+    */
   }
 
   async function waitForHubDeposit (tokenBalanceA: BN, tokenBalanceI: BN, ethBalanceA: BN, ethBalanceI: BN) {

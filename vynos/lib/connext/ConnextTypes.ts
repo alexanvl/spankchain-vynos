@@ -18,7 +18,8 @@ export interface VirtualChannel {
 export enum PurchaseMetaType {
   PURCHASE = 'PURCHASE',
   TIP = 'TIP',
-  WITHDRAWAL = 'WITHDRAWAL'
+  WITHDRAWAL = 'WITHDRAWAL',
+  EXCHANGE = 'EXCHANGE',
 }
 
 export enum PaymentMetaType {
@@ -29,8 +30,6 @@ export enum PaymentMetaType {
 export enum ChannelType {
   LEDGER = 'LEDGER',
   VIRTUAL = 'VIRTUAL',
-  WITHDRAWAL = 'WITHDRAWAL',
-  EXCHANGE = 'EXCHANGE'
 }
 
 // Note: coppied from hub/src/domain/LedgerChannel.ts
@@ -71,6 +70,7 @@ export type PaymentMeta = {
   // to reduce the amount we'll need to change on the hub side. Eventually
   // this type should come entirely from the purchase, though.
   type: PaymentMetaType | PurchaseMetaType
+  exchangeRate?: any
 }
 
 export interface BalanceType {
@@ -86,7 +86,7 @@ export interface PaymentType {
 
 export interface PaymentObject {
   type: ChannelType
-  meta: PaymentMeta|any
+  meta: PaymentMeta
   payment: PaymentType
 }
 

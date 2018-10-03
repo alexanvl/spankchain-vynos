@@ -376,13 +376,19 @@ export function setUsernameHandler(state: WorkerState, username: string): Worker
   }
 }
 
-export const setMigrationState: ActionCreator<MigrationState> = actionCreator<MigrationState>('runtime/setMigrationState')
-export function setMigrationStatehandler(state: WorkerState, migrationState: MigrationState): WorkerState {
+export interface SetMigrationState {
+  state: MigrationState
+  currentMigration?: any
+}
+
+export const setMigrationState: ActionCreator<SetMigrationState> = actionCreator<SetMigrationState>('runtime/setMigrationState')
+export function setMigrationStatehandler(state: WorkerState, arg: SetMigrationState): WorkerState {
   return {
     ...state,
     runtime: {
       ...state.runtime,
-      migrationState,
+      migrationState: arg.state,
+      currentMigration: arg.currentMigration,
     }
   }
 }

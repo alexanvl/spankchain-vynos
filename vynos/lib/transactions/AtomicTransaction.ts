@@ -39,6 +39,7 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   private onStart: Function
   private onRestart: Function
   private afterAll: Function
+  private startedStackTrace?: Error
 
   constructor(
     store: Store<WorkerState>,
@@ -59,6 +60,7 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   }
 
   public start = async (...args: T2): Promise<T1> => {
+    this.startedStackTrace = new Error('failing transaction was started from:')
     this.setState({
       nextMethodArgs: args,
       nextMethodIndex: 0
@@ -98,6 +100,8 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
       }
 
       console.error(data.message, data)
+      console.error(e) // Log the exception so Chrome shows a stack trace
+      console.error(this.startedStackTrace)
       this.logError(data).catch(console.error.bind(console))
 
       throw e

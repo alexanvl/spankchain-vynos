@@ -32,6 +32,7 @@ export interface RuntimeState {
   featureFlags: FeatureFlags
   moreEthNeeded: boolean
   migrationState: MigrationState
+  currentMigration?: any
 }
 
 export interface AuthorizationRequestState {
@@ -125,6 +126,7 @@ export interface SharedState {
   featureFlags: FeatureFlags
   moreEthNeeded: boolean
   migrationState: MigrationState
+  currentMigration?: any
 }
 
 export interface AtomicTransactionState {
@@ -224,7 +226,8 @@ export const INITIAL_SHARED_STATE: SharedState = {
   baseCurrency: CurrencyType.FINNEY,
   featureFlags: {},
   moreEthNeeded: false,
-  migrationState: 'DONE'
+  migrationState: 'DONE',
+  currentMigration: null,
 }
 
 const initialTransactionState = () => ({
@@ -345,5 +348,6 @@ export function buildSharedState (state: WorkerState): SharedState {
     featureFlags: state.runtime.featureFlags,
     moreEthNeeded: false,
     migrationState: state.runtime.migrationState,
+    currentMigration: null,
   }
 }

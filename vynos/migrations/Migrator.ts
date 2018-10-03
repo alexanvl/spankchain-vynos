@@ -50,14 +50,24 @@ export default class Migrator {
 
     const bal = await getETHBalance(this.address, this.web3)
     if (bal.amountBN.eq(ZERO)) {
-      this.store.dispatch(actions.setMigrationState('AWAITING_ETH'))
+      this.store.dispatch(actions.setMigrationState({ state: 'AWAITING_ETH' }))
       await this.hasEth()
     }
 
-    this.store.dispatch(actions.setMigrationState('MIGRATING'))
+    this.store.dispatch(actions.setMigrationState({
+      state: 'MIGRATING',
+      currentMigration: { unapplied: res.unapplied },
+    }))
+    let lastMigration
     try {
       for (let i = 0; i < res.unapplied.length; i++) {
         const unapplied = res.unapplied[i]
+        console.log('Applying migration:', unapplied)
+        lastMigration = unapplied
+        this.store.dispatch(actions.setMigrationState({
+          state: 'MIGRATING',
+          currentMigration: unapplied,
+        }))
         const id = unapplied.migrationId
         const name = unapplied.migrationName
         const mig = this.migrations[name]
@@ -71,8 +81,12 @@ export default class Migrator {
           ids: [id]
         })
       }
+    } catch (e) {
+      console.error('Error applying migration:', lastMigration)
+      console.error(e)
+      throw e
     } finally {
-      this.store.dispatch(actions.setMigrationState('DONE'))
+      this.store.dispatch(actions.setMigrationState({ state: 'DONE' }))
     }
   }
 

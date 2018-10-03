@@ -1,6 +1,6 @@
 import {CurrencyType, WorkerState} from '../../worker/WorkerState'
 import {Store} from 'redux'
-import {ChannelType, IConnext, LedgerChannel} from '../connext/ConnextTypes'
+import {ChannelType, IConnext, LedgerChannel, PurchaseMetaType} from '../connext/ConnextTypes'
 import {AtomicTransaction} from './AtomicTransaction'
 import Logger from '../Logger'
 import {BOOTY, ZERO} from '../constants'
@@ -30,47 +30,58 @@ export default class BuyBootyTransaction {
       store,
       logger,
       'buyBootyV0',
-      [this.prepareSwap, this.executeSwap]
+      [this.prepareAndExecuteSwap]
     )
   }
 
-  private prepareSwap = async (): Promise<[LedgerChannel, Balances]> => {
+  private prepareAndExecuteSwap = async (): Promise<void> => {
     const lc = await this.connext.getChannelByPartyA()
     if (!lc) {
       throw new Error('An lc is required.')
     }
 
-    const balances = this.generateBalances(lc)
+    const b = this.generateBalances(lc)
 
-    console.log('swapping balances', balances.tokenBalanceA.toString(), balances.tokenBalanceI.toString(),
-      balances.ethBalanceA.toString(), balances.ethBalanceI.toString())
-
-    return [
-      lc,
-      balances
-    ]
-  }
-
-  private executeSwap = async (lc: LedgerChannel, balances: Balances): Promise<void> => {
-    const {tokenBalanceA, tokenBalanceI, ethBalanceA, ethBalanceI, rate} = balances
+    console.log('swapping balances', b.tokenBalanceA.toString(), b.tokenBalanceI.toString(),
+      b.ethBalanceA.toString(), b.ethBalanceI.toString())
 
     await this.connext.updateBalances([
       {
-        type: ChannelType.EXCHANGE,
+        type: ChannelType.LEDGER,
         payment: {
           channelId: lc.channelId,
           balanceA: {
-            tokenDeposit: tokenBalanceA,
-            ethDeposit: ethBalanceA
+            tokenDeposit: new BN(lc.tokenBalanceA),
+            ethDeposit: new BN(lc.ethBalanceA),
           },
           balanceB: {
-            tokenDeposit: tokenBalanceI,
-            ethDeposit: ethBalanceI
+            tokenDeposit: new BN(lc.tokenBalanceI).add(b.purchasedBei),
+            ethDeposit: new BN(lc.ethBalanceI)
           }
         },
         meta: {
-          exchangeRate: rate.toString(),
-          receiver: process.env.INGRID_ADDRESS
+          type: PurchaseMetaType.EXCHANGE,
+          exchangeRate: b.rate.toString(),
+          receiver: process.env.INGRID_ADDRESS!,
+        }
+      },
+      {
+        type: ChannelType.LEDGER,
+        payment: {
+          channelId: lc.channelId,
+          balanceA: {
+            tokenDeposit: b.tokenBalanceA,
+            ethDeposit: b.ethBalanceA
+          },
+          balanceB: {
+            tokenDeposit: b.tokenBalanceI,
+            ethDeposit: b.ethBalanceI
+          }
+        },
+        meta: {
+          type: PurchaseMetaType.EXCHANGE,
+          exchangeRate: b.rate.toString(),
+          receiver: process.env.INGRID_ADDRESS!
         }
       }
     ])
@@ -88,8 +99,9 @@ export default class BuyBootyTransaction {
     const purchasedBei = payableWei.toBEI()
 
     return {
+      purchasedBei: purchasedBei.amountBN,
       tokenBalanceA: new BN(lc.tokenBalanceA).add(purchasedBei.amountBN),
-      tokenBalanceI: ZERO,
+      tokenBalanceI: new BN(lc.tokenBalanceI),
       ethBalanceA: new BN(lc.ethBalanceA).sub(payableWei.amountBN),
       ethBalanceI: new BN(lc.ethBalanceI).add(payableWei.amountBN),
       rate: rates.ETH
