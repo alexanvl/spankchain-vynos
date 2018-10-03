@@ -59,7 +59,6 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
       return
     }
 
-
     let restorationCandidates
 
     try {

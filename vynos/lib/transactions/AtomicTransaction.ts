@@ -31,6 +31,15 @@ import getAddress from '../getAddress';
 
 const noop = () => {}
 
+export function ensureMethodsHaveNames(host: any): void {
+  Object.keys(host).forEach(funcName => {
+    let func = host[funcName]
+    if (typeof func == 'function' && !func.name) {
+      Object.defineProperty(func, 'name', { value: funcName });
+    }
+  })
+}
+
 export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   public name: string
   private store: Store<WorkerState>
@@ -59,6 +68,10 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
     this.logger = logger
   }
 
+  private log(msg: string, ...rest: any[]): void {
+    console.log(`tx ${this.name}: ${msg}`, ...rest)
+  }
+
   public start = async (...args: T2): Promise<T1> => {
     this.startedStackTrace = new Error('failing transaction was started from:')
     this.setState({
@@ -68,7 +81,6 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
     await this.onStart()
     return await this.doTransaction()
   }
-
 
   public restart = async (): Promise<T1|null> => {
     if (!this.isInProgress()) {
@@ -92,18 +104,14 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
       this.removeState()
       this.afterAll()
 
-      const data = {
-        message: 'there was an error running an AtomicTransaction',
+      console.error('there was an error running an AtomicTransaction', {
         name: this.name,
         state: oldState,
         account: getAddress(this.store),
         e
-      }
-
-      console.error(data.message, data)
+      })
       console.error(e) // Log the exception so Chrome shows a stack trace
       console.error(this.startedStackTrace)
-      this.logError(data)
       throw e
     }
 
@@ -114,11 +122,29 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   }
 
   private persistAndRun = async (nextMethodArgs: any, nextMethodIndex: number): Promise<T1> => {
-    nextMethodArgs = await this.methodOrder[nextMethodIndex](...nextMethodArgs)
+    const method = this.methodOrder[nextMethodIndex]
+    const methodName = method.name
+    this.log(`running step ${nextMethodIndex}: ${methodName} with`, nextMethodArgs)
+
+    const startTime = Date.now()
+    const logMethodResult = (res: any) => this.logMethodResult({
+      index: nextMethodIndex,
+      args: nextMethodArgs,
+      result: res,
+      duration: Date.now() - startTime,
+    })
+    try {
+      nextMethodArgs = await method(...nextMethodArgs)
+      logMethodResult(nextMethodArgs)
+    } catch (e) {
+      logMethodResult({ error: e.toString() })
+      throw e
+    }
 
     nextMethodIndex++
 
     if (nextMethodIndex === this.methodOrder.length) {
+      this.log('complete!', nextMethodArgs)
       return nextMethodArgs
     }
 
@@ -130,7 +156,6 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
       nextMethodIndex,
       nextMethodArgs,
     })
-
     return await this.persistAndRun(nextMethodArgs, nextMethodIndex)
   }
 
@@ -138,41 +163,23 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
 
   private setState = (newState: AtomicTransactionState): void => {
     this.store.dispatch(actions.setTransactionState({name: this.name, newState}))
-    this.logNewState(newState)
   }
 
   private removeState = (): void => {
     this.store.dispatch(actions.removeTransactionState(this.name))
   }
 
-  private logNewState = (newState: AtomicTransactionState): void => {
-    const account: string = getAddress(this.store)
-
+  private logMethodResult = (opts: any): void => {
     this.logger.logToApi([{
-      name: `${this.logger.source}:`,
+      name: `wallet:tx:${this.name}:${opts.index}`,
       ts: new Date(),
       data: {
-        message: `${this.name}-transaction: account ${account} is executing step ${newState.nextMethodIndex + 1} of ${this.methodOrder.length}`,
-        type: 'info',
-        account,
-        nextMethodArgs: newState.nextMethodArgs,
-        nextMethodIndex: newState.nextMethodIndex,
+        txName: this.name,
+        ...opts,
       }
-    }]).catch((e) => console.warn('failed to log transaction state to API', {e, newState}))
+    }]).catch(e => {
+      console.error('failed to log transaction state to API:', e)
+    })
   }
 
-  private logError = ({state, account, e}: {name: string, state: AtomicTransactionState, account: string, e: Error}): void => {
-    this.logger.logToApi([{
-      name: `${this.logger.source}:`,
-      ts: new Date(),
-      data: {
-        message: `${this.name}-transaction: there was an error executing step ${state.nextMethodIndex + 1} of ${this.methodOrder.length}.  Account: ${account}`,
-        type: 'error',
-        stack: e.stack || e,
-        account,
-        nextMethodArgs: state.nextMethodArgs,
-        nextMethodIndex: state.nextMethodIndex
-      }
-    }]).catch((e) => console.warn('failed to log AtomicTransaction state to API', {e, state}))
-  }
 }

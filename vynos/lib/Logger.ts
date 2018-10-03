@@ -25,19 +25,14 @@ export default class Logger {
   }
 
   async logToApi (metrics: Array<Metric>) {
-    if (!API_URL) {
+    if (!API_URL)
       return
-    }
 
     const address = await this.getAddress()
 
     const clonedMetrics = JSON.parse(JSON.stringify(metrics))
     clonedMetrics.forEach((m: Metric) => m.data.address = address)
 
-    const body = JSON.stringify({
-      metrics: clonedMetrics
-    })
-
-    return postJson(`${API_URL}/metrics/store`, body)
+    return postJson(`${API_URL}/metrics/store`, { metrics: clonedMetrics })
   }
 }
