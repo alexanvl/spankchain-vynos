@@ -86,8 +86,8 @@ export interface HistoryItem {
   }
   createdAt: number
   type: PurchaseMetaType
-  priceWei: string
-  priceToken: string
+  amountWei: string
+  amountToken: string
   receiver: string
 }
 

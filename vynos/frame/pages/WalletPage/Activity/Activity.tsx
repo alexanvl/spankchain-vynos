@@ -173,7 +173,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             <div className={s.walletActivityAmountSign}>-</div>
             <div className={s.walletActivityAmount}>
               <Currency
-                amount={item.priceWei}
+                amount={item.amountWei}
                 inputType={CurrencyType.WEI}
                 outputType={CurrencyType.FINNEY}
                 unitClassName={this.getUnitClassName(CurrencyType.WEI, false)}
@@ -201,8 +201,8 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     let totalBooty = new BigNumber(0)
 
     group.items.forEach((curr: HistoryItem) => {
-      const wei = new BigNumber(curr.priceWei)
-      const booty = new BigNumber(curr.priceToken)
+      const wei = new BigNumber(curr.amountWei)
+      const booty = new BigNumber(curr.amountToken)
       const isIncomingTip = curr.type === 'TIP' && curr.receiver === this.props.address
 
       if (wei.gt(0)) {
@@ -249,13 +249,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
           >
             <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
             <div className={s.walletActivityAmount}>
-              <Currency
-                amount={total.abs().toFixed()}
-                inputType={CurrencyType.WEI}
-                outputType={CurrencyType.FINNEY}
-                unitClassName={this.getUnitClassName(CurrencyType.FINNEY, !isNeg)}
-                showUnit
-              />
+              {this.renderCurrency({ amountWei: totalWei.toString(), amountToken: totalBooty.toString() }, isNeg)}
             </div>
           </div>
         </T.TableCell>
@@ -295,13 +289,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             >
               <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
               <div className={s.walletActivityAmount}>
-                <Currency
-                  amount={item.priceWei}
-                  inputType={CurrencyType.WEI}
-                  outputType={CurrencyType.WEI}
-                  unitClassName={this.getUnitClassName(CurrencyType.FINNEY, !isNeg)}
-                  showUnit
-                />
+                {this.renderCurrency(item, isNeg)}
               </div>
             </div>
           </T.TableCell>
@@ -309,6 +297,22 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
         </T.TableRow>
       )) : null
     ]
+  }
+
+  renderCurrency (item: { amountWei: string, amountToken: string }, isNeg: boolean) {
+    const amount = item.amountWei === '0' ? item.amountToken : item.amountWei
+    const inputType = item.amountWei === '0' ? CurrencyType.BEI : CurrencyType.WEI
+    const outputType = item.amountWei === '0' ? CurrencyType.BOOTY : CurrencyType.FINNEY
+
+    return (
+      <Currency
+        amount={amount}
+        inputType={inputType}
+        outputType={outputType}
+        unitClassName={this.getUnitClassName(outputType, !isNeg)}
+        showUnit
+      />
+    )
   }
 
   renderActivityItem = (item: HistoryItem, isPerformer: boolean): string => {
@@ -331,7 +335,7 @@ function entryFor (item: HistoryItem) {
 }
 
 function reduceByTipOrPurchase (acc: NestedHistory[], curr: HistoryItem) {
-  if (Number(curr.priceWei) === 0) {
+  if (curr.amountWei === '0' && curr.amountToken === '0') {
     return acc
   }
 
