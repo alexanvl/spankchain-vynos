@@ -3,19 +3,20 @@ import * as semaphore from 'semaphore'
 import takeSem from '../takeSem'
 import * as actions from '../../worker/actions'
 import {AtomicTransaction, ensureMethodsHaveNames} from './AtomicTransaction'
-import {WorkerState} from '../../worker/WorkerState'
+import {CurrencyType, WorkerState} from '../../worker/WorkerState'
 import withRetries, {DoneFunc} from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
-import BN = require('bn.js')
-import {IConnext, Deposit, LedgerChannel} from '../connext/ConnextTypes'
-import Web3 = require('web3')
+import {Deposit, IConnext, LedgerChannel} from '../connext/ConnextTypes'
 import getAddress from '../getAddress'
 import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
 import {ICurrency} from '../currency/Currency'
 import currencyAsJSON from '../currency/currencyAsJSON'
-import {BOOTY, ZERO} from '../constants'
+import {BOOTY, INITIAL_DEPOSIT_BEI} from '../constants'
+import CurrencyConvertable from '../currency/CurrencyConvertable'
+import BN = require('bn.js')
+import Web3 = require('web3')
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -339,7 +340,7 @@ export default class DepositTransaction {
         channelId: ledgerId,
         deposit: {
           ethDeposit: new BN(ethDeposit.amount),
-          tokenDeposit: tokenDeposit && new BN(tokenDeposit.amount),
+          tokenDeposit: INITIAL_DEPOSIT_BEI.mul(new BN(10)),
         }
       })
     } catch(e) {

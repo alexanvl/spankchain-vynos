@@ -14,7 +14,7 @@ import { CurrencyType } from '../../worker/WorkerState'
 import LockStateObserver from '../LockStateObserver'
 import { AtomicTransaction, ensureMethodsHaveNames } from './AtomicTransaction'
 import {closeAllVCs} from '../connext/closeAllVCs'
-import {INITIAL_DEPOSIT_BEI, INITIAL_DEPOSIT_WEI} from '../constants'
+import {INITIAL_DEPOSIT_BEI, INITIAL_DEPOSIT_WEI, ZERO} from '../constants'
 import takeSem from '../takeSem'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import getChannels from '../connext/getChannels'
@@ -195,7 +195,7 @@ export default class BuyTransaction {
     // the LC payment and the second purchase is always the VC payment.
     const lc = lcState.lc
 
-    const makePayment = (chan: LedgerChannel | VirtualChannel): PaymentType  => {
+    const makePayment = (chan: LedgerChannel | VirtualChannel, isVc: boolean): PaymentType  => {
       const payment =  'openVcs' in chan ? purchase.payments[0] : purchase.payments[1]
       const curType = typeGetter(payment.amount.type)
       const payments = amountPair(payment.amount)
@@ -217,8 +217,8 @@ export default class BuyTransaction {
           tokenDeposit: balances.A[1].sub(payments[1]),
         },
         balanceB: {
-          ethDeposit: balances.A[0].add(payments[0]),
-          tokenDeposit: balances.A[1].add(payments[1]),
+          ethDeposit: balances.B[0].add(payments[0]),
+          tokenDeposit: balances.B[1].add(payments[1]),
         },
       }
     }
@@ -238,7 +238,7 @@ export default class BuyTransaction {
             ...purchase.fields,
           } as any,
         },
-        payment: makePayment(lc),
+        payment: makePayment(lc, false),
       },
 
       {
@@ -258,7 +258,7 @@ export default class BuyTransaction {
             originalType: vcPayment.type,
           } as any,
         },
-        payment: makePayment(vc),
+        payment: makePayment(vc, true),
       },
     ]
 
