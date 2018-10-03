@@ -88,13 +88,14 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
     try {
       out = await this.persistAndRun(nextMethodArgs, nextMethodIndex)
     } catch(e) {
+      const oldState = this.getState()
       this.removeState()
       this.afterAll()
 
       const data = {
         message: 'there was an error running an AtomicTransaction',
         name: this.name,
-        state: this.getState(),
+        state: oldState,
         account: getAddress(this.store),
         e
       }
@@ -102,8 +103,7 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
       console.error(data.message, data)
       console.error(e) // Log the exception so Chrome shows a stack trace
       console.error(this.startedStackTrace)
-      this.logError(data).catch(console.error.bind(console))
-
+      this.logError(data)
       throw e
     }
 
@@ -145,10 +145,10 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
     this.store.dispatch(actions.removeTransactionState(this.name))
   }
 
-  private logNewState = async (newState: AtomicTransactionState): Promise<void> => {
+  private logNewState = (newState: AtomicTransactionState): void => {
     const account: string = getAddress(this.store)
 
-    await this.logger.logToApi([{
+    this.logger.logToApi([{
       name: `${this.logger.source}:`,
       ts: new Date(),
       data: {
@@ -161,12 +161,12 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
     }]).catch((e) => console.warn('failed to log transaction state to API', {e, newState}))
   }
 
-  private logError = async ({state, account, e}: {name: string, state: AtomicTransactionState, account: string, e: Error}): Promise<void> => {
+  private logError = ({state, account, e}: {name: string, state: AtomicTransactionState, account: string, e: Error}): void => {
     this.logger.logToApi([{
       name: `${this.logger.source}:`,
       ts: new Date(),
       data: {
-        message: `${this.name}-transaction: there was an error executing step ${state.nextMethodIndex + 1} of ${this.methodOrder.length}.  Account: ${account}.  NextMethodArgs: ${JSON.stringify(state.nextMethodArgs)}`,
+        message: `${this.name}-transaction: there was an error executing step ${state.nextMethodIndex + 1} of ${this.methodOrder.length}.  Account: ${account}`,
         type: 'error',
         stack: e.stack || e,
         account,

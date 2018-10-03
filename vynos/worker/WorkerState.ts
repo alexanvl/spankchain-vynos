@@ -344,7 +344,7 @@ export function buildSharedState (state: WorkerState): SharedState {
     hasActiveExchange: state.runtime.hasActiveExchange,
     exchangeRates: state.runtime.exchangeRates,
     username: state.runtime.username,
-    baseCurrency: state.runtime.featureFlags.bootySupport ? CurrencyType.BOOTY : CurrencyType.FINNEY,
+    baseCurrency: state.runtime.baseCurrency,
     featureFlags: state.runtime.featureFlags,
     moreEthNeeded: false,
     migrationState: state.runtime.migrationState,
