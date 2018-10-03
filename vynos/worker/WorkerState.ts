@@ -304,14 +304,14 @@ export const GET_INITIAL_STATE = (): WorkerState => ({
     exchangeRates: null,
     username: null,
     baseCurrency: CurrencyType.FINNEY,
-    featureFlags: { bootySupport: false},
+    featureFlags: { bootySupport: true},
     moreEthNeeded: false,
     migrationState: 'DONE',
   }
 })
 
 export const developmentFlags = {
-  bootySupport: false
+  bootySupport: true
 }
 
 export const INITIAL_STATE = GET_INITIAL_STATE()
