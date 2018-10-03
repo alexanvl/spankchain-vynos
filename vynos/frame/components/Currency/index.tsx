@@ -11,15 +11,14 @@ import CurrencyConvertable from '../../../lib/currency/CurrencyConvertable'
 const s = require('./style.css')
 
 export interface StateProps {
-  workerProxy: WorkerProxy
   exchangeRates: ExchangeRates
 }
 
 export interface CurrencyProps extends StateProps {
-  amount: BN
+  amount: BN|number|string
   decimals?: number
-  outputType: CurrencyType.ETH | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.WEI | CurrencyType.BOOTY
-  inputType: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY
+  outputType: CurrencyType
+  inputType: CurrencyType
   showUnit?: boolean
   unitClassName?: string
   className?: string
@@ -27,7 +26,6 @@ export interface CurrencyProps extends StateProps {
   alt?: boolean
   color?: string
   big?: boolean
-  baseCurrency?: CurrencyType.ETH | CurrencyType.WEI | CurrencyType.USD | CurrencyType.FINNEY | CurrencyType.BOOTY
   showPlainTextUnit?: boolean
 }
 
@@ -42,7 +40,6 @@ export class Currency extends React.Component<CurrencyProps, any> {
   }
 
   formatAmount() {
-
     let {
       amount,
       decimals,
@@ -52,7 +49,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
 
     let ret: string = ''
     try {
-      let curr = (new CurrencyConvertable(inputType, amount.toString(10), () => this.props.exchangeRates))
+      let curr = (new CurrencyConvertable(inputType, amount.toString(), () => this.props.exchangeRates))
       if (outputType != inputType) {
         curr = curr.to(outputType)
       }
@@ -60,7 +57,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
       ret = curr.format({
         decimals: decimals,
         withSymbol: false,
-        showTrailingZeros: outputType == CurrencyType.USD
+        showTrailingZeros: outputType === CurrencyType.USD
       })
 
     } catch (e) {
@@ -107,9 +104,8 @@ const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName
   />
 )
 
-function mapStateToProps (state: FrameState, ownProps: any): StateProps {
+function mapStateToProps (state: FrameState): StateProps {
   return {
-    workerProxy: state.temp.workerProxy,
     exchangeRates: state.shared.exchangeRates!,
   }
 }

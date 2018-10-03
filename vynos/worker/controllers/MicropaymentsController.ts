@@ -14,7 +14,6 @@ import DepositTransaction, { DepositArgs } from '../../lib/transactions/DepositT
 import BuyTransaction from '../../lib/transactions/BuyTransaction'
 import getCurrentLedgerChannels from '../../lib/connext/getCurrentLedgerChannels'
 import ChannelPopulator from '../../lib/ChannelPopulator'
-import Currency from '../../lib/currency/Currency'
 import {IConnext} from '../../lib/connext/ConnextTypes'
 import Web3 = require('web3')
 import Exchange from '../../lib/transactions/Exchange'

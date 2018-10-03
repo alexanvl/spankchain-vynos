@@ -8,6 +8,7 @@ import VynosBuyResponse from '../lib/VynosBuyResponse'
 import * as metrics from '../lib/metrics'
 import BN = require('bn.js')
 import {ICurrency} from '../lib/currency/Currency'
+import {VynosPurchase} from '../lib/VynosPurchase'
 
 export interface Balance {
   balanceInWei: string|null
@@ -72,7 +73,7 @@ export default class Vynos extends EventEmitter {
       })
   }
 
-  public async buy (amount: BN, meta: any): Promise<VynosBuyResponse|null> {
+  public async buy (purchase: VynosPurchase<any>): Promise<VynosBuyResponse|null> {
     this.requireReady()
     const { didInit, isLocked } = await this.client!.getSharedState()
 
@@ -84,7 +85,7 @@ export default class Vynos extends EventEmitter {
     let res
 
     try {
-      res = await this.client!.buy(amount.toString(), meta)
+      res = await this.client!.buy(purchase)
     } catch (err) {
       this.emit('error', err)
       throw err

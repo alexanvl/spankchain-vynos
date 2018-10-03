@@ -49,7 +49,7 @@ export function setFeatureFlagsHandler(state: WorkerState, featureFlags: Feature
     }
   }
   const baseCurrency = featureFlags && featureFlags.bootySupport
-    ? CurrencyType.BOOTY
+    ? CurrencyType.BEI
     : CurrencyType.FINNEY // change this back to BOOTY to make baseCurrency always booty when developing
 
   const withBaseCurrencyAndFeatureFlags = setBaseCurrencyHandler(withFeatureFlags, baseCurrency)

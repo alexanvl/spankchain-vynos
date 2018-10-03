@@ -18,6 +18,8 @@ import {logMetrics} from '../lib/metrics'
 import {WorkerStatus} from '../lib/rpc/WorkerStatus'
 import {ReadyBroadcastEvent} from '../lib/rpc/ReadyBroadcast'
 import wait from '../lib/wait'
+import {VynosPayment, VynosPurchase} from '../lib/VynosPurchase'
+import {PurchaseMetaType} from '../lib/connext/ConnextTypes'
 
 export default class VynosClient extends JsonRpcClient {
   constructor (target: Window, origin: string) {
@@ -45,8 +47,8 @@ export default class VynosClient extends JsonRpcClient {
     return this.call(InitAccountRequest.method)
   }
 
-  buy (amount: string, meta: any): Promise<VynosBuyResponse> {
-    return this.call(BuyRequest.method, amount, meta)
+  buy (purchase: VynosPurchase<any>): Promise<VynosBuyResponse> {
+    return this.call(BuyRequest.method, purchase)
   }
 
   getSharedState (): Promise<SharedState> {

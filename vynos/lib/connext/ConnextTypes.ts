@@ -52,8 +52,8 @@ export interface LedgerChannel {
 export interface PurchaseMetaFields {
   streamId: string
   streamName: string
-  peformerId: string
-  peformerName: string
+  performerId: string
+  performerName: string
 }
 
 export interface WithdrawalFields {recipient: string}

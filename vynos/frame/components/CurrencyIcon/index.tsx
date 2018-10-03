@@ -1,8 +1,8 @@
 import * as React from 'react'
-import { connect } from 'react-redux'
+import {connect} from 'react-redux'
 import * as classnames from 'classnames'
-import { FrameState } from '../../redux/FrameState'
-import { CurrencyType } from '../../../worker/WorkerState';
+import {FrameState} from '../../redux/FrameState'
+import {CurrencyType} from '../../../worker/WorkerState'
 
 const s = require('./style.css')
 
@@ -38,7 +38,7 @@ export class CurrencyIcon extends React.Component<Props, any> {
           [s.pink]: color === 'pink',
           [s.green]: color === 'green',
           [s.finney]: c === CurrencyType.FINNEY,
-          [s.boo]: c === CurrencyType.BOOTY,
+          [s.boo]: c === CurrencyType.BOOTY || c === CurrencyType.BEI,
           [s.usd]: c === CurrencyType.USD,
           [s.unknown]: isUnknownCurrency,
         })}

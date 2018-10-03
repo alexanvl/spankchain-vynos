@@ -84,7 +84,7 @@
     "buffer": "5.0.6",
     "chai-subset": "^1.6.0",
     "classnames": "2.2.5",
-    "connext": "git://github.com/mslipper/connext-client.git#96d9beb8b7cd43110aeb95b4d105134f669f2989",
+    "connext": "git://github.com/mslipper/connext-client.git#a8ef801c07f14d60959d8c80f12fa260aea765c4",
     "copy-to-clipboard": "3.0.8",
     "debug": "3.1.0",
     "deepmerge": "^2.1.1",

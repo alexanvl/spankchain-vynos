@@ -37,6 +37,10 @@ export default class CurrencyConvertable extends Currency {
   public toBEI = (): CurrencyConvertable => this._convert(CurrencyType.BEI)
 
   private _convert = (toType: CurrencyType): CurrencyConvertable => {
+    if (this.type === toType) {
+      return this
+    }
+
     // guaranteeing precision until more tests are written
     // since exchange rates are based on WEI and BN and BIgNumber are mixed 
     // more testing should be done specifically with BEI to BOOTY converstions

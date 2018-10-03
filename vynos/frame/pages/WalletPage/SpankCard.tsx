@@ -1,24 +1,24 @@
 import * as React from 'react'
-import { RouteComponentProps, withRouter } from 'react-router'
+import {RouteComponentProps, withRouter} from 'react-router'
 import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
-import { FrameState } from '../../redux/FrameState'
-import { connect } from 'react-redux'
-import { BrandingState, ExchangeRates, CurrencyType, Balances } from '../../../worker/WorkerState'
-import { cardBalance } from '../../redux/selectors/cardBalance'
+import {FrameState} from '../../redux/FrameState'
+import {connect} from 'react-redux'
+import {Balances, BrandingState, CurrencyType, ExchangeRates} from '../../../worker/WorkerState'
 import WorkerProxy from '../../WorkerProxy'
 import Currency from '../../components/Currency/index'
-import BN = require('bn.js')
 import Tooltip from '../../components/Tooltip'
-import { BalanceTooltip } from '../../components/BalanceTooltip'
+import CurrencyConvertable from '../../../lib/currency/CurrencyConvertable'
+import {ICurrency} from '../../../lib/currency/Currency'
+import {BalanceTooltip} from '../../components/BalanceTooltip'
+import BN = require('bn.js')
 
 const pageStyle = require('../UnlockPage.css')
 const s = require('./styles.css')
 
 
 export interface StateProps extends BrandingState {
-  walletBalance: BN
-  cardBalance: BN
+  reserveBalance: ICurrency
   isWithdrawing: boolean
   workerProxy: WorkerProxy
   activeWithdrawalError: string | null
@@ -28,6 +28,7 @@ export interface StateProps extends BrandingState {
   isFrameDisplayed: boolean
   baseCurrency: CurrencyType
   cardBalances: Balances
+  bootySupport: boolean
 }
 
 export interface UnlockPageProps extends StateProps, RouteComponentProps<any> {
@@ -41,11 +42,9 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
   state = {error: ''} as SpankCardState
 
 
-  render() {
+  render () {
     const {
-      cardBalance,
-      exchangeRates,
-      walletBalance,
+      reserveBalance,
       companyName,
       backgroundColor,
       isPendingVerification,
@@ -56,10 +55,24 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
       location,
       baseCurrency,
       cardBalances,
+      bootySupport,
+      exchangeRates
     } = this.props
 
-
-    const reserveBalance = walletBalance
+    const amtBei = cardBalances.tokenBalance.amount
+    const amtWei = cardBalances.ethBalance.amount
+    const cardConv = new CurrencyConvertable(
+      bootySupport ? CurrencyType.BEI : CurrencyType.WEI,
+      bootySupport ? amtBei : amtWei,
+      () => exchangeRates
+    )
+    const cardAmt = bootySupport ? cardConv.toBOOTY() : cardConv.toFIN()
+    const bootyUSD = new CurrencyConvertable(CurrencyType.BEI, amtBei, () => exchangeRates).toUSD()
+    const weiUSD = new CurrencyConvertable(CurrencyType.WEI, amtWei, () => exchangeRates).toUSD()
+    const reserveUSD = new CurrencyConvertable(CurrencyType.WEI, reserveBalance.amount, () => exchangeRates).toUSD()
+    const total = bootyUSD.amountBN
+      .add(weiUSD.amountBN)
+      .add(reserveUSD.amountBN)
 
     return (
       <div className={s.walletSpankCardWrapper}>
@@ -79,7 +92,7 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
                 companyName={companyName}
                 backgroundColor={backgroundColor}
                 color={textColor}
-                currencyValue={cardBalance}
+                currencyValue={cardAmt.amountBN}
                 className={s.walletSpankCard}
                 isLoading={hasActiveDeposit || isWithdrawing}
                 currencyType={baseCurrency}
@@ -92,21 +105,20 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
                 className="balanceTooltip" // this is intentionally a string because tooltip styles need to be added to /components/Tooltip/unprefixedStyle.css
                 content={
                   <BalanceTooltip
-                    amount={cardBalance}
+                    amount={total}
                     inputType={CurrencyType.WEI}
-                    reserveBalance={reserveBalance}
-                    reserveBalanceType={CurrencyType.WEI}
+                    reserveBalance={new BN(reserveBalance.amount)}
                     exchangeRates={exchangeRates}
                     hasActiveDeposit={hasActiveDeposit}
-                    currencyType={baseCurrency}
+                    currencyType={CurrencyType.WEI}
                     cardBalances={cardBalances}
                   />
                 }
               >
                 <div className={s.usdBalance}>
                   <Currency
-                    amount={cardBalance}
-                    inputType={CurrencyType.WEI}
+                    amount={total}
+                    inputType={CurrencyType.USD}
                     outputType={CurrencyType.USD}
                     className={s.sendReceiveCurrency}
                     unitClassName={s.usdUnit}
@@ -120,19 +132,19 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
               <div className={s.buttonSpacer} />
               <Button
                 to="/wallet/receive"
-                type={(location && location.pathname) === "/wallet/receive" ? "primary" : "secondary"}
+                type={(location && location.pathname) === '/wallet/receive' ? 'primary' : 'secondary'}
                 content="Receive"
                 isMini
               />
               <Button
                 to="/wallet/send"
-                type={(location && location.pathname) === "/wallet/send" ? "primary" : "secondary"}
+                type={(location && location.pathname) === '/wallet/send' ? 'primary' : 'secondary'}
                 content="Send"
                 isMini
               />
               <Button
                 to="/wallet/activity"
-                type={(location && location.pathname) === "/wallet/activity" ? "primary" : "secondary"}
+                type={(location && location.pathname) === '/wallet/activity' ? 'primary' : 'secondary'}
                 content="Activity"
                 isMini
               />
@@ -144,7 +156,7 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
   }
 
   renderError = () => {
-    const { activeWithdrawalError } = this.props
+    const {activeWithdrawalError} = this.props
 
     if (!this.state.error && !activeWithdrawalError) {
       return null
@@ -166,12 +178,9 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
   }
 }
 
-function mapStateToProps(state: FrameState): StateProps {
-  const walletBalance = state.shared.addressBalances
+function mapStateToProps (state: FrameState): StateProps {
   return {
     ...state.shared.branding,
-    walletBalance: new BN(walletBalance.ethBalance.amount),
-    cardBalance: cardBalance(state.shared),
     isWithdrawing: state.shared.hasActiveWithdrawal,
     activeWithdrawalError: state.shared.activeWithdrawalError,
     workerProxy: state.temp.workerProxy,
@@ -181,6 +190,8 @@ function mapStateToProps(state: FrameState): StateProps {
     isFrameDisplayed: state.shared.isFrameDisplayed,
     baseCurrency: state.shared.baseCurrency,
     cardBalances: state.shared.channel.balances,
+    bootySupport: state.shared.featureFlags.bootySupport!,
+    reserveBalance: state.shared.addressBalances.ethBalance
   }
 }
 

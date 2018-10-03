@@ -18,7 +18,6 @@ export interface StateProps {
   workerProxy: WorkerProxy,
   history: HistoryItem[]
   address: string
-  baseCurrency: CurrencyType,
   exchangeRates: ExchangeRates
 }
 
@@ -49,7 +48,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     error: ''
   } as ActivityState
 
-  async componentDidMount() {
+  async componentDidMount () {
     this.setState({
       isLoading: true
     })
@@ -69,7 +68,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     })
   }
 
-  toggleDetails(i: number) {
+  toggleDetails (i: number) {
     const clone = new Set(Array.from(this.state.detailRows))
 
     if (clone.has(i)) {
@@ -92,13 +91,11 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
       activityBootySignNegative: isBooty && !isPositive,
       activityFinneySignNegative: !isBooty && !isPositive,
       [unitStyles.green]: isPositive,
-      [unitStyles.pink]: !isPositive,
+      [unitStyles.pink]: !isPositive
     })
   }
 
-  render() {
-    const currencyType = this.props.baseCurrency
-
+  render () {
     const groups = this.props.history.reduce(reduceByTipOrPurchase, [])
       .reduce((acc: GroupOrHistory[], curr: NestedHistory) => {
         if (!Array.isArray(curr)) {
@@ -109,6 +106,21 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
         const tips = curr.reduce(reduceByTipStream, [])
         return acc.concat(tips)
       }, [])
+
+    let content
+
+    if (!groups.length) {
+      content = (
+        <T.TableRow>
+          <T.TableCell colSpan={5}>
+            <p>No history to show. Get tipping!</p>
+          </T.TableCell>
+        </T.TableRow>
+      )
+    } else {
+      content = groups.map((g: GroupOrHistory, i: number) =>
+        g.hasOwnProperty('type') ? this.renderWithdrawal(g as HistoryItem) : this.renderGroup(g as Group, i))
+    }
 
     return (
       <div className={baseStyle.subpageWrapper}>
@@ -126,17 +138,14 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             </T.TableRow>
           </T.TableHeader>
           <T.TableBody>
-            {
-              groups.map((g: GroupOrHistory, i: number) =>
-                g.hasOwnProperty('type') ? this.renderWithdrawal(g as HistoryItem, currencyType) : this.renderGroup(g as Group, i, currencyType))
-            }
+            {content}
           </T.TableBody>
         </T.Table>
       </div>
     )
   }
 
-  renderWithdrawal(item: HistoryItem, currencyType: CurrencyType) {
+  renderWithdrawal (item: HistoryItem) {
     const mStart = moment(item.createdAt)
 
     return (
@@ -165,8 +174,9 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             <div className={s.walletActivityAmount}>
               <Currency
                 amount={item.priceWei}
-                outputType={currencyType}
-                unitClassName={this.getUnitClassName(currencyType, false)}
+                inputType={CurrencyType.WEI}
+                outputType={CurrencyType.FINNEY}
+                unitClassName={this.getUnitClassName(CurrencyType.WEI, false)}
                 showUnit
               />
             </div>
@@ -177,7 +187,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     )
   }
 
-  renderGroup(group: Group, i: number, currencyType: CurrencyType) {
+  renderGroup (group: Group, i: number) {
     const startDate = group.startDate
     const endDate = group.endDate
 
@@ -213,7 +223,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
           [s.walletActivityEntryToggled]: toggled
         })}
       >
-        <T.TableCell >
+        <T.TableCell>
           <div>
             <div className={s.walletActivityMonth}>{mStart.format('MMM')}</div>
             <div className={s.walletActivityDay}>{mStart.format('DD')}</div>
@@ -224,7 +234,8 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
         </T.TableCell>
         <T.TableCell className={s.walletActivityItemDescription}>
           <div>
-            <div className={s.walletActivityItem}>{firstInGroup.fields.streamName || firstInGroup.fields.performerName}</div>
+            <div
+              className={s.walletActivityItem}>{firstInGroup.fields.streamName || firstInGroup.fields.performerName}</div>
             <div className={s.walletActivityDescription}>{firstInGroup.fields.performerName}</div>
           </div>
         </T.TableCell>
@@ -233,15 +244,16 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             className={classnames(s.walletActivityAmountWrapper, {
               [s.walletActivityEntryToggled]: toggled,
               [s.walletActivitySignPositive]: !isNeg,
-              [s.walletActivitySignNegative]: isNeg,
+              [s.walletActivitySignNegative]: isNeg
             })}
           >
             <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
             <div className={s.walletActivityAmount}>
               <Currency
-                amount={total.abs()}
-                outputType={currencyType}
-                unitClassName={this.getUnitClassName(currencyType, !isNeg)}
+                amount={total.abs().toFixed()}
+                inputType={CurrencyType.WEI}
+                outputType={CurrencyType.FINNEY}
+                unitClassName={this.getUnitClassName(CurrencyType.FINNEY, !isNeg)}
                 showUnit
               />
             </div>
@@ -269,23 +281,25 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
           </T.TableCell>
           <T.TableCell className={s.walletActivityItemDescription}>
             <div className={s.walletActivityItem}>
-            {this.renderActivityItem(item, !isNeg)}
+              {this.renderActivityItem(item, !isNeg)}
             </div>
-            {!isNeg && <div className={s.walletActivityDescription}>{item.fields.streamName || item.fields.performerName}</div>}
+            {!isNeg &&
+            <div className={s.walletActivityDescription}>{item.fields.streamName || item.fields.performerName}</div>}
           </T.TableCell>
           <T.TableCell className={s.walletActivityPrice}>
             <div
               className={classnames(s.walletActivityAmountWrapper, {
                 [s.walletActivitySignPositive]: !isNeg,
-                [s.walletActivitySignNegative]: isNeg,
+                [s.walletActivitySignNegative]: isNeg
               })}
             >
               <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
               <div className={s.walletActivityAmount}>
                 <Currency
                   amount={item.priceWei}
-                  outputType={currencyType}
-                  unitClassName={this.getUnitClassName(currencyType, !isNeg)}
+                  inputType={CurrencyType.WEI}
+                  outputType={CurrencyType.WEI}
+                  unitClassName={this.getUnitClassName(CurrencyType.FINNEY, !isNeg)}
                   showUnit
                 />
               </div>
@@ -310,13 +324,13 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
 
 }
 
-function entryFor(item: HistoryItem) {
+function entryFor (item: HistoryItem) {
   return item.type === 'TIP'
     ? [item]
     : item
 }
 
-function reduceByTipOrPurchase(acc: NestedHistory[], curr: HistoryItem) {
+function reduceByTipOrPurchase (acc: NestedHistory[], curr: HistoryItem) {
   if (Number(curr.priceWei) === 0) {
     return acc
   }
@@ -338,7 +352,7 @@ function reduceByTipOrPurchase(acc: NestedHistory[], curr: HistoryItem) {
   return acc
 }
 
-function reduceByTipStream(acc: Group[], curr: HistoryItem, i: number, all: HistoryItem[]) {
+function reduceByTipStream (acc: Group[], curr: HistoryItem, i: number, all: HistoryItem[]) {
   const date = new Date(curr.createdAt)
 
   const mon = date.getMonth()
@@ -384,13 +398,12 @@ function reduceByTipStream(acc: Group[], curr: HistoryItem, i: number, all: Hist
   return acc
 }
 
-function mapStateToProps(state: FrameState): StateProps {
+function mapStateToProps (state: FrameState): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
     history: state.shared.history,
     address: state.shared.address!,
-    baseCurrency: state.shared.baseCurrency,
-    exchangeRates: state.shared.exchangeRates!,
+    exchangeRates: state.shared.exchangeRates!
   }
 }
 

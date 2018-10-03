@@ -149,7 +149,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
           reverse
           big
         />
-        <Currency key="value" amount={this.props.currencyValue} outputType={currencyType} decimals={0} />
+        <Currency key="value" amount={this.props.currencyValue || 0} inputType={currencyType} outputType={currencyType} decimals={0} />
       </div>
     )
   }

@@ -1,6 +1,9 @@
 import {VynosWindow} from '../vynos/window'
-import BN = require('bn.js')
 import Vynos from '../vynos/inpage/Vynos'
+import {PaymentMetaType, PurchaseMetaType} from '../vynos/lib/connext/ConnextTypes'
+import {CurrencyType} from '../vynos/worker/WorkerState'
+import BN = require('bn.js')
+import {BOOTY} from '../vynos/lib/constants'
 
 let _window = (window as VynosWindow)
 
@@ -46,16 +49,33 @@ window.addEventListener('load', function () {
         (document.getElementById('amount') as HTMLInputElement).value
         || '1'
 
-      vynos.buy(new BN(1000000000000000).mul(new BN(tipAmountFIN)), {
-        type: 'TIP',
+      vynos.buy({
         fields: {
-          streamId: 'abc-123',
-          streamName: 'SpankCam',
-          performerId: 'abc-234',
-          performerName: 'Butter Bubble',
-          tipperName: 'They call me Harness',
+          streamId: 'honk',
+          streamName: 'whatever',
+          performerId: 'abc123',
+          performerName: 'bubbles',
+          tipperName: 'beeperson'
         },
-        receiver,
+        type: PurchaseMetaType.TIP,
+        payments: [
+          {
+            type: PaymentMetaType.FEE,
+            receiver: '$$HUB$$',
+            amount: {
+              type: CurrencyType.BEI,
+              amount: '1000000',
+            },
+          },
+          {
+            type: PaymentMetaType.PRINCIPAL,
+            receiver: receiver,
+            amount: {
+              type: CurrencyType.BEI,
+              amount: '1000000000000000000'
+            }
+          }
+        ]
       })
     }
   }
@@ -64,34 +84,6 @@ window.addEventListener('load', function () {
   if (setNameButton) {
     setNameButton.onclick = () => {
       vynos.setUsername('falafel')
-    }
-  }
-
-  const buyButton = document.getElementById('buy')
-  if (buyButton) {
-    buyButton.onclick = () => {
-      vynos.buy(new BN(8100000000000), {
-        type: 'PURCHASE',
-        fields: {
-          productName: 'Widget',
-          productSku: 'WIDG-123'
-        },
-        receiver: '0x0ec05ca2d7e658259d3cd737d3f33685875c52bb'
-      })
-    }
-  }
-
-  const buyVideoButton = document.getElementById('buy-video')
-  if (buyVideoButton) {
-    buyVideoButton.onclick = () => {
-      vynos.buy(new BN(8100000000000), {
-        type: 'PURCHASE',
-        fields: {
-          productName: 'Pop Music Video',
-          productSku: 'NA-123-POP'
-        },
-        receiver: '0x0ec05ca2d7e658259d3cd737d3f33685875c52bb'
-      })
     }
   }
 

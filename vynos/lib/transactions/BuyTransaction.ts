@@ -14,7 +14,7 @@ import { CurrencyType } from '../../worker/WorkerState'
 import LockStateObserver from '../LockStateObserver'
 import { AtomicTransaction } from './AtomicTransaction'
 import {closeAllVCs} from '../connext/closeAllVCs'
-import {INITIAL_DEPOSIT_BOOTY, INITIAL_DEPOSIT_ETH} from '../constants'
+import {INITIAL_DEPOSIT_BEI, INITIAL_DEPOSIT_WEI} from '../constants'
 import takeSem from '../takeSem'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import getChannels from '../connext/getChannels'
@@ -39,8 +39,8 @@ type _Args<T> = T extends (...args: infer U) => any ? U : never
  */
 function typeGetter<T extends C>(type: T): ((p: CurrencyPair) => Currency<T>) & { idx: number } {
   const typeIdx = (
-    type == 'ETH' ? 0 :
-    type == 'BOOTY' ? 1 :
+    type == 'WEI' ? 0 :
+    type == 'BEI' ? 1 :
     null
   )
   if (typeIdx === null)
@@ -60,8 +60,8 @@ function typeGetter<T extends C>(type: T): ((p: CurrencyPair) => Currency<T>) & 
 function amountPair(amount: ICurrency): [BN, BN] {
   const curType = typeGetter(amount.type)
   return [
-    new BN(curType.idx == 0 ? '0' : amount.amount),
-    new BN(curType.idx == 1 ? '0' : amount.amount),
+    new BN(curType.idx === 1 ? '0' : amount.amount),
+    new BN(curType.idx === 0 ? '0' : amount.amount),
   ]
 }
 
@@ -75,17 +75,17 @@ function amountPair(amount: ICurrency): [BN, BN] {
 function currencyPair(amount: ICurrency): CurrencyPair {
   const pair = amountPair(amount)
   return [
-    new Currency(C.ETH, pair[0]),
-    new Currency(C.BOOTY, pair[1]),
+    new Currency(C.WEI, pair[0]),
+    new Currency(C.BEI, pair[1]),
   ]
 }
 
-type CurrencyPair = [Currency<C.ETH>, Currency<C.BOOTY>]
+export type CurrencyPair = [Currency<C.WEI>, Currency<C.BEI>]
 
 export default class BuyTransaction {
   static DEFAULT_DEPOSIT: CurrencyPair = [
-    new Currency(C.ETH, INITIAL_DEPOSIT_ETH.toString()),
-    new Currency(C.BOOTY, INITIAL_DEPOSIT_BOOTY.toString()),
+    new Currency(C.WEI, INITIAL_DEPOSIT_WEI.toString()),
+    new Currency(C.BEI, INITIAL_DEPOSIT_BEI.toString()),
   ]
 
   private doBuyTransaction: AtomicTransaction<VynosBuyResponse, _Args<BuyTransaction['getExistingChannel']>>
@@ -349,8 +349,8 @@ export default class BuyTransaction {
     }
 
     return [
-      new Currency(C.ETH, channels[0].ethBalanceA),
-      new Currency(C.BOOTY, channels[0].tokenBalanceA),
+      new Currency(C.WEI, channels[0].ethBalanceA),
+      new Currency(C.BEI, channels[0].tokenBalanceA),
     ]
   }
 }
