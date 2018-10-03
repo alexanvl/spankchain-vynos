@@ -4,6 +4,11 @@ import { ICurrency } from '../lib/currency/Currency'
 
 export type MigrationState = 'AWAITING_ETH' | 'MIGRATING' | 'DONE'
 
+// NOTE: This is only used between the time the Wallet loads and it's able
+// to fetch state from the hub. At that point, it will be driven by the Hub's
+// feature_flags table (where the 0x0 address is the global default)
+const USE_BOOTY = true
+
 export interface RuntimeState {
   wallet?: Wallet
   isTransactionPending: number
@@ -304,14 +309,14 @@ export const GET_INITIAL_STATE = (): WorkerState => ({
     exchangeRates: null,
     username: null,
     baseCurrency: CurrencyType.FINNEY,
-    featureFlags: { bootySupport: true},
+    featureFlags: { bootySupport: USE_BOOTY },
     moreEthNeeded: false,
     migrationState: 'DONE',
   }
 })
 
 export const developmentFlags = {
-  bootySupport: true
+  bootySupport: USE_BOOTY
 }
 
 export const INITIAL_STATE = GET_INITIAL_STATE()
