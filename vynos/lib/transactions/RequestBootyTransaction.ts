@@ -1,4 +1,4 @@
-import {AtomicTransaction} from './AtomicTransaction'
+import {AtomicTransaction, ensureMethodsHaveNames} from './AtomicTransaction'
 import {WorkerState} from '../../worker/WorkerState'
 import {Store} from 'redux'
 import Logger from '../Logger'
@@ -19,6 +19,7 @@ export default class RequestBootyTransaction {
   private tx: AtomicTransaction<void, void[]>
 
   constructor (store: Store<WorkerState>, logger: Logger) {
+    ensureMethodsHaveNames(this)
     this.store = store
     this.tx = new AtomicTransaction<void, void[]>(store, logger, 'requestBooty-1', [
       this.requestDisbursement,

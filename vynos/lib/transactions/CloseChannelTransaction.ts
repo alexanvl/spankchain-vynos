@@ -1,7 +1,7 @@
 import {Store} from 'redux'
 import * as semaphore from 'semaphore'
 import * as actions from '../../worker/actions'
-import {AtomicTransaction} from './AtomicTransaction'
+import {AtomicTransaction, ensureMethodsHaveNames} from './AtomicTransaction'
 import {WorkerState} from '../../worker/WorkerState'
 import withRetries, {DoneFunc} from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
@@ -28,6 +28,7 @@ export default class CloseChannelTransaction {
   private logger: Logger
 
   constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, sem: semaphore.Semaphore, chanPopulator: ChannelPopulator) {
+    ensureMethodsHaveNames(this)
     this.store = store
     this.logger = logger
     this.connext = connext

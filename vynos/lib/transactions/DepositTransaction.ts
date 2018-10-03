@@ -2,7 +2,7 @@ import {Store} from 'redux'
 import * as semaphore from 'semaphore'
 import takeSem from '../takeSem'
 import * as actions from '../../worker/actions'
-import {AtomicTransaction} from './AtomicTransaction'
+import {AtomicTransaction, ensureMethodsHaveNames} from './AtomicTransaction'
 import {WorkerState} from '../../worker/WorkerState'
 import withRetries, {DoneFunc} from '../withRetries'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
@@ -62,6 +62,7 @@ export default class DepositTransaction {
     web3: Web3,
     logger: Logger,
   ) {
+    ensureMethodsHaveNames(this)
     this.store = store
     this.connext = connext
     this.sem = sem
@@ -81,17 +82,12 @@ export default class DepositTransaction {
       throw new Error('A deposit is already in process')
     }
     try {
-      console.log("START:")
       this.awaiter = this.deposit.start({ethDeposit: currencyAsJSON(ethDeposit), tokenDeposit: tokenDeposit && currencyAsJSON(tokenDeposit)})
-      console.log("B")
       await this.awaiter
-      console.log("C")
     } catch (e) {
       this.releaseDeferred()
-      console.log("E:", e)
       throw e
     } finally {
-      console.log("D")
       this.awaiter = null
     }
   }
@@ -206,11 +202,6 @@ export default class DepositTransaction {
           from: getAddress(this.store),
           gas: 4000000
         })
-        .on('error', function(error){ console.error('ERROR:', error) })
-        .on('transactionHash', function(transactionHash){ console.log('TXHASH:',transactionHash) })
-        .on('receipt', function(receipt){
-           console.log('RECEIPT:', receipt.contractAddress) // contains the new contract address
-        })
     }
 
     return depositObj
@@ -266,7 +257,7 @@ export default class DepositTransaction {
   }
 
   private openChannel = async ({ethDeposit, tokenDeposit}: DepositArgs): Promise<[DepositArgs, string, boolean]> => {
-    console.log('opening channel')
+    console.log('opening channel...')
 
     if (!tokenDeposit || new BN(tokenDeposit.amount).eq(new BN(0))) {
       throw new Error('cannot open a channel without a token Deposit')
@@ -285,6 +276,8 @@ export default class DepositTransaction {
       throw e
     }
 
+    console.log('channel opened:', ledgerId)
+
     return [
       {tokenDeposit, ethDeposit},
       ledgerId,
@@ -293,10 +286,13 @@ export default class DepositTransaction {
   }
 
   private awaitChainsaw = async (depositArgs: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
+
+    console.log('Waitin for hub to acknowledge on-chain channel...')
     await withRetries(async (done: DoneFunc) => {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
       if (res) {
+        console.log('Hub acknowledged:', res)
         done()
       }
     }, 48)

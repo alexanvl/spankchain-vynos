@@ -12,7 +12,7 @@ import { WorkerState, ChannelState, CurrencyType as C } from '../../worker/Worke
 import { LedgerChannel, PaymentType} from '../connext/ConnextTypes'
 import { CurrencyType } from '../../worker/WorkerState'
 import LockStateObserver from '../LockStateObserver'
-import { AtomicTransaction } from './AtomicTransaction'
+import { AtomicTransaction, ensureMethodsHaveNames } from './AtomicTransaction'
 import {closeAllVCs} from '../connext/closeAllVCs'
 import {INITIAL_DEPOSIT_BEI, INITIAL_DEPOSIT_WEI} from '../constants'
 import takeSem from '../takeSem'
@@ -94,6 +94,7 @@ export default class BuyTransaction {
   private sem: semaphore.Semaphore
 
   constructor (store: Store<WorkerState>, logger: Logger, connext: IConnext, sem: semaphore.Semaphore) {
+    ensureMethodsHaveNames(this)
     this.store = store
     this.connext = connext
     this.sem = sem

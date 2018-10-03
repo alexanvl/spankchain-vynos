@@ -1,7 +1,7 @@
 import {CurrencyType, WorkerState} from '../../worker/WorkerState'
 import {Store} from 'redux'
 import {ChannelType, IConnext, LedgerChannel, PurchaseMetaType} from '../connext/ConnextTypes'
-import {AtomicTransaction} from './AtomicTransaction'
+import {AtomicTransaction, ensureMethodsHaveNames} from './AtomicTransaction'
 import Logger from '../Logger'
 import {BOOTY, ZERO} from '../constants'
 import CurrencyConvertable from '../currency/CurrencyConvertable'
@@ -24,13 +24,14 @@ export default class BuyBootyTransaction {
   private tx: AtomicTransaction<void, void[]>
 
   constructor (store: Store<WorkerState>, connext: IConnext, logger: Logger) {
+    ensureMethodsHaveNames(this)
     this.store = store
     this.connext = connext
     this.tx = new AtomicTransaction<void, void[]>(
       store,
       logger,
       'buyBootyV0',
-      [this.prepareAndExecuteSwap]
+      [this.prepareAndExecuteSwap],
     )
   }
 

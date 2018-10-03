@@ -140,10 +140,14 @@ export default class BackgroundController extends AbstractController {
   async generateRestorationCandidates (mnemonic: string): Promise<RestorationCandidate[]> {
     const hdKeyring = this._generateKeyring(mnemonic, true)
     const hdAddress = hdKeyring.wallet.getAddressString()
+    console.log('hdAddress:', hdAddress)
     const hdBalance = await this.balanceFor(hdAddress)
+    console.log('hdBalance:', hdBalance.toString())
     const rootKeyring = this._generateKeyring(mnemonic, false)
     const rootAddress = rootKeyring.wallet.getAddressString()
+    console.log('rootAddress:', rootAddress)
     const rootBalance = await this.balanceFor(rootAddress)
+    console.log('rootBalance:', rootBalance.toString())
 
     return [
       {
