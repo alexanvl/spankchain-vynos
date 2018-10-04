@@ -80,10 +80,12 @@ export default class Currency<ThisType extends CurrencyType = any> implements IC
 
     this._type = _type
 
+    const _amountAny = _amount as any
+
     try {
-      if (_amount instanceof BigNumber) {
+      if (_amountAny.isBigNumber) {
         this._amount = _amount
-      } else if (_amount instanceof BN) {
+      } else if (BN.isBN(_amountAny)) {
         this._amount = new BigNumber(_amount.toString(10))
       } else if (typeof _amount === 'string' || typeof _amount === 'number') {
         this._amount = new BigNumber(_amount)
