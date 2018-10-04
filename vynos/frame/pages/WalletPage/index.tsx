@@ -86,7 +86,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         />
         <Route
           path="/wallet"
-          render={() => this.props.cardBalance.eq(new BN(0)) ? <AddFundsCallout /> : null}
+          render={() => this.props.cardBalance.eq(new BN(0)) ? <Receive address={address!} location={this.props.location} /> : null}
         />
       </Switch>
 
@@ -99,7 +99,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
     }
 
     if (this.props.migrationState !== 'DONE') {
-      return this.renderMigrationStatus()
+      //return this.renderMigrationStatus()
     }
 
     return (

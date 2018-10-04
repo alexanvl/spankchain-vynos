@@ -65,6 +65,12 @@
   padding-left: .75rem;
   display: flex;
   align-items: center;
+  color: #797979;
+}
+
+.usdBalance.disabled {
+  justify-content: center;
+  font-size: 0.8rem;
 }
 
 .buttonSpacer {

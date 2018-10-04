@@ -4,10 +4,10 @@ import * as classnames from 'classnames'
 const s = require('./style.css')
 
 const LoadingSpinner: React.SFC<any> = function (props) {
-  const { className } = props
+  const { className, inverted, big, children } = props
 
   return (
-    <div className={classnames(s.spCircle, className)} />
+    <div className={classnames(s.spCircle, className, { [s.inverted]: inverted, [s.big]: big })} >{children}</div>
   )
 }
 

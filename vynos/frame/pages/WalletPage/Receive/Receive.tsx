@@ -2,17 +2,24 @@ import * as React from "react"
 import * as copy from 'copy-to-clipboard'
 import * as qr from 'qr-image'
 import * as classnames from 'classnames'
+import { connect } from 'react-redux'
 import { Link } from 'react-router-dom'
+import { FrameState } from '../../../redux/FrameState'
 import Input from "../../../components/Input"
 import Button from "../../../components/Button"
 import Currency from '../../../components/Currency'
-import { CurrencyType } from "../../../../worker/WorkerState";
+import LoadingSpinner from '../../../components/LoadingSpinner'
+import { alertMessagesShort, getTransactionStep, getTotalTransactionSteps } from '../../../components/transactionStates'
+import { CurrencyType, MigrationState } from "../../../../worker/WorkerState";
+import IconCheckmark from '../../../components/IconCheckmark'
 
 const s = require('./receive.css')
 const baseStyle = require('../styles.css')
 
-
-export interface Props {
+interface StateProps {
+  migrationState?: MigrationState
+}
+export interface Props extends StateProps {
   address: string | null
   bootySupport?: boolean
   showRevealPrivateKey?: boolean
@@ -81,29 +88,21 @@ export class Receive extends React.Component<Props, State> {
       <div className={baseStyle.subpageWrapper}>
         <div className={baseStyle.header}>Receive Ether {bootySupport && 'to get Booty'}</div>
         <div className={classnames(baseStyle.label, s.mediumUp)}>
-          { bootySupport ? 'When you receive ETH in your SpankPay account, it will automatically get converted to BOOTY so you can start tipping.'
+          {bootySupport ? <React.Fragment>
+            Only send up to&nbsp;
+            <Currency
+              amount={69}
+              outputType={CurrencyType.ETH}
+              inputType={CurrencyType.USD}
+            />&nbsp;Ether (ETH) to this address.
+            </React.Fragment>
             : 'Only send Ether (ETH) to this address.'
           }
         </div>
 
         <div className={classnames(s.minAmount, s.smallDown)}>Min Amount
-          <Currency
-            amount={0.04}
-            outputType={CurrencyType.ETH}
-            inputType={CurrencyType.ETH}
-            unitClassName={s.minIcon}
-            showUnit
-          />
+
         </div>
-        { bootySupport && <div className={classnames(s.minAmount, s.smallDown)}>Max Amount
-          <Currency
-            amount={69}
-            outputType={CurrencyType.ETH}
-            inputType={CurrencyType.USD}
-            unitClassName={s.minIcon}
-            showUnit
-          />
-        </div> }
         <Input
           disabled={true}
           value={address}
@@ -116,24 +115,7 @@ export class Receive extends React.Component<Props, State> {
             {renderQR(address)}
           </div>
           <div className={s.buttonWrapper}>
-            <div className={classnames(s.minAmount, s.mediumUp)}>Min Amount
-              <Currency
-                amount={0.04}
-                outputType={CurrencyType.ETH}
-                inputType={CurrencyType.ETH}
-                unitClassName={s.minIcon}
-                showUnit
-              />
-            </div>
-            { bootySupport && <div className={classnames(s.minAmount, s.mediumUp)}> Max Amount
-              <Currency
-                amount={69}
-                outputType={CurrencyType.ETH}
-                inputType={CurrencyType.USD}
-                unitClassName={s.minIcon}
-                showUnit
-              />
-            </div>}
+            { this.renderTransactionState() }
             <Button
               type='primary'
               onClick={this.onCopyAddress}
@@ -175,6 +157,33 @@ export class Receive extends React.Component<Props, State> {
       </div>
     )
   }
+
+  renderTransactionState() {
+    let { migrationState } = this.props
+    if (!migrationState) {
+      return 
+    }
+
+    let currentStep = getTransactionStep(migrationState)
+    let totalSteps = getTotalTransactionSteps()
+    let done = currentStep == totalSteps
+
+    return (
+      <div className={classnames(s.whiteRect, s.transactionState)}>
+        <span className={s.stepsWrapper}>
+          <span className={s.steps}>{ done ? <IconCheckmark/> : `${currentStep}/${totalSteps}`}</span>
+          <LoadingSpinner inverted big />
+        </span>
+        <span className={s.transactionStateMessage}>{alertMessagesShort[migrationState]}</span>
+      </div>
+    )
+  }
 }
 
-export default Receive
+function mapStateToProps(state:FrameState): StateProps {
+  return {
+    migrationState: state.shared.migrationState,
+  }
+}
+
+export default connect(mapStateToProps)(Receive)

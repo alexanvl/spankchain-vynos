@@ -22,11 +22,15 @@ export interface CurrencyProps extends StateProps {
   showUnit?: boolean
   unitClassName?: string
   className?: string
-  inverse?: boolean
-  alt?: boolean
   color?: string
   big?: boolean
-  showPlainTextUnit?: boolean
+}
+
+let colors: any = {
+  'green': '#55a451',
+  'pink': '#ff3b81',
+  'grey': '#797979',
+  'white': '#ffffff'
 }
 
 export class Currency extends React.Component<CurrencyProps, any> {
@@ -35,8 +39,6 @@ export class Currency extends React.Component<CurrencyProps, any> {
     outputType: CurrencyType.USD,
     inputType: CurrencyType.WEI,
     showUnit: false,
-    inverse: false,
-    alt: false,
   }
 
   formatAmount() {
@@ -72,35 +74,29 @@ export class Currency extends React.Component<CurrencyProps, any> {
     let {
       outputType,
       showUnit,
-      showPlainTextUnit,
       unitClassName,
       className,
-      inverse,
-      alt,
-      color,
+      color = 'grey',
       big,
     } = this.props
 
 
     return (
-      <span className={classnames(s.currency, className)} style={{color: color || 'inherit'}}>
-        {renderUnit(showUnit, outputType, unitClassName, inverse, alt, color, big, showPlainTextUnit)} {this.formatAmount()}
+      <span className={classnames(s.currency, className)} style={{color: colors[color] || 'inherit'}}>
+        {renderUnit(showUnit, outputType, unitClassName, color, big)} {this.formatAmount()}
       </span>
     )
   }
 }
 
-const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string, inverse?: boolean, alt?: boolean, color?: string, big?: boolean, showPlainTextUnit?: boolean) => (
+const renderUnit = (showUnit?: boolean, outputType?: CurrencyType, unitClassName?: string, color?: string, big?: boolean) => (
   showUnit &&
   <CurrencyIcon
     className={unitClassName}
     currency={outputType}
-    reverse={inverse}
-    alt={alt}
     color={color}
     big={big}
     spaceAround
-    showPlainText={showPlainTextUnit}
   />
 )
 

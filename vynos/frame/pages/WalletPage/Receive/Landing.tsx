@@ -1,8 +1,10 @@
 import * as React from "react"
+import * as classnames from 'classnames'
 import BN = require('bn.js')
 import { connect } from 'react-redux'
 import Button from "../../../components/Button"
 import Currency from '../../../components/Currency'
+import CurrencyIcon from '../../../components/CurrencyIcon'
 import { Link } from 'react-router-dom'
 import { CurrencyType } from "../../../../worker/WorkerState";
 
@@ -67,48 +69,72 @@ export class ReceiveEther extends React.Component<any, State> {
     return (
       <div className={baseStyle.subpageWrapper}>
         <div className={baseStyle.header}>Receive Ether to get Booty</div>
-        <div className={baseStyle.description}>When you receive ETH in your SpankPay account, it will automatically get converted to BOOTY so you can start tipping.</div>
-        <div style={{textAlign: 'center'}}>
-          <Currency
-            amount={1}
-            outputType={CurrencyType.BOOTY}
-            inputType={CurrencyType.BOOTY}
-            unitClassName={s.currencyIcon}
-            showUnit
-          />&nbsp;&nbsp;=&nbsp;&nbsp;
-          <Currency
-            amount={1}
-            outputType={CurrencyType.USD}
-            inputType={CurrencyType.USD}
-            unitClassName={s.currencyIcon}
-            showUnit
-          />
-        </div>
-        <div className={s.whiteRect}>
-          <div className={s.left}>You can get 69 BOOTY at a time. When you blow your entire load of BOOTY, you can load up with more.</div>
-          <div className={s.right}>
-            <div className={s.quarter}>
-              <div className={s.currencyWrap}>Min amount</div>
-              <div className={s.currencyWrap}>Max amount</div>
-            </div>
-            <div className={s.quarter}>
+        <div className={s.content}>
+          <div className={classnames(s.whiteRect, s.twoThirds)}>
+            <div className={s.rectRow}>
+            <span className={classnames(s.rowLabel, s.spaced)}>Min amount</span>
               <Currency
                 amount={0.04}
                 outputType={CurrencyType.ETH}
                 inputType={CurrencyType.ETH}
                 unitClassName={s.currencyIcon}
+                className={s.inlineCurrency}
                 showUnit
               />
+              <span className={s.rowSlash}>/</span>
+              <Currency
+                amount={0.04}
+                outputType={CurrencyType.USD}
+                inputType={CurrencyType.ETH}
+                unitClassName={s.currencyIcon}
+                className={s.inlineCurrency}
+                showUnit
+              />
+            </div>
+            <div className={s.rectRow}> 
+              <span className={classnames(s.rowLabel, s.spaced)}>Max amount</span>
               <Currency
                 amount={69}
                 outputType={CurrencyType.ETH}
                 inputType={CurrencyType.USD}
                 unitClassName={s.currencyIcon}
+                className={s.inlineCurrency}
+                showUnit
+              />
+              <span className={s.rowSlash}>/</span>
+              <Currency
+                amount={69}
+                outputType={CurrencyType.USD}
+                inputType={CurrencyType.USD}
+                unitClassName={s.currencyIcon}
+                className={s.inlineCurrency}
                 showUnit
               />
             </div>
-          </div>
-        </div >
+            <div className={s.rectRow}> 
+              <span className={classnames(s.rowLabel, s.spaced)}>Gas costs</span>
+              {/* TODO update these with real values */}
+              <Currency
+                amount={69}
+                outputType={CurrencyType.ETH}
+                inputType={CurrencyType.USD}
+                unitClassName={s.currencyIcon}
+                className={s.inlineCurrency}
+                showUnit
+              />
+              <span className={s.rowSlash}>/</span>
+              <Currency
+                amount={69}
+                outputType={CurrencyType.USD}
+                inputType={CurrencyType.USD}
+                unitClassName={s.currencyIcon}
+                className={s.inlineCurrency}
+                showUnit
+              />
+            </div>
+          </div >
+          <div className={classnames(s.oneThird, s.spaced)}>Send Ether to your card and we’ll credit you Booty. First time transactions have a higher min amount.</div>
+        </div>
         <Button to="/wallet/receive/start" content={<div className={vs.loginButton} />} isFullWidth />
         <div className={s.recoverText}>
           <Link

@@ -4,7 +4,9 @@ import Button from '../../components/Button/index'
 import WalletCard from '../../components/WalletCard/index'
 import {FrameState} from '../../redux/FrameState'
 import {connect} from 'react-redux'
-import {Balances, BrandingState, CurrencyType, ExchangeRates} from '../../../worker/WorkerState'
+import * as classnames from 'classnames'
+import { BrandingState, ExchangeRates, CurrencyType, Balances, MigrationState } from '../../../worker/WorkerState'
+import { cardBalance } from '../../redux/selectors/cardBalance'
 import WorkerProxy from '../../WorkerProxy'
 import Currency from '../../components/Currency/index'
 import Tooltip from '../../components/Tooltip'
@@ -29,6 +31,7 @@ export interface StateProps extends BrandingState {
   baseCurrency: CurrencyType
   cardBalances: Balances
   bootySupport: boolean
+  migrationState: MigrationState
 }
 
 export interface UnlockPageProps extends StateProps, RouteComponentProps<any> {
@@ -73,6 +76,7 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
     const total = bootyUSD.amountBN
       .add(weiUSD.amountBN)
       .add(reserveUSD.amountBN)
+    const walletDisabled = this.props.migrationState !== 'DONE' 
 
     return (
       <div className={s.walletSpankCardWrapper}>
@@ -92,7 +96,7 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
                 companyName={companyName}
                 backgroundColor={backgroundColor}
                 color={textColor}
-                currencyValue={cardAmt.amountBN}
+                currencyValue={!walletDisabled ? cardAmt.amountBN : undefined}
                 className={s.walletSpankCard}
                 isLoading={hasActiveDeposit || isWithdrawing}
                 currencyType={baseCurrency}
@@ -115,38 +119,43 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
                   />
                 }
               >
-                <div className={s.usdBalance}>
-                  <Currency
-                    amount={total}
-                    inputType={CurrencyType.USD}
-                    outputType={CurrencyType.USD}
-                    className={s.sendReceiveCurrency}
-                    unitClassName={s.usdUnit}
-                    showUnit
-                    showPlainTextUnit
-                    big
-                  />
-                  <div className={s.downArrow} />
+                <div className={classnames(s.usdBalance, {[s.disabled]: walletDisabled})}>
+                  {walletDisabled ? 'Updating...' :
+                    <React.Fragment>
+                      <Currency
+                        amount={total}
+                        inputType={CurrencyType.USD}
+                        outputType={CurrencyType.USD}
+                        className={s.sendReceiveCurrency}
+                        unitClassName={s.usdUnit}
+                        showUnit
+                        big
+                      />
+                      <div className={s.downArrow} />
+                    </React.Fragment>
+                    }
                 </div>
               </Tooltip>
               <div className={s.buttonSpacer} />
               <Button
                 to="/wallet/receive"
-                type={(location && location.pathname) === '/wallet/receive' ? 'primary' : 'secondary'}
+                type={(location && location.pathname).includes("/wallet/receive") ? "primary" : "secondary"}
                 content="Receive"
                 isMini
               />
               <Button
                 to="/wallet/send"
-                type={(location && location.pathname) === '/wallet/send' ? 'primary' : 'secondary'}
+                type={(location && location.pathname).includes("/wallet/send") ? "primary" : "secondary"}
                 content="Send"
                 isMini
+                disabled={walletDisabled}
               />
               <Button
                 to="/wallet/activity"
-                type={(location && location.pathname) === '/wallet/activity' ? 'primary' : 'secondary'}
+                type={(location && location.pathname).includes("/wallet/activity") ? "primary" : "secondary"}
                 content="Activity"
                 isMini
+                disabled={walletDisabled}
               />
             </div>
           </div>
@@ -191,7 +200,8 @@ function mapStateToProps (state: FrameState): StateProps {
     baseCurrency: state.shared.baseCurrency,
     cardBalances: state.shared.channel.balances,
     bootySupport: state.shared.featureFlags.bootySupport!,
-    reserveBalance: state.shared.addressBalances.ethBalance
+    reserveBalance: state.shared.addressBalances.ethBalance,
+    migrationState: state.shared.migrationState,
   }
 }
 
