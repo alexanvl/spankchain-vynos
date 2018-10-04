@@ -280,14 +280,14 @@ export default class BuyTransaction {
   private updateStore = async (
     vcId: string,
     result: UpdateBalancesResult,
-  ): Promise<{channelId: string, result: UpdateBalancesResult}> => {
+  ): Promise<VynosBuyResponse> => {
     this.store.dispatch(actions.setChannel(
       await getChannels(this.connext, this.store)
     ))
 
     return {
       channelId: vcId,
-      result,
+      ...result,
     }
   }
 
