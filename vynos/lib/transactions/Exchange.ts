@@ -11,6 +11,7 @@ import requestJson from '../../frame/lib/request'
 
 import exchangeTransaction from './ExchangeTransaction'
 import {ExchangeRateResponse} from '../../worker/controllers/HubController'
+import BuyBootyTransaction from './BuyBootyTransaction'
 
 /*
  * Exchange handles all the logic of figuring out how much to exchange and executing an exchangeTransaction

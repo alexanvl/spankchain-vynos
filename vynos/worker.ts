@@ -242,7 +242,8 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
           new BuyBootyTransaction(
             store,
             connext,
-            logger
+            logger,
+            chanPopulator
           )
         )
       }

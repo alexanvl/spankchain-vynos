@@ -22,6 +22,7 @@ import CloseChannelTransaction from '../../lib/transactions/CloseChannelTransact
 import {VynosPurchase} from '../../lib/VynosPurchase'
 import * as actions from '../actions'
 import getChannels from '../../lib/connext/getChannels';
+import BuyBootyTransaction from '../../lib/transactions/BuyBootyTransaction'
 
 export default class MicropaymentsController extends AbstractController {
   store: Store<WorkerState>
@@ -32,6 +33,7 @@ export default class MicropaymentsController extends AbstractController {
   private connext: IConnext
   private depositTransaction: DepositTransaction
   private buyTransaction: BuyTransaction
+  private buyBootyTransaction: BuyBootyTransaction
   private withdrawTransaction: AtomicTransaction<void>
   private exchange: Exchange
 
@@ -45,6 +47,7 @@ export default class MicropaymentsController extends AbstractController {
 
     this.depositTransaction = new DepositTransaction(store, connext, this.sem, chanPopulator, web3, logger)
     this.buyTransaction = new BuyTransaction(store, logger, connext, this.sem)
+    this.buyBootyTransaction = new BuyBootyTransaction(store, connext, logger, chanPopulator)
 
     const closeChannel = async () => {
       const cct = new CloseChannelTransaction(store, logger, connext, this.sem, chanPopulator)
@@ -103,7 +106,7 @@ export default class MicropaymentsController extends AbstractController {
       await this.doDeposit(deposit)
 
       if (this.bootySupport()) {
-        await this.exchange.swapEthForBooty()
+        await this.buyBootyTransaction.start()
       }
     })
   }
