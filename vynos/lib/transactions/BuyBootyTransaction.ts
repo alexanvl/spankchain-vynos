@@ -94,10 +94,10 @@ export default class BuyBootyTransaction {
     ])
   }
 
-  private async generateBalances (lc: LedgerChannel, limit: string) {
+  private async generateBalances (lc: LedgerChannel, beiLimit: string) {
     const rates = this.store.getState().runtime.exchangeRates!
     const ethBalanace = Currency.WEI(lc.ethBalanceA)
-    let payableWei = new CurrencyConvertable(CurrencyType.BOOTY, limit, () => rates)
+    let payableWei = new CurrencyConvertable(CurrencyType.BEI, beiLimit, () => rates)
       .toWEI()
     if (payableWei.compare('gt', ethBalanace)) {
       payableWei = new CurrencyConvertable(CurrencyType.WEI, lc.ethBalanceA, () => rates)

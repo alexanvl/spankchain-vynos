@@ -1,15 +1,16 @@
 import actionCreatorFactory, {ActionCreator} from 'typescript-fsa'
 import {
-  ChannelState,
-  ExchangeRates,
-  HistoryItem,
-  PendingTransaction,
-  WorkerState,
   AtomicTransactionState,
-  INITIAL_STATE,
-  FeatureFlags,
+  Balances,
+  ChannelState,
   CurrencyType,
-  Balances, MigrationState
+  ExchangeRates,
+  FeatureFlags,
+  HistoryItem,
+  INITIAL_STATE,
+  MigrationState,
+  PendingTransaction,
+  WorkerState
 } from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
 import currencyAsJSON from '../lib/currency/currencyAsJSON'
@@ -50,7 +51,7 @@ export function setFeatureFlagsHandler(state: WorkerState, featureFlags: Feature
   }
   const baseCurrency = featureFlags && featureFlags.bootySupport
     ? CurrencyType.BEI
-    : CurrencyType.FINNEY // change this back to BOOTY to make baseCurrency always booty when developing
+    : CurrencyType.WEI // change this back to BOOTY to make baseCurrency always booty when developing
 
   const withBaseCurrencyAndFeatureFlags = setBaseCurrencyHandler(withFeatureFlags, baseCurrency)
 
@@ -62,6 +63,7 @@ export function setBaseCurrencyHandler(state: WorkerState, baseCurrency: Currenc
   return { ...state,
     runtime: { ...state.runtime,
       baseCurrency,
+      renderedCurrency: baseCurrency === CurrencyType.WEI  ? CurrencyType.FINNEY : CurrencyType.BOOTY
     }
   }
 }

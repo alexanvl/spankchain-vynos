@@ -34,6 +34,7 @@ export interface RuntimeState {
   exchangeRates: ExchangeRates|null
   username: string|null
   baseCurrency: CurrencyType
+  renderedCurrency: CurrencyType
   featureFlags: FeatureFlags
   moreEthNeeded: boolean
   migrationState: MigrationState
@@ -127,6 +128,7 @@ export interface SharedState {
   username: string | null
   activeWithdrawalError: string|null
   baseCurrency: CurrencyType
+  renderedCurrency: CurrencyType
   exchangeRates: ExchangeRates|null
   featureFlags: FeatureFlags
   moreEthNeeded: boolean
@@ -228,7 +230,8 @@ export const INITIAL_SHARED_STATE: SharedState = {
   hasActiveExchange: false,
   exchangeRates: null,
   username: null,
-  baseCurrency: CurrencyType.FINNEY,
+  baseCurrency: CurrencyType.WEI,
+  renderedCurrency: CurrencyType.FINNEY,
   featureFlags: {},
   moreEthNeeded: false,
   migrationState: 'DONE',
@@ -309,6 +312,7 @@ export const GET_INITIAL_STATE = (): WorkerState => ({
     exchangeRates: null,
     username: null,
     baseCurrency: CurrencyType.FINNEY,
+    renderedCurrency: CurrencyType.FINNEY,
     featureFlags: { bootySupport: USE_BOOTY },
     moreEthNeeded: false,
     migrationState: 'DONE',
@@ -350,6 +354,7 @@ export function buildSharedState (state: WorkerState): SharedState {
     exchangeRates: state.runtime.exchangeRates,
     username: state.runtime.username,
     baseCurrency: state.runtime.baseCurrency,
+    renderedCurrency: state.runtime.renderedCurrency,
     featureFlags: state.runtime.featureFlags,
     moreEthNeeded: false,
     migrationState: state.runtime.migrationState,
