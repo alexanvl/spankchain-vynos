@@ -158,7 +158,7 @@ export default class BuyBootyTransaction {
     
 
     const buyAmount = ethToSpend.toBEI().compare('lt', bootyToBuy)
-      ? ethToSpend 
+      ? ethToSpend.toBEI()
       : bootyToBuy
 
     await buySellBooty(this.connext, lc, buyAmount)
