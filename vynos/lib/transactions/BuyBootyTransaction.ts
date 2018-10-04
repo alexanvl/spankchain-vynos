@@ -142,18 +142,26 @@ export default class BuyBootyTransaction {
     if (!lc)
       throw new Error('An lc is required.')
 
-    const limits = await requestJson<HubBootyLoadResponse>(
+    const {bootyLimit} = await requestJson<HubBootyLoadResponse>(
       `${process.env.HUB_URL}/payments/booty-load-limit/`
     )
 
-    if (limits.bootyLimit === '0') {
+    if (bootyLimit === '0') {
       console.log(`Can't buy more BOOTY; already at the limit!`)
       return
     }
 
     const rates = this.store.getState().runtime.exchangeRates!
-    const bootyToBuy = new CurrencyConvertable(CurrencyType.BEI, limits.bootyLimit, () => rates)
-    await buySellBooty(this.connext, lc, bootyToBuy)
+    
+    const bootyToBuy = new CurrencyConvertable(CurrencyType.BEI, bootyLimit, () => rates)
+    const ethToSpend = new CurrencyConvertable(CurrencyType.WEI, lc.ethBalanceA, () => rates)
+    
+
+    const buyAmount = ethToSpend.toBEI().compare('lt', bootyToBuy)
+      ? ethToSpend.toBEI()
+      : bootyToBuy
+
+    await buySellBooty(this.connext, lc, buyAmount)
   }
 
   private populateChannels = async (): Promise<void> => {

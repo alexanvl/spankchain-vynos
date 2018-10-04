@@ -45,7 +45,7 @@ window.addEventListener('load', function () {
         (document.getElementById('reciever') as HTMLInputElement).value
         || '0x0ec05ca2d7e658259d3cd737d3f33685875c52bb'
 
-      const tipAmountFIN: string =
+      const tipAmountBOOTY: string =
         (document.getElementById('amount') as HTMLInputElement).value
         || '1'
 
@@ -72,7 +72,7 @@ window.addEventListener('load', function () {
             receiver: receiver,
             amount: {
               type: CurrencyType.BEI,
-              amount: '1000000000000000000'
+              amount: tipAmountBOOTY + '000000000000000000'
             }
           }
         ]
