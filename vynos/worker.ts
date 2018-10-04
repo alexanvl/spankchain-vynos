@@ -53,6 +53,7 @@ import OpenChannelMigration from './migrations/OpenChannelMigration'
 import DepositTransaction from './lib/transactions/DepositTransaction'
 import ExchangeMigration from './migrations/ExchangeMigration'
 import BuyBootyTransaction from './lib/transactions/BuyBootyTransaction'
+import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
 
 
 export class ClientWrapper implements WindowClient {
@@ -278,7 +279,17 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     frameController.registerHandlers(server)
     walletController.registerHandlers(server)
     backgroundController.didChangeSharedState(sharedState => server.broadcast(SharedStateBroadcastEvent, sharedState))
+
     server.addHandler(StatusRequest.method, (cb: ErrResCallback) => cb(null, status))
+    server.addHandler(ResetRequest.method, async (cb: ErrResCallback) => {
+      try {
+        await localForage.clear()
+        server.broadcast(ResetBroadcastEvent)
+        cb(null, null)
+      } catch (e) {
+        cb(e, null)
+      }
+    })
 
     await hubController.start()
 
