@@ -9,7 +9,7 @@ type ConnextBalanceType = 'ethBalance'|'tokenBalance'
 
 export const aggregateVCAndLCBalances = (address: string, vcs: VirtualChannel[], lc: LedgerChannel, isBootySupport: boolean) => ({
   ethBalance: Currency.WEI(
-    aggregateVCBalancesETH(address, vcs)
+    aggregateVCBalancesWEI(address, vcs)
       .amountBN
       .add(new BN(lc.ethBalanceA || 0))
   ),
@@ -21,13 +21,13 @@ export const aggregateVCAndLCBalances = (address: string, vcs: VirtualChannel[],
 })
 
 export const aggregateVCBalances = (address: string, vcs: VirtualChannel[], isBootySupport: boolean) => ({
-  ethBalance: currencyAsJSON(aggregateVCBalancesETH(address, vcs)) as ICurrency,
+  ethBalance: currencyAsJSON(aggregateVCBalancesWEI(address, vcs)) as ICurrency,
   tokenBalance: currencyAsJSON(isBootySupport
     ? aggregateVCBalancesBOOTY(address, vcs) as ICurrency
     : Currency.BEI(0)),
 })
 
-export const aggregateVCBalancesETH = (address: string, vcs: VirtualChannel[]) => Currency.WEI(aggregateBalance(address, vcs, 'ethBalance'))
+export const aggregateVCBalancesWEI = (address: string, vcs: VirtualChannel[]) => Currency.WEI(aggregateBalance(address, vcs, 'ethBalance'))
 export const aggregateVCBalancesBOOTY = (address: string, vcs: VirtualChannel[]) => Currency.BEI(aggregateBalance(address, vcs, 'tokenBalance'))
 
 const aggregateBalance = (

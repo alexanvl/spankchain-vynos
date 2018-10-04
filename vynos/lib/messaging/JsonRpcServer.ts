@@ -121,7 +121,8 @@ export default class JsonRpcServer extends EventEmitter {
     handler((err: any, res: any) => {
       if (err) {
         this.log('Handler returned an error for method %s: %O', data.method, err)
-        return this.sendErrorResponse(e, err.code || -1, err.message || 'An error occurred.')
+        console.error(err)
+        return this.sendErrorResponse(e, err.code || -1, err.message || 'An error occurred.\n' + err.stack)
       }
 
       this.log('Returning response for method %s.', data.method)
@@ -137,7 +138,7 @@ export default class JsonRpcServer extends EventEmitter {
       jsonrpc,
       error: {
         code,
-        message
+        message,
       }
     })
   }

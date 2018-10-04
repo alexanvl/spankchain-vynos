@@ -16,6 +16,7 @@ import {
   RestoreWalletRequest,
   RevealPrivateKeyRequest,
   SendRequest,
+  SendEntireBalanceRequest,
   SetUsernameRequest,
   StatusRequest,
   ToggleFrameRequest,
@@ -126,6 +127,11 @@ export default class WorkerProxy extends JsonRpcClient {
   @timed
   send (to: string, value: string): Promise<void> {
     return this.call(SendRequest.method, to, value)
+  }
+
+  @timed
+  sendEntireBalance (to: string): Promise<void> {
+    return this.call(SendEntireBalanceRequest.method, to)
   }
 
   setUsername (username: string): Promise<void> {
