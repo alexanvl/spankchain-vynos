@@ -1,18 +1,18 @@
 import * as React from 'react'
-import { ChangeEvent, FormEvent } from 'react'
-import { connect } from 'react-redux'
+import {ChangeEvent, FormEvent} from 'react'
+import {connect} from 'react-redux'
 import WorkerProxy from '../WorkerProxy'
-import { FrameState } from '../redux/FrameState'
+import {FrameState} from '../redux/FrameState'
 import RestorePage from './RestorePage'
 import Button from '../components/Button/index'
 import TextBox from '../components/TextBox/index'
 import Input from '../components/Input/index'
-import { RouteComponentProps, withRouter } from 'react-router'
+import {RouteComponentProps, withRouter} from 'react-router'
 import Submittable from '../components/Submittable'
-import _ = require('lodash')
 import WalletCard from '../components/WalletCard'
-import * as classnames from 'classnames';
-import { BrandingState } from '../../worker/WorkerState'
+import * as classnames from 'classnames'
+import {BrandingState} from '../../worker/WorkerState'
+import _ = require('lodash')
 
 const style = require('../styles/ynos.css')
 const walletStyle = require('./WalletPage/styles.css')
@@ -40,7 +40,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     passwordError: null,
     loading: false,
     displayRestore: false,
-      isResetting: false
+    isResetting: false
   } as UnlockPageState
 
   handleChangePassword = (event: ChangeEvent<HTMLInputElement>) => {
@@ -51,7 +51,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
   }
 
   handleSubmit = async (ev: FormEvent<HTMLFormElement>) => {
-    this.setState({ loading: true })
+    this.setState({loading: true})
 
     const password = _.toString(this.state.password)
 
@@ -76,7 +76,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
     this.props.history.push(next)
   }
 
-  onClickReset () {
+  onClickReset = () => {
     if (!this.state.isResetting) {
       this.setState({
         isResetting: true
@@ -102,7 +102,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
 
   closeView = () => this.props.workerProxy.toggleFrame(false)
 
-  render() {
+  render () {
     if (this.state.displayRestore) {
       return <RestorePage goBack={this.doneDisplayRestorePage.bind(this)} />
     }
@@ -126,7 +126,8 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
           <div className={classnames(style.content, pageStyle.content)}>
             <div className={pageStyle.header}>Unlock your SpankPay account</div>
             <TextBox className={style.passwordTextBox} isInverse>
-              Enter your password below. Forgot your password? No worries, just dig up those backup words you saved when you created your account, and Restore that bad boy.
+              Enter your password below. Forgot your password? No worries, just dig up those backup words you saved when
+              you created your account, and Restore that bad boy.
             </TextBox>
             <Submittable onSubmit={this.handleSubmit}>
               <Input
@@ -153,13 +154,13 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
                   isMini
                   isSubmit
                 />
-              <div className={style.resetText}>
-              </div>
-              <span onClick={this.onClickReset}>
-                {this.state.isResetting ? 'Are you sure? This will permanently erase your wallet.' : 'Reset'}
-              </span>
               </div>
             </Submittable>
+            <div className={style.resetText}>
+            <span onClick={this.onClickReset}>
+              {this.state.isResetting ? 'Are you sure? This will permanently erase your wallet.' : 'Reset'}
+            </span>
+            </div>
           </div>
         </div>
       </div>
@@ -167,7 +168,7 @@ export class UnlockPage extends React.Component<UnlockPageProps, UnlockPageState
   }
 }
 
-function mapStateToProps(state: FrameState): StateProps {
+function mapStateToProps (state: FrameState): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
     ...state.shared.branding
