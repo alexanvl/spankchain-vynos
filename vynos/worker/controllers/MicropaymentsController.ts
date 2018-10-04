@@ -98,11 +98,14 @@ export default class MicropaymentsController extends AbstractController {
     if (!this.sem.available(1)) {
       throw new Error('Cannot deposit. Another operation is in progress.')
     }
-    await takeSem<void>(this.sem, () => this.doDeposit(deposit))
 
-    if (this.bootySupport()) {
-      await takeSem<void>(this.sem, () => this.exchange.swapEthForBooty())
-    }
+    await takeSem<void>(this.sem, async () => {
+      await this.doDeposit(deposit)
+
+      if (this.bootySupport()) {
+        await this.exchange.swapEthForBooty()
+      }
+    })
   }
 
   public async buy (purchase: VynosPurchase<CurrencyType.BOOTY>): Promise<VynosBuyResponse> {

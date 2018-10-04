@@ -10,6 +10,7 @@ import {ETHER, BOOTY} from '../constants'
 import requestJson from '../../frame/lib/request'
 
 import exchangeTransaction from './ExchangeTransaction'
+import {ExchangeRateResponse} from '../../worker/controllers/HubController'
 
 /*
  * Exchange handles all the logic of figuring out how much to exchange and executing an exchangeTransaction
@@ -24,7 +25,7 @@ const WEI_PER_ETH = ETHER
 
 export type HubBootyLoadResponse = {
   bootyLimit: string, // decimal string
-  ethPrice: string, // decimal string
+  exchangeRate: ExchangeRateResponse
 }
 
 export default class Exchange {
@@ -99,17 +100,13 @@ export default class Exchange {
   }
 
   private getExchangeRateAndLoadLimit = async (): Promise<{bootyLimit: Currency, exchangeRates: ExchangeRates}> => {
-    const {bootyLimit, ethPrice} = await requestJson<HubBootyLoadResponse>(
+    const res = await requestJson<HubBootyLoadResponse>(
       `${process.env.HUB_URL}/payments/booty-load-limit/`
     )
 
-    console.log('I am guessing this bootyLimit to be in BEI and not BOOTY, is it?', bootyLimit)
-
     const beiPerWei = new BigNumber(BOOTY.amount)
-      .mul(ethPrice)
+      .mul(res.exchangeRate.rates.USD)
       .div(WEI_PER_ETH.toString(10))
-
-    console.log('beiPerWei')
 
     const updatedExchangeRates = {
       ...this.store.getState().runtime.exchangeRates,
@@ -117,7 +114,7 @@ export default class Exchange {
     }
 
     return {
-      bootyLimit: Currency.BEI(bootyLimit),
+      bootyLimit: Currency.BEI(res.bootyLimit),
       // we want this exchange rate instead of the one in the store to guarantee we have the latest exchange rate
       exchangeRates: updatedExchangeRates,
     }
