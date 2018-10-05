@@ -87,7 +87,7 @@ export const BalanceTooltip = ({
           title='Reserved for transactions'
           amount={reserveBalanceWei}
           outputType={CurrencyType.ETH}
-          cta={{text: 'Why?', href:'#'}}
+          cta={{ text: 'Why?', href:'https://spankchain.zendesk.com/hc/en-us/articles/360016779451'}}
         />
       </div>
       <TooltipRow
