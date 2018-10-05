@@ -84,10 +84,12 @@ export default class Migrator {
     } catch (e) {
       console.error('Error applying migration:', lastMigration)
       console.error(e)
+      
+      this.store.dispatch(actions.setMigrationState({ state: 'MIGRATION_FAILED' }))
+
       throw e
-    } finally {
-      this.store.dispatch(actions.setMigrationState({ state: 'DONE' }))
-    }
+    } 
+    this.store.dispatch(actions.setMigrationState({ state: 'DONE' }))
   }
 
   private hasEth() {
