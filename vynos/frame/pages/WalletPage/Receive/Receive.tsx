@@ -22,12 +22,12 @@ interface StateProps {
 export interface Props extends StateProps {
   address: string | null
   bootySupport?: boolean
-  displayState?: boolean
   showRevealPrivateKey?: boolean
 }
 
 export interface State {
   isCopied: boolean
+  displayState: boolean
 }
 
 function renderQR(address: string | null) {
@@ -52,6 +52,7 @@ export class Receive extends React.Component<Props, State> {
 
   state = {
     isCopied: false,
+    displayState: true,
   }
 
   constructor(props: Props) {
@@ -61,6 +62,27 @@ export class Receive extends React.Component<Props, State> {
   componentWillUnmount() {
     if (this.timeout) {
       clearTimeout(this.timeout)
+    }
+  }
+
+  static getDerivedStateFromProps(props: Props, state: State) {
+    // don't show the migration state if it failed (it's already shown on the spankcard)
+    if (props.migrationState && props.migrationState == 'MIGRATION_FAILED') {
+      return { displayState: false }
+    }
+    return {}
+  }
+
+  componentDidUpdate(prevProps: Props) {
+    let currentMigrationState = this.props.migrationState
+    let prevMigrationState = prevProps.migrationState
+
+    // if the transaction just finished, remove the displayed transaction state after X seconds
+    if (prevMigrationState && currentMigrationState &&
+       (prevMigrationState !== currentMigrationState)) {
+      if (currentMigrationState == 'DONE') {
+        setTimeout(() => { this.setState({ displayState: false }) }, 5000)
+      }
     }
   }
 
@@ -160,7 +182,8 @@ export class Receive extends React.Component<Props, State> {
   }
 
   renderTransactionState() {
-    let { migrationState, displayState = true } = this.props
+    let { migrationState } = this.props
+    let { displayState } = this.state
     if (!migrationState || !displayState) {
       return 
     }

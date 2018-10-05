@@ -289,9 +289,9 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
   renderCurrency (item: { amountWei: string, amountToken: string }, isNeg: boolean) {
     let amount = item.amountWei === '0' ? item.amountToken : item.amountWei
     const inputType = item.amountWei === '0' ? CurrencyType.BEI : CurrencyType.WEI
-    const outputType = item.amountWei === '0' ? CurrencyType.BOOTY : CurrencyType.ETH
-    //amount = amount.replace(/\D/g, "")
-    console.log({amount})
+    const outputType = item.amountWei === '0' ? CurrencyType.BOOTY : CurrencyType.FINNEY
+    amount = amount.replace(/\D/g, "")
+
     return (
       <Currency
         amount={amount}
