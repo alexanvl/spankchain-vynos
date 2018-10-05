@@ -188,8 +188,9 @@ export default class BuyTransaction {
     )
 
     if (!useExistingVc) {
-      lc.tokenBalanceA = new BN(lc.tokenBalanceA).sub(new BN(vc.tokenBalanceA)).toString()
-      lc.ethBalanceA = new BN(lc.ethBalanceA).sub(new BN(vc.ethBalanceA)).toString()
+      // bit of a hack. idea is to get the proper LC state after closing/opening channels
+      // depending on their balance.
+      lc = await this.connext.getChannelByPartyA()
     }
 
     return [purchase, lc, vc]
