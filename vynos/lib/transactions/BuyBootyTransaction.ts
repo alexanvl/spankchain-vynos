@@ -11,6 +11,7 @@ import {math} from '../../math'
 import {PaymentObject} from '../../lib/connext/ConnextTypes'
 import BN = require('bn.js')
 import getETHBalance from '../web3/getETHBalance'
+import {FINNEY} from '../constants'
 
 export function calculateExchangePurchase(lc: LedgerChannel, buying: CurrencyConvertable) {
   const payments: PaymentObject[] = []
@@ -146,6 +147,11 @@ export default class BuyBootyTransaction {
     const lc = await this.connext.getChannelByPartyA()
     if (!lc) {
       throw new Error('An lc is required.')
+    }
+
+    if (new BN(lc.tokenBalanceA).lt(FINNEY)) {
+      console.log('No ETH in channel; doing nothing.')
+      return
     }
 
     const convertable = new CurrencyConvertable(CurrencyType.BEI, lc.tokenBalanceA, () => this.store.getState().runtime.exchangeRates!)
