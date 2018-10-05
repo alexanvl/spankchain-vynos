@@ -9,6 +9,7 @@ import Web3 = require('web3')
 import {ZERO} from '../lib/constants'
 import {BasePoller} from '../lib/poller/BasePoller'
 import Logger from '../lib/Logger'
+import {OPEN_CHANNEL_COST, RESERVE_BALANCE} from '../lib/constants'
 
 export interface MigrationMap {
   [name: string]: Migration
@@ -97,7 +98,7 @@ export default class Migrator {
       const poller = new BasePoller(this.logger)
       poller.start(async () => {
         const bal = await getETHBalance(this.address, this.web3)
-        if (bal.amountBN.gt(ZERO)) {
+        if (bal.amountBN.gt(OPEN_CHANNEL_COST.add(RESERVE_BALANCE))) {
           poller.stop()
           resolve()
         }
