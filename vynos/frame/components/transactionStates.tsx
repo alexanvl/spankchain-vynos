@@ -3,7 +3,7 @@ import * as React from 'react' // need this otherwise the file complains for hav
 export const alertMessagesLong: any = {
   'AWAITING_ETH': <span>In order to start tipping, send some ETH to your SpankPay account</span>,
   'MIGRATING': <span>Getting your BOOTY ready</span>,
-  'MIGRATION_FAILED': <span>Oh no! Something went wrong. Please contact us at <a href="mailto:support@spankchain.com">support@spankchain.com</a></span>
+  'MIGRATION_FAILED': <span>Oh no! Something went wrong. Please contact us at <a href="mailto:support@spankchain.com">support@spankchain.com</a> and we'll set it right.</span>
 }
 
 export const alertMessagesShort: any = {
