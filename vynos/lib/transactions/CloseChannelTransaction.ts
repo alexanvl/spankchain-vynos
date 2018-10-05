@@ -4,6 +4,7 @@ import * as actions from '../../worker/actions'
 import {AtomicTransaction, ensureMethodsHaveNames} from './AtomicTransaction'
 import {WorkerState} from '../../worker/WorkerState'
 import withRetries, {DoneFunc} from '../withRetries'
+import { LedgerChannel} from '../connext/ConnextTypes'
 import getCurrentLedgerChannels from '../connext/getCurrentLedgerChannels'
 import ChannelPopulator, {DeferredPopulator} from '../ChannelPopulator'
 import {IConnext} from '../connext/ConnextTypes'
@@ -66,28 +67,29 @@ export default class CloseChannelTransaction {
     this.deferredPopulate = await this.chanPopulator.populateDeferred()
   }
 
-  private closeAllVCs = async (): Promise<void> => {
-    const channel = this.store.getState().runtime.channel
+  private closeAllVCs = async (): Promise<[LedgerChannel]> => {
+    const lc = await this.connext.getChannelByPartyA()
+    if (!lc)
+      return [lc]
 
-    if (!channel || channel.currentVCs.length === 0) {
-      return
-    }
+    const threads = await this.connext.getThreadsByChannelId(lc.channelId)
 
     try {
-      await this.connext.closeThreads(channel.currentVCs.map((vc) => vc.channelId) as any)
-      return
+      for (let thread of threads) {
+        console.log('Closing VC:', thread)
+        await this.connext.closeThread(thread.channelId)
+      }
     } catch (e) {
-      console.error('connext.closeThreads failed', e)
+      console.error('Error closing threads:', e)
       throw e
     }
+
+    return [lc]
   }
 
-  private withdraw = async (): Promise<void> => {
-    const chans = await getCurrentLedgerChannels(this.connext, this.store)
-
-    if (!chans) {
+  private withdraw = async (lc: LedgerChannel): Promise<void> => {
+    if (!lc)
       return
-    }
 
     try {
       await this.connext.closeChannel()

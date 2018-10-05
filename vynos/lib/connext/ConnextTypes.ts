@@ -25,7 +25,7 @@ export enum PurchaseMetaType {
 
 export enum PaymentMetaType {
   FEE = 'FEE',
-  PRINCIPAL = 'PRINCIPAL'
+  PRINCIPAL = 'PRINCIPAL',
 }
 
 export enum ChannelType {
@@ -140,23 +140,27 @@ export interface UpdateBalancesResult {
 export interface IConnext {
   openChannel: (initialDeposits: Deposit, tokenAddresss?: string, sender?: string, challenge?: string) => Promise<string>
 
-  updateBalances: (update: PaymentObject[], sender?: string) => UpdateBalancesResult
+  updateBalances: (update: PaymentObject[], sender?: string) => Promise<UpdateBalancesResult>
 
-  openThread: (thread: {to: string, deposit: {ethDeposit: BN} | {tokenDeposit: BN}}, sender?: string) => string
+  openThread: (thread: {to: string, deposit: {ethDeposit: BN} | {tokenDeposit: BN}}, sender?: string) => Promise<string>
 
-  getThreadById: (threadId: string) => VirtualChannel
+  getThreadById: (threadId: string) => Promise<VirtualChannel>
 
-  closeChannel: (sender?: string) => string
+  getThreadsByChannelId: (channelId: string) => Promise<VirtualChannel[]>
 
-  closeThreads: (channelIds: string[], sender?: string) => any[]
+  closeChannel: (sender?: string) => Promise<string>
 
-  deposit: (deposit: Deposit, sender?: string, recipient?: string, tokenAddress?: string) => any
+  closeThreads: (channelIds: string[], sender?: string) => Promise<any[]>
 
-  requestHubDeposit: (params: {channelId: string, deposit: Deposit}) => string
+  closeThread: (threadId: string, sender?: string) => Promise<any>
 
-  getChannelByPartyA: (partyA?: string, status?: any) => LedgerChannel
+  deposit: (deposit: Deposit, sender?: string, recipient?: string, tokenAddress?: string) => Promise<any>
 
-  getUnjoinedChannels: (addressA: string) => VirtualChannel[]
+  requestHubDeposit: (params: {channelId: string, deposit: Deposit}) => Promise<string>
 
-  joinChannel: (channelId: number, address: string) => any
+  getChannelByPartyA: (partyA?: string, status?: any) => Promise<LedgerChannel>
+
+  getUnjoinedChannels: (addressA: string) => Promise<VirtualChannel[]>
+
+  joinChannel: (channelId: number, address: string) => Promise<any>
 }
