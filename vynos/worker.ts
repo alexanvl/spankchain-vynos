@@ -234,7 +234,8 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
             web3,
             logger
           ),
-          web3
+          web3,
+          connext
         ),
         exchange_booty: new ExchangeMigration(
           logger,
