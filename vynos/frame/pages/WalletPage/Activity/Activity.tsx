@@ -234,6 +234,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
               [s.walletActivitySignNegative]: isNeg
             })}
           >
+            <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
             <div className={s.walletActivityAmount}>
               {this.renderCurrency({ amountWei: totalWei.toString(), amountToken: totalBooty.toString() }, isNeg)}
             </div>
@@ -273,6 +274,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
                 [s.walletActivitySignNegative]: isNeg
               })}
             >
+              <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
               <div className={s.walletActivityAmount}>
                 {this.renderCurrency(item, isNeg)}
               </div>
@@ -285,10 +287,11 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
   }
 
   renderCurrency (item: { amountWei: string, amountToken: string }, isNeg: boolean) {
-    const amount = item.amountWei === '0' ? item.amountToken : item.amountWei
+    let amount = item.amountWei === '0' ? item.amountToken : item.amountWei
     const inputType = item.amountWei === '0' ? CurrencyType.BEI : CurrencyType.WEI
     const outputType = item.amountWei === '0' ? CurrencyType.BOOTY : CurrencyType.ETH
-
+    amount = amount.replace(/\D/g, "")
+    
     return (
       <Currency
         amount={amount}
