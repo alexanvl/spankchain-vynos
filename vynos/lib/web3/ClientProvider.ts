@@ -68,7 +68,7 @@ export default function ClientProvider(opts: any): any {
 
   // data source
   const dataSubprovider = opts.dataSubprovider || new FetchSubprovider({
-    rpcUrl: opts.rpcUrl || 'https://mainnet.infura.io/',
+    rpcUrl: opts.rpcUrl,
     originHttpHeaderKey: opts.originHttpHeaderKey,
   })
   engine.addProvider(dataSubprovider)
