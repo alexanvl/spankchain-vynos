@@ -234,7 +234,6 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
               [s.walletActivitySignNegative]: isNeg
             })}
           >
-            <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
             <div className={s.walletActivityAmount}>
               {this.renderCurrency({ amountWei: totalWei.toString(), amountToken: totalBooty.toString() }, isNeg)}
             </div>
@@ -274,7 +273,6 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
                 [s.walletActivitySignNegative]: isNeg
               })}
             >
-              <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
               <div className={s.walletActivityAmount}>
                 {this.renderCurrency(item, isNeg)}
               </div>

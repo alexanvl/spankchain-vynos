@@ -75,6 +75,7 @@ export default class PickAddress extends React.Component<PickAddressProps, PickA
                 outputType={CurrencyType.FINNEY}
                 unitClassName={`${finneyInverse}`}
                 showUnit
+                color={'white'}
               />
             </div>
           </li>
