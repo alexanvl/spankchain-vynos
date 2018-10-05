@@ -74,6 +74,14 @@ export default class JsonRpcServer extends EventEmitter {
     this.handlers[name] = handler
   }
 
+  public removeHandler(name: string) {
+    if (!this.handlers[name]) {
+      throw new Error(`Handler ${name} does not exist.`)
+    }
+
+    delete this.handlers[name]
+  }
+
   public findHandler(method: string): Handler|undefined {
     return this.handlers[method]
   }
@@ -85,6 +93,7 @@ export default class JsonRpcServer extends EventEmitter {
 
     // Firefox doesn't set the origin for some reason. See https://bugzilla.mozilla.org/show_bug.cgi?id=1448740
     if (!origin || !origin.length) {
+      // WC: we are getting a sentry error where source here is null sometimes (chrome mobile on android)
       const sourceLoc = e.source.url
       const parts = sourceLoc.split('/')
       origin = `${parts[0]}//${parts[2]}`
@@ -112,7 +121,8 @@ export default class JsonRpcServer extends EventEmitter {
     handler((err: any, res: any) => {
       if (err) {
         this.log('Handler returned an error for method %s: %O', data.method, err)
-        return this.sendErrorResponse(e, err.code || -1, err.message || 'An error occurred.')
+        console.error(err)
+        return this.sendErrorResponse(e, err.code || -1, err.message || 'An error occurred.\n' + err.stack)
       }
 
       this.log('Returning response for method %s.', data.method)
@@ -128,7 +138,7 @@ export default class JsonRpcServer extends EventEmitter {
       jsonrpc,
       error: {
         code,
-        message
+        message,
       }
     })
   }

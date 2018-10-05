@@ -65,6 +65,12 @@
   padding-left: .75rem;
   display: flex;
   align-items: center;
+  color: #797979;
+}
+
+.usdBalance.disabled {
+  justify-content: center;
+  font-size: 0.8rem;
 }
 
 .buttonSpacer {
@@ -142,8 +148,8 @@
 
 .walletSpankCardView {
   display: flex;
-  flex-flow: column nowrap;   
- 
+  flex-flow: column nowrap;
+
 }
 
 .walletSpankCardActions {
@@ -201,16 +207,15 @@
   color: #939393;
 }
 
-.usdUnit {
-  color: #B7B7B7;
-  background-color: white;
-  margin-right: .25rem;
-  margin-top: .1rem;
+.walletMigrationContainer {
+  padding: 48px;
+  background: #f8f8f8;
+  color: #333;
+  font-size: 24px;
 }
 
-
 @media only screen and (max-width : 480px) {
-    
+
   .walletWrapper {
     width: 100vw;
   }
@@ -238,7 +243,7 @@
     margin: 2rem auto 3rem;
   }
 
-  .walletSpankCardActions button {    
+  .walletSpankCardActions button {
     padding: .5rem;
     margin: 0.4rem;
   }

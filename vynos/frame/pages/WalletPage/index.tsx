@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Route, Switch } from 'react-router'
 import { connect } from 'react-redux'
-import Web3 = require('web3')
 import Activity from './Activity'
 import AddFundsCallout from './AddFundsCallout'
 import SpankCard from './SpankCard'
@@ -11,18 +10,19 @@ import RevealPrivateKey from './RevealPrivateKey'
 import { FrameState } from '../../redux/FrameState'
 import WorkerProxy from '../../WorkerProxy'
 import BN = require('bn.js')
+import {FeatureFlags, MigrationState} from '../../../worker/WorkerState'
+import {ReactChild} from 'react'
 
 const s = require('./styles.css')
 const st = require('./index.css')
 
 export interface WalletPageStateProps {
-  path: string
-  web3: Web3
   workerProxy: WorkerProxy
   address: string | null
-  walletBalance: BN
   cardBalance: BN
-  location?: any
+  location?: string
+  featureFlags: FeatureFlags|null
+  migrationState: MigrationState
 }
 
 export interface WalletPageState {
@@ -31,13 +31,9 @@ export interface WalletPageState {
 }
 
 export class WalletPage extends React.Component<WalletPageStateProps, WalletPageState> {
-  constructor(props: WalletPageStateProps) {
-    super(props)
-
-    this.state = {
-      isPopulatingChannels: true,
-      channelPopulationError: ''
-    }
+  state = {
+    isPopulatingChannels: true,
+    channelPopulationError: ''
   }
 
   async componentDidMount() {
@@ -66,7 +62,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
   }
 
   renderSubPage() {
-    const { address } = this.props
+    const { address, featureFlags } = this.props
 
     return (
       <Switch>
@@ -90,7 +86,7 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
         />
         <Route
           path="/wallet"
-          render={() => this.props.cardBalance.eq(new BN(0)) ? <AddFundsCallout /> : null}
+          render={() => this.props.cardBalance.eq(new BN(0)) ? <Receive address={address!} location={this.props.location} /> : null}
         />
       </Switch>
 
@@ -102,6 +98,10 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
       return <noscript />
     }
 
+    if (this.props.migrationState !== 'DONE') {
+      //return this.renderMigrationStatus()
+    }
+
     return (
       <div className={s.walletWrapper}>
         <div className={s.cover} onClick={this.closeFrame} />
@@ -110,6 +110,48 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
           {this.renderSubPage()}
         </div>
       </div>
+    )
+  }
+
+  renderMigrationStatus () {
+    let content: ReactChild|null
+
+    if (this.props.migrationState === 'MIGRATING') {
+      content = this.renderMigrating()
+    } else if (this.props.migrationState === 'AWAITING_ETH') {
+      content = this.renderAwaitingEth()
+    } else {
+      content = null
+    }
+
+    return (
+      <div className={s.walletWrapper}>
+        <div className={s.cover} onClick={this.closeFrame} />
+        <div className={s.walletContentContainer}>
+          {content}
+        </div>
+      </div>
+    );
+  }
+
+  renderMigrating () {
+    return (
+      <React.Fragment>
+        <div className={s.walletMigrationContainer}>
+          We got your ETH! Setting up your wallet now...
+        </div>
+      </React.Fragment>
+    )
+  }
+
+  renderAwaitingEth () {
+    return (
+      <React.Fragment>
+        <div className={s.walletMigrationContainer}>
+          Welcome to your SpankWallet! Send some ETH to the address below to get started.
+        </div>
+        <Receive address={this.props.address!} location={this.props.location} showRevealPrivateKey={false} />
+      </React.Fragment>
     )
   }
 
@@ -138,14 +180,14 @@ export class WalletPage extends React.Component<WalletPageStateProps, WalletPage
 }
 
 function mapStateToProps(state: FrameState): WalletPageStateProps {
-  let workerProxy = state.temp.workerProxy!
+  const workerProxy = state.temp.workerProxy!
+  const channel = state.shared.channel
   return {
-    path: state.shared.rememberPath,
-    web3: workerProxy.getWeb3(),
     workerProxy: workerProxy,
     address: state.shared.address,
-    walletBalance: new BN(state.shared.balance),
-    cardBalance: new BN(state.shared.channel ? state.shared.channel.balance : 0),
+    featureFlags: state.shared.featureFlags,
+    cardBalance: new BN(channel.balances.ethBalance.amount),
+    migrationState: state.shared.migrationState
   }
 }
 

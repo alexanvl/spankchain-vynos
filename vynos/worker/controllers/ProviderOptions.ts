@@ -3,12 +3,14 @@ import {WorkerState} from '../WorkerState'
 import ethUtil = require('ethereumjs-util')
 import sigUtil = require('eth-sig-util')
 import Tx = require('ethereumjs-tx')
-import { Buffer } from 'buffer';
+import {Buffer} from 'buffer'
 
 const networks = require('../../networks.json')
 const DEFAULT_NETWORK = 'ropsten'
 
 export const RPC_URL = networks[process.env.NETWORK_NAME || DEFAULT_NETWORK]
+if (!RPC_URL)
+  throw new Error('Unknown NETWORK_NAME: ' + process.env.NETWORK_NAME || DEFAULT_NETWORK)
 
 export type ApproveTransactionCallback = (error: any, isApproved?: boolean) => void
 export type ApproveSignCallback = (error: any, rawMsgSig?: string) => void

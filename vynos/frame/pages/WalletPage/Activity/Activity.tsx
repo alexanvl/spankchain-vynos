@@ -1,21 +1,24 @@
 import * as React from 'react'
 import * as T from '../../../components/Table/index'
 import * as classnames from 'classnames'
-import { connect } from 'react-redux'
-import { FrameState } from '../../../redux/FrameState'
+import {connect} from 'react-redux'
+import {FrameState} from '../../../redux/FrameState'
 import WorkerProxy from '../../../WorkerProxy'
-import { HistoryItem } from '../../../../worker/WorkerState'
-import Currency, { CurrencyType } from '../../../components/Currency/index'
+import {CurrencyType, ExchangeRates, HistoryItem} from '../../../../worker/WorkerState'
+import Currency from '../../../components/Currency/index'
 import * as BigNumber from 'bignumber.js'
 import * as moment from 'moment'
+import CurrencyConvertable from '../../../../lib/currency/CurrencyConvertable'
 
 const s = require('./activity.css')
 const baseStyle = require('../styles.css')
+const unitStyles = require('../../../components/CurrencyIcon/style.css')
 
 export interface StateProps {
   workerProxy: WorkerProxy,
   history: HistoryItem[]
   address: string
+  exchangeRates: ExchangeRates
 }
 
 export interface ActivityProps extends StateProps {
@@ -39,17 +42,13 @@ type NestedHistory = HistoryItem | HistoryItem[]
 type GroupOrHistory = HistoryItem | Group
 
 class Activity extends React.Component<ActivityProps, ActivityState> {
-  constructor(props: any) {
-    super(props)
+  state = {
+    isLoading: false,
+    detailRows: new Set<number>(),
+    error: ''
+  } as ActivityState
 
-    this.state = {
-      isLoading: false,
-      detailRows: new Set<number>(),
-      error: ''
-    }
-  }
-
-  async componentDidMount() {
+  async componentDidMount () {
     this.setState({
       isLoading: true
     })
@@ -69,7 +68,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     })
   }
 
-  toggleDetails(i: number) {
+  toggleDetails (i: number) {
     const clone = new Set(Array.from(this.state.detailRows))
 
     if (clone.has(i)) {
@@ -83,9 +82,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     })
   }
 
-  render() {
-    const { isLoading, error } = this.state
-
+  render () {
     const groups = this.props.history.reduce(reduceByTipOrPurchase, [])
       .reduce((acc: GroupOrHistory[], curr: NestedHistory) => {
         if (!Array.isArray(curr)) {
@@ -96,6 +93,21 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
         const tips = curr.reduce(reduceByTipStream, [])
         return acc.concat(tips)
       }, [])
+
+    let content
+
+    if (!groups.length) {
+      content = (
+        <T.TableRow>
+          <T.TableCell colSpan={5}>
+            <p>No history to show. Get tipping!</p>
+          </T.TableCell>
+        </T.TableRow>
+      )
+    } else {
+      content = groups.map((g: GroupOrHistory, i: number) =>
+        g.hasOwnProperty('type') ? this.renderWithdrawal(g as HistoryItem) : this.renderGroup(g as Group, i))
+    }
 
     return (
       <div className={baseStyle.subpageWrapper}>
@@ -113,17 +125,14 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             </T.TableRow>
           </T.TableHeader>
           <T.TableBody>
-            {
-              groups.map((g: GroupOrHistory, i: number) =>
-                g.hasOwnProperty('type') ? this.renderWithdrawal(g as HistoryItem) : this.renderGroup(g as Group, i))
-            }
+            {content}
           </T.TableBody>
         </T.Table>
       </div>
     )
   }
 
-  renderWithdrawal(item: HistoryItem) {
+  renderWithdrawal (item: HistoryItem) {
     const mStart = moment(item.createdAt)
 
     return (
@@ -151,10 +160,11 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             <div className={s.walletActivityAmountSign}>-</div>
             <div className={s.walletActivityAmount}>
               <Currency
-                amount={item.price}
-                outputType={CurrencyType.FINNEY}
-                unitClassName={s.activityFinneySign}
+                amount={item.amountWei}
+                inputType={CurrencyType.WEI}
+                outputType={CurrencyType.ETH}
                 showUnit
+                color='red'
               />
             </div>
           </div>
@@ -164,7 +174,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     )
   }
 
-  renderGroup(group: Group, i: number) {
+  renderGroup (group: Group, i: number) {
     const startDate = group.startDate
     const endDate = group.endDate
 
@@ -174,15 +184,23 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     const toggled = this.state.detailRows.has(i)
 
     const firstInGroup = group.items[0]
+    let totalWei = new BigNumber(0)
+    let totalBooty = new BigNumber(0)
 
-    const total = group.items.reduce((acc: BigNumber.BigNumber, curr: HistoryItem) => {
-      if (curr.type === 'TIP' && curr.receiver === this.props.address) {
-        return acc.plus(curr.price)
+    group.items.forEach((curr: HistoryItem) => {
+      const wei = new BigNumber(curr.amountWei)
+      const booty = new BigNumber(curr.amountToken)
+      const isIncomingTip = curr.type === 'TIP' && curr.receiver === this.props.address
+
+      if (wei.gt(0)) {
+        totalWei = totalWei.plus(isIncomingTip ? wei : wei.mul(-1))
+      } else {
+        totalBooty = totalBooty.plus(isIncomingTip ? booty : booty.mul(-1))
       }
+    })
 
-      return acc.minus(curr.price)
-    }, new BigNumber(0))
-
+    const converted = new CurrencyConvertable(CurrencyType.WEI, totalWei, () => this.props.exchangeRates)
+    const total = converted.toUSD().amountBigNumber.plus(totalBooty)
     const isNeg = total.isNegative()
 
     return [
@@ -192,7 +210,7 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
           [s.walletActivityEntryToggled]: toggled
         })}
       >
-        <T.TableCell >
+        <T.TableCell>
           <div>
             <div className={s.walletActivityMonth}>{mStart.format('MMM')}</div>
             <div className={s.walletActivityDay}>{mStart.format('DD')}</div>
@@ -203,7 +221,8 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
         </T.TableCell>
         <T.TableCell className={s.walletActivityItemDescription}>
           <div>
-            <div className={s.walletActivityItem}>{firstInGroup.fields.streamName || firstInGroup.fields.performerName}</div>
+            <div
+              className={s.walletActivityItem}>{firstInGroup.fields.streamName || firstInGroup.fields.performerName}</div>
             <div className={s.walletActivityDescription}>{firstInGroup.fields.performerName}</div>
           </div>
         </T.TableCell>
@@ -212,17 +231,12 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
             className={classnames(s.walletActivityAmountWrapper, {
               [s.walletActivityEntryToggled]: toggled,
               [s.walletActivitySignPositive]: !isNeg,
-              [s.walletActivitySignNegative]: isNeg,
+              [s.walletActivitySignNegative]: isNeg
             })}
           >
             <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
             <div className={s.walletActivityAmount}>
-              <Currency
-                amount={total.abs()}
-                outputType={CurrencyType.FINNEY}
-                unitClassName={s.activityFinneySign}
-                showUnit
-              />
+              {this.renderCurrency({ amountWei: totalWei.toString(), amountToken: totalBooty.toString() }, isNeg)}
             </div>
           </div>
         </T.TableCell>
@@ -248,25 +262,21 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
           </T.TableCell>
           <T.TableCell className={s.walletActivityItemDescription}>
             <div className={s.walletActivityItem}>
-            {this.renderActivityItem(item, !isNeg)}
+              {this.renderActivityItem(item, !isNeg)}
             </div>
-            {!isNeg && <div className={s.walletActivityDescription}>{item.fields.streamName || item.fields.performerName}</div>}
+            {!isNeg &&
+            <div className={s.walletActivityDescription}>{item.fields.streamName || item.fields.performerName}</div>}
           </T.TableCell>
           <T.TableCell className={s.walletActivityPrice}>
             <div
               className={classnames(s.walletActivityAmountWrapper, {
                 [s.walletActivitySignPositive]: !isNeg,
-                [s.walletActivitySignNegative]: isNeg,
+                [s.walletActivitySignNegative]: isNeg
               })}
             >
               <div className={s.walletActivityAmountSign}>{isNeg ? '-' : '+'}</div>
               <div className={s.walletActivityAmount}>
-                <Currency
-                  amount={item.price}
-                  outputType={CurrencyType.FINNEY}
-                  unitClassName={s.activityFinneySign}
-                  showUnit
-                />
+                {this.renderCurrency(item, isNeg)}
               </div>
             </div>
           </T.TableCell>
@@ -274,6 +284,23 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
         </T.TableRow>
       )) : null
     ]
+  }
+
+  renderCurrency (item: { amountWei: string, amountToken: string }, isNeg: boolean) {
+    let amount = item.amountWei === '0' ? item.amountToken : item.amountWei
+    const inputType = item.amountWei === '0' ? CurrencyType.BEI : CurrencyType.WEI
+    const outputType = item.amountWei === '0' ? CurrencyType.BOOTY : CurrencyType.ETH
+    //amount = amount.replace(/\D/g, "")
+    console.log({amount})
+    return (
+      <Currency
+        amount={amount}
+        inputType={inputType}
+        outputType={outputType}
+        color={isNeg? 'red' : 'green'}
+        showUnit
+      />
+    )
   }
 
   renderActivityItem = (item: HistoryItem, isPerformer: boolean): string => {
@@ -289,14 +316,18 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
 
 }
 
-function entryFor(item: HistoryItem) {
+function entryFor (item: HistoryItem) {
   return item.type === 'TIP'
     ? [item]
     : item
 }
 
-function reduceByTipOrPurchase(acc: NestedHistory[], curr: HistoryItem) {
-  if (Number(curr.price) === 0) {
+function reduceByTipOrPurchase (acc: NestedHistory[], curr: HistoryItem) {
+  if (curr.amountWei === '0' && curr.amountToken === '0') {
+    return acc
+  }
+
+  if (curr.type === 'FEE') {
     return acc
   }
 
@@ -317,7 +348,7 @@ function reduceByTipOrPurchase(acc: NestedHistory[], curr: HistoryItem) {
   return acc
 }
 
-function reduceByTipStream(acc: Group[], curr: HistoryItem, i: number, all: HistoryItem[]) {
+function reduceByTipStream (acc: Group[], curr: HistoryItem, i: number, all: HistoryItem[]) {
   const date = new Date(curr.createdAt)
 
   const mon = date.getMonth()
@@ -363,11 +394,12 @@ function reduceByTipStream(acc: Group[], curr: HistoryItem, i: number, all: Hist
   return acc
 }
 
-function mapStateToProps(state: FrameState): StateProps {
+function mapStateToProps (state: FrameState): StateProps {
   return {
     workerProxy: state.temp.workerProxy,
     history: state.shared.history,
     address: state.shared.address!,
+    exchangeRates: state.shared.exchangeRates!
   }
 }
 

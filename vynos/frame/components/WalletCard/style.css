@@ -54,6 +54,11 @@
   letter-spacing: .5px;
 }
 
+.notificationIcon {
+  width: 18px;
+  height: 18px;
+}
+
 .companyName {
   padding: 4px 0;
   font-family: CartographMonoCF;

@@ -16,7 +16,7 @@ import {ResetRequest, StatusRequest} from './lib/rpc/yns'
 import WorkerServer from './lib/rpc/WorkerServer'
 import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
-import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags} from './worker/WorkerState'
+import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags, developmentFlags} from './worker/WorkerState'
 import {ErrResCallback} from './lib/messaging/JsonRpcServer'
 import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
@@ -33,17 +33,27 @@ import VirtualChannelsController from './worker/controllers/VirtualChannelsContr
 import LockStateObserver from './lib/LockStateObserver'
 import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import debug from './lib/debug'
-import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
 import localForage = require('localforage')
 import ClientProvider from './lib/web3/ClientProvider'
 import Web3 = require('web3')
 import Connext = require('connext')
 import ChannelPopulator from './lib/ChannelPopulator'
-import BalanceController from './worker/controllers/BalanceController'
+import AddressBalanceController from './worker/controllers/AddressBalanceController'
 import WithdrawalController from './worker/controllers/WithdrawalController'
 import * as actions from './worker/actions'
-import { IConnext } from './lib/connext/ConnextTypes';
-import requestJson from './frame/lib/request';
+import { IConnext } from './lib/connext/ConnextTypes'
+import requestJson from './frame/lib/request'
+import Migrator, {MigrationMap} from './migrations/Migrator'
+import CloseChannelMigration from './migrations/CloseChannelMigration'
+import RequestBootyMigration from './migrations/RequestBootyMigration'
+import CloseChannelTransaction from './lib/transactions/CloseChannelTransaction'
+import semaphore = require('semaphore')
+import RequestBootyTransaction from './lib/transactions/RequestBootyTransaction'
+import OpenChannelMigration from './migrations/OpenChannelMigration'
+import DepositTransaction from './lib/transactions/DepositTransaction'
+import ExchangeMigration from './migrations/ExchangeMigration'
+import BuyBootyTransaction from './lib/transactions/BuyBootyTransaction'
+import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
 
 
 export class ClientWrapper implements WindowClient {
@@ -111,7 +121,6 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
         didInit: existingState.didInit,
         keyring: existingState.keyring,
         rememberPath: '/',
-        hasActiveDeposit: false,
         transactions: {}
       }
 
@@ -127,7 +136,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       storage: localForage
     }
 
-    const reduxMiddleware = process.env.NODE_ENV === 'development' && process.env.DEBUG
+    const reduxMiddleware = process.env.NODE_ENV === 'development'
       ? redux.applyMiddleware(createLogger())
       : undefined
 
@@ -149,7 +158,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       watcherUrl: process.env.HUB_URL!,
       ingridUrl: process.env.HUB_URL!,
       contractAddress: process.env.CONTRACT_ADDRESS!
-    }) as any // as IConnext
+    }) as any as IConnext
 
     await new Promise((resolve) => persistStore(store, undefined, resolve))
 
@@ -168,49 +177,114 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
     const lockStateObserver = new LockStateObserver(store)
     lockStateObserver.addUnlockHandler(async () => {
       try {
-        store.dispatch(actions.setFeatureFlags(
-          await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`, {credentials: 'include'})
-        ))
+        const featureFlags = await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`)
+        store.dispatch(actions.setFeatureFlags(featureFlags))
       } catch(e) {
         console.error('unable to get feature flags', e)
       }
     })
+
+    // the below controllers do not need awareness of the lock state.
     const backgroundController = new BackgroundController(store, web3, logger)
     const frameController = new FrameController(store, logger)
     const hubController = new HubController(store, sharedStateView, logger)
-    const micropaymentsController = new MicropaymentsController(store, logger, connext, lockStateObserver, chanPopulator)
+    const walletController = new WalletController(web3, store, logger)
     const authController = new AuthController(store, backgroundController, sharedStateView, providerOpts, frameController, logger)
-    const walletController = new WalletController(web3, store, sharedStateView, logger)
-    const virtualChannelsController = new VirtualChannelsController(logger, lockStateObserver, chanPopulator)
-    const balanceController = new BalanceController(logger, lockStateObserver, sharedStateView, store, web3, micropaymentsController)
-    const withdrawalController = new WithdrawalController(logger, connext, store, lockStateObserver, chanPopulator)
 
-    await balanceController.start()
-    await virtualChannelsController.start()
 
-    hubController.registerHandlers(server)
-    micropaymentsController.registerHandlers(server)
+    // the ones below do.
+    let micropaymentsController: MicropaymentsController
+    let virtualChannelsController: VirtualChannelsController
+    let addressBalanceController: AddressBalanceController
+    let withdrawalController: WithdrawalController
+    lockStateObserver.addUnlockHandler(async () => {
+      const address = store.getState().runtime.wallet!.getAddressString()
+
+      const migrations: MigrationMap = {
+        close_channel: new CloseChannelMigration(
+          logger,
+          'close_channel',
+          address,
+          new CloseChannelTransaction(
+            store,
+            logger,
+            connext,
+            semaphore(1),
+            chanPopulator,
+          )
+        ),
+        request_booty_disbursement: new RequestBootyMigration(
+          logger,
+          'request_booty_disbursement',
+          address,
+          new RequestBootyTransaction(
+            store,
+            logger
+          )
+        ),
+        open_channel: new OpenChannelMigration(
+          logger,
+          'open_channel',
+          address,
+          new DepositTransaction(
+            store,
+            connext,
+            semaphore(1),
+            chanPopulator,
+            web3,
+            logger
+          ),
+          web3,
+          connext
+        ),
+        exchange_booty: new ExchangeMigration(
+          logger,
+          'exchange_booty',
+          address,
+          new BuyBootyTransaction(
+            store,
+            connext,
+            logger,
+            chanPopulator
+          )
+        )
+      }
+
+      const migrator = new Migrator(store, migrations, address, web3, logger)
+      await migrator.catchUp()
+
+      micropaymentsController = new MicropaymentsController(store, logger, connext, chanPopulator, web3)
+      virtualChannelsController = new VirtualChannelsController(logger, chanPopulator)
+      addressBalanceController = new AddressBalanceController(sharedStateView, store, web3, micropaymentsController, logger)
+      withdrawalController = new WithdrawalController(logger, connext, store, chanPopulator)
+
+      await micropaymentsController.start()
+      await virtualChannelsController.start()
+      await addressBalanceController.start()
+      await withdrawalController.start()
+
+      micropaymentsController.registerHandlers(server)
+      withdrawalController.registerHandlers(server)
+    })
+    lockStateObserver.addLockHandler(async () => {
+      await micropaymentsController.stop()
+      await virtualChannelsController.stop()
+      await addressBalanceController.stop()
+      await withdrawalController.stop()
+    })
+
+    await authController.start()
     authController.registerHandlers(server)
+    backgroundController.registerHandlers(server)
+    hubController.registerHandlers(server)
     frameController.registerHandlers(server)
     walletController.registerHandlers(server)
-    backgroundController.registerHandlers(server)
-    withdrawalController.registerHandlers(server)
     backgroundController.didChangeSharedState(sharedState => server.broadcast(SharedStateBroadcastEvent, sharedState))
 
     server.addHandler(StatusRequest.method, (cb: ErrResCallback) => cb(null, status))
     server.addHandler(ResetRequest.method, async (cb: ErrResCallback) => {
       try {
-        await new Promise((resolve, reject) => {
-          const req = indexedDB.deleteDatabase('NeDB')
-          req.onerror = reject
-          // blocked is OK to resolve because we refresh the page
-          // in response to the reset broadcast event
-          req.onblocked = resolve
-          req.onsuccess = resolve
-        })
-
         await localForage.clear()
-
         server.broadcast(ResetBroadcastEvent)
         cb(null, null)
       } catch (e) {

@@ -8,7 +8,7 @@ const HookedWalletSubprovider = require('web3-provider-engine/subproviders/hooke
 const SanitizingSubprovider = require('web3-provider-engine/subproviders/sanitizer')
 const FetchSubprovider = require('web3-provider-engine/subproviders/fetch')
 
-import GaspriceSubprovider from './GaspriceSubprovider';
+import GaspriceSubprovider from './GaspriceSubprovider'
 
 export default function ClientProvider(opts: any): any {
   opts = opts || {}
@@ -68,7 +68,7 @@ export default function ClientProvider(opts: any): any {
 
   // data source
   const dataSubprovider = opts.dataSubprovider || new FetchSubprovider({
-    rpcUrl: opts.rpcUrl || 'https://mainnet.infura.io/',
+    rpcUrl: opts.rpcUrl,
     originHttpHeaderKey: opts.originHttpHeaderKey,
   })
   engine.addProvider(dataSubprovider)

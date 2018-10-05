@@ -1,17 +1,22 @@
 import * as React from 'react'
 import * as classnames from 'classnames'
-import Currency, { CurrencyType } from '../Currency/index'
-import CurrencyIcon, { CurrencyIconType } from '../CurrencyIcon'
+import Currency from '../Currency/index'
+import CurrencyIcon from '../CurrencyIcon'
 import { FrameState } from '../../redux/FrameState'
 import { connect } from 'react-redux'
 import BN = require('bn.js')
-import LoadingSpinner from '../LoadingSpinner';
+import LoadingSpinner from '../LoadingSpinner'
+import { alertMessagesLong } from '../transactionStates'
 import Tooltip from '../Tooltip'
+import { CurrencyType, MigrationState } from '../../../worker/WorkerState';
+import IconAlert from './IconAlert'
 
 const s = require('./style.css')
 
 export interface StateProps {
   name?: string
+  currencyType?: CurrencyType
+  migrationState?: MigrationState
 }
 
 export interface WalletCardProps extends StateProps {
@@ -46,14 +51,10 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
 
   icon: any
 
-  constructor(props: WalletCardProps) {
-    super(props)
-
-    this.state = {
-      animated: true,
-      initial: true
-    }
-  }
+  state = {
+    animated: true,
+    initial: true
+  } as WalletCardState
 
   render() {
     const {
@@ -67,6 +68,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
       width,
       currencyValue,
       isLoading,
+      currencyType,
     } = this.props
 
     const height = width! * (18 / 30)
@@ -104,13 +106,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
             >
               {cardTitle}
             </div>
-            {isLoading && (
-              <span>
-                <Tooltip content="Your funds are being processed. This may take a few minutes." trigger="click">
-                  <LoadingSpinner className={s.spinner} />
-                </Tooltip>
-              </span>
-            )}
+            {this.renderBadges()}
 
           </div>
           <div className={s.bottom}>
@@ -124,14 +120,14 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
             >
               {name}
             </div>
-            {currencyValue ? this.renderCurrencyValue() : null}
+            {currencyValue ? this.renderCurrencyValue(currencyType!) : null}
           </div>
         </div>
       </div >
     )
   }
 
-  renderCurrencyValue() {
+  renderCurrencyValue(currencyType: CurrencyType) {
     return (
       <div
         className={s.currency}
@@ -144,21 +140,60 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
         <CurrencyIcon
           className={classnames(s.currencyIcon, {
             [s.animating]: this.state.animated,
-            [s.initial]: this.state.initial
+            [s.initial]: this.state.initial,
           })}
-          currency={CurrencyType.FINNEY}
-          reverse
+          currency={currencyType}
+          color="white"
           big
         />
-        <Currency key="value" amount={this.props.currencyValue} outputType={CurrencyType.FINNEY} decimals={0} />
+        <Currency key="value" amount={this.props.currencyValue!} outputType={currencyType} inputType={currencyType} decimals={0} color="white"/>
       </div>
+    )
+  }
+  renderBadges() {
+    let content = null
+    let triggerElement = null
+    let { migrationState } = this.props
+    
+    if (this.props.isLoading) {
+      content = "Your funds are being processed. This may take a few minutes."
+      triggerElement = <LoadingSpinner className={s.spinner} />
+    }
+    
+    if (migrationState) {
+      switch (migrationState) {
+        case 'AWAITING_ETH':
+          content = alertMessagesLong[migrationState]
+          triggerElement = <IconAlert />
+          break
+        case 'MIGRATING':
+          content = alertMessagesLong[migrationState]
+          triggerElement = <LoadingSpinner className={s.spinner} />
+          break
+        case 'MIGRATION_FAILED':
+          content = alertMessagesLong[migrationState]
+          triggerElement = <IconAlert />
+          break
+        case 'DONE':
+          break
+      }
+    }
+
+    return content && triggerElement && (
+      <span>
+        <Tooltip content={content} trigger="hover">
+            {triggerElement}
+        </Tooltip>
+      </span>
     )
   }
 }
 
 function mapStateToProps(state: FrameState, ownProps: WalletCardProps): StateProps {
   return {
-    name: ownProps.name || (state.shared.username || '')
+    name: ownProps.name || (state.shared.username || ''),
+    currencyType: state.shared.baseCurrency,
+    migrationState: state.shared.migrationState,
   }
 }
 

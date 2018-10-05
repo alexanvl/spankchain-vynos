@@ -2,18 +2,16 @@ import * as React from 'react'
 import { ChangeEvent } from 'react'
 import { connect } from 'react-redux'
 import { FrameState } from '../../../redux/FrameState'
-import { CurrencyType } from '../../../components/Currency/index'
-import * as BigNumber from 'bignumber.js';
+import * as BigNumber from 'bignumber.js'
 import WorkerProxy from '../../../WorkerProxy'
-import { PendingTransaction } from '../../../../worker/WorkerState'
+import { PendingTransaction, CurrencyType } from '../../../../worker/WorkerState'
 import { cardBalance } from '../../../redux/selectors/cardBalance'
-import CurrencyConvertable from '../../../../lib/CurrencyConvertable'
+import CurrencyConvertable from '../../../../lib/currency/CurrencyConvertable'
 import { AutoFillButtons } from './AutoFillButtons'
 import { SendCurrencyFooter } from './SendCurrencyFooter'
 import { SendCurrencyHeader } from './SendCurrencyHeader'
 import { SendCurrencyInputs } from './SendCurrencyInputs'
-import { setFeatureFlags } from '../../../../worker/actions';
-import { FeatureFlags } from '../../../../worker/WorkerState'
+import { FeatureFlags, Balances } from '../../../../worker/WorkerState'
 
 const s = require('./index.css')
 const si = require('./../styles.css')
@@ -22,7 +20,7 @@ const utils = require('web3-utils')
 export interface MapStateToProps {
   workerProxy: WorkerProxy
   walletAddress: string | null
-  cardBalance: CurrencyConvertable | null
+  cardBalances: Balances | null
   pendingTransaction: PendingTransaction | null
   currencyConvertable: (type: CurrencyType, amount: string | number | BigNumber.BigNumber) => CurrencyConvertable
   featureFlags: FeatureFlags
@@ -68,31 +66,37 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
   }
 
   validateBalance = () => {
-    const cardBalance = this.props.cardBalance!.amountBigNumber
-    const {balance} = this.state
-    if (!cardBalance) {
-      return false
-    }
-    if (!balance) {
-      this.setState({ balanceError: 'Balance cannot be empty' })
-      return false
-    }
+    return this.props.cardBalances && (
+      new BigNumber(this.props.cardBalances.ethBalance.amount).gt(0) ||
+      new BigNumber(this.props.cardBalances.tokenBalance.amount).gt(0)
+    )
+    // TODO: this will need to be put back once we have a system for
+    // withdrawing less than the entire balance.
+    //const cardBalance = this.props.cardBalance!.amountBigNumber
+    //const {balance} = this.state
+    //if (!cardBalance) {
+    //  return false
+    //}
+    //if (!balance) {
+    //  this.setState({ balanceError: 'Balance cannot be empty' })
+    //  return false
+    //}
 
-    const numBalance = balance && balance.to(CurrencyType.WEI).amountBigNumber
-    if (numBalance.eq(0)) {
-      this.setState({
-        balanceError: 'Balance cannot be 0'
-      })
-      return false
-    }
+    //const numBalance = balance && balance.to(CurrencyType.WEI).amountBigNumber
+    //if (numBalance.eq(0)) {
+    //  this.setState({
+    //    balanceError: 'Balance cannot be 0'
+    //  })
+    //  return false
+    //}
 
-    if (cardBalance.lessThan(numBalance)) {
-      this.setState({
-        balanceError: 'You do not have enough ether'
-      })
-      return false
-    }
-    return true
+    //if (cardBalance.lessThan(numBalance)) {
+    //  this.setState({
+    //    balanceError: 'You do not have enough ether'
+    //  })
+    //  return false
+    //}
+    //return true
   }
 
   validateAddress = () => {
@@ -129,51 +133,51 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
   }
 
   autoFill = (percentageMultiplier: number) => {
-    const cardBalance = this.props.cardBalance
+    //const cardBalance = this.props.cardBalance
 
-    const [type, amount] = cardBalance
-      ? [cardBalance.type, cardBalance.amountBigNumber.mul(percentageMultiplier)]
-      : [CurrencyType.WEI, 0]
+    //const [type, amount] = cardBalance
+    //  ? [cardBalance.type, cardBalance.amountBigNumber.mul(percentageMultiplier)]
+    //  : [CurrencyType.WEI, 0]
 
-    const balance = this.props.currencyConvertable(type, amount)
+    //const balance = this.props.currencyConvertable(type, amount)
 
-    this.setState({
-      balance,
-      balanceError: '',
-      displayedBalances: [
-        balance.to('FINNEY' as CurrencyType).format({ withSymbol: false }),
-        balance.to('USD' as CurrencyType).format({ withSymbol: false })
-      ]
-    })
+    //this.setState({
+    //  balance,
+    //  balanceError: '',
+    //  displayedBalances: [
+    //    balance.to('FINNEY' as CurrencyType).format({ withSymbol: false }),
+    //    balance.to('USD' as CurrencyType).format({ withSymbol: false })
+    //  ]
+    //})
   }
 
   onBalanceChange = (inputIndex: 0 | 1) => (e: ChangeEvent<EventTarget>) => {
-    const value = (e.target as HTMLInputElement).value
+    //const value = (e.target as HTMLInputElement).value
 
-    if (value === '') {
-      this.setState({
-        balance: null,
-        balanceError: '',
-        displayedBalances: ['', ''],
-      })
-      return
-    }
+    //if (value === '') {
+    //  this.setState({
+    //    balance: null,
+    //    balanceError: '',
+    //    displayedBalances: ['', ''],
+    //  })
+    //  return
+    //}
 
-    const currencyType = this.state.displayedBalanceTypes[inputIndex]
+    //const currencyType = this.state.displayedBalanceTypes[inputIndex]
 
-    const balance = this.props.currencyConvertable(currencyType, value)!.to(this.props.cardBalance!.type)
+    //const balance = this.props.currencyConvertable(currencyType, value)!.to(this.props.cardBalance!.type)
 
-    const displayedBalances = this.state.displayedBalances.map((b, i) => {
-      return i === inputIndex
-        ? value
-        : balance.to(this.state.displayedBalanceTypes[i]).format({ withSymbol: false })
-    }) as [string, string]
+    //const displayedBalances = this.state.displayedBalances.map((b, i) => {
+    //  return i === inputIndex
+    //    ? value
+    //    : balance.to(this.state.displayedBalanceTypes[i]).format({ withSymbol: false })
+    //}) as [string, string]
 
-    this.setState({
-      balance,
-      balanceError: '',
-      displayedBalances,
-    })
+    //this.setState({
+    //  balance,
+    //  balanceError: '',
+    //  displayedBalances,
+    //})
   }
 
   onAddressChange = (e: ChangeEvent<EventTarget>) => {
@@ -190,16 +194,16 @@ export class SendCurrency extends React.Component<SendCurrencyProps, SendCurrenc
     this.setState({ disableSend: true })
 
     try {
-      await this.props.workerProxy.send(
-        address,
-        balance!.toWEI().format({ decimals: 0, withSymbol: false }),
-      )
+      await this.props.workerProxy.sendEntireBalance(address)
+      //await this.props.workerProxy.send(
+      //  address,
+      //  balance!.toWEI().getDecimalString()
+      //)
     } catch (e) {
       console.error('failed to send ether', e)
-      let balanceError = 'Failed to send Ether. Please try again.'
 
       this.setState({
-        balanceError,
+        balanceError: 'Failed to send Ether. Please try again.',
         disableSend: false,
         isConfirming: false
       })
@@ -290,8 +294,8 @@ function mapStateToProps(state: FrameState): MapStateToProps {
   return {
     workerProxy: state.temp.workerProxy,
     walletAddress: state.shared.address,
-    cardBalance: new CurrencyConvertable(CurrencyType.WEI, cardBalance(state.shared).toString(10), () => state.shared.exchangeRates),
-    currencyConvertable: (type: CurrencyType, amount: string | number | BigNumber.BigNumber) => new CurrencyConvertable(type, amount, () => state.shared.exchangeRates),
+    cardBalances: state.shared.channel && state.shared.channel.balances,
+    currencyConvertable: (type: CurrencyType, amount: string | number | BigNumber.BigNumber) => new CurrencyConvertable(type, amount, () => state.shared.exchangeRates!),
     pendingTransaction: state.shared.pendingTransaction,
     featureFlags: state.shared.featureFlags,
   }

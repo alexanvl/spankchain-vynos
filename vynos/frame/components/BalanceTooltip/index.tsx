@@ -1,10 +1,8 @@
 import * as React from 'react'
+import CC from '../../../lib/currency/CurrencyConvertable'
+import {Balances, CurrencyType, ExchangeRates} from '../../../worker/WorkerState'
+import {TooltipRow} from './TooltipRow'
 import BN = require('bn.js')
-import { CurrencyType } from '../Currency'
-import CC from '../../../lib/CurrencyConvertable'
-import { ExchangeRates } from '../../../worker/WorkerState'
-import { TooltipRow } from './TooltipRow'
-import { setHasActiveDeposit } from '../../../worker/actions';
 
 const s = require('./style.css')
 
@@ -12,69 +10,93 @@ export interface BalanceTooltipProps {
   amount: BN
   inputType: CurrencyType
   reserveBalance: BN
-  reserveBalanceType: CurrencyType
-  exchangeRates: ExchangeRates | null
+  exchangeRates: ExchangeRates
   hasActiveDeposit?: boolean
+  currencyType: CurrencyType
+  cardBalances: Balances
 }
 
 let amountReservedWei: CC
 let canUpdateAmountReserved = true
 
-export const BalanceTooltip = ({ amount, inputType, reserveBalance, reserveBalanceType, exchangeRates, hasActiveDeposit }: BalanceTooltipProps) => {
+export const BalanceTooltip = ({
+  reserveBalance,
+  exchangeRates,
+  hasActiveDeposit,
+  currencyType,
+  cardBalances
+}: BalanceTooltipProps) => {
   if (!amountReservedWei) {
     amountReservedWei = new CC(CurrencyType.WEI, '0', () => exchangeRates)
   }
 
-  const reserveBalanceWEI = new CC(
-    reserveBalanceType,
-    reserveBalance.toString(10),
-    () => exchangeRates,
-  ).toWEI()
-
-  const amountWEI = new CC(
-    inputType,
-    amount.toString(10),
-    () => exchangeRates,
-  ).toWEI()
-
-  const totalWEI = new CC(
+  const reserveBalanceWei = new CC(
     CurrencyType.WEI,
-    amountWEI.amountBigNumber.add(reserveBalanceWEI.amountBigNumber),
+    reserveBalance,
     () => exchangeRates,
-  ).toWEI()
+  )
+
+  const ethBalanceWei = new CC(
+    CurrencyType.WEI,
+    cardBalances.ethBalance.amount,
+    () => exchangeRates,
+  )
+
+  const bootyBalanceBOOTY = new CC(
+    CurrencyType.BEI,
+    cardBalances.tokenBalance.amount,
+    () => exchangeRates,
+  )
+
+  const total = new CC(
+    CurrencyType.USD,
+    ethBalanceWei
+      .toUSD()
+      .amountBigNumber
+      .add(reserveBalanceWei.toUSD().amountBigNumber)
+      .add(bootyBalanceBOOTY.toUSD().amountBigNumber),
+    () => exchangeRates,
+  )
 
   if (!hasActiveDeposit && canUpdateAmountReserved) {
-    amountReservedWei = reserveBalanceWEI
+    amountReservedWei = reserveBalanceWei
   }
   canUpdateAmountReserved = !!hasActiveDeposit
 
   const amountReservedString = amountReservedWei
-    .to(CurrencyType.FINNEY)
+    .toFIN()
     .format({
       decimals: 0,
       withSymbol: false,
     })
 
   return (
-    <div className={s.balanceTipLayout}>
-      <TooltipRow
-        amount={amountWEI}
-        outputType={CurrencyType.FINNEY}
-      />
-      <TooltipRow
-        amount={amountReservedWei}
-        outputType={CurrencyType.FINNEY}
-      />
-      <div className={s.reserveBalanceTip}>
-        {`FIN ${amountReservedString} reserved for transactions`}
+    <div className={s.balanceTooltip}>
+      <div className={s.balanceTipLayout}>
+        <TooltipRow
+          title='Booty balance'
+          amount={bootyBalanceBOOTY}
+          outputType={CurrencyType.BOOTY}
+        />
+        <TooltipRow
+          title='Ether balance'
+          amount={ethBalanceWei}
+          outputType={CurrencyType.ETH}
+        />
+        <TooltipRow
+          title='Reserved for transactions'
+          amount={reserveBalanceWei}
+          outputType={CurrencyType.ETH}
+          cta={{ text: 'Why?', href:'https://spankchain.zendesk.com/hc/en-us/articles/360016779451'}}
+        />
       </div>
       <TooltipRow
+        title='Total balance'
         className={s.totalRow}
-        amount={totalWEI}
-        outputType={CurrencyType.FINNEY}
+        amount={total}
+        outputType={CurrencyType.USD}
       />
     </div>
   )
 }
-
 

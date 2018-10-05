@@ -7,5 +7,6 @@ if (process.env.DEBUG) {
 }
 
 export default function debug(namespace: string): IDebugger {
-  return d(`SpankWallet:${namespace}`)
+  const res = () => {}
+  return res as any
 }

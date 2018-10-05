@@ -8,6 +8,7 @@ import WalletPage from './WalletPage'
 import {RouteComponentProps} from 'react-router'
 import WorkerProxy from '../WorkerProxy'
 import Logger from '../../lib/Logger'
+import {MigrationState} from '../../worker/WorkerState'
 
 export interface StateProps {
   isWalletExpected: boolean
@@ -25,12 +26,6 @@ export interface RootStateProps extends RouteComponentProps<any>, StateProps {
 export type RootContainerProps = RootStateProps
 
 export class RootContainer extends React.Component<RootContainerProps, any> {
-  constructor(props: RootContainerProps) {
-    super(props)
-
-    this.lock = this.lock.bind(this)
-  }
-
   componentDidMount () {
     this.determineRoute()
     this.logErrors()
@@ -61,7 +56,7 @@ export class RootContainer extends React.Component<RootContainerProps, any> {
     }
   }
 
-  lock (e: KeyboardEvent) {
+  lock = (e: KeyboardEvent) => {
     if (e.ctrlKey && e.which === 76) {
       this.props.workerProxy.doLock()
     }

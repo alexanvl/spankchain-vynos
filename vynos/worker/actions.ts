@@ -1,15 +1,19 @@
 import actionCreatorFactory, {ActionCreator} from 'typescript-fsa'
 import {
-  ChannelState,
-  ExchangeRates,
-  HistoryItem,
-  PendingTransaction,
-  WorkerState,
   AtomicTransactionState,
-  INITIAL_STATE,
+  Balances,
+  ChannelState,
+  CurrencyType,
+  ExchangeRates,
   FeatureFlags,
+  HistoryItem,
+  INITIAL_STATE,
+  MigrationState,
+  PendingTransaction,
+  WorkerState
 } from './WorkerState'
 import Wallet from 'ethereumjs-wallet'
+import currencyAsJSON from '../lib/currency/currencyAsJSON'
 
 const actionCreator = actionCreatorFactory('worker')
 
@@ -38,11 +42,37 @@ export function setWalletHandler(state: WorkerState, wallet: Wallet|undefined): 
 
 export const setFeatureFlags: ActionCreator<FeatureFlags> = actionCreator<FeatureFlags>('runtime/setFeatureFlags')
 export function setFeatureFlagsHandler(state: WorkerState, featureFlags: FeatureFlags): WorkerState {
-  return { ...state,
+  const withFeatureFlags = { ...state,
     runtime: {
       ...state.runtime,
       featureFlags,
       //...state.runtime, // uncomment this to let wallet's feature flags take presedence over hub's feature flag's (useful for local debugging)
+    }
+  }
+  const baseCurrency = featureFlags && featureFlags.bootySupport
+    ? CurrencyType.BEI
+    : CurrencyType.WEI // change this back to BOOTY to make baseCurrency always booty when developing
+
+  const withBaseCurrencyAndFeatureFlags = setBaseCurrencyHandler(withFeatureFlags, baseCurrency)
+
+  return withBaseCurrencyAndFeatureFlags
+}
+
+export const setBaseCurrency: ActionCreator<CurrencyType> = actionCreator<CurrencyType>('runtime/setBaseCurrency')
+export function setBaseCurrencyHandler(state: WorkerState, baseCurrency: CurrencyType): WorkerState {
+  return { ...state,
+    runtime: { ...state.runtime,
+      baseCurrency,
+      renderedCurrency: baseCurrency === CurrencyType.WEI  ? CurrencyType.FINNEY : CurrencyType.BOOTY
+    }
+  }
+}
+
+export const setMoreEthNeeded: ActionCreator<boolean> = actionCreator<boolean>('runtime/setMoreEthNeeded')
+export function setMoreEthNeededHandler(state: WorkerState, moreEthNeeded: boolean): WorkerState {
+  return { ...state,
+    runtime: { ...state.runtime,
+      moreEthNeeded,
     }
   }
 }
@@ -52,6 +82,15 @@ export function setIsPendingVerificationHandler(state: WorkerState, isPendingVer
   return { ...state,
     runtime: {...state.runtime,
       isPendingVerification,
+    }
+  }
+}
+
+export const setNeedsCollateral: ActionCreator<boolean> = actionCreator<boolean>('runtime/setNeedsCollateral')
+export function setNeedsCollateralHandler(state: WorkerState, needsCollateral: boolean): WorkerState {
+  return { ...state,
+    runtime: {...state.runtime,
+      needsCollateral,
     }
   }
 }
@@ -88,9 +127,20 @@ export const setHasActiveDeposit: ActionCreator<boolean> = actionCreator<boolean
 export function setHasActiveDepositHandler(state: WorkerState, hasActiveDeposit: boolean): WorkerState {
   return {
     ...state,
-      persistent: {
-        ...state.persistent,
+      runtime: {
+        ...state.runtime,
         hasActiveDeposit,
+      }
+  }
+}
+
+export const setHasActiveExchange: ActionCreator<boolean> = actionCreator<boolean>('persistent/hasActiveExchange')
+export function setHasActiveExchangeHandler(state: WorkerState, hasActiveExchange: boolean): WorkerState {
+  return {
+    ...state,
+      runtime: {
+        ...state.runtime,
+        hasActiveExchange,
       }
   }
 }
@@ -247,13 +297,13 @@ export function toggleFrameHandler(state: WorkerState, payload: ToggleFrameParam
 
 export const setChannel: ActionCreator<ChannelState|null> = actionCreator<ChannelState|null>('runtime/setChannel')
 export function setChannelHandler(state: WorkerState, channel: ChannelState|null): WorkerState {
-  return {
+  return channel ? {
     ...state,
     runtime: {
       ...state.runtime,
       channel,
     }
-  }
+  } : state
 }
 
 export const setHistory: ActionCreator<HistoryItem[]> = actionCreator<HistoryItem[]>('runtime/setHistory')
@@ -267,13 +317,14 @@ export function setHistoryHandler(state: WorkerState, history: HistoryItem[]): W
   }
 }
 
-export const setBalance: ActionCreator<string> = actionCreator<string>('runtime/setBalance')
-export function setBalanceHandler(state: WorkerState, balance: string): WorkerState {
-  return {
-    ...state,
-    runtime: {
-      ...state.runtime,
-      balance
+export const setaddressBalances: ActionCreator<Balances> = actionCreator<Balances>('runtime/setaddressBalances')
+export function setaddressBalancesHandler(state: WorkerState, balances: Balances): WorkerState {
+  return {...state,
+    runtime: { ...state.runtime,
+      addressBalances: {
+        ethBalance: currencyAsJSON(balances.ethBalance),
+        tokenBalance: currencyAsJSON(balances.tokenBalance),
+      }
     }
   }
 }
@@ -327,3 +378,19 @@ export function setUsernameHandler(state: WorkerState, username: string): Worker
   }
 }
 
+export interface SetMigrationState {
+  state: MigrationState
+  currentMigration?: any
+}
+
+export const setMigrationState: ActionCreator<SetMigrationState> = actionCreator<SetMigrationState>('runtime/setMigrationState')
+export function setMigrationStatehandler(state: WorkerState, arg: SetMigrationState): WorkerState {
+  return {
+    ...state,
+    runtime: {
+      ...state.runtime,
+      migrationState: arg.state,
+      currentMigration: arg.currentMigration,
+    }
+  }
+}

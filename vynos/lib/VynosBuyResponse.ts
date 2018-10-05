@@ -1,4 +1,5 @@
 export default interface VynosBuyResponse {
   channelId: string
-  token: string
+  purchaseId: string
+  receipts: any // TODO
 }

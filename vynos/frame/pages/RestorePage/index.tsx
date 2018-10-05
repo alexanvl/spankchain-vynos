@@ -38,25 +38,17 @@ export interface RestorePageState {
 const isAndroid = !!navigator.userAgent.match(/android/i)
 
 class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
-  constructor(props: RestorePageProps) {
-    super(props)
+  state = {
+    seeds: [],
+    showingPassword: false,
+    seedError: '',
+    passwordError: '',
+    step: RestorePageStep.SEED_WORDS,
+    restorationCandidates: [],
+    chosenRestorationCandidate: null
+  } as RestorePageState
 
-    this.state = {
-      seeds: [],
-      showingPassword: false,
-      seedError: '',
-      passwordError: '',
-      step: RestorePageStep.SEED_WORDS,
-      restorationCandidates: [],
-      chosenRestorationCandidate: null
-    }
-
-    this.handleSubmitSeed = this.handleSubmitSeed.bind(this)
-    this.handleSubmitPassword = this.handleSubmitPassword.bind(this)
-    this.handlePickRestorationCandidate = this.handlePickRestorationCandidate.bind(this)
-  }
-
-  async handleSubmitSeed(seeds: string[]) {
+  handleSubmitSeed = async (seeds: string[]) => {
     const mnemonic = seeds.join(' ')
 
     if (!bip39.validateMnemonic(mnemonic)) {
@@ -66,7 +58,6 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
 
       return
     }
-
 
     let restorationCandidates
 
@@ -95,20 +86,18 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     })
   }
 
-  handlePickRestorationCandidate(chosenRestorationCandidate: RestorationCandidate) {
+  handlePickRestorationCandidate = (chosenRestorationCandidate: RestorationCandidate) => {
     this.setState({
       chosenRestorationCandidate,
       step: RestorePageStep.NEW_PASSWORD
     })
   }
 
-  goto(step: RestorePageStep) {
-    this.setState({
-      step
-    })
+  goto = (step: RestorePageStep) => {
+    this.setState({step})
   }
 
-  async handleSubmitPassword(password: string) {
+  handleSubmitPassword = async (password: string) => {
     try {
       await this.props.workerProxy.restoreWallet(password, this.state.seeds.join(' '), this.state.chosenRestorationCandidate!.isHd)
     } catch (e) {
@@ -131,7 +120,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     )
   }
 
-  renderContent(): ReactNode {
+  renderContent = (): ReactNode => {
     switch (this.state.step) {
       case RestorePageStep.SEED_WORDS:
         return this.renderSeedWords()
@@ -144,7 +133,7 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     }
   }
 
-  renderSeedWords(): ReactNode {
+  renderSeedWords = (): ReactNode => {
     return (
       <SeedWords
         message={this.state.seedError}
@@ -155,17 +144,15 @@ class RestorePage extends React.Component<RestorePageProps, RestorePageState> {
     )
   }
 
-  renderPickAddress(): ReactNode {
-    return (
-      <PickAddress
-        restorationCandidates={this.state.restorationCandidates}
-        onSubmit={this.handlePickRestorationCandidate}
-        goBack={() => this.goto(RestorePageStep.SEED_WORDS)} isAndroid={isAndroid}
-      />
-    )
-  }
+  renderPickAddress = (): ReactNode => (
+    <PickAddress
+      restorationCandidates={this.state.restorationCandidates}
+      onSubmit={this.handlePickRestorationCandidate}
+      goBack={() => this.goto(RestorePageStep.SEED_WORDS)} isAndroid={isAndroid}
+    />
+  )
 
-  renderNewPassword(): ReactNode {
+  renderNewPassword = (): ReactNode => {
     const prev = this.state.restorationCandidates.length === 1 ? RestorePageStep.SEED_WORDS : RestorePageStep.PICK_ADDRESS
 
     return (

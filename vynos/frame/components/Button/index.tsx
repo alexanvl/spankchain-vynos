@@ -30,6 +30,8 @@ export interface ButtonProps {
   to?: string
   isSubmit?: boolean
   name?: string
+  colorHex?: string
+  backgroundHex?: string
 }
 
 class Button extends React.Component<ButtonProps> {
@@ -57,6 +59,8 @@ class Button extends React.Component<ButtonProps> {
       content,
       isSubmit,
       name,
+      colorHex,
+      backgroundHex
     } = this.props
 
     const cn = classnames(s.btn, className, {
@@ -77,6 +81,7 @@ class Button extends React.Component<ButtonProps> {
         type={isSubmit ? 'submit' : 'button'}
         name={name}
         data-sel={name}
+        style={{color: colorHex, backgroundColor: backgroundHex}}
       >
         {typeof content === 'function' ? content() : content}
       </button>

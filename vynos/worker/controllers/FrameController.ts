@@ -14,6 +14,10 @@ export default class FrameController extends AbstractController {
     this.store = store
   }
 
+  async start (): Promise<void> {
+    // noop
+  }
+
   public show () {
     this.store.dispatch(actions.toggleFrame({isFrameDisplayed: true}))
   }

@@ -148,18 +148,24 @@
   display: inline-block;
 }
 
-.walletActivityAmount .activityFinneySign {
+.walletActivityAmount.activityBootySign .activityFinneySign {
   color: transparent;
   margin: 2px;
   height: 14px;
   background-size: contain;
 }
 
-.walletActivitySignNegative .activityFinneySign {
+.activityBootySignNegative {
+}
+
+.activityBootySignPositive {
+}
+
+.activityFinneySignNegative {
   background-image: url('../../../styles/images/fin-duo-pink.svg');
 }
 
-.walletActivitySignPositive .activityFinneySign {
+.activityFinneySignPositive {
   background-image: url('../../../styles/images/fin-duo-green.svg');
 }
 
@@ -167,8 +173,9 @@
   border-radius: 1rem;
   border: 0.5px solid #cccccc;
   font-size: 0.9rem;
-  padding: 0.2rem 0.6rem 0.2rem 0.3rem;
   margin-left: 0.3rem;
+  display: flex;
+  padding: 0.2rem 0.5rem;
 }
 
 .walletActivityAmount span{

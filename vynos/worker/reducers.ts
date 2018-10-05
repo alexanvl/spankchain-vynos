@@ -17,7 +17,6 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.setChannel, actions.setChannelHandler)
   .case(actions.setCurrentAuthToken, actions.setCurrentAuthTokenHandler)
   .case(actions.setHistory, actions.setHistoryHandler)
-  .case(actions.setBalance, actions.setBalanceHandler)
   .case(actions.setPendingTransaction, actions.setPendingTransactionHandler)
   .case(actions.reset, actions.resetHandler)
   .case(actions.setHasActiveWithdrawal, actions.setHasActiveWithdrawalHandler)
@@ -30,5 +29,10 @@ const reducers: ReducerBuilder<WorkerState, WorkerState> = reducerWithInitialSta
   .case(actions.removeTransactionState, actions.removeTransactionStateHandler)
   .case(actions.setInitialState, actions.setInitialStateHandler)
   .case(actions.setFeatureFlags, actions.setFeatureFlagsHandler)
+  .case(actions.setBaseCurrency, actions.setBaseCurrencyHandler)
+  .case(actions.setaddressBalances, actions.setaddressBalancesHandler)
+  .case(actions.setMoreEthNeeded, actions.setMoreEthNeededHandler)
+  .case(actions.setMigrationState, actions.setMigrationStatehandler)
+  .case(actions.setNeedsCollateral, actions.setNeedsCollateralHandler)
 
 export default reducers

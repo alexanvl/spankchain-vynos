@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from 'react'
 import { connect } from 'react-redux'
 import * as copy from 'copy-to-clipboard'
 import WorkerProxy from '../../../WorkerProxy'
@@ -27,17 +27,10 @@ const alpha = /^[a-z]*$/i
 class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPrivateKeyState> {
   timeout: any
 
-  constructor(props: any) {
-    super(props)
-
-    this.state = {
-      seeds: [],
-      isCopied: false
-    }
-
-    this.updateSeed = this.updateSeed.bind(this)
-    this.handleSubmitSeed = this.handleSubmitSeed.bind(this)
-  }
+  state = {
+    seeds: [],
+    isCopied: false,
+  } as RevealPrivateKeyState
 
   componentWillUnmount() {
     if (this.timeout) {
@@ -45,7 +38,7 @@ class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPriv
     }
   }
 
-  async handleSubmitSeed() {
+  handleSubmitSeed = async () => {
     let privateKey
     const phrase = this.state.seeds.join(' ')
 
@@ -72,7 +65,7 @@ class RevealPrivateKey extends React.Component<RevealPrivateKeyProps, RevealPriv
     })
   }
 
-  updateSeed(i: number, e: any) {
+  updateSeed = (i: number, e: any) => {
     const value = e.target.value.toLowerCase()
 
     if (!value.match(alpha)) {

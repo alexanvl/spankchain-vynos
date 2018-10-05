@@ -31,13 +31,10 @@ export interface MnemonicStates {
 export type MnemonicSubpageProps = MnemonicStateProps & MnemonicDispatchProps & RouteComponentProps<any>
 
 export class Mnemonic extends React.Component<MnemonicSubpageProps, MnemonicStates> {
-  constructor(props: MnemonicSubpageProps) {
-    super(props)
-    this.state = {
-      acknowledged: false,
-      isAuthenticating: false
-    }
-  }
+  state = {
+    acknowledged: false,
+    isAuthenticating: false
+  } as MnemonicStates
 
   async handleSubmit() {
     if (this.state.acknowledged) {

@@ -1,55 +1,7 @@
 .currency {
   display: inline-flex;
-  width: 26px;
-  height: 14px;
-  text-indent: -999999px;
-  background-size: contain !important;
-  border-radius: 3px;
-}
-
-.unknown {
-  border: 1px solid;
-  text-indent: 2px;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  font-weight: 800;
-  font-size: 0.5rem;
-  line-height: 0.9rem;
-  letter-spacing: 1px;
-}
-
-.big {
-  width: 32px;
-  height: 18px;
-  font-size: 0.6rem;
 }
 
 .spaceAround {
   margin-right: 7px;
-}
-
-.finney {
-  background: transparent url('../../styles/images/fin-duo.svg') no-repeat center center;
-}
-
-.usd {
-  background: transparent url('../../styles/images/usd.svg') no-repeat center center;
-}
-
-.finney.inverse {
-  background: transparent url('../../styles/images/fin-duo-white.svg') no-repeat center center;
-}
-
-.finney.alt {
-  background: transparent url('../../styles/images/fin-duo-pink.svg') no-repeat center center;
-}
-
-.usd.inverse {
-  background: transparent url('../../styles/images/usd-white.svg') no-repeat center center;
-}
-
-/* TODO get the correct icon for ETH */
-.eth {
-  background: transparent url('../../styles/images/fin-duo.svg') no-repeat center center;
 }
