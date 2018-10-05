@@ -290,8 +290,8 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     let amount = item.amountWei === '0' ? item.amountToken : item.amountWei
     const inputType = item.amountWei === '0' ? CurrencyType.BEI : CurrencyType.WEI
     const outputType = item.amountWei === '0' ? CurrencyType.BOOTY : CurrencyType.ETH
-    amount = amount.replace(/\D/g, "")
-    
+    //amount = amount.replace(/\D/g, "")
+    console.log({amount})
     return (
       <Currency
         amount={amount}

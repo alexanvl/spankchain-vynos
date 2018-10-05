@@ -71,25 +71,27 @@ export const BalanceTooltip = ({
     })
 
   return (
-    <div>
+    <div className={s.balanceTooltip}>
       <div className={s.balanceTipLayout}>
         <TooltipRow
-          amount={ethBalanceWei}
-          outputType={CurrencyType.FINNEY}
-        />
-        <TooltipRow
+          title='Booty balance'
           amount={bootyBalanceBOOTY}
           outputType={CurrencyType.BOOTY}
         />
         <TooltipRow
-          amount={reserveBalanceWei}
-          outputType={CurrencyType.FINNEY}
+          title='Ether balance'
+          amount={ethBalanceWei}
+          outputType={CurrencyType.ETH}
         />
-        <div className={s.reserveBalanceTip}>
-          {`FIN ${amountReservedString} reserved for transactions`}
-        </div>
+        <TooltipRow
+          title='Reserved for transactions'
+          amount={reserveBalanceWei}
+          outputType={CurrencyType.ETH}
+          cta={{text: 'Why?', href:'#'}}
+        />
       </div>
       <TooltipRow
+        title='Total balance'
         className={s.totalRow}
         amount={total}
         outputType={CurrencyType.USD}
