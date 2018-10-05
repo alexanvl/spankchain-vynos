@@ -2,7 +2,7 @@ import Wallet from 'ethereumjs-wallet'
 import {PurchaseMetaFields, PurchaseMetaType, VirtualChannel, LedgerChannel} from '../lib/connext/ConnextTypes'
 import { ICurrency } from '../lib/currency/Currency'
 
-export type MigrationState = 'AWAITING_ETH' | 'MIGRATING' | 'DONE'
+export type MigrationState = 'AWAITING_ETH' | 'MIGRATING' | 'DONE' | 'MIGRATION_FAILED'
 
 // NOTE: This is only used between the time the Wallet loads and it's able
 // to fetch state from the hub. At that point, it will be driven by the Hub's

@@ -22,6 +22,7 @@ interface StateProps {
 export interface Props extends StateProps {
   address: string | null
   bootySupport?: boolean
+  displayState?: boolean
   showRevealPrivateKey?: boolean
 }
 
@@ -81,7 +82,7 @@ export class Receive extends React.Component<Props, State> {
   render() {
     const {
       address,
-      bootySupport,
+      bootySupport
     } = this.props;
 
     return (
@@ -159,20 +160,21 @@ export class Receive extends React.Component<Props, State> {
   }
 
   renderTransactionState() {
-    let { migrationState } = this.props
-    if (!migrationState) {
+    let { migrationState, displayState = true } = this.props
+    if (!migrationState || !displayState) {
       return 
     }
 
     let currentStep = getTransactionStep(migrationState)
     let totalSteps = getTotalTransactionSteps()
-    let done = currentStep == totalSteps
+    let end = currentStep == totalSteps
+    let start = currentStep == 1 
 
     return (
       <div className={classnames(s.whiteRect, s.transactionState)}>
         <span className={s.stepsWrapper}>
-          <span className={s.steps}>{ done ? <IconCheckmark/> : `${currentStep}/${totalSteps}`}</span>
-          <LoadingSpinner inverted big />
+          <span className={s.steps}>{ end ? <IconCheckmark/> : `${currentStep}/${totalSteps}`}</span>
+          <LoadingSpinner inverted big noAnimate={start || end}/>
         </span>
         <span className={s.transactionStateMessage}>{alertMessagesShort[migrationState]}</span>
       </div>

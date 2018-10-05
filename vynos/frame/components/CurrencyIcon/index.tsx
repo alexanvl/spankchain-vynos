@@ -37,6 +37,7 @@ export class CurrencyIcon extends React.Component<Props, any> {
         icon = <IconUsd fill={color} />
         break
       case 'BOOTY': 
+      case 'BEI':
         icon =<IconBooty fill={color}/>
         break
       case 'ETH': 

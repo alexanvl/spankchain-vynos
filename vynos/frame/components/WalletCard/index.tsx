@@ -160,9 +160,23 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
       triggerElement = <LoadingSpinner className={s.spinner} />
     }
     
-    if (migrationState){
-      content = alertMessagesLong[migrationState]
-      triggerElement = <IconAlert/> 
+    if (migrationState) {
+      switch (migrationState) {
+        case 'AWAITING_ETH':
+          content = alertMessagesLong[migrationState]
+          triggerElement = <IconAlert />
+          break
+        case 'MIGRATING':
+          content = alertMessagesLong[migrationState]
+          triggerElement = <LoadingSpinner className={s.spinner} />
+          break
+        case 'MIGRATION_FAILED':
+          content = alertMessagesLong[migrationState]
+          triggerElement = <IconAlert />
+          break
+        case 'DONE':
+          break
+      }
     }
 
     return content && triggerElement && (

@@ -24,6 +24,7 @@ export interface CurrencyProps extends StateProps {
   className?: string
   color?: string
   big?: boolean
+  blank?: boolean
 }
 
 let colors: any = {
@@ -47,8 +48,13 @@ export class Currency extends React.Component<CurrencyProps, any> {
       decimals,
       inputType,
       outputType,
+      blank
     } = this.props
 
+    if (blank) {
+      return '--'
+    }
+    
     let ret: string = ''
     try {
       let curr = (new CurrencyConvertable(inputType, amount.toString(), () => this.props.exchangeRates))

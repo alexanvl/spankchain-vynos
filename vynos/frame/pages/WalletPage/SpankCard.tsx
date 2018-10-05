@@ -81,11 +81,6 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
     return (
       <div className={s.walletSpankCardWrapper}>
         <div className={pageStyle.close} onClick={this.closeView} />
-        {
-          isPendingVerification
-            ? <div className={s.walletRow}>Account will recieve 20 Finney once age verification is complete</div>
-            : null
-        }
         <div className={s.walletSpankCardContent}>
           {this.renderError()}
           <div className={s.walletSpankCardDetails}>
@@ -120,20 +115,18 @@ class SpankCard extends React.Component<UnlockPageProps, SpankCardState> {
                 }
               >
                 <div className={classnames(s.usdBalance, {[s.disabled]: walletDisabled})}>
-                  {walletDisabled ? 'Updating...' :
                     <React.Fragment>
                       <Currency
                         amount={total}
                         inputType={CurrencyType.USD}
                         outputType={CurrencyType.USD}
                         className={s.sendReceiveCurrency}
-                        unitClassName={s.usdUnit}
                         showUnit
                         big
+                        blank={walletDisabled}
                       />
                       <div className={s.downArrow} />
                     </React.Fragment>
-                    }
                 </div>
               </Tooltip>
               <div className={s.buttonSpacer} />
