@@ -27,11 +27,12 @@ export interface CurrencyProps extends StateProps {
   blank?: boolean
 }
 
-let colors: any = {
+export const colors: any = {
   'green': '#55a451',
   'pink': '#ff3b81',
   'grey': '#797979',
-  'white': '#ffffff'
+  'white': '#ffffff',
+  'red': '#d0021b',
 }
 
 export class Currency extends React.Component<CurrencyProps, any> {
@@ -54,7 +55,7 @@ export class Currency extends React.Component<CurrencyProps, any> {
     if (blank) {
       return '--'
     }
-    
+
     let ret: string = ''
     try {
       let curr = (new CurrencyConvertable(inputType, amount.toString(), () => this.props.exchangeRates))

@@ -7,6 +7,7 @@ import IconUsd from './IconUsd'
 import IconBooty from './IconBooty'
 import IconEth from './IconEth'
 import IconFin from './IconFin'
+import { colors } from '../Currency'
 
 const s = require('./style.css')
 
@@ -17,13 +18,6 @@ export interface Props {
   color?: string
   big?: boolean
   spaceAround?: boolean
-}
-
-let colors: any = {
-  'green': '#55a451',
-  'pink': '#ff3b81',
-  'grey': '#797979',
-  'white': '#ffffff'
 }
 
 export class CurrencyIcon extends React.Component<Props, any> {

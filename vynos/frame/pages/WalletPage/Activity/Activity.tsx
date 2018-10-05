@@ -82,19 +82,6 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
     })
   }
 
-  getUnitClassName = (ct: CurrencyType, isPositive: boolean) => {
-    const isBooty = ct === CurrencyType.BOOTY
-
-    return classnames({
-      activityBootySignPositive: isBooty && isPositive,
-      activityFinneySignPositive: !isBooty && isPositive,
-      activityBootySignNegative: isBooty && !isPositive,
-      activityFinneySignNegative: !isBooty && !isPositive,
-      [unitStyles.green]: isPositive,
-      [unitStyles.pink]: !isPositive
-    })
-  }
-
   render () {
     const groups = this.props.history.reduce(reduceByTipOrPurchase, [])
       .reduce((acc: GroupOrHistory[], curr: NestedHistory) => {
@@ -175,9 +162,9 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
               <Currency
                 amount={item.amountWei}
                 inputType={CurrencyType.WEI}
-                outputType={CurrencyType.FINNEY}
-                unitClassName={this.getUnitClassName(CurrencyType.WEI, false)}
+                outputType={CurrencyType.ETH}
                 showUnit
+                color='red'
               />
             </div>
           </div>
@@ -302,14 +289,14 @@ class Activity extends React.Component<ActivityProps, ActivityState> {
   renderCurrency (item: { amountWei: string, amountToken: string }, isNeg: boolean) {
     const amount = item.amountWei === '0' ? item.amountToken : item.amountWei
     const inputType = item.amountWei === '0' ? CurrencyType.BEI : CurrencyType.WEI
-    const outputType = item.amountWei === '0' ? CurrencyType.BOOTY : CurrencyType.FINNEY
+    const outputType = item.amountWei === '0' ? CurrencyType.BOOTY : CurrencyType.ETH
 
     return (
       <Currency
         amount={amount}
         inputType={inputType}
         outputType={outputType}
-        unitClassName={this.getUnitClassName(outputType, !isNeg)}
+        color={isNeg? 'red' : 'green'}
         showUnit
       />
     )
