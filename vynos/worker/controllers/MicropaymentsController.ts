@@ -79,13 +79,9 @@ export default class MicropaymentsController extends AbstractController {
 
     await this.depositTransaction.maybeCollateralize()
 
-    if (this.exchange.isInProgress()) {
-      await this.exchange.restartSwap()
-    }
-
     if (this.depositTransaction.isInProgress()) {
       await this.depositTransaction.restartTransaction()
-      await this.exchange.swapEthForBooty()
+      await this.buyBootyTransaction.start()
     }
 
     if (this.withdrawTransaction.isInProgress()) {

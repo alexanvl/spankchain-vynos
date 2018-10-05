@@ -13,7 +13,7 @@ import Logger from '../Logger'
 import {HumanStandardToken} from '../HumanStandardToken'
 import {ICurrency} from '../currency/Currency'
 import currencyAsJSON from '../currency/currencyAsJSON'
-import {BOOTY, INITIAL_DEPOSIT_BEI} from '../constants'
+import {BOOTY, INITIAL_DEPOSIT_BEI, ZERO} from '../constants'
 import CurrencyConvertable from '../currency/CurrencyConvertable'
 import BN = require('bn.js')
 import Web3 = require('web3')
@@ -191,8 +191,10 @@ export default class DepositTransaction {
       )
       .call()
     const allowanceBn = new BN(allowance)
+    console.log('got allowance', allowanceBn.toString())
     const min = new BN(BOOTY.amount).mul(new BN('10000'))
     if (allowanceBn.lte(min)) {
+      console.log('upping allowance')
       await this.bootyContract
         .methods
         .approve(
@@ -201,7 +203,7 @@ export default class DepositTransaction {
         )
         .send({
           from: getAddress(this.store),
-          gas: 4000000
+          gas: 50000
         })
     }
 
@@ -236,11 +238,9 @@ export default class DepositTransaction {
     }
 
     await this.connext.deposit({
-      ethDeposit: ethDeposit && new BN(ethDeposit.amount),
-      tokenDeposit: tokenDeposit === undefined
-        ? undefined
-        : new BN(tokenDeposit.amount)
-    } as any, undefined, undefined, process.env.BOOTY_CONTRACT_ADDRESS)
+      ethDeposit: ethDeposit ? new BN(ethDeposit.amount) : ZERO,
+      tokenDeposit: tokenDeposit ? new BN(tokenDeposit.amount) : ZERO
+    })
 
     return [channels[0]]
   }

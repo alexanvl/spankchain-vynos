@@ -4,7 +4,7 @@ import {Store} from 'redux'
 import SharedStateView from '../SharedStateView'
 import Web3 from 'web3'
 import {WorkerState, CurrencyType} from '../WorkerState'
-import {OPEN_CHANNEL_COST, RESERVE_BALANCE} from '../../lib/constants'
+import {OPEN_CHANNEL_COST, RESERVE_BALANCE, ZERO} from '../../lib/constants'
 import MicropaymentsController from './MicropaymentsController'
 import Currency from '../../lib/currency/Currency'
 import AbstractController from './AbstractController'
@@ -70,42 +70,32 @@ export default class AddressBalanceController extends AbstractController {
     }
 
     const ethBalance: Currency = await this.getETHBalance(address)
-    const {tokenBalanceInBOOTY, tokenBalanceInBEI} = this.bootySupport()
-      ? await this.getTokenBalance(address)
-      : {tokenBalanceInBOOTY: Currency.BOOTY(0), tokenBalanceInBEI: Currency.BEI(0)}
+    const {tokenBalanceBooty, tokenBalanceBei} = await this.getTokenBalance(address)
 
     this.store.dispatch(actions.setaddressBalances({
       ethBalance,
-      tokenBalance: tokenBalanceInBOOTY,
+      tokenBalance: tokenBalanceBooty,
     }))
 
     if (onlyUpdate) {
       return
     }
 
-    if (
-      (!this.bootySupport() || tokenBalanceInBEI.amountBigNumber.eq(0)) &&
-      (ethBalance.amountBN.lt(RESERVE_BALANCE) ||
-      ethBalance.amountBN.sub(OPEN_CHANNEL_COST).lt(RESERVE_BALANCE))
-    ) {
+    if ((ethBalance.amountBN.lt(RESERVE_BALANCE) || ethBalance.amountBN.sub(OPEN_CHANNEL_COST).lt(RESERVE_BALANCE)) && tokenBalanceBei.amountBN.eq(ZERO)) {
       return
     }
 
-    if (
-      this.bootySupport() &&
-      ethBalance.amountBN.lt(OPEN_CHANNEL_COST) &&
-      !this.store.getState().runtime.moreEthNeeded
-    ) {
+    if (ethBalance.amountBN.lt(OPEN_CHANNEL_COST)) {
       this.store.dispatch(actions.setMoreEthNeeded(true))
       return
     }
 
-    await this.deposit(ethBalance, tokenBalanceInBEI)
+    await this.deposit(ethBalance, tokenBalanceBei)
   }
 
-  private deposit = async (ethBalanceInWEI: Currency, tokenBalanceInBEI: Currency) => {
+  private deposit = async (ethBalanceWei: Currency, tokenBalanceBei: Currency) => {
     let ethDeposit = Currency.WEI(
-      ethBalanceInWEI
+      ethBalanceWei
         .amountBigNumber
         .sub(RESERVE_BALANCE.toString(10))
         .sub(OPEN_CHANNEL_COST.toString(10))
@@ -115,11 +105,11 @@ export default class AddressBalanceController extends AbstractController {
       ethDeposit = Currency.WEI(0)
     }
 
+    console.log(`Depositing ${ethDeposit.toString()} weiand ${tokenBalanceBei.toString()} bei`)
+
     await this.mpc.deposit({
       ethDeposit: ethDeposit,
-      tokenDeposit: this.bootySupport()
-        ? tokenBalanceInBEI
-        : Currency.BOOTY(0),
+      tokenDeposit: tokenBalanceBei
     })
 
     await this.updateBalances(true)
@@ -134,22 +124,19 @@ export default class AddressBalanceController extends AbstractController {
       )
     )
 
-  private getTokenBalance = async (address: string): Promise<{tokenBalanceInBOOTY: Currency, tokenBalanceInBEI: Currency}> => {
+  private getTokenBalance = async (address: string): Promise<{tokenBalanceBooty: Currency, tokenBalanceBei: Currency}> => {
     try {
       const amount = await this.bootyContract
          .methods
          .balanceOf(address)
          .call()
 
-      const tokenBalanceInBEI = new CurrencyConvertable(CurrencyType.BEI, amount, () => this.store.getState().runtime.exchangeRates!)
-
-      const tokenBalanceInBOOTY = tokenBalanceInBEI.to(CurrencyType.BOOTY)
-
-      return  {tokenBalanceInBOOTY, tokenBalanceInBEI}
-
+      const tokenBalanceBei = new CurrencyConvertable(CurrencyType.BEI, amount, () => this.store.getState().runtime.exchangeRates!)
+      const tokenBalanceBooty = tokenBalanceBei.to(CurrencyType.BOOTY)
+      return  {tokenBalanceBooty: tokenBalanceBooty, tokenBalanceBei: tokenBalanceBei}
     } catch(e){
       console.error('unable to get ERC20 balance', {address, e})
-      return {tokenBalanceInBOOTY: Currency.BOOTY(0), tokenBalanceInBEI: Currency.BEI(0)}
+      return {tokenBalanceBooty: Currency.BOOTY(0), tokenBalanceBei: Currency.BEI(0)}
     }
   }
 
