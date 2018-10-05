@@ -15,7 +15,7 @@ export const TooltipRow = ({ amount, outputType, className = s.tooltipRow, title
         <div className={classnames(s.flex, s.bottom)}>
           <CurrencyIcon className={s.iconCol} currency={outputType} color='white' />
           <div className={s.amount}>
-            {amount.to(outputType).getDecimalString(0)}
+            {amount.to(outputType).getDecimalString()}
           </div>
         </div>
         <div className={s.underline}></div>
