@@ -39,6 +39,11 @@ export default class OpenChannelMigration extends BaseMigration {
       return
     }
 
+    if (this.depositTx.isInProgress()) {
+      await this.depositTx.restartTransaction()
+      return
+    }
+
     const ethDepositWEI = await this.getEthDeposit()
     const tokenDepositBEI = await getTokenBalance(this.web3, this.address)
 
