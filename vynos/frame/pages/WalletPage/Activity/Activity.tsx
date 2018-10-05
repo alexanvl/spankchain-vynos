@@ -324,6 +324,10 @@ function reduceByTipOrPurchase (acc: NestedHistory[], curr: HistoryItem) {
     return acc
   }
 
+  if (curr.type === 'FEE') {
+    return acc
+  }
+
   if (!acc.length) {
     acc.push(entryFor(curr))
     return acc

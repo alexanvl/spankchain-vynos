@@ -74,7 +74,7 @@ export default class CloseChannelTransaction {
     }
 
     try {
-      this.connext.closeThreads(channel.currentVCs.map((vc) => vc.channelId) as any)
+      await this.connext.closeThreads(channel.currentVCs.map((vc) => vc.channelId) as any)
       return
     } catch (e) {
       console.error('connext.closeThreads failed', e)

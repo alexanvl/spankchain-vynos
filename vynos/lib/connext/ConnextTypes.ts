@@ -20,6 +20,7 @@ export enum PurchaseMetaType {
   TIP = 'TIP',
   WITHDRAWAL = 'WITHDRAWAL',
   EXCHANGE = 'EXCHANGE',
+  FEE = 'FEE'
 }
 
 export enum PaymentMetaType {
