@@ -31,12 +31,12 @@ export function calculateExchangePurchase(lc: LedgerChannel, buying: CurrencyCon
   ]
 
   const balsA = [
-    lc.ethBalanceA, 
+    lc.ethBalanceA,
     lc.tokenBalanceA,
   ].map(math.bn)
 
   const balsI = [
-    lc.ethBalanceI, 
+    lc.ethBalanceI,
     lc.tokenBalanceI,
   ].map(math.bn)
 
@@ -47,7 +47,8 @@ export function calculateExchangePurchase(lc: LedgerChannel, buying: CurrencyCon
     math.min(balsI[1].sub(deltas[1]), 0).abs(),
   ]
 
-  const exchangeRate = buying.toWEI().amountBN.div(buying.toBEI().amountBN).toString()
+  // cannot use BN because BN will round any exchange rate under 1 to 0 or 1
+  const exchangeRate = buying.toWEI().amountBigNumber.div(buying.toBEI().amountBigNumber).toString()
 
   if (math.gt(depositsI[0], 0) || math.gt(depositsI[1], 0)) {
     payments.push({
@@ -106,6 +107,10 @@ export async function buySellBooty(
   lc: LedgerChannel,
   amount: CurrencyConvertable
 ) {
+  if (amount.amountBN.eq(new BN(0))) {
+    throw new Error('buySellBooty amount cannot be 0!')
+  }
+
   const exchange = calculateExchangePurchase(lc, amount)
   console.log(
     'swapping', exchange.deltas[0].toString(), 'WEI for',
@@ -159,10 +164,10 @@ export default class BuyBootyTransaction {
     }
 
     const rates = this.store.getState().runtime.exchangeRates!
-    
+
     const bootyToBuy = new CurrencyConvertable(CurrencyType.BEI, bootyLimit, () => rates)
     const ethToSpend = new CurrencyConvertable(CurrencyType.WEI, lc.ethBalanceA, () => rates)
-    
+
 
     const buyAmount = ethToSpend.toBEI().compare('lt', bootyToBuy)
       ? ethToSpend.toBEI()
