@@ -7,7 +7,7 @@ import Web3 = require('web3')
 export default class RequestBootyMigration extends BaseMigration {
   private requestBootyTx: RequestBootyTransaction
   private web3: Web3
-  private address: string
+  protected address: string
 
   constructor (logger: Logger, name: string, address: string, web3: Web3, requestBootyTx: RequestBootyTransaction) {
     super(logger, name, address)
