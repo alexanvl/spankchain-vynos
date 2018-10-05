@@ -4,13 +4,13 @@ import {ChannelType, IConnext, LedgerChannel, PurchaseMetaType} from '../connext
 import {AtomicTransaction, ensureMethodsHaveNames} from './AtomicTransaction'
 import Logger from '../Logger'
 import CurrencyConvertable from '../currency/CurrencyConvertable'
-import Currency from '../currency/Currency'
-import BN = require('bn.js')
 import ChannelPopulator from '../ChannelPopulator'
 import requestJson from '../../frame/lib/request'
 import {HubBootyLoadResponse} from './Exchange'
 import {math} from '../../math'
 import {PaymentObject} from '../../lib/connext/ConnextTypes'
+import BN = require('bn.js')
+import getETHBalance from '../web3/getETHBalance'
 
 export function calculateExchangePurchase(lc: LedgerChannel, buying: CurrencyConvertable) {
   const payments: PaymentObject[] = []
@@ -139,8 +139,15 @@ export default class BuyBootyTransaction {
 
   private prepareAndExecuteSwap = async (): Promise<void> => {
     const lc = await this.connext.getChannelByPartyA()
-    if (!lc)
+    if (!lc) {
       throw new Error('An lc is required.')
+    }
+
+    const convertable = new CurrencyConvertable(CurrencyType.BEI, lc.tokenBalanceA, () => this.store.getState().runtime.exchangeRates!)
+    if (convertable.toBOOTY().amountBN.gt(new BN('69'))) {
+      console.log('Already have > 69 booty; not buying more.')
+      return
+    }
 
     const {bootyLimit} = await requestJson<HubBootyLoadResponse>(
       `${process.env.HUB_URL}/payments/booty-load-limit/`
