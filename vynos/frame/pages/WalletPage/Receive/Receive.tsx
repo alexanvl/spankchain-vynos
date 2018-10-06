@@ -55,6 +55,8 @@ export class Receive extends React.Component<Props, State> {
     displayState: true,
   }
 
+  prevMigrationState: MigrationState | undefined  = undefined
+
   constructor(props: Props) {
     super(props)
   }
@@ -71,18 +73,6 @@ export class Receive extends React.Component<Props, State> {
       return { displayState: false }
     }
     return {}
-  }
-
-  componentDidUpdate(prevProps: Props) {
-    let currentMigrationState = this.props.migrationState
-    let prevMigrationState = prevProps.migrationState
-    if (currentMigrationState == 'DONE') {
-      if (!prevMigrationState) {
-        this.setState({displayState: false})
-      } else {
-        setTimeout(() => { this.setState({ displayState: false }) }, 5000)
-      }
-    }
   }
 
   onCopyAddress = () => {
@@ -103,8 +93,18 @@ export class Receive extends React.Component<Props, State> {
   render() {
     const {
       address,
-      bootySupport
+      bootySupport,
+      migrationState
     } = this.props;
+
+    if (migrationState == 'DONE') {
+      if (!this.prevMigrationState) {
+        this.setState({ displayState: false })
+      } else if (this.prevMigrationState != migrationState) {
+        setTimeout(() => { this.setState({ displayState: false }) }, 5000)
+      } 
+    }
+    this.prevMigrationState = migrationState
 
     return (
       <div className={baseStyle.subpageWrapper}>
