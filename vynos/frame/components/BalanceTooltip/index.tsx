@@ -95,6 +95,7 @@ export const BalanceTooltip = ({
         className={s.totalRow}
         amount={total}
         outputType={CurrencyType.USD}
+        noConvert
       />
     </div>
   )

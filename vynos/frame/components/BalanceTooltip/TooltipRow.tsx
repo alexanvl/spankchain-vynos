@@ -7,7 +7,7 @@ import { CurrencyType } from '../../../worker/WorkerState';
 
 const s = require('./style.css')
 
-export const TooltipRow = ({ amount, outputType, className = s.tooltipRow, title, cta }: { amount: CC, outputType: CurrencyType, className?: string, title: string, cta?: { href: string, text: string } }) => {
+export const TooltipRow = ({ amount, outputType, className = s.tooltipRow, title, cta, noConvert }: { amount: CC, outputType: CurrencyType, className?: string, title: string, cta?: { href: string, text: string }, noConvert?: boolean}) => {
   return (
     <div className={classnames(s.tooltipRow, className)}>
       <h3>{title}</h3>
@@ -18,10 +18,14 @@ export const TooltipRow = ({ amount, outputType, className = s.tooltipRow, title
             {amount.to(outputType).format({ showTrailingZeros: false, withSymbol: false })}
           </div>
         </div>
-        <div className={s.underline}></div>
-        <div className={s.usdAmount}>
-          {amount.to(CurrencyType.USD).format()}
-        </div>
+        {!noConvert &&
+          <React.Fragment>
+            <div className={s.underline}></div>
+            <div className={s.usdAmount}>
+              {amount.to(CurrencyType.USD).format()}
+            </div>
+          </React.Fragment>
+        }
       </div>
       {cta &&
         <Button className={s.cta} to={cta.href} content={cta.text} backgroundHex='#fff' colorHex='#444' isMini isFullWidth/>
