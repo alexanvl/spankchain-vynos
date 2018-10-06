@@ -143,9 +143,13 @@ export default class Currency<ThisType extends CurrencyType = any> implements IC
     }
 
     const symbol = options.withSymbol ? `${this.symbol}` : ``
-    const amount = options.decimals === undefined
+    let amount = options.decimals === undefined
       ? this._amount.toString(10)
       : this._amount.toNumber().toFixed(options.decimals)
+    
+    if (!options.showTrailingZeros) {
+      amount = parseFloat(amount).toString()
+    }
 
     return `${symbol}${amount}`
   }

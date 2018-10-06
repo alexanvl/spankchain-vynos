@@ -15,16 +15,12 @@ export const TooltipRow = ({ amount, outputType, className = s.tooltipRow, title
         <div className={classnames(s.flex, s.bottom)}>
           <CurrencyIcon className={s.iconCol} currency={outputType} color='white' />
           <div className={s.amount}>
-            {amount.to(outputType).getDecimalString(0)}
+            {amount.to(outputType).format({ showTrailingZeros: false, withSymbol: false })}
           </div>
         </div>
         <div className={s.underline}></div>
         <div className={s.usdAmount}>
-          {amount.to(CurrencyType.USD).format({
-            decimals: 2,
-            withSymbol: true,
-            showTrailingZeros: true,
-          })}
+          {amount.to(CurrencyType.USD).format()}
         </div>
       </div>
       {cta &&
