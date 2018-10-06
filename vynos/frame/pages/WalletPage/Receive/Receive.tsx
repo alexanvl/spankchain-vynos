@@ -76,11 +76,10 @@ export class Receive extends React.Component<Props, State> {
   componentDidUpdate(prevProps: Props) {
     let currentMigrationState = this.props.migrationState
     let prevMigrationState = prevProps.migrationState
-
-    // if the transaction just finished, remove the displayed transaction state after X seconds
-    if (prevMigrationState && currentMigrationState &&
-       (prevMigrationState !== currentMigrationState)) {
-      if (currentMigrationState == 'DONE') {
+    if (currentMigrationState == 'DONE') {
+      if (!prevMigrationState) {
+        this.setState({displayState: false})
+      } else {
         setTimeout(() => { this.setState({ displayState: false }) }, 5000)
       }
     }

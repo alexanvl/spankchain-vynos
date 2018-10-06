@@ -74,7 +74,7 @@ export class ReceiveEther extends React.Component<any, State> {
             <div className={s.rectRow}>
             <span className={classnames(s.rowLabel, s.spaced)}>Min amount</span>
               <Currency
-                amount={0.04}
+                amount={0.06}
                 outputType={CurrencyType.ETH}
                 inputType={CurrencyType.ETH}
                 unitClassName={s.currencyIcon}
@@ -83,7 +83,7 @@ export class ReceiveEther extends React.Component<any, State> {
               />
               <span className={s.rowSlash}>/</span>
               <Currency
-                amount={0.04}
+                amount={0.06}
                 outputType={CurrencyType.USD}
                 inputType={CurrencyType.ETH}
                 unitClassName={s.currencyIcon}
@@ -111,9 +111,9 @@ export class ReceiveEther extends React.Component<any, State> {
                 showUnit
               />
             </div>
-            <div className={s.rectRow}> 
+            {/* <div className={s.rectRow}> 
               <span className={classnames(s.rowLabel, s.spaced)}>Gas costs</span>
-              {/* TODO update these with real values */}
+              {/* TODO update these with real values /}
               <Currency
                 amount={69}
                 outputType={CurrencyType.ETH}
@@ -131,7 +131,7 @@ export class ReceiveEther extends React.Component<any, State> {
                 className={s.inlineCurrency}
                 showUnit
               />
-            </div>
+            </div> */}
           </div >
           <div className={classnames(s.oneThird, s.spaced)}>Send Ether to your card and we’ll credit you Booty. First time transactions have a higher min amount.</div>
         </div>
