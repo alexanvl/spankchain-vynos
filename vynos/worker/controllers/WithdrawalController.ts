@@ -25,7 +25,7 @@ import * as semaphore from 'semaphore'
 import OpenChannelMigration from '../../migrations/OpenChannelMigration'
 import DepositTransaction from '../../lib/transactions/DepositTransaction'
 import Web3 = require('web3')
-
+import withRetries, {DoneFunc} from '../../lib/withRetries'
 export default class WithdrawalController extends AbstractController {
   private store: Store<WorkerState>
   private connext: IConnext
@@ -47,7 +47,7 @@ export default class WithdrawalController extends AbstractController {
     this.connext = connext
     this.populator = populator
     
-    this.closeAndReopenTx = new AtomicTransaction(this.store, logger, 'withdrawal', [this._sendEntireBalance, this.closeChannel, this.openChannel]) 
+    this.closeAndReopenTx = new AtomicTransaction(this.store, logger, 'closeAndReopen', [this._sendEntireBalance, this.waitForUpdate, this.closeChannel, this.openChannel]) 
     this.closeChannelTx = new CloseChannelTransaction(store, logger, connext, sem, populator)
 
     const depositTx = new DepositTransaction(store, connext, sem, populator, web3, logger)
@@ -81,7 +81,7 @@ export default class WithdrawalController extends AbstractController {
     if (math.gt(lc.tokenBalanceA, 0)) {  // this should always
       const bootyToSell = new CurrencyConvertable(
         CurrencyType.BEI,
-        math.mul(lc.tokenBalanceA, -1).add(new BN(1)),
+        math.mul(lc.tokenBalanceA, -1).add(new BN(69)),
         () => rates!,
       )
       await buySellBooty(this.connext, lc, bootyToSell)
@@ -97,6 +97,16 @@ export default class WithdrawalController extends AbstractController {
     const totalBalanceWei = lcBalanceWei.add(vcBalancesWei)
 
     await this.send(to, totalBalanceWei.toString())
+  }
+
+  public waitForUpdate = async () => {
+    await withRetries(async (done: DoneFunc) => {
+      const res = await this.connext.getChannelByPartyA()
+
+      if (res.tokenBalanceA === '69') {
+        done()
+      }
+    }, 24)
   }
 
   public send = async (to: string, valueWei: string): Promise<void> => {
