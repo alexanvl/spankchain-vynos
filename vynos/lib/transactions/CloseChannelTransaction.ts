@@ -112,7 +112,7 @@ export default class CloseChannelTransaction {
     await withRetries(async (done: DoneFunc) => {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
-      if (res === null) {
+      if (!res) {
         done()
       }
     }, 24)
