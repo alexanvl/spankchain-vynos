@@ -44,6 +44,7 @@ export default class WithdrawalController extends AbstractController {
   }
 
   public sendEntireBalance = async (to: string): Promise<void> => {
+    await closeAllVCs(this.store, this.connext)
     // 1. Swap all booty for ETH
     // 2. Call `send` with complete balance
 
@@ -70,6 +71,7 @@ export default class WithdrawalController extends AbstractController {
   }
 
   public send = async (to: string, valueWei: string): Promise<void> => {
+    await closeAllVCs(this.store, this.connext)
     await this.updateChannel(to, valueWei)
     await this.populator.populate()
   }
@@ -101,7 +103,6 @@ export default class WithdrawalController extends AbstractController {
         `)
       }
 
-      await closeAllVCs(this.store, this.connext)
       return this.updateChannel(recipient, valueWeiStr)
     }
 
