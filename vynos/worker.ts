@@ -1,13 +1,4 @@
 import ProviderOptions from './worker/controllers/ProviderOptions'
-
-const Raven = require('raven-js')
-
-if (!process.env.DEBUG) {
-  Raven.config('https://8199bca0aab84a5da6293737634dcc88@sentry.io/1212501', {
-    environment: process.env.NODE_ENV,
-  }).install()
-}
-
 import {asServiceWorker} from './worker/window'
 import * as redux from 'redux'
 import {Store} from 'redux'
@@ -16,7 +7,7 @@ import {ResetRequest, StatusRequest} from './lib/rpc/yns'
 import WorkerServer from './lib/rpc/WorkerServer'
 import {persistReducer, persistStore} from 'redux-persist'
 import reducers from './worker/reducers'
-import {INITIAL_STATE, PersistentState, WorkerState, FeatureFlags, developmentFlags} from './worker/WorkerState'
+import {FeatureFlags, INITIAL_STATE, PersistentState, WorkerState} from './worker/WorkerState'
 import {ErrResCallback} from './lib/messaging/JsonRpcServer'
 import {ReadyBroadcastEvent} from './lib/rpc/ReadyBroadcast'
 import {WorkerStatus} from './lib/rpc/WorkerStatus'
@@ -33,27 +24,36 @@ import VirtualChannelsController from './worker/controllers/VirtualChannelsContr
 import LockStateObserver from './lib/LockStateObserver'
 import {SharedStateBroadcastEvent} from './lib/rpc/SharedStateBroadcast'
 import debug from './lib/debug'
-import localForage = require('localforage')
 import ClientProvider from './lib/web3/ClientProvider'
-import Web3 = require('web3')
-import Connext = require('connext')
 import ChannelPopulator from './lib/ChannelPopulator'
 import AddressBalanceController from './worker/controllers/AddressBalanceController'
 import WithdrawalController from './worker/controllers/WithdrawalController'
 import * as actions from './worker/actions'
-import { IConnext } from './lib/connext/ConnextTypes'
+import {IConnext} from './lib/connext/ConnextTypes'
 import requestJson from './frame/lib/request'
 import Migrator, {MigrationMap} from './migrations/Migrator'
 import CloseChannelMigration from './migrations/CloseChannelMigration'
 import RequestBootyMigration from './migrations/RequestBootyMigration'
 import CloseChannelTransaction from './lib/transactions/CloseChannelTransaction'
-import semaphore = require('semaphore')
 import RequestBootyTransaction from './lib/transactions/RequestBootyTransaction'
 import OpenChannelMigration from './migrations/OpenChannelMigration'
 import DepositTransaction from './lib/transactions/DepositTransaction'
 import ExchangeMigration from './migrations/ExchangeMigration'
 import BuyBootyTransaction from './lib/transactions/BuyBootyTransaction'
 import {ResetBroadcastEvent} from './lib/rpc/ResetBroadcast'
+
+const Raven = require('raven-js')
+
+if (!process.env.DEBUG) {
+  Raven.config('https://8199bca0aab84a5da6293737634dcc88@sentry.io/1212501', {
+    environment: process.env.NODE_ENV
+  }).install()
+}
+
+import localForage = require('localforage')
+import Web3 = require('web3')
+import Connext = require('connext')
+import semaphore = require('semaphore')
 
 
 export class ClientWrapper implements WindowClient {
@@ -126,7 +126,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
 
       await localForage.setItem<string>(persistentKey, JSON.stringify({
         persistent: JSON.stringify(existingState),
-        _persist: "{\"version\":-1,\"rehydrated\":true}"
+        _persist: '{"version":-1,"rehydrated":true}'
       }))
     }
 
@@ -179,7 +179,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       try {
         const featureFlags = await requestJson<FeatureFlags>(`${process.env.HUB_URL}/featureflags`)
         store.dispatch(actions.setFeatureFlags(featureFlags))
-      } catch(e) {
+      } catch (e) {
         console.error('unable to get feature flags', e)
       }
     })
@@ -210,13 +210,14 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
             logger,
             connext,
             semaphore(1),
-            chanPopulator,
+            chanPopulator
           )
         ),
         request_booty_disbursement: new RequestBootyMigration(
           logger,
           'request_booty_disbursement',
           address,
+          web3,
           new RequestBootyTransaction(
             store,
             logger
