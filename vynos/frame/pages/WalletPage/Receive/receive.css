@@ -215,6 +215,8 @@
 
 .inlineCurrency {
   margin: 0 8px;
+  width: 68px;
+  justify-content: flex-start;
 }
 
 .minIcon {
