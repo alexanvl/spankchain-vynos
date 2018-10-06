@@ -4,7 +4,6 @@ import AbstractController from './AbstractController'
 import {aggregateVCBalancesWEI} from '../../lib/aggregateVCBalances'
 import ChannelPopulator from '../../lib/ChannelPopulator'
 import {closeAllVCs} from '../../lib/connext/closeAllVCs'
-import Currency from '../../lib/currency/Currency'
 import {
   IConnext,
   PurchaseMetaType,
@@ -15,23 +14,48 @@ import getAddress from '../../lib/getAddress'
 import getVirtualChannels from '../../lib/getVirtualChannels'
 import JsonRpcServer from '../../lib/messaging/JsonRpcServer'
 import Logger from '../../lib/Logger'
-import LockStateObserver from '../../lib/LockStateObserver'
 import {SendRequest, SendEntireBalanceRequest} from '../../lib/rpc/yns'
 import {WorkerState, CurrencyType} from '../WorkerState'
 import CurrencyConvertable from '../../lib/currency/CurrencyConvertable'
 import {math} from '../../math'
 import {buySellBooty} from '../../lib/transactions/BuyBootyTransaction'
+import {AtomicTransaction} from '../../lib/transactions/AtomicTransaction'
+import CloseChannelTransaction from '../../lib/transactions/CloseChannelTransaction'
+import * as semaphore from 'semaphore'
+import OpenChannelMigration from '../../migrations/OpenChannelMigration'
+import DepositTransaction from '../../lib/transactions/DepositTransaction'
+import Web3 = require('web3')
 
 export default class WithdrawalController extends AbstractController {
   private store: Store<WorkerState>
   private connext: IConnext
   private populator: ChannelPopulator
+  private closeAndReopenTx: AtomicTransaction<void, [string]>
+  private closeChannelTx: CloseChannelTransaction
+  private openChannelTx: OpenChannelMigration
 
-  constructor (logger: Logger, connext: IConnext, store: Store<WorkerState>, populator: ChannelPopulator) {
+  constructor (
+    logger: Logger, 
+    connext: IConnext, 
+    store: Store<WorkerState>, 
+    populator: ChannelPopulator, 
+    sem: semaphore.Semaphore, 
+    web3: Web3
+  ) {
     super(logger)
     this.store = store
     this.connext = connext
     this.populator = populator
+    
+    this.closeAndReopenTx = new AtomicTransaction(this.store, logger, 'withdrawal', [this._sendEntireBalance, this.closeChannel, this.openChannel]) 
+    this.closeChannelTx = new CloseChannelTransaction(store, logger, connext, sem, populator)
+
+    const depositTx = new DepositTransaction(store, connext, sem, populator, web3, logger)
+    this.openChannelTx = new OpenChannelMigration(logger, 'placeholder', 'placeholder', depositTx, web3, connext)
+
+    if (this.closeAndReopenTx.isInProgress()) {
+      this.closeAndReopenTx.restart()
+    }
   }
 
   async start (): Promise<void> {
@@ -43,16 +67,20 @@ export default class WithdrawalController extends AbstractController {
     this.registerHandler(server, SendEntireBalanceRequest.method, this.sendEntireBalance)
   }
 
-  public sendEntireBalance = async (to: string): Promise<void> => {
+  public sendEntireBalance = async (to: string) : Promise<void> => {
+    await this.closeAndReopenTx.start(to)
+  }
+
+  public _sendEntireBalance = async (to: string): Promise<void> => {
     await closeAllVCs(this.store, this.connext)
     // 1. Swap all booty for ETH
     // 2. Call `send` with complete balance
 
     let lc: LedgerChannel = await this.connext.getChannelByPartyA()
-    if (math.gt(lc.tokenBalanceA, 0)) {
+    if (math.gt(lc.tokenBalanceA, 0)) {  // this should always
       const bootyToSell = new CurrencyConvertable(
         CurrencyType.BEI,
-        math.mul(lc.tokenBalanceA, -1),
+        math.mul(lc.tokenBalanceA, -1).add(new BN(1)),
         () => this.store.getState().runtime.exchangeRates!,
       )
       await buySellBooty(this.connext, lc, bootyToSell)
@@ -103,7 +131,7 @@ export default class WithdrawalController extends AbstractController {
         `)
       }
 
-      return this.updateChannel(recipient, valueWeiStr)
+      await this.updateChannel(recipient, valueWeiStr)
     }
 
     const balanceAWei = lcBalanceWei.sub(valueWei)
@@ -131,5 +159,13 @@ export default class WithdrawalController extends AbstractController {
         fields: {recipient},
       },
     }])
+  }
+
+  private closeChannel = async (): Promise<void> => {
+    await this.closeChannelTx.execute()
+  }
+
+  private openChannel = async (): Promise<void> => {
+    await this.openChannelTx.execute()
   }
 }

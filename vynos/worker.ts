@@ -257,7 +257,7 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
       micropaymentsController = new MicropaymentsController(store, logger, connext, chanPopulator, web3)
       virtualChannelsController = new VirtualChannelsController(logger, chanPopulator)
       addressBalanceController = new AddressBalanceController(sharedStateView, store, web3, micropaymentsController, logger)
-      withdrawalController = new WithdrawalController(logger, connext, store, chanPopulator)
+      withdrawalController = new WithdrawalController(logger, connext, store, chanPopulator, semaphore(1), web3)
 
       await micropaymentsController.start()
       await virtualChannelsController.start()
