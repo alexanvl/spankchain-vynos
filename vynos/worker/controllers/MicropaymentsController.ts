@@ -138,6 +138,7 @@ export default class MicropaymentsController extends AbstractController {
     this.logToApi('doDeposit', {deposit})
 
     const existingChannel = await getCurrentLedgerChannels(this.connext, this.store)
+    console.log(existingChannel || 'no channel creating a new LC')
     existingChannel
       ? await this.depositTransaction.depositIntoExistingChannel(deposit)
       : await this.depositTransaction.startTransaction(deposit)

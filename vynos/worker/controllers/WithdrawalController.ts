@@ -47,6 +47,7 @@ export default class WithdrawalController extends AbstractController {
     this.connext = connext
     this.populator = populator
     
+    // this wait for update poller might need to be added to the BuyBootyTransaction to fix race conditions elsewhere
     this.closeAndReopenTx = new AtomicTransaction(this.store, logger, 'closeAndReopen', [this._sendEntireBalance, this.waitForUpdate, this.closeChannel, this.openChannel]) 
     this.closeChannelTx = new CloseChannelTransaction(store, logger, connext, sem, populator)
 
@@ -174,6 +175,14 @@ export default class WithdrawalController extends AbstractController {
 
   private closeChannel = async (): Promise<void> => {
     await this.closeChannelTx.execute()
+    const getLc = this.connext.getChannelByPartyA.bind(this.connext)
+
+    withRetries(async (done: DoneFunc) => {
+      const lc = await getLc()
+      if (!lc) {
+        done()
+      }
+    })
   }
 
   private openChannel = async (): Promise<void> => {

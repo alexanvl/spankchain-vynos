@@ -125,6 +125,11 @@ export default class DepositTransaction {
   public isInProgress = (): boolean => this.deposit.isInProgress() || this.depositExistingChannel.isInProgress()
 
   public depositIntoExistingChannel = async (deposit: DepositArgs): Promise<void> => {
+    const channels = await this.connext.getChannelByPartyA() 
+    if (!channels) {
+      throw new Error('no channels found')
+    }
+
     try {
       await this.depositExistingChannel.start(deposit)
     } catch (e) {
@@ -377,6 +382,9 @@ export default class DepositTransaction {
   }
 
   private finishTransaction = async (): Promise<void> => {
+    if (!this.deferredPopulate) {
+      await this.chanPopulator.populate()
+    }
     await this.deferredPopulate!.populate()
   }
 
