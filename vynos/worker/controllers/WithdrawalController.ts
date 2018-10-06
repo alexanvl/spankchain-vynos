@@ -75,13 +75,14 @@ export default class WithdrawalController extends AbstractController {
     await closeAllVCs(this.store, this.connext)
     // 1. Swap all booty for ETH
     // 2. Call `send` with complete balance
+    const rates = this.store.getState().runtime.exchangeRates
 
     let lc: LedgerChannel = await this.connext.getChannelByPartyA()
     if (math.gt(lc.tokenBalanceA, 0)) {  // this should always
       const bootyToSell = new CurrencyConvertable(
         CurrencyType.BEI,
         math.mul(lc.tokenBalanceA, -1).add(new BN(1)),
-        () => this.store.getState().runtime.exchangeRates!,
+        () => rates!,
       )
       await buySellBooty(this.connext, lc, bootyToSell)
       lc = await this.connext.getChannelByPartyA()
