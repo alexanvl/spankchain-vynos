@@ -17,6 +17,9 @@ import {BOOTY, INITIAL_DEPOSIT_BEI, ZERO} from '../constants'
 import CurrencyConvertable from '../currency/CurrencyConvertable'
 import BN = require('bn.js')
 import Web3 = require('web3')
+import {TransactionReceipt} from 'web3/types'
+import wait from '../wait'
+import requestJson from '../../frame/lib/request'
 
 const tokenABI = require('human-standard-token-abi')
 
@@ -32,6 +35,10 @@ const tokenABI = require('human-standard-token-abi')
 export interface DepositArgs {
   ethDeposit: ICurrency,
   tokenDeposit?: ICurrency,
+}
+
+export interface DepositStatusResponse {
+  status: 'PENDING'|'CONFIRMED'|'FAILED'
 }
 
 function valMap(obj: any, f: any): any {
@@ -54,6 +61,7 @@ export default class DepositTransaction {
   private depSem: semaphore.Semaphore
   private bootyContract: HumanStandardToken
   private logger: Logger
+  private web3: Web3
 
   constructor (
     store: Store<WorkerState>,
@@ -71,6 +79,7 @@ export default class DepositTransaction {
     this.deferredPopulate = null
     this.depSem = semaphore(1)
     this.logger = logger
+    this.web3 = web3
 
     this.bootyContract = new web3.eth.Contract(tokenABI, process.env.BOOTY_CONTRACT_ADDRESS) as HumanStandardToken
 
@@ -336,22 +345,35 @@ export default class DepositTransaction {
     }
 
     try {
-      await this.connext.requestHubDeposit({
+      const id = await this.connext.requestHubDeposit({
         channelId: ledgerId,
         deposit: {
           ethDeposit: new BN(ethDeposit.amount),
           tokenDeposit: INITIAL_DEPOSIT_BEI.mul(new BN(10)),
         }
       })
+
+      for (let i = 0; i < 60; i++) {
+        const res = await requestJson<DepositStatusResponse>(`${process.env.HUB_URL}/ledgerchannel/${ledgerId}/depositstatus/${id}`)
+
+        if (res.status === 'CONFIRMED') {
+          return [
+            {ethDeposit, tokenDeposit},
+            ledgerId,
+            needsCollateral,
+          ]
+        } else if (res.status === 'FAILED') {
+          throw new Error('Deposit failed.')
+        } else {
+          await wait(5000)
+        }
+      }
+
+      throw new Error('Deposit request timed out after 5 minutes.')
     } catch(e) {
       console.error('connext.requestHubDeposit failed', e)
       throw e
     }
-    return [
-      {ethDeposit, tokenDeposit},
-      ledgerId,
-      needsCollateral,
-    ]
   }
 
   private finishTransaction = async (): Promise<void> => {

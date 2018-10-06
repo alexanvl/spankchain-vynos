@@ -156,7 +156,7 @@ export interface IConnext {
 
   deposit: (deposit: Deposit, sender?: string, recipient?: string, tokenAddress?: string) => Promise<any>
 
-  requestHubDeposit: (params: {channelId: string, deposit: Deposit}) => Promise<string>
+  requestHubDeposit: (params: {channelId: string, deposit: Deposit}) => Promise<string[]>
 
   getChannelByPartyA: (partyA?: string, status?: any) => Promise<LedgerChannel>
 
