@@ -92,7 +92,7 @@ export class ReceiveEther extends React.Component<any, State> {
               />
             </div>
             <div className={s.rectRow}> 
-              <span className={classnames(s.rowLabel, s.spaced)}>Max amount</span>
+              <span className={classnames(s.rowLabel, s.spaced)}>Booty limit</span>
               <Currency
                 amount={69}
                 outputType={CurrencyType.ETH}
@@ -133,7 +133,7 @@ export class ReceiveEther extends React.Component<any, State> {
               />
             </div> */}
           </div >
-          <div className={classnames(s.oneThird, s.spaced)}>Send Ether to your card and we’ll credit you Booty. First time transactions have a higher min amount.</div>
+          <div className={classnames(s.oneThird, s.spaced)}>Send Ether to your card and we’ll credit you up to 69 Booty. When you spend it all, you can exchange more. </div>
         </div>
         <Button to="/wallet/receive/start" content={<div className={vs.loginButton} />} isFullWidth />
         <div className={s.recoverText}>
