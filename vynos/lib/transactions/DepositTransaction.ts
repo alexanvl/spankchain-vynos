@@ -200,9 +200,9 @@ export default class DepositTransaction {
       )
       .call()
     const allowanceBn = new BN(allowance)
-    console.log('got allowance', allowanceBn.toString())
     const min = new BN(BOOTY.amount).mul(new BN('10000'))
-    if (allowanceBn.lte(min)) {
+    console.log(allowanceBn.toString())
+    if (allowanceBn.lte(min.div(new BN(2)))) {
       console.log('upping allowance')
       await this.bootyContract
         .methods

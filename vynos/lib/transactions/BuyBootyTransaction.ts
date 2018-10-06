@@ -9,9 +9,8 @@ import requestJson from '../../frame/lib/request'
 import {HubBootyLoadResponse} from './Exchange'
 import {math} from '../../math'
 import {PaymentObject} from '../../lib/connext/ConnextTypes'
+import {FINNEY, ZERO} from '../constants'
 import BN = require('bn.js')
-import getETHBalance from '../web3/getETHBalance'
-import {FINNEY} from '../constants'
 
 export function calculateExchangePurchase(lc: LedgerChannel, buying: CurrencyConvertable) {
   const payments: PaymentObject[] = []
@@ -154,32 +153,29 @@ export default class BuyBootyTransaction {
       return
     }
 
-    const convertable = new CurrencyConvertable(CurrencyType.BEI, lc.tokenBalanceA, () => this.store.getState().runtime.exchangeRates!)
-    if (convertable.toBOOTY().amountBN.gt(new BN('69'))) {
+    const rateThunk = () => this.store.getState().runtime.exchangeRates!
+    const maxBooty = new CurrencyConvertable(CurrencyType.BOOTY, '69', rateThunk)
+    const ownedBooty = new CurrencyConvertable(CurrencyType.BEI, lc.tokenBalanceA, rateThunk).toBOOTY()
+    if (ownedBooty.amountBN.gte(maxBooty.amountBN)) {
       console.log('Already have > 69 booty; not buying more.')
       return
     }
 
-    const {bootyLimit} = await requestJson<HubBootyLoadResponse>(
-      `${process.env.HUB_URL}/payments/booty-load-limit/`
-    )
+    let bootyToBuy
+    const buyableBooty = new CurrencyConvertable(CurrencyType.WEI, lc.ethBalanceA, rateThunk).toBOOTY()
+    if (buyableBooty.amountBN.gte(maxBooty.amountBN)) {
+      console.log('Can buy more than booty limit, setting to booty limit')
 
-    if (bootyLimit === '0') {
-      console.log(`Can't buy more BOOTY; already at the limit!`)
-      return
+      if (ownedBooty.amountBN.gt(ZERO)) {
+        console.log('Removing owned booty from buy amount')
+      }
+
+      bootyToBuy = new CurrencyConvertable(CurrencyType.BOOTY, maxBooty.amountBN.sub(ownedBooty.amountBN), rateThunk)
+    } else {
+      bootyToBuy = buyableBooty
     }
 
-    const rates = this.store.getState().runtime.exchangeRates!
-
-    const bootyToBuy = new CurrencyConvertable(CurrencyType.BEI, bootyLimit, () => rates)
-    const ethToSpend = new CurrencyConvertable(CurrencyType.WEI, lc.ethBalanceA, () => rates)
-
-
-    const buyAmount = ethToSpend.toBEI().compare('lt', bootyToBuy)
-      ? ethToSpend.toBEI()
-      : bootyToBuy
-
-    await buySellBooty(this.connext, lc, buyAmount)
+    await buySellBooty(this.connext, lc, bootyToBuy.toBEI())
   }
 
   private populateChannels = async (): Promise<void> => {
