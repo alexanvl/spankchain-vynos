@@ -104,10 +104,10 @@ export default class DepositTransaction {
 
   public restartTransaction = async (): Promise<void> => {
     try {
-      if (this.deposit.isInProgress) {
+      if (this.deposit.isInProgress()) {
         this.awaiter = takeSem<void>(this.sem, () => { this.deposit.restart()})
-      } else if (this.depositExistingChannel.isInProgress) {
-        this.awaiter = takeSem<void>(this.sem, () => {this.deposit.restart()})
+      } else if (this.depositExistingChannel.isInProgress()) {
+        this.awaiter = takeSem<void>(this.sem, () => {this.depositExistingChannel.restart()})
       }
 
       if (this.awaiter) {

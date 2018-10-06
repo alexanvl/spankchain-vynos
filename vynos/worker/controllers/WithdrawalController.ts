@@ -52,7 +52,7 @@ export default class WithdrawalController extends AbstractController {
     this.closeChannelTx = new CloseChannelTransaction(store, logger, connext, sem, populator)
 
     const depositTx = new DepositTransaction(store, connext, sem, populator, web3, logger)
-    this.openChannelTx = new OpenChannelMigration(logger, 'placeholder', 'placeholder', depositTx, web3, connext)
+    this.openChannelTx = new OpenChannelMigration(logger, 'placeholder', this.store.getState().runtime.wallet.getAddressString(), depositTx, web3, connext)
 
     if (this.closeAndReopenTx.isInProgress()) {
       this.closeAndReopenTx.restart()
