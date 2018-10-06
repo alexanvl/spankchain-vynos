@@ -62,11 +62,9 @@ export class Currency extends React.Component<CurrencyProps, any> {
       if (outputType != inputType) {
         curr = curr.to(outputType)
       }
-      decimals = decimals || (outputType == CurrencyType.USD ? 2 : 0)
       ret = curr.format({
-        decimals: decimals,
-        withSymbol: false,
-        showTrailingZeros: outputType === CurrencyType.USD
+        decimals,
+        withSymbol: false
       })
 
     } catch (e) {

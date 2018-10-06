@@ -60,7 +60,7 @@ export default class Currency<ThisType extends CurrencyType = any> implements IC
     } as CurrencyFormatOptions,
     [CurrencyType.BOOTY]: {
       decimals: 0,
-      withSymbol: true,
+      withSymbol: false,
       showTrailingZeros: false
     } as CurrencyFormatOptions,
     [CurrencyType.BEI]: {

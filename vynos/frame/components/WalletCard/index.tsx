@@ -146,7 +146,7 @@ export class WalletCard extends React.Component<WalletCardProps, WalletCardState
           color="white"
           big
         />
-        <Currency key="value" amount={this.props.currencyValue!} outputType={currencyType} inputType={currencyType} decimals={0} color="white"/>
+        <Currency key="value" amount={this.props.currencyValue!} outputType={currencyType} inputType={currencyType} color="white"/>
       </div>
     )
   }
