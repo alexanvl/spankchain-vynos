@@ -384,7 +384,9 @@ export default class DepositTransaction {
   private finishTransaction = async (): Promise<void> => {
     if (!this.deferredPopulate) {
       await this.chanPopulator.populate()
+      return
     }
+
     await this.deferredPopulate!.populate()
   }
 

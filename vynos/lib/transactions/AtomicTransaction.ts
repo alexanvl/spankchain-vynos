@@ -166,6 +166,7 @@ export class AtomicTransaction<T1, T2 extends any[] = any[]> {
   }
 
   private removeState = (): void => {
+    console.log('removing stored transaction', this.name)
     this.store.dispatch(actions.removeTransactionState(this.name))
   }
 
