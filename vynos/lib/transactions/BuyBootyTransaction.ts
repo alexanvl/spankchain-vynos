@@ -149,7 +149,7 @@ export default class BuyBootyTransaction {
       throw new Error('An lc is required.')
     }
 
-    if (new BN(lc.tokenBalanceA).lt(FINNEY)) {
+    if (new BN(lc.ethBalanceA).lt(FINNEY)) {
       console.log('No ETH in channel; doing nothing.')
       return
     }
