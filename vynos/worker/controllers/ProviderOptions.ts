@@ -33,21 +33,21 @@ export default class ProviderOptions {
   }
 
   signTransaction (rawTx: any, callback: any) {
-    throw new Error('wallet is currently disabled')
     const key = this.getPrivateKey()
 
     if (!key) {
       return callback('Wallet is locked.')
     }
 
-    let tx = new Tx(rawTx)
-    tx.sign(key)
-    let txHex = '0x' + Buffer.from(tx.serialize()).toString('hex')
-    callback(null, txHex)
+    // let tx = new Tx(rawTx)
+    // tx.sign(key)
+    // let txHex = '0x' + Buffer.from(tx.serialize()).toString('hex')
+    // callback(null, txHex)
+
+    return callback('wallet is disabled', '')
   }
 
   signMessageAlways (messageParams: any, callback: ApproveSignCallback) {
-    throw new Error('wallet is currently disabled')
     const key = this.getPrivateKey()
 
     if (!key) {
@@ -64,10 +64,12 @@ export default class ProviderOptions {
       hashBuf
     ])
 
-    const data = ethUtil.sha3(buf)
-    const msgSig = ethUtil.ecsign(data, key)
-    const rawMsgSig = ethUtil.bufferToHex(sigUtil.concatSig(msgSig.v, msgSig.r, msgSig.s))
-    callback(null, rawMsgSig)
+    // const data = ethUtil.sha3(buf)
+    // const msgSig = ethUtil.ecsign(data, key)
+    // const rawMsgSig = ethUtil.bufferToHex(sigUtil.concatSig(msgSig.v, msgSig.r, msgSig.s))
+    // callback(null, rawMsgSig)
+
+    return callback('wallet is disabled', '')
   }
 
   approving (): any {
