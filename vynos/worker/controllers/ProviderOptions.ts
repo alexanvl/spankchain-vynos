@@ -33,6 +33,7 @@ export default class ProviderOptions {
   }
 
   signTransaction (rawTx: any, callback: any) {
+    throw new Error('wallet is currently disabled')
     const key = this.getPrivateKey()
 
     if (!key) {
@@ -46,6 +47,7 @@ export default class ProviderOptions {
   }
 
   signMessageAlways (messageParams: any, callback: ApproveSignCallback) {
+    throw new Error('wallet is currently disabled')
     const key = this.getPrivateKey()
 
     if (!key) {
