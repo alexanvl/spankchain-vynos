@@ -220,7 +220,8 @@ asServiceWorker((self: ServiceWorkerGlobalScope) => {
           web3,
           new RequestBootyTransaction(
             store,
-            logger
+            web3,
+            logger,
           )
         ),
         open_channel: new OpenChannelMigration(

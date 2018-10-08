@@ -275,7 +275,7 @@ export default class DepositTransaction {
     console.log('opening channel...')
 
     if (!tokenDeposit || new BN(tokenDeposit.amount).eq(new BN(0))) {
-      throw new Error('cannot open a channel without a token Deposit')
+      throw new Error('cannot open a channel without a token deposit')
     }
 
     const depositObj: Deposit = {
@@ -301,8 +301,7 @@ export default class DepositTransaction {
   }
 
   private awaitChainsaw = async (depositArgs: DepositArgs, ledgerId: string, needsCollateral: boolean): Promise<[DepositArgs, string, boolean]> => {
-
-    console.log('Waitin for hub to acknowledge on-chain channel...')
+    console.log('Waiting for hub to acknowledge on-chain channel...')
     await withRetries(async (done: DoneFunc) => {
       const res = await getCurrentLedgerChannels(this.connext, this.store)
 
